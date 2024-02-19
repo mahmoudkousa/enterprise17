@@ -202,9 +202,9 @@ class TestFsmFlowStock(TestFsmFlowSaleCommon):
         while move.move_orig_ids:
             move = move.move_orig_ids
         self.assertEqual(move.move_line_ids[0].lot_id, self.lot_id2)
-        self.assertEqual(move.move_line_ids[0].quantity, 2)
+        self.assertEqual(move.move_line_ids[0].quantity_product_uom, 2)
         self.assertNotEqual(move.move_line_ids[1].lot_id, self.lot_id2, "Lot automatically added on move lines is not the same as asked. (By default, it's the first lot available)")
-        self.assertEqual(move.move_line_ids[1].quantity, 1)
+        self.assertEqual(move.move_line_ids[1].quantity_product_uom, 1)
         self.task.with_user(self.project_user).action_fsm_validate()
         self.assertEqual(move.move_line_ids.lot_id, self.lot_id2, "Asked lots are added on move lines.")
         self.assertEqual(move.quantity, 3, "We deliver 3 (even they are only 2 in stock)")

@@ -181,7 +181,7 @@ class MrpReport(models.Model):
                 WHERE
                     mo.state = 'done'
                     AND sm.state = 'done'
-                    AND sm.product_qty != 0
+                    AND sm.quantity != 0
                     AND sm.scrapped != 't'
                 GROUP BY mo.id
             ) cost_share ON cost_share.mo_id = mo.id
@@ -193,7 +193,7 @@ class MrpReport(models.Model):
                 SELECT
                     mo.id AS mo_id,
                     mo.name,
-                    SUM(sm.product_qty) AS product_qty,
+                    SUM(sm.quantity / uom.factor * uom_prod.factor) AS product_qty,
                     SUM(sm.product_uom_qty / uom.factor * uom_prod.factor) AS qty_demanded
                 FROM stock_move AS sm
                 JOIN mrp_production AS mo ON sm.production_id = mo.id
@@ -204,7 +204,7 @@ class MrpReport(models.Model):
                 WHERE
                     mo.state = 'done'
                     AND sm.state = 'done'
-                    AND sm.product_qty != 0
+                    AND sm.quantity != 0
                     AND mo.product_id = sm.product_id
                     AND (sm.scrapped != 't' or sm.scrapped IS NULL)
                 GROUP BY mo.id

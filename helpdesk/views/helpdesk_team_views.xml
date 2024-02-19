@@ -230,7 +230,7 @@
                                 </div>
                                 <div class="mt8">
                                     <label for="from_stage_ids"/>
-                                    <field name="from_stage_ids" widget="many2many_tags" class="ms-2 oe_inline" context="{'default_team_id': id}"/>
+                                    <field name="from_stage_ids" widget="many2many_tags" class="ms-2" context="{'default_team_id': id}"/>
                                 </div>
                             </div>
                         </setting>
@@ -301,7 +301,7 @@
                 <templates>
                     <t t-name="kanban-menu">
                         <div class="container">
-                            <div t-if="widget.editable" class="row">
+                            <div class="row">
                                 <div class="col-6 o_kanban_card_manage_section o_kanban_manage_view">
                                     <h5 role="menuitem" class="o_kanban_card_manage_title">
                                         <span>View</span>
@@ -310,14 +310,14 @@
                                         <a name="action_view_ticket" type="object">Tickets</a>
                                     </div>
                                 </div>
-                                <div class="col-6 o_kanban_card_manage_section o_kanban_manage_reporting">
+                                <div class="col-auto o_kanban_card_manage_section o_kanban_manage_reporting">
                                     <h5 role="menuitem" class="o_kanban_card_manage_title">
                                         <span>Reporting</span>
                                     </h5>
-                                    <div role="menuitem">
+                                    <div role="menuitem" class="text-nowrap">
                                         <a name="%(helpdesk.helpdesk_ticket_analysis_dashboard_action)d" type="action" context="{'search_default_team_id': id}">Tickets Analysis</a>
                                     </div>
-                                    <div role="menuitem">
+                                    <div role="menuitem" class="text-nowrap">
                                         <a name="%(helpdesk.helpdesk_sla_report_analysis_dashboard_action)d" type="action" context="{'search_default_team_id': id}">SLA Status Analysis</a>
                                     </div>
                                 </div>

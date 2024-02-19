@@ -4,7 +4,7 @@
 # 
 # Translators:
 # Wil Odoo, 2023
-# Rasareeyar Lappiam, 2023
+# Rasareeyar Lappiam, 2024
 # 
 msgid ""
 msgstr ""
@@ -12,7 +12,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-10-26 22:20+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Rasareeyar Lappiam, 2023\n"
+"Last-Translator: Rasareeyar Lappiam, 2024\n"
 "Language-Team: Thai (https://app.transifex.com/odoo/teams/41243/th/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -31,6 +31,8 @@ msgid ""
 "360 Degree Feedback is a system or process in which managers will ask feedback from the people who work around the employee.\n"
 "            This typically includes the employee's manager, peers, and direct reports."
 msgstr ""
+"ข้อเสนอแนะแบบ 360 องศาคือระบบหรือกระบวนการที่ผู้จัดการจะถามความคิดเห็นจากคนที่ทำงานอยู่รอบๆ พนักงาน\n"
+"            โดยทั่วไปจะรวมถึงผู้จัดการของพนักงาน เพื่อนร่วมงาน และทีมงานโดยตรง"
 
 #. module: hr_appraisal_survey
 #: model:ir.actions.act_window,name:hr_appraisal_survey.survey_survey_action_appraisal
@@ -42,17 +44,17 @@ msgstr "360 Feedback"
 #. module: hr_appraisal_survey
 #: model_terms:ir.ui.view,arch_db:hr_appraisal_survey.hr_appraisal_survey_button_form_view
 msgid "<i class=\"oi oi-fw oi-arrow-right\"/>Edit Survey"
-msgstr ""
+msgstr "<i class=\"oi oi-fw oi-arrow-right\"/>แก้ไขแบบสอบถาม"
 
 #. module: hr_appraisal_survey
 #: model_terms:ir.ui.view,arch_db:hr_appraisal_survey.hr_appraisal_view_form
 msgid "<span class=\"o_stat_text\">Feedbacks</span>"
-msgstr ""
+msgstr "<span class=\"o_stat_text\">ข้อเสนอแนะ</span>"
 
 #. module: hr_appraisal_survey
 #: model_terms:ir.ui.view,arch_db:hr_appraisal_survey.hr_appraisal_view_form
 msgid "<span> / </span>"
-msgstr ""
+msgstr "<span> / </span>"
 
 #. module: hr_appraisal_survey
 #: model:mail.template,body_html:hr_appraisal_survey.mail_template_appraisal_ask_feedback
@@ -79,6 +81,27 @@ msgid ""
 "                </div>\n"
 "            "
 msgstr ""
+"<t t-set=\"logged_user\" t-value=\"ctx.get('logged_user')\"></t>\n"
+"                <t t-set=\"employee\" t-value=\"ctx.get('employee')\"></t>\n"
+"                <t t-set=\"deadline\" t-value=\"ctx.get('deadline')\"></t>\n"
+"                <div style=\"margin: 0px; padding: 0px;\">\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        <p style=\"margin-left:5px\">เรียน<t t-out=\"object.partner_id.name or 'participant'\">[ผู้เข้าร่วม]</t></p>\n"
+"                        <span>\n"
+"                            <t t-out=\"logged_user\">[ผู้ใช้ปัจจุบัน]</t> ขอเชิญคุณเข้าร่วมการสำรวจและให้ข้อเสนอแนะเกี่ยวกับ <t t-out=\"employee\">[พนักงาน]</t>\n"
+"                            กรุณากรอกแบบสำรวจก่อน <t t-out=\"deadline\">[วันครบกำหนด]</t>\n"
+"                        </span>\n"
+"                        <br>\n"
+"                        ขอบคุณ\n"
+"                        <br><br>\n"
+"                        <div style=\"margin: 16px 0px 16px 0px; text-align: center;\">\n"
+"                            <a t-att-href=\"object.get_start_url()\" style=\"background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;\">\n"
+"                                แสดงความคิดเห็นของคุณ\n"
+"                            </a>\n"
+"                        </div>\n"
+"                    </p>\n"
+"                </div>\n"
+"            "
 
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.arow_3_1_1
@@ -132,17 +155,17 @@ msgstr "ความคิดเห็นเพิ่มเติม"
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.y_360_5_6
 msgid "Admit my mistakes"
-msgstr ""
+msgstr "ยอมรับความผิดพลาดของฉัน"
 
 #. module: hr_appraisal_survey
 #: model_terms:ir.ui.view,arch_db:hr_appraisal_survey.hr_appraisal_survey_user_input_view_tree
 msgid "All answers"
-msgstr ""
+msgstr "คำตอบทั้งหมด"
 
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.x_360_5_5
 msgid "Almost always"
-msgstr ""
+msgstr "เกือบทุกครั้ง"
 
 #. module: hr_appraisal_survey
 #. odoo-python
@@ -201,14 +224,14 @@ msgstr "การประเมินของ"
 #. module: hr_appraisal_survey
 #: model:mail.template,name:hr_appraisal_survey.mail_template_appraisal_ask_feedback
 msgid "Appraisal: Ask Feedback"
-msgstr ""
+msgstr "การประเมิน: ถามความคิดเห็น"
 
 #. module: hr_appraisal_survey
 #. odoo-python
 #: code:addons/hr_appraisal_survey/wizard/appraisal_ask_feedback.py:0
 #, python-format
 msgid "Appraisal: Ask Feedback new template"
-msgstr ""
+msgstr "การประเมิน: ถามคำติชมเทมเพลตใหม่"
 
 #. module: hr_appraisal_survey
 #: model:survey.question,title:hr_appraisal_survey.appraisal_1_5
@@ -237,12 +260,12 @@ msgstr "ถามผลตอบรับ"
 #. module: hr_appraisal_survey
 #: model_terms:survey.question,description:hr_appraisal_survey.appraisal_1
 msgid "At the conclusion of the appraisal time period"
-msgstr ""
+msgstr "เมื่อสิ้นสุดระยะเวลาการประเมิน"
 
 #. module: hr_appraisal_survey
 #: model_terms:survey.question,description:hr_appraisal_survey.appraisal_1
 msgid "At the outset of the appraisal time period"
-msgstr ""
+msgstr "เมื่อเริ่มระยะเวลาการประเมิน"
 
 #. module: hr_appraisal_survey
 #: model:ir.model.fields,field_description:hr_appraisal_survey.field_appraisal_ask_feedback__attachment_ids
@@ -277,7 +300,7 @@ msgstr "ยกเลิก"
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.y_360_5_3
 msgid "Collaborate effectively with others to achieve shared goals"
-msgstr ""
+msgstr "ทำงานร่วมกันอย่างมีประสิทธิภาพกับผู้อื่นเพื่อให้บรรลุเป้าหมายร่วมกัน"
 
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.arow_3_1_9
@@ -293,7 +316,7 @@ msgstr "บริษัท"
 #. module: hr_appraisal_survey
 #: model:ir.model.fields,field_description:hr_appraisal_survey.field_hr_appraisal__completed_survey_count
 msgid "Completed Survey Count"
-msgstr ""
+msgstr "จำนวนแบบสอบถามที่เสร็จสมบูรณ์"
 
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.arow_3_1_3
@@ -304,7 +327,7 @@ msgstr "การปฏิบัติตามกฎและกระบวน
 #. module: hr_appraisal_survey
 #: model:survey.question,title:hr_appraisal_survey.appraisal_360_9
 msgid "Conclusion"
-msgstr ""
+msgstr "บทสรุป"
 
 #. module: hr_appraisal_survey
 #: model:ir.model,name:hr_appraisal_survey.model_res_config_settings
@@ -319,7 +342,7 @@ msgstr "เนื้อหา"
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.y_360_5_2
 msgid "Create space for different ideas and options to be voiced"
-msgstr ""
+msgstr "สร้างพื้นที่สำหรับแสดงความคิดและตัวเลือกต่างๆ"
 
 #. module: hr_appraisal_survey
 #: model:ir.model.fields,field_description:hr_appraisal_survey.field_appraisal_ask_feedback__create_uid
@@ -342,6 +365,8 @@ msgid ""
 "Critical or key elements of performance and professional development needs "
 "(if any), should also be noted at this time"
 msgstr ""
+"ควรสังเกตองค์ประกอบที่สำคัญหรือความต้องการด้านประสิทธิภาพและการพัฒนาทางวิชาชีพ"
+" (ถ้ามี) ในเวลานี้"
 
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.arow_3_1_8
@@ -376,7 +401,7 @@ msgstr "แผนก"
 #. module: hr_appraisal_survey
 #: model_terms:survey.question,description:hr_appraisal_survey.appraisal_3
 msgid "Did not meet standards and expectations"
-msgstr ""
+msgstr "ไม่เป็นไปตามมาตรฐานและความคาดหวัง"
 
 #. module: hr_appraisal_survey
 #: model:ir.model.fields,field_description:hr_appraisal_survey.field_appraisal_ask_feedback__display_name
@@ -386,7 +411,7 @@ msgstr "แสดงชื่อ"
 #. module: hr_appraisal_survey
 #: model:survey.question,title:hr_appraisal_survey.appraisal_360_10
 msgid "Do you have any comment to tell me and help me improve?"
-msgstr ""
+msgstr "คุณมีความคิดเห็นเพื่อช่วยฉันปรับปรุงหรือไม่?"
 
 #. module: hr_appraisal_survey
 #: model_terms:ir.ui.view,arch_db:hr_appraisal_survey.hr_appraisal_survey_user_input_view_tree
@@ -421,19 +446,19 @@ msgstr "ผลการปฏิบัติงานของพนักงา
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.arow_3_1_2
 msgid "Enthusiasm & implication toward projects/assignments"
-msgstr "ความกระตือรือร้นและการมีส่วนร่วมในโปรเจกต์/งานที่มอบหมาย"
+msgstr "ความกระตือรือร้นและการมีส่วนร่วมในโปรเจ็กต์/งานที่ได้รับมอบหมาย"
 
 #. module: hr_appraisal_survey
 #: model_terms:survey.question,description:hr_appraisal_survey.appraisal_3
 msgid "Exceeds standards and expectations"
-msgstr ""
+msgstr "เกินมาตรฐานและความคาดหวัง"
 
 #. module: hr_appraisal_survey
 #. odoo-python
 #: code:addons/hr_appraisal_survey/models/hr_appraisal.py:0
 #, python-format
 msgid "Feedback Surveys"
-msgstr ""
+msgstr "แบบสอบถามความคิดเห็น"
 
 #. module: hr_appraisal_survey
 #. odoo-python
@@ -445,22 +470,22 @@ msgstr "กรอกแบบฟอร์มผลตอบรับแบบส
 #. module: hr_appraisal_survey
 #: model:survey.question,title:hr_appraisal_survey.appraisal_360_5
 msgid "How do you feel to work with me? Do I ... "
-msgstr ""
+msgstr "คุณรู้สึกอย่างไรที่ได้ร่วมงานกับฉัน? ฉัน..."
 
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.appraisal_360_3_sug5
 msgid "I'm not from the company."
-msgstr ""
+msgstr "ฉันไม่ได้มาจากบริษัท"
 
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.appraisal_360_3_sug3
 msgid "I'm part of your management."
-msgstr ""
+msgstr "ฉันเป็นส่วนหนึ่งของการจัดการของคุณ"
 
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.appraisal_360_3_sug4
 msgid "I'm referring to you."
-msgstr ""
+msgstr "ฉันกำลังหมายถึงคุณ"
 
 #. module: hr_appraisal_survey
 #: model:ir.model.fields,field_description:hr_appraisal_survey.field_appraisal_ask_feedback__id
@@ -473,6 +498,9 @@ msgid ""
 "Identify professional, performance, or project objectives you recommend for "
 "employee’s continued career development over the coming year."
 msgstr ""
+"ระบุวัตถุประสงค์ทางวิชาชีพ ประสิทธิภาพ "
+"หรือโปรเจ็กต์ที่คุณแนะนำสำหรับการพัฒนาอาชีพอย่างต่อเนื่องของพนักงานในปีต่อๆ "
+"ไป"
 
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.arow_3_1_5
@@ -492,6 +520,9 @@ msgid ""
 " major employee responsibilities and corresponding benchmarks against which "
 "results will be evaluated."
 msgstr ""
+"เป็นความรับผิดชอบร่วมกันของพนักงานและหัวหน้า (ผู้ประเมิน) "
+"ในการกำหนดแผนงานที่เป็นไปได้สำหรับปีที่กำลังจะมาถึง "
+"รวมถึงความรับผิดชอบหลักของพนักงานและเกณฑ์มาตรฐานที่เกี่ยวข้องกับผลลัพธ์ที่จะได้รับการประเมิน"
 
 #. module: hr_appraisal_survey
 #: model_terms:survey.question,description:hr_appraisal_survey.appraisal_1
@@ -500,6 +531,8 @@ msgid ""
 "input from the appropriate sources of feedback (internal and/or external "
 "customers, peers)."
 msgstr ""
+"เป็นความรับผิดชอบหลักของหัวหน้างานในการรวบรวมข้อมูลที่จำเป็นจากแหล่งข้อเสนอแนะที่เหมาะสม"
+" (ลูกค้า เพื่อนร่วมงาน ทั้งภายในและภายนอก)"
 
 #. module: hr_appraisal_survey
 #: model:ir.model.fields,field_description:hr_appraisal_survey.field_appraisal_ask_feedback__lang
@@ -533,7 +566,7 @@ msgstr "ความเป็นผู้นำ: รักษาลูกน้�
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.y_360_5_1
 msgid "Listen well to others"
-msgstr ""
+msgstr "ฟังผู้อื่นได้ดี"
 
 #. module: hr_appraisal_survey
 #: model_terms:ir.ui.view,arch_db:hr_appraisal_survey.appraisal_ask_feedback_view_form
@@ -548,7 +581,7 @@ msgstr "เทมเพลตเมล"
 #. module: hr_appraisal_survey
 #: model_terms:survey.question,description:hr_appraisal_survey.appraisal_3
 msgid "Meet standards and expectations"
-msgstr ""
+msgstr "เป็นไปตามมาตรฐานและความคาดหวัง"
 
 #. module: hr_appraisal_survey
 #. odoo-python
@@ -575,7 +608,7 @@ msgstr "วัตถุประสงค์"
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.x_360_5_4
 msgid "Often"
-msgstr ""
+msgstr "บ่อยครั้ง"
 
 #. module: hr_appraisal_survey
 #: model_terms:ir.ui.view,arch_db:hr_appraisal_survey.appraisal_ask_feedback_view_form
@@ -597,7 +630,7 @@ msgstr ""
 #. module: hr_appraisal_survey
 #: model_terms:survey.question,description:hr_appraisal_survey.appraisal_1
 msgid "Overall Purpose Of Employee Appraisal"
-msgstr ""
+msgstr "วัตถุประสงค์โดยรวมของการประเมินพนักงาน"
 
 #. module: hr_appraisal_survey
 #: model:ir.model.fields,help:hr_appraisal_survey.field_survey_user_input__requested_by
@@ -627,7 +660,7 @@ msgstr "แผนพัฒนาและปฏิบัติงานทาง
 #. module: hr_appraisal_survey
 #: model:survey.question,title:hr_appraisal_survey.appraisal_4_3
 msgid "Project Objectives"
-msgstr "วัตถุประสงค์ของโปรเจกต์"
+msgstr "วัตถุประสงค์ของโปรเจ็กต์"
 
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.arow_3_1_12
@@ -637,7 +670,7 @@ msgstr "บันทึกความพร้อมและการลงเ
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.x_360_5_2
 msgid "Rarely"
-msgstr ""
+msgstr "น้อยครั้ง"
 
 #. module: hr_appraisal_survey
 #: model:ir.model.fields,field_description:hr_appraisal_survey.field_appraisal_ask_feedback__employee_ids
@@ -647,7 +680,7 @@ msgstr "ผู้รับ"
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.y_360_5_7
 msgid "Recognize the contributions of teammates and peers"
-msgstr ""
+msgstr "รับรู้ถึงการมีส่วนร่วมของเพื่อนร่วมทีมและเพื่อนร่วมงาน"
 
 #. module: hr_appraisal_survey
 #: model:ir.model.fields,field_description:hr_appraisal_survey.field_appraisal_ask_feedback__render_model
@@ -657,7 +690,7 @@ msgstr "โมเดลการแสดงผล"
 #. module: hr_appraisal_survey
 #: model:ir.model.fields,field_description:hr_appraisal_survey.field_survey_user_input__requested_by
 msgid "Requested by"
-msgstr ""
+msgstr "การร้องขอจาก"
 
 #. module: hr_appraisal_survey
 #: model_terms:ir.ui.view,arch_db:hr_appraisal_survey.hr_appraisal_survey_user_input_view_tree
@@ -680,7 +713,7 @@ msgid ""
 "Results of the bottom-up survey and mitigation actions to face technical, "
 "organizational, structural and/or relational issues"
 msgstr ""
-"ผลการสำรวจจากล่างขึ้นบนและการดำเนินการบรรเทาผลกระทบเมื่อเผชิญกับปัญหาทางเทคนิค"
+"ผลลัพธ์ของแบบสอบถามจากล่างขึ้นบนและการดำเนินการบรรเทาผลกระทบเมื่อเผชิญกับปัญหาทางเทคนิค"
 " องค์กร โครงสร้าง และ/หรือเชิงสัมพันธ์"
 
 #. module: hr_appraisal_survey
@@ -696,12 +729,12 @@ msgstr "บันทึกเป็นแม่แบบใหม่"
 #. module: hr_appraisal_survey
 #: model_terms:ir.ui.view,arch_db:hr_appraisal_survey.hr_appraisal_survey_user_input_view_tree
 msgid "See Answers"
-msgstr ""
+msgstr "ดูคำตอบ"
 
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.y_360_5_5
 msgid "Seek to understand the problem before working on a solution"
-msgstr ""
+msgstr "พยายามทำความเข้าใจปัญหาก่อนดำเนินการแก้ไขปัญหา"
 
 #. module: hr_appraisal_survey
 #: model_terms:ir.ui.view,arch_db:hr_appraisal_survey.appraisal_ask_feedback_view_form
@@ -716,28 +749,28 @@ msgstr "ส่งแบบสอบถาม"
 #. module: hr_appraisal_survey
 #: model:mail.template,description:hr_appraisal_survey.mail_template_appraisal_ask_feedback
 msgid "Sent to employees to gather appraisal feedback"
-msgstr ""
+msgstr "ส่งไปยังพนักงานเพื่อรวบรวมผลตอบรับการประเมิน"
 
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.y_360_5_4
 msgid "Show good judgment in decision making"
-msgstr ""
+msgstr "ใช้วิจารณญาณที่ดีในการตัดสินใจ"
 
 #. module: hr_appraisal_survey
 #: model_terms:survey.question,description:hr_appraisal_survey.appraisal_3
 msgid "Significantly below standards and expectations"
-msgstr ""
+msgstr "ต่ำกว่ามาตรฐานและความคาดหวังอย่างมาก"
 
 #. module: hr_appraisal_survey
 #: model_terms:survey.question,description:hr_appraisal_survey.appraisal_3
 msgid ""
 "Significantly exceeds standards and expectations required of the position"
-msgstr ""
+msgstr "เกินมาตรฐานและความคาดหวังที่จำเป็นสำหรับตำแหน่งอย่างมาก"
 
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.x_360_5_3
 msgid "Sometimes"
-msgstr ""
+msgstr "บางครั้ง"
 
 #. module: hr_appraisal_survey
 #: model:ir.model.fields,field_description:hr_appraisal_survey.field_appraisal_ask_feedback__subject
@@ -760,7 +793,7 @@ msgstr "หัวหน้่งานเท่านั้น"
 #: model:ir.model.fields,field_description:hr_appraisal_survey.field_hr_appraisal__survey_ids
 #: model:ir.model.fields,field_description:hr_appraisal_survey.field_survey_question_answer__survey_id
 msgid "Survey"
-msgstr "การสำรวจ"
+msgstr "แบบสอบถาม"
 
 #. module: hr_appraisal_survey
 #. odoo-python
@@ -785,12 +818,12 @@ msgstr "เทมเพลตแบบสอบถาม"
 #. module: hr_appraisal_survey
 #: model:ir.model.fields,field_description:hr_appraisal_survey.field_survey_survey__survey_type
 msgid "Survey Type"
-msgstr ""
+msgstr "ประเภทแบบสอบถาม"
 
 #. module: hr_appraisal_survey
 #: model:ir.model,name:hr_appraisal_survey.model_survey_user_input
 msgid "Survey User Input"
-msgstr "แบบสำรวจข้อมูลผู้ใช้"
+msgstr "แบบสอบถามข้อมูลผู้ใช้"
 
 #. module: hr_appraisal_survey
 #: model:mail.template,subject:hr_appraisal_survey.mail_template_appraisal_ask_feedback
@@ -817,6 +850,7 @@ msgid ""
 "The appraiser should rate the employee’s major work accomplishments and "
 "performance according to the metric provided below:"
 msgstr ""
+"ผู้ประเมินราคาควรให้คะแนนความสำเร็จในการทำงานและผลการปฏิบัติงานที่สำคัญของพนักงานตามเกณฑ์ที่ระบุด้านล่าง:"
 
 #. module: hr_appraisal_survey
 #: model_terms:survey.question,description:hr_appraisal_survey.appraisal_1
@@ -824,6 +858,7 @@ msgid ""
 "The employee may choose to offer comments or explanation regarding the "
 "completed review."
 msgstr ""
+"พนักงานอาจเลือกที่จะแสดงความคิดเห็นหรือคำอธิบายเกี่ยวกับการทบทวนที่เสร็จสมบูรณ์แล้ว"
 
 #. module: hr_appraisal_survey
 #: model_terms:survey.question,description:hr_appraisal_survey.appraisal_1
@@ -834,6 +869,10 @@ msgid ""
 "criterion. Once the form had been filled, the employee send it to their "
 "supervisor."
 msgstr ""
+"พนักงานจะมีหน้าที่ร่างแบบประเมิน "
+"เพื่อเป็นเครื่องมือในการประเมินตนเองและเป็นจุดเริ่มต้นในการประเมินของหัวหน้า"
+" พนักงานสามารถเพิ่มตัวอย่างความสำเร็จสำหรับแต่ละเกณฑ์ได้ "
+"เมื่อกรอกแบบฟอร์มแล้ว พนักงานจะส่งแบบฟอร์มให้หัวหน้างาน"
 
 #. module: hr_appraisal_survey
 #: model_terms:survey.question,description:hr_appraisal_survey.appraisal_1
@@ -842,6 +881,8 @@ msgid ""
 "appraisal. The motivation of the evaluation is explained in the ad hoc "
 "fields."
 msgstr ""
+"หัวหน้าจะสังเคราะห์และรวมข้อมูลทั้งหมดเข้ากับการประเมินที่เสร็จสมบูรณ์ "
+"แรงจูงใจของการประเมินมีการอธิบายไว้ในฟิลด์เฉพาะกิจ"
 
 #. module: hr_appraisal_survey
 #. odoo-python
@@ -852,6 +893,9 @@ msgid ""
 "The following employees do not have any email: \n"
 "%s"
 msgstr ""
+"พนักงานรายนี้ไม่มีที่อยู่อีเมลที่ลงทะเบียนไว้ และจะไม่ได้รับอีเมลใดๆ\n"
+"พนักงานต่อไปนี้ไม่ระบุอีเมล:\n"
+"%s"
 
 #. module: hr_appraisal_survey
 #: model:ir.model.fields,help:hr_appraisal_survey.field_hr_department__appraisal_survey_template_id
@@ -865,7 +909,7 @@ msgstr ""
 #. module: hr_appraisal_survey
 #: model_terms:ir.ui.view,arch_db:hr_appraisal_survey.hr_appraisal_survey_button_form_view
 msgid "This is a Test Survey."
-msgstr ""
+msgstr "นี่คือแบบสอบถามทดสอบ"
 
 #. module: hr_appraisal_survey
 #: model_terms:survey.survey,description:hr_appraisal_survey.appraisal_feedback_template
@@ -873,11 +917,13 @@ msgid ""
 "This survey allows you to give a feedback about your collaboration with an "
 "employee. Filling it helps us improving the appraisal process."
 msgstr ""
+"แบบสอบถามนี้ช่วยให้คุณแสดงความคิดเห็นเกี่ยวกับความร่วมมือของคุณกับพนักงานได้"
+" การกรอกข้อมูลช่วยให้เราปรับปรุงกระบวนการประเมินได้"
 
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.arow_3_1_15
 msgid "Time management: projects/tasks are completed on time"
-msgstr "การบริหารเวลา: โปรเจกต์/งานเสร็จตรงเวลา"
+msgstr "การบริหารเวลา: โปรเจ็กต์/งานเสร็จตรงเวลา"
 
 #. module: hr_appraisal_survey
 #: model_terms:survey.question,description:hr_appraisal_survey.appraisal_1
@@ -885,16 +931,18 @@ msgid ""
 "To assist employees in their professional growth, through the identification"
 " of strengths and opportunities for development"
 msgstr ""
+"เพื่อช่วยให้พนักงานมีการเติบโตทางวิชาชีพ โดยการระบุจุดแข็งและโอกาสในการพัฒนา"
 
 #. module: hr_appraisal_survey
 #: model_terms:survey.question,description:hr_appraisal_survey.appraisal_1
 msgid "To initiate a clear and open communication of performance expectations"
 msgstr ""
+"เพื่อเริ่มต้นการสื่อสารที่ชัดเจนและเปิดกว้างเกี่ยวกับความคาดหวังด้านประสิทธิภาพ"
 
 #. module: hr_appraisal_survey
 #: model:ir.model.fields,field_description:hr_appraisal_survey.field_hr_appraisal__total_survey_count
 msgid "Total Survey Count"
-msgstr ""
+msgstr "จำนวนแบบสอบถามทั้งหมด"
 
 #. module: hr_appraisal_survey
 #: model:survey.question,title:hr_appraisal_survey.appraisal_5_1
@@ -907,32 +955,32 @@ msgstr ""
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.appraisal_360_3_sug1
 msgid "We're colleagues, for the same manager."
-msgstr ""
+msgstr "เราเป็นเพื่อนร่วมงานสำหรับผู้จัดการคนเดียวกัน"
 
 #. module: hr_appraisal_survey
 #: model:survey.question.answer,value:hr_appraisal_survey.appraisal_360_3_sug2
 msgid "We're colleagues, in different teams."
-msgstr ""
+msgstr "เราเป็นเพื่อนร่วมงานในทีมที่แตกต่างกัน"
 
 #. module: hr_appraisal_survey
 #: model:survey.question,title:hr_appraisal_survey.appraisal_360_6
 msgid "What should I do in order to improve on my day-to-day job?"
-msgstr ""
+msgstr "ฉันควรทำอย่างไรเพื่อปรับปรุงงานในแต่ละวันของฉัน?"
 
 #. module: hr_appraisal_survey
 #: model:survey.question,title:hr_appraisal_survey.appraisal_360_7
 msgid "What's my greatest strength?"
-msgstr ""
+msgstr "อะไรคือจุดแข็งที่สุดของฉัน?"
 
 #. module: hr_appraisal_survey
 #: model:survey.question,title:hr_appraisal_survey.appraisal_360_8
 msgid "What's my greatest weakness?"
-msgstr ""
+msgstr "อะไรคือจุดอ่อนที่สุดของฉัน?"
 
 #. module: hr_appraisal_survey
 #: model:survey.question,title:hr_appraisal_survey.appraisal_360_3
 msgid "What's the relation between us?"
-msgstr ""
+msgstr "ความสัมพันธ์ระหว่างเราคืออะไร?"
 
 #. module: hr_appraisal_survey
 #: model:survey.question,title:hr_appraisal_survey.appraisal_360_2

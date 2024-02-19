@@ -54,10 +54,17 @@ class HrAttendance(models.Model):
                 start, stop, emp.resource_id
             )[emp.resource_id.id]
             leave_intervals = calendar._leave_intervals_batch(
-                start, stop, emp.resource_id, domain=self._get_overtime_leave_domain()
+                start, stop, emp.resource_id, domain=expression.AND([
+                    self._get_overtime_leave_domain(),
+                    [('company_id', 'in', [False, emp.company_id.id])],
+                ])
             )
             expected_attendances -= leave_intervals[False] | leave_intervals[emp.resource_id.id]
-            expected_worked_hours[emp.id] = sum([(att[2].hour_to - att[2].hour_from) for att in expected_attendances])
+            expected_worked_hours[emp.id] = sum(
+                att.hour_to - att.hour_from
+                for interval in expected_attendances
+                for att in interval[2]
+            )
         for employee_id in res_ids:
             values[employee_id] = {
                 'value': employee_data.get(employee_id, 0),
@@ -77,7 +84,7 @@ class HrAttendance(models.Model):
 
         open_ended_gantt_data = super().get_gantt_data(domain, groupby, read_specification, limit=limit, offset=offset)
 
-        if groupby and groupby[0] == 'employee_id':
+        if start_date and groupby and groupby[0] == 'employee_id':
             active_employees_domain = expression.AND([
                 user_domain,
                 [

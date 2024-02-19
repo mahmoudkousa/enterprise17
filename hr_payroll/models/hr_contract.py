@@ -242,6 +242,12 @@ class HrContract(models.Model):
         self.ensure_one()
         return self.work_time_rate if self.time_credit else 1.0
 
+    def _get_contract_wage_field(self):
+        self.ensure_one()
+        if self.wage_type == 'hourly':
+            return 'hourly_wage'
+        return super()._get_contract_wage_field()
+
     @api.model
     def _recompute_calendar_changed(self, employee_ids):
         contract_ids = self.search([('employee_id', 'in', employee_ids.ids)], order='date_start asc')

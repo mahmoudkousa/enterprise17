@@ -30,6 +30,20 @@ class TestColombianInvoice(TestCoEdiCommon):
 
             self.l10n_co_assert_generated_file_equal(credit_note, self.expected_credit_note_xml)
 
+    def test_sugar_tax_invoice(self):
+        ''' Tests if we generate an accepted XML for an invoice with products
+            that have sugar tax applied.
+        '''
+        with self.mock_carvajal():
+            self.l10n_co_assert_generated_file_equal(self.sugar_tax_invoice, self.expected_sugar_tax_invoice_xml)
+
+    def test_invoice_tim_sections(self):
+        ''' Tests the grouping of taxes inside the TIM section. There should be one TIM per CO tax type, and inside
+        this TIM, one IMP per tax rate.
+        '''
+        with self.mock_carvajal():
+            self.l10n_co_assert_generated_file_equal(self.invoice_tim, self.expected_invoice_tim_xml)
+
     def test_invoice_with_attachment_url(self):
         with self.mock_carvajal():
             self.invoice.l10n_co_edi_attachment_url = 'http://testing.te/test.zip'

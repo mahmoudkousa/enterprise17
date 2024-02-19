@@ -1,11 +1,9 @@
-odoo.define('pos_iot_six.payment', function (require) {
-"use strict";
 
-var { PaymentWorldline } = require('@pos_iot/js/payment');
+/** @odoo-module */
+import { PaymentWorldline } from "@pos_iot/app/payment";
 
-
-var PaymentSix = PaymentWorldline.extend({
-    get_payment_data: function (cid) {
+export class PaymentSix extends PaymentWorldline{
+    get_payment_data(cid) {
         const paymentline = this.pos.get_order().get_paymentline(cid);
         const pos = this.pos;
         return {
@@ -17,18 +15,12 @@ var PaymentSix = PaymentWorldline.extend({
             posId: pos.pos_session.name,
             userId: pos.pos_session.user_id[0],
         };
-    },
+    }
 
-    send_payment_request: function (cid) {
+    send_payment_request(cid) {
         var paymentline = this.pos.get_order().get_paymentline(cid);
         paymentline.transactionType = 'Payment';
 
-        return this._super.apply(this, arguments);
-    },
-});
-
-return {
-    PaymentSix: PaymentSix,
-};
-
-});
+        return super.send_payment_request(cid);
+    }
+}

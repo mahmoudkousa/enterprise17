@@ -96,9 +96,7 @@ export class PivotTemplatePlugin extends spreadsheet.UIPlugin {
             .getSheetIds()
             .map((sheetId) =>
                 Object.values(this.getters.getCells(sheetId)).filter(
-                    (cell) =>
-                        cell.isFormula &&
-                        regex.test(this.getters.getFormulaCellContent(sheetId, cell))
+                    (cell) => cell.isFormula && regex.test(cell.content)
                 )
             )
             .flat();

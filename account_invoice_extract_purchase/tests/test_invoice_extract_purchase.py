@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import logging
+
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo.addons.iap_extract.tests.test_extract_mixin import TestExtractMixin
-from odoo.tests import tagged
+from odoo.tests import tagged, loaded_demo_data
 from odoo.tests.common import Form
+
+_logger = logging.getLogger(__name__)
 
 
 @tagged('post_install', '-at_install')
@@ -12,6 +16,9 @@ class TestInvoiceExtractPurchase(AccountTestInvoicingCommon, TestExtractMixin):
     @classmethod
     def setUpClass(cls, chart_template_ref=None):
         super().setUpClass(chart_template_ref=chart_template_ref)
+        if not loaded_demo_data(cls.env):
+            _logger.warning("This test relies on demo data. To be rewritten independently of demo data for accurate and reliable results.")
+            return
 
         cls.env.user.groups_id |= cls.env.ref('base.group_system')
 
@@ -92,6 +99,9 @@ class TestInvoiceExtractPurchase(AccountTestInvoicingCommon, TestExtractMixin):
         }
 
     def test_match_po_by_name(self):
+        if not loaded_demo_data(self.env):
+            _logger.warning("This test relies on demo data. To be rewritten independently of demo data for accurate and reliable results.")
+            return
         invoice = self.env['account.move'].create({'move_type': 'in_invoice', 'extract_state': 'waiting_extraction'})
         extract_response = self.get_result_success_response()
         extract_response['results'][0]['purchase_order']['selected_values'][0]['content'] = self.purchase_order.name
@@ -102,6 +112,9 @@ class TestInvoiceExtractPurchase(AccountTestInvoicingCommon, TestExtractMixin):
         self.assertTrue(invoice.id in self.purchase_order.invoice_ids.ids)
 
     def test_match_po_by_supplier_and_total(self):
+        if not loaded_demo_data(self.env):
+            _logger.warning("This test relies on demo data. To be rewritten independently of demo data for accurate and reliable results.")
+            return
         invoice = self.env['account.move'].create({'move_type': 'in_invoice', 'extract_state': 'waiting_extraction'})
         extract_response = self.get_result_success_response()
         extract_response['results'][0]['supplier']['selected_value']['content'] = self.purchase_order.partner_id.name
@@ -113,6 +126,9 @@ class TestInvoiceExtractPurchase(AccountTestInvoicingCommon, TestExtractMixin):
 
     def test_match_subset_of_order_lines(self):
         # Test the case were only one subset of order lines match the total found by the OCR
+        if not loaded_demo_data(self.env):
+            _logger.warning("This test relies on demo data. To be rewritten independently of demo data for accurate and reliable results.")
+            return
         invoice = self.env['account.move'].create({'move_type': 'in_invoice', 'extract_state': 'waiting_extraction'})
         extract_response = self.get_result_success_response()
         extract_response['results'][0]['purchase_order']['selected_values'][0]['content'] = self.purchase_order.name
@@ -128,6 +144,9 @@ class TestInvoiceExtractPurchase(AccountTestInvoicingCommon, TestExtractMixin):
 
     def test_no_match_subset_of_order_lines(self):
         # Test the case were two subsets of order lines match the total found by the OCR
+        if not loaded_demo_data(self.env):
+            _logger.warning("This test relies on demo data. To be rewritten independently of demo data for accurate and reliable results.")
+            return
         invoice = self.env['account.move'].create({'move_type': 'in_invoice', 'extract_state': 'waiting_extraction'})
         extract_response = self.get_result_success_response()
         extract_response['results'][0]['purchase_order']['selected_values'][0]['content'] = self.purchase_order.name
@@ -143,6 +162,9 @@ class TestInvoiceExtractPurchase(AccountTestInvoicingCommon, TestExtractMixin):
         self.assertEqual(invoice.amount_total, 300)
 
     def test_no_match(self):
+        if not loaded_demo_data(self.env):
+            _logger.warning("This test relies on demo data. To be rewritten independently of demo data for accurate and reliable results.")
+            return
         invoice = self.env['account.move'].create({'move_type': 'in_invoice', 'extract_state': 'waiting_extraction'})
         extract_response = self.get_result_success_response()
 

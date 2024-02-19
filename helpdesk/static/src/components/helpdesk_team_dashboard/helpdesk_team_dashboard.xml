@@ -11,9 +11,14 @@
             <div class="w-100">
                 <table class="o_helpdesk_banner_table table table-sm table-borderless h-100 px-3 mb-0 text-center">
                     <tbody>
+                        <tr t-if="env.isSmall">
+                            <td colspan="2">
+                                <h3 class="o_highlight float-start">My Tickets</h3>
+                            </td>
+                        </tr>
                         <tr class="h-100">
                             <td class="o_text py-2 text-start align-middle">
-                                <h3 class="o_highlight">My Tickets</h3>
+                                <h3 t-if="!env.isSmall" class="o_highlight">My Tickets</h3>
                                 Open Tickets
                             </td>
                             <td t-attf-class="{{demoClass}} p-0">
@@ -146,9 +151,14 @@
             <div class="w-100 mt-3 mt-lg-0">
                 <table class="o_helpdesk_banner_table table table-sm table-borderless h-100 px-3 mb-0 text-center">
                     <tbody>
+                        <tr t-if="env.isSmall">
+                            <td colspan="2">
+                                <h3 class="o_highlight float-start">My Performance</h3>
+                            </td>
+                        </tr>
                         <tr class="h-100">
                             <td class="o_text py-2 text-start align-middle">
-                                <h3 class="o_highlight">My Performance</h3>
+                                <h3 t-if="!env.isSmall" class="o_highlight">My Performance</h3>
                                 Today
                             </td>
                             <td t-attf-class="{{demoClass}} p-0">

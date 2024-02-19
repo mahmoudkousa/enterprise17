@@ -6,6 +6,8 @@ from odoo.tests.common import tagged
 from odoo.modules.neutralize import get_neutralization_queries
 from .common import TestAccountAvataxCommon
 
+from .mocked_refund_1_response import generate_response as generate_response_refund_1
+
 
 class TestAccountAvalaraInternalCommon(TestAccountAvataxCommon):
     def assertInvoice(self, invoice, test_exact_response):
@@ -94,6 +96,35 @@ class TestAccountAvalaraInternal(TestAccountAvalaraInternalCommon):
             else:
                 self.assertLess(line['amount'], 0)
 
+    def test_02_odoo_refund(self):
+        refund = self.env['account.move'].create({
+            'move_type': 'out_refund',
+            'partner_id': self.partner.id,
+            'fiscal_position_id': self.fp_avatax.id,
+            'invoice_date': '2024-01-24',
+            'invoice_line_ids': [
+                (0, 0, {
+                    'product_id': self.product_user.id,
+                    'tax_ids': None,
+                    'price_unit': self.product_user.list_price,
+                }),
+            ]
+        })
+        response = generate_response_refund_1(refund.invoice_line_ids)
+        with self._capture_request(return_value=response):
+            refund.button_external_tax_calculation()
+
+        self.assertEqual(
+            refund.invoice_line_ids[0].price_subtotal,
+            self.product_user.list_price,
+            "Subtotal shouldn't have changed on this refund"
+        )
+        self.assertEqual(
+            refund.invoice_line_ids[0].price_total,
+            abs(response['lines'][0]['tax'] + response['lines'][0]['lineAmount']),
+            "Total amount should match the absolute value of what Avatax returned (which is negative for refunds)"
+        )
+
     def test_unlink(self):
         invoice, _ = self._create_invoice_01_and_expected_response()
 
@@ -122,6 +153,25 @@ class TestAccountAvalaraInternal(TestAccountAvalaraInternalCommon):
             entry.action_post()
 
         self.assertIsNone(capture.val, "Journal entries should not be sent to Avatax.")
+
+    def test_vendor_bill(self):
+        """We shouldn't send any requests to Avatax for vendor bills."""
+        vendor_bill = self.env['account.move'].create({
+            'move_type': 'in_invoice',
+            'invoice_date': '2017-01-01',
+            'partner_id': self.partner.id,
+            'invoice_line_ids': [(0, 0, {'product_id': self.product_user.id, 'price_unit': 123.0, 'tax_ids': []})],
+        })
+
+        with self._capture_request(return_value={'lines': [], 'summary': []}) as capture:
+            vendor_bill.action_post()
+            self.assertIsNone(capture.val, "Posting a vendor bill should not send anything to Avatax.")
+
+            vendor_bill.button_draft()
+            self.assertIsNone(capture.val, "Resetting a vendor bill to draft should not send anything to Avatax.")
+
+            vendor_bill.unlink()
+            self.assertIsNone(capture.val, "Deleting a vendor bill should not send anything to Avatax.")
 
     def test_invoice_multi_company(self):
         invoice, response = self._create_invoice_01_and_expected_response()

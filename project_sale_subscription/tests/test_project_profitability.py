@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+from dateutil.relativedelta import relativedelta
+
 from odoo.tests import tagged
-from odoo import Command
+from odoo import fields, Command
 
 from odoo.addons.project.tests.test_project_profitability import TestProjectProfitabilityCommon
 from odoo.addons.sale_subscription.tests.common_sale_subscription import TestSubscriptionCommon
@@ -276,4 +278,59 @@ class TestSaleSubscriptionProjectProfitability(TestSubscriptionCommon, TestProje
                 }],
                 'total': {'to_invoice': sale_order.recurring_monthly + sale_order_foreign.recurring_monthly * 0.2, 'invoiced': 0.0},
             },
+        )
+
+    def test_project_update(self):
+        """Test that the project update panel works when the project
+        is linked to a closed subscription that was invoiced."""
+        self.env.user.groups_id += self.env.ref('analytic.group_analytic_accounting')
+
+        sale_order = self.env['sale.order'].create({
+            'is_subscription': True,
+            'note': "original subscription description",
+            'partner_id': self.partner.id,
+            'analytic_account_id': self.project.analytic_account_id.id,
+            'plan_id': self.plan_month.id,
+            'end_date': fields.Date.today() + relativedelta(months=1),
+        })
+        product = self.env['product.template'].create([{
+            'name': 'Test Product',
+            'recurring_invoice': True,
+            'type': 'service',
+            'project_id': self.project.id,
+            'service_tracking': 'task_global_project',
+        }])
+        self.env['sale.order.line'].create({
+            'order_id': sale_order.id,
+            'product_id': product.product_variant_id.id,
+        })
+        sale_order.action_confirm()
+        invoice = sale_order._create_invoices()
+        invoice.action_post()
+        self.env['account.analytic.line'].create([{
+            'name': 'Sale',
+            'move_line_id': invoice.line_ids[0].id,
+            'account_id': self.project.analytic_account_id.id,
+            'currency_id': self.company_data['currency'].id,
+            'amount': 1,
+        }])
+        sale_order.set_close()
+
+        self.assertDictEqual(
+            self.project._get_profitability_items(with_action=False),
+            {
+                'revenues': {
+                    'data': [{
+                        'id': 'subscriptions',
+                        'sequence': 8,
+                        'invoiced': 1.0,
+                        'to_invoice': 0.0
+                    }],
+                    'total': {'invoiced': 1.0, 'to_invoice': 0.0},
+                },
+                'costs': {
+                    'data': [],
+                    'total': {'billed': 0.0, 'to_bill': 0.0}
+                }
+            }
         )

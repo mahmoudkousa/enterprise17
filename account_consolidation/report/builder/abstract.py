@@ -104,7 +104,7 @@ class AbstractBuilder(ABC):
 
         if line_id is None:
             # HANDLE ORPHAN ACCOUNTS
-            level = 1
+            level = 0
             orphan_totals, orphan_lines = self._handle_orphan_accounts(options, level, **kwargs)
             super_totals = [x + y for x, y in zip(super_totals, orphan_totals)] if super_totals is not None else orphan_totals
             lines += orphan_lines
@@ -273,8 +273,13 @@ class AbstractBuilder(ABC):
             'name': self.value_formatter(total),
             'no_format': total,
             'figure_type': 'monetary',
-            'class': 'number' + (' text-muted' if float_is_zero(total, 6) else '')}
+            'class': 'number' + (' muted' if float_is_zero(total, 6) else ''),
+            'is_zero': not total,
+            'auditable': True,
+        }
             for total in totals]
+        # The last column 'total' must not be auditable
+        cols[-1]['auditable'] = False
 
         report = self.env['account.report'].browse(options['report_id'])
 
@@ -285,18 +290,14 @@ class AbstractBuilder(ABC):
             account_line_id = report._get_generic_line_id(None, None, markup=f'{account.id}', parent_line_id=parent_id)
             account_line_parent_id = parent_id
 
-            if options is not None:
-                account_line_unfolded = options.get('unfold_all', parent_id in options.get('unfolded_lines', []))
         else:
             account_line_id = report._get_generic_line_id(None, None, markup=account.id)
             account_line_parent_id = None
-            account_line_unfolded = False
 
         account_line = {
             'id': account_line_id,
-            'unfolded': account_line_unfolded,
             'name': len(name) > 40 and options['export_mode'] != 'print' and name[:40] + '...' or name,
-            'title_hover': _("%s (%s Currency Conversion Method)", account.name, account.get_display_currency_mode()),
+            'title_hover': _("%s (%s Currency Conversion Method)") % (account.name, account.get_display_currency_mode()),
             'columns': cols,
             'level': level,
         }
@@ -341,32 +342,41 @@ class AbstractBuilder(ABC):
 
         lines = [section_line]
 
+        if not level:
+            level += 1
+
         # HANDLE CHILDREN
         section_totals = None
 
         if len(section.child_ids) > 0:
             for child_section in section.child_ids:
                 # This will return the section line THEN all subsequent lines
-                child_totals, descendant_lines = self._build_section_line(child_section, level + 1, options, **kwargs)
+                child_totals, descendant_lines = self._build_section_line(child_section, level + 2, options, **kwargs)
                 section_totals = [x + y for x, y in zip(section_totals, child_totals)] if section_totals is not None else child_totals
 
-                if section_line['unfolded'] and ShowZeroHandler.section_line_should_be_added(descendant_lines, options):
+                if ShowZeroHandler.section_line_should_be_added(descendant_lines, options):
                     lines += descendant_lines
 
         # HANDLE ACCOUNTS
         if len(section.account_ids) > 0:
             for child_account in section.account_ids:
                 account_totals = self._compute_account_totals(child_account, **kwargs)
-                account_line = self._format_account_line(child_account, section_id, level + 1, account_totals, options, **kwargs)
+                account_line = self._format_account_line(child_account, section_id, level + 2, account_totals, options, **kwargs)
                 section_totals = [x + y for x, y in zip(section_totals, account_totals)] if section_totals is not None else account_totals
 
-                if section_line['unfolded'] and ShowZeroHandler.account_line_should_be_added(account_line, options):
+                if ShowZeroHandler.account_line_should_be_added(account_line, options):
                     lines.append(account_line)
 
         if section_totals is None:
             section_totals = self._get_default_line_totals(options, **kwargs)
 
-        section_line['columns'] = [{'name': self.value_formatter(total), 'no_format': total, 'figure_type': 'monetary'} for total in section_totals]
+        section_line['columns'] = [{
+            'name': self.value_formatter(total),
+            'no_format': total,
+            'figure_type': 'monetary',
+            'is_zero': not total,
+            'class': 'number' + (' muted' if float_is_zero(total, 6) else ''),
+        } for total in section_totals]
 
         return section_totals, lines
 
@@ -393,7 +403,7 @@ class AbstractBuilder(ABC):
             'name': _('Total'),
             'class': 'total',
             'columns': cols,
-            'level': 1,
+            'level': 0,
         }
 
     def _get_default_line_totals(self, options: dict, **kwargs) -> list:

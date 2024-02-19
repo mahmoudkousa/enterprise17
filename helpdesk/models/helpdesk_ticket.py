@@ -387,11 +387,13 @@ class HelpdeskTicket(models.Model):
     @api.depends_context('with_partner')
     def _compute_display_name(self):
         display_partner_name = self._context.get('with_partner', False)
-        for ticket in self:
+        ticket_with_name = self.filtered('name')
+        for ticket in ticket_with_name:
             name = f'{ticket.name} (#{ticket.ticket_ref})'
             if display_partner_name and ticket.partner_name:
                 name += f' - {ticket.partner_name}'
             ticket.display_name = name
+        return super(HelpdeskTicket, self - ticket_with_name)._compute_display_name()
 
     @api.model
     def get_empty_list_help(self, help_message):
@@ -721,8 +723,7 @@ class HelpdeskTicket(models.Model):
                 continue
             values = email_normalized_to_values.setdefault(email_normalized, {})
             values.update({
-                'name': record.partner_name or (
-                        Partner._parse_partner_name(record.partner_email)[0] or record.partner_email),
+                'name': record.partner_name or tools.parse_contact_from_email(record.partner_email)[0] or record.partner_email,
                 'phone': record.partner_phone,
             })
         return email_normalized_to_values
@@ -786,7 +787,7 @@ class HelpdeskTicket(models.Model):
         res = super(HelpdeskTicket, self)._track_template(changes)
         ticket = self[0]
         if 'stage_id' in changes and ticket.stage_id.template_id and ticket.partner_email and (
-            not self.env.user.partner_id or not ticket.partner_id or ticket.partner_id != self.env.user.partner_id):
+            not self.env.user.partner_id or not ticket.partner_id or ticket.partner_id != self.env.user.partner_id or self.env.user._is_portal()):
             res['stage_id'] = (ticket.stage_id.template_id, {
                 'auto_delete_keep_log': False,
                 'subtype_id': self.env['ir.model.data']._xmlid_to_res_id('mail.mt_note'),

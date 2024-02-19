@@ -4,7 +4,7 @@ import { _t } from "@web/core/l10n/translation";
 import { useBus, useService, useOwnedDialogs } from "@web/core/utils/hooks";
 import { Dialog } from "@web/core/dialog/dialog";
 import { ModelConfiguratorDialog } from "../../model_configurator/model_configurator";
-import { useDialogConfirmation } from "../../utils";
+import { useDialogConfirmation, useSubEnvAndServices } from "../../utils";
 
 class SimpleNewModelDialog extends Component {
     static template = "web_studio.SimpleNewModelDialog";
@@ -64,10 +64,11 @@ class SimpleNewModelDialog extends Component {
 }
 
 export class NewModelItem extends Component {
-    static props = {};
+    static props = { env: Object };
     static template = "web_studio.NewModelItem";
 
     setup() {
+        useSubEnvAndServices(this.props.env);
         this.addDialog = useOwnedDialogs();
         this.menus = useService("menu");
         this.studio = useService("studio");

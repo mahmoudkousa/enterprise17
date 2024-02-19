@@ -51,6 +51,6 @@ class PeriodsHandler(AbstractHandler):
         """
         return {
             'id': period.id,
-            'name': period.display_name,
+            'name': f'{period.display_name} ({period.display_dates})',
             'selected': period.id in selected_period_ids
         }

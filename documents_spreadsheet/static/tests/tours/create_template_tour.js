@@ -3,7 +3,7 @@
 import { registry } from "@web/core/registry";
 import { stepUtils } from "@web_tour/tour_service/tour_utils";
 
-const SHEET_NAME = "Partner Spreadsheet Test";
+const SHEET_NAME = "Res Partner Test Spreadsheet";
 const TEMPLATE_NAME = `${SHEET_NAME} - Template`;
 
 registry.category("web_tour.tours").add(
@@ -13,6 +13,11 @@ registry.category("web_tour.tours").add(
         url: "/web",
         steps: () => [
         ...stepUtils.goToAppSteps("documents.menu_root", "Open Document app"),
+        {
+            trigger: 'li[title="Test folder"] header',
+            content: "Open the test folder",
+            run: "click",
+        },
         {
             trigger: `div[title="${SHEET_NAME}"]`,
             content: "Select Test Sheet",

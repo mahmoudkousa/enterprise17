@@ -10,7 +10,8 @@ from odoo.addons.hr_payroll_holidays.tests.common import TestPayrollHolidaysBase
 
 from dateutil.relativedelta import relativedelta
 
-@tagged('payroll_holidays_defer')
+
+@tagged('post_install', '-at_install')
 class TestTimeoffDefer(TestPayrollHolidaysBase):
 
     def test_no_defer(self):

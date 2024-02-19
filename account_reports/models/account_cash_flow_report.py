@@ -645,6 +645,7 @@ class CashFlowReportCustomHandler(models.AbstractModel):
         return {
             'id': line_id,
             'name': f"{aml_data['account_code']} {aml_data['account_name']}",
+            'caret_options': 'account.account',
             'level': aml_data['level'],
             'parent_id': parent_line_id,
             'columns': column_values,

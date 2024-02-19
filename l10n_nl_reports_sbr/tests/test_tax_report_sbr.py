@@ -60,7 +60,7 @@ class TestNlTaxReportSBR(TestAccountReportsCommon):
                 <link:schemaRef xlink:type="simple" xlink:href="http://www.nltaxonomie.nl/nt16/bd/20211208/entrypoints/bd-rpt-ob-aangifte-2022.xsd"/>
                 <xbrli:context id="Msg">
                     <xbrli:entity>
-                        <xbrli:identifier scheme="www.belastingdienst.nl/omzetbelastingnummer">NL123456782B90</xbrli:identifier>
+                        <xbrli:identifier scheme="www.belastingdienst.nl/omzetbelastingnummer">123456782B90</xbrli:identifier>
                     </xbrli:entity>
                     <xbrli:period>
                         <xbrli:startDate>2019-01-01</xbrli:startDate>
@@ -99,7 +99,7 @@ class TestNlTaxReportSBR(TestAccountReportsCommon):
                 <bd-i:ValueAddedTaxOnSuppliesFromCountriesOutsideTheEC decimals="INF" contextRef="Msg" unitRef="EUR">0</bd-i:ValueAddedTaxOnSuppliesFromCountriesOutsideTheEC>
                 <bd-i:ValueAddedTaxOnSuppliesFromCountriesWithinTheEC decimals="INF" contextRef="Msg" unitRef="EUR">0</bd-i:ValueAddedTaxOnSuppliesFromCountriesWithinTheEC>
                 <bd-i:ValueAddedTaxOwed decimals="INF" contextRef="Msg" unitRef="EUR">294</bd-i:ValueAddedTaxOwed>
-                <bd-i:ValueAddedTaxOwedToBePaidBack decimals="INF" contextRef="Msg" unitRef="EUR">58</bd-i:ValueAddedTaxOwedToBePaidBack>
+                <bd-i:ValueAddedTaxOwedToBePaidBack decimals="INF" contextRef="Msg" unitRef="EUR">59</bd-i:ValueAddedTaxOwedToBePaidBack>
                 <bd-i:ValueAddedTaxPrivateUse decimals="INF" contextRef="Msg" unitRef="EUR">0</bd-i:ValueAddedTaxPrivateUse>
                 <bd-i:ValueAddedTaxSuppliesServicesByWhichVATTaxationIsTransferred decimals="INF" contextRef="Msg" unitRef="EUR">0</bd-i:ValueAddedTaxSuppliesServicesByWhichVATTaxationIsTransferred>
                 <bd-i:ValueAddedTaxSuppliesServicesGeneralTariff decimals="INF" contextRef="Msg" unitRef="EUR">294</bd-i:ValueAddedTaxSuppliesServicesGeneralTariff>
@@ -109,7 +109,7 @@ class TestNlTaxReportSBR(TestAccountReportsCommon):
         ''')
         self.assertXmlTreeEqual(generated_xbrl, expected_xbrl)
 
-@tagged('external_l10n', 'post_install', '-at_install', 'external')
+@tagged('external_l10n', 'post_install', '-at_install', '-standard', 'external')
 class TestNlSBR(TransactionCase):
     def test_root_certificate_url(self):
         try:
@@ -119,7 +119,7 @@ class TestNlSBR(TransactionCase):
         except UserError:
             raise AssertionError("The link to the root certificate is dead or unresponsive. Check https://cert.pkioverheid.nl/ to find the link to the 'Staat der Nederlanden Private Root CA - G1' certificate.")
 
-@tagged('external_l10n', 'post_install', '-at_install', 'external')
+@tagged('external_l10n', 'post_install', '-at_install', '-standard', 'external')
 @skipIf(not os.getenv("NL_SBR_CERT"), "No SBR certificate")
 class TestNlSBRFlow(TestAccountReportsCommon):
     @classmethod

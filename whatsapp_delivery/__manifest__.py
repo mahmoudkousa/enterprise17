@@ -2,7 +2,7 @@
 
 {
     'name': 'WhatsApp-Delivery',
-    'category': 'Hidden/Tools',
+    'category': 'WhatsApp',
     'description': """This module integrates Delivery with WhatsApp""",
     'depends': ['delivery', 'stock', 'whatsapp'],
     'data': [

@@ -73,14 +73,12 @@ class AccountTestFecImport(AccountTestInvoicingCommon):
                 'company_id': cls.company_export.id,
                 'name': 'line-1',
                 'account_id': cls.company_data_2['default_account_receivable'].id,
-                'fec_matching_number': '1',
                 'credit': 0.0,
                 'debit': 100.30
             }), (0, 0, {
                 'company_id': cls.company_export.id,
                 'name': 'line-2',
                 'account_id': cls.company_data_2['default_account_tax_sale'].id,
-                'fec_matching_number': '2',
                 'credit': 100.30,
                 'debit': 0.0
             })],
@@ -96,14 +94,12 @@ class AccountTestFecImport(AccountTestInvoicingCommon):
                 'company_id': cls.company_export.id,
                 'name': 'line-3',
                 'account_id': cls.company_data_2['default_account_payable'].id,
-                'fec_matching_number': '3',
                 'credit': 65.15,
                 'debit': 0.0,
             }), (0, 0, {
                 'company_id': cls.company_export.id,
                 'name': 'line-4',
                 'account_id': cls.company_data_2['default_account_expense'].id,
-                'fec_matching_number': '4',
                 'credit': 0.0,
                 'debit': 65.15,
             })],
@@ -242,19 +238,19 @@ class AccountTestFecImport(AccountTestInvoicingCommon):
         move_names = ('ACH000001', 'ACH000002', 'ACH000003', 'ACH000006')
         domain = [('company_id', '=', self.company.id), ('move_name', 'in', move_names)]
         move_lines = self.env['account.move.line'].search(domain, order='move_name, id')
-        columns = ['name', 'credit', 'debit', 'fec_matching_number']
+        columns = ['name', 'credit', 'debit']
         lines = [
-            ('ADVANCE PAYMENT COMPANY FORMALITIES', 0.00, 500.00, False),
-            ('ADVANCE PAYMENT COMPANY FORMALITIES', 0.00, 100.00, 'AA'),
-            ('ADVANCE PAYMENT COMPANY FORMALITIES', 600.00, 0.00, False),
-            ('DOMICILIATION', 0.00, 300.00, False),
-            ('DOMICILIATION', 0.00, 60.00, 'AA'),
-            ('DOMICILIATION', 360.00, 0.00, False),
-            ('PARTNER 01', 0.00, 41.50, False),
-            ('PARTNER 01', 0.00, 8.30, 'AA'),
-            ('PARTNER 01', 49.80, 0.00, 'AA'),
-            ('ASSURANCE', 0.00, 200.50, False),
-            ('ASSURANCE', 200.50, 0.00, False),
+            ('ADVANCE PAYMENT COMPANY FORMALITIES', 0.00, 500.00),
+            ('ADVANCE PAYMENT COMPANY FORMALITIES', 0.00, 100.00),
+            ('ADVANCE PAYMENT COMPANY FORMALITIES', 600.00, 0.00),
+            ('DOMICILIATION', 0.00, 300.00),
+            ('DOMICILIATION', 0.00, 60.00),
+            ('DOMICILIATION', 360.00, 0.00),
+            ('PARTNER 01', 0.00, 41.50),
+            ('PARTNER 01', 0.00, 8.30),
+            ('PARTNER 01', 49.80, 0.00),
+            ('ASSURANCE', 0.00, 200.50),
+            ('ASSURANCE', 200.50, 0.00),
         ]
         expected_values = [dict(zip(columns, line)) for line in lines]
         self.assertRecordValues(move_lines, expected_values)
@@ -268,7 +264,10 @@ class AccountTestFecImport(AccountTestInvoicingCommon):
             self._attach_file_to_wizard(content, self.wizard)
 
         # Import the file
+        last = self.env['account.move'].search([], order='id desc', limit=1)
         self.wizard._import_files(['account.account', 'account.journal', 'res.partner', 'account.move'])
+        new = self.env['account.move'].search([('id', '>', last.id)])
+        new.action_post()
 
         # Verify move_lines presence
         move_names = ('ACH000001', 'ACH000002', 'ACH000003')
@@ -316,12 +315,12 @@ class AccountTestFecImport(AccountTestInvoicingCommon):
         self.assertRecordValues(new_moves, expected_values)
 
         # Verify moves lines data
-        columns = ['company_id', 'name', 'credit', 'debit', 'fec_matching_number', 'account_id']
+        columns = ['company_id', 'name', 'credit', 'debit', 'account_id']
         lines_data = [
-            (self.company_export.id, 'line-1', 0.00, 100.30, '1', self.company_data_2['default_account_receivable'].id),
-            (self.company_export.id, 'line-2', 100.30, 0.00, '2', self.company_data_2['default_account_tax_sale'].id),
-            (self.company_export.id, 'line-3', 65.15, 0.00, '3', self.company_data_2['default_account_payable'].id),
-            (self.company_export.id, 'line-4', 0.00, 65.15, '4', self.company_data_2['default_account_expense'].id),
+            (self.company_export.id, 'line-1', 0.00, 100.30, self.company_data_2['default_account_receivable'].id),
+            (self.company_export.id, 'line-2', 100.30, 0.00, self.company_data_2['default_account_tax_sale'].id),
+            (self.company_export.id, 'line-3', 65.15, 0.00, self.company_data_2['default_account_payable'].id),
+            (self.company_export.id, 'line-4', 0.00, 65.15, self.company_data_2['default_account_expense'].id),
         ]
         expected_values = [dict(zip(columns, line_data)) for line_data in lines_data]
         new_lines = new_moves.mapped("line_ids").sorted(key=lambda x: x.name)
@@ -414,3 +413,25 @@ class AccountTestFecImport(AccountTestInvoicingCommon):
         wizard2 = self.env['account.fec.import.wizard'].with_company(fr_company2).create({'company_id': fr_company2.id})
         self._attach_file_to_wizard(self.test_content, wizard2)
         wizard2._import_files()
+
+
+    def test_fec_import_reconciliation(self):
+        test_content = """
+            JournalCode\tJournalLib\tEcritureNum\tEcritureDate\tCompteNum\tCompteLib\tCompAuxNum\tCompAuxLib\tPieceRef\tPieceDate\tEcritureLib\tDebit\tCredit\tEcritureLet\tDateLet\tValidDate\tMontantdevise\tIdevise
+            ACH\tACHATS\tACH000001\t20180910\t62270000\tLegal costs and litigation\t\t\t3\t20180910\tPARTNER 01\t100,00\t0,00\t\t\t20190725\t\t
+            ACH\tACHATS\tACH000001\t20180910\t40100000\tSuppliers\tPARTNER01\tPARTNER 01\t3\t20180910\tPARTNER 01\t0,00\t100,00\tAA\t\t20190725\t\t
+            BNK\tBANQUE\tBNK000001\t20180808\t40100000\tSuppliers\tPARTNER01\tPARTNER 01\t1\t20180808\tPayment\t100,00\t0,00\tAA\t\t20190725\t\t
+            BNK\tBANQUE\tBNK000001\t20180808\t51200000\tBanque\t\t\t1\t20180808\tPayment\t0,00\t100,00\t\t\t20190725\t\t
+            ACH\tACHATS\tACH000002\t20180910\t62270000\tLegal costs and litigation\t\t\t3\t20180910\tPARTNER 01\t100,00\t0,00\t\t\t20190725\t\t
+            ACH\tACHATS\tACH000002\t20180910\t40100000\tSuppliers\tPARTNER01\tPARTNER 01\t3\t20180910\tPARTNER 01\t0,00\t100,00\tBB\t\t20190725\t\t
+            BNK\tBANQUE\tBNK000002\t20180808\t40100000\tSuppliers\tPARTNER01\tPARTNER 01\t1\t20180808\tPayment\t100,00\t0,00\tBB\t\t20190725\t\t
+            BNK\tBANQUE\tBNK000002\t20180808\t51200000\tBanque\t\t\t1\t20180808\tPayment\t0,00\t100,00\t\t\t20190725\t\t
+        """
+        self._attach_file_to_wizard(test_content, self.wizard)
+        last = self.env['account.move'].search([], order='id desc', limit=1)
+        self.wizard._import_files()
+        new = self.env['account.move'].search([('id', '>', last.id)])
+        self.assertEqual(len(new), 4)
+        self.assertFalse(new.line_ids.full_reconcile_id, "Reconciliation is only temporary before posting")
+        new.action_post()
+        self.assertEqual(len(new.line_ids.full_reconcile_id), 2, "It is fully reconciled after posting")

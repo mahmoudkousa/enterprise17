@@ -122,6 +122,7 @@ export class GridController extends Component {
               }
             : {};
         const context = {
+            ...this.props.context,
             ...columnContext,
             ...(params?.context || {}),
         };

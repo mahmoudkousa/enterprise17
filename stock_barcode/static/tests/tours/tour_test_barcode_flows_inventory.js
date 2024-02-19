@@ -104,6 +104,63 @@ registry.category("web_tour.tours").add('test_inventory_adjustment', {test: true
     },
 ]});
 
+registry.category("web_tour.tours").add("test_inventory_adjustment_multi_company", {test: true, steps: () => [
+    // Open the company switcher.
+    { trigger: ".o_switch_company_menu > button" },
+    // Ensure the first company is selected and open the Barcode App, then the Inventory Adjustment.
+    {
+        extra_trigger: ".o_switch_company_menu .oe_topbar_name:contains('Comp A')",
+        trigger: "[data-menu-xmlid='stock_barcode.stock_barcode_menu'] > .o_app_icon",
+    },
+    { trigger: "button.button_inventory" },
+    // Scan product1 and product_no_company, they should be added in the inventory adj.
+    { trigger: ".o_barcode_client_action", run: "scan product1" },
+    { trigger: ".o_barcode_line[data-barcode='product1']", run: "scan product_no_company" },
+    // Try to scan product2 who belongs to the second company -> Should not be found.
+    { trigger: ".o_barcode_line[data-barcode='product_no_company']", run: "scan product2" },
+    { trigger: ".o_notification.border-danger button.o_notification_close" },
+    {
+        trigger: ".o_barcode_client_action",
+        run: function() {
+            helper.assertLinesCount(2);
+        }
+    },
+    // Validate the Inventory Adjustment.
+    { trigger: ".o_apply_page.btn-success" },
+
+    // Go back on the App Switcher and change the company.
+    { trigger: ".o_stock_barcode_main_menu a.o_stock_barcode_menu" },
+    { trigger: ".o_switch_company_menu > button" },
+    { trigger: ".o_switch_company_menu .company_label:contains('Comp B')" },
+    // Open again the Barcode App then the Inventory Adjustment.
+    {
+        extra_trigger: ".o_switch_company_menu .oe_topbar_name:contains('Comp B')",
+        trigger: "[data-menu-xmlid='stock_barcode.stock_barcode_menu'] > .o_app_icon",
+     },
+    { trigger: "button.button_inventory" },
+    // Scan product2 and product_no_company, they should be added in the inventory adj.
+    { trigger: ".o_barcode_client_action", run: "scan product2" },
+    { trigger: ".o_barcode_line[data-barcode='product2']", run: "scan product_no_company" },
+    // Try to scan product1 who belongs to the first company -> Should not be found.
+    { trigger: ".o_barcode_line[data-barcode='product_no_company']", run: "scan product1" },
+    { trigger: ".o_notification.border-danger button.o_notification_close" },
+    {
+        trigger: ".o_barcode_client_action",
+        run: function() {
+            helper.assertLinesCount(2);
+        }
+    },
+    // Validate the Inventory Adjustment.
+    { trigger: ".o_barcode_line", run: "scan O-BTN.validate" },
+    {
+        trigger: ".o_stock_barcode_main_menu",
+        extra_trigger: ".o_notification.border-success",
+        run: function () {
+            helper.assertErrorMessage("The inventory adjustment has been validated");
+        },
+    },
+]});
+
 registry.category("web_tour.tours").add('test_inventory_adjustment_multi_location', {test: true, steps: () => [
 
     {

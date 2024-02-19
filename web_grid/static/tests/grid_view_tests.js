@@ -1811,6 +1811,42 @@ QUnit.module("Views", (hooks) => {
         );
     });
 
+    QUnit.test('Group By selection field without passing selection field in data', async function (assert) {
+        serverData.models["analytic.line"].records.push({
+            id: 6,
+            project_id: 142,
+            task_id: 12,
+            date: "2017-01-24",
+            unit_amount: 7.0,
+        });
+
+        const webClient = await createWebClient({
+            serverData,
+            async mockRPC(route, args) {
+                if (args.method === "grid_unavailability") {
+                    return {};
+                }
+            },
+        });
+
+        await doAction(webClient, {
+            res_model: "analytic.line",
+            type: "ir.actions.act_window",
+            views: [[1, "grid"]],
+            context: {
+                search_default_groupby_selection: 1,
+                grid_anchor: "2017-01-24",
+            },
+        });
+
+        assert.ok(
+            getNodesTextContent(target.querySelectorAll(".o_grid_row_title")).includes(
+                "None"
+            ),
+            "'None' should be displayed."
+        );
+    });
+
     QUnit.test("stop edition when the user clicks outside", async function (assert) {
         const arch = serverData.views["analytic.line,false,grid"].replace(
             "<grid>",
@@ -2145,4 +2181,106 @@ QUnit.module("Views", (hooks) => {
             },
         });
     });
+
+    QUnit.test(
+        "display notification when the update of the grid cell cannot be done",
+        async function (assert) {
+            const grid = await makeView({
+                type: "grid",
+                resModel: "analytic.line",
+                serverData,
+                arch: `<grid editable="1">
+                <field name="project_id" type="row"/>
+                <field name="task_id" type="row"/>
+                <field name="date" type="col">
+                    <range name="week" string="Week" span="week" step="day"/>
+                    <range name="month" string="Month" span="month" step="day"/>
+                </field>
+                <field name="unit_amount" type="measure" widget="float_time"/>
+            </grid>`,
+                async mockRPC(route, args) {
+                    if (args.method === "grid_unavailability") {
+                        return {};
+                    } else if (args.method === "grid_update_cell") {
+                        assert.step("grid_update_cell");
+                        return {
+                            type: "ir.actions.client",
+                            tag: "display_notification",
+                            params: {
+                                message: "test display a notification",
+                                type: "danger",
+                                sticky: false,
+                            },
+                        };
+                    }
+                },
+            });
+            patchWithCleanup(grid.env.services.action, {
+                doAction: (data) => {
+                    if (data.tag === "display_notification") {
+                        assert.step(`notification_${data.params.type}`);
+                    }
+                },
+            });
+
+            const cells = target.querySelectorAll(".o_grid_row .o_grid_cell_readonly");
+            const cell = cells[0];
+            await hoverGridCell(cell);
+            await click(target, ".o_grid_cell");
+            await nextTick();
+            assert.containsOnce(target, ".o_grid_cell input");
+            await editInput(target, ".o_grid_cell input", "2");
+            assert.verifySteps(["grid_update_cell", "notification_danger"]);
+        }
+    );
+
+    QUnit.test(
+        "grid: use the context in the action when a record will be created",
+        async function (assert) {
+            patchDate(2017, 1, 25, 0, 0, 0);
+
+            await makeView({
+                type: "grid",
+                resModel: "analytic.line",
+                serverData,
+                arch: `<grid display_empty="1">
+                    <field name="project_id" type="row"/>
+                    <field name="task_id" type="row"/>
+                    <field name="date" type="col">
+                        <range name="week" string="Week" span="week" step="day"/>
+                        <range name="month" string="Month" span="month" step="day"/>
+                        <range name="year" string="Year" span="year" step="month"/>
+                    </field>
+                    <field name="unit_amount" type="measure"/>
+                </grid>`,
+                async mockRPC(route, args) {
+                    if (args.method === "grid_unavailability") {
+                        return {};
+                    } else if (args.method === "create") {
+                        assert.strictEqual(
+                            args.args[0][0].date,
+                            "2017-02-25",
+                            "default date should be the current day"
+                        );
+                    }
+                },
+                context: {
+                    default_project_id: 31,
+                },
+            });
+            assert.containsNone(target, ".o_grid_row_title");
+            assert.containsNone(target, ".modal");
+            assert.containsNone(target, ".o_view_nocontent");
+            await click(
+                $(target).find(".o_control_panel_main_buttons > :visible").get(0),
+                ".o_grid_button_add"
+            );
+            assert.containsOnce(target, ".modal");
+            assert.containsOnce(target, ".modal div[name=project_id]");
+            assert.strictEqual(
+                target.querySelector(".modal div[name=project_id] input").value,
+                "P1"
+            );
+        }
+    );
 });

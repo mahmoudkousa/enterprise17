@@ -2,6 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo.tests.common import TransactionCase, new_test_user
+from odoo.exceptions import AccessError
 import base64
 
 GIF = b"R0lGODdhAQABAIAAAP///////ywAAAAAAQABAAACAkQBADs="
@@ -537,3 +538,38 @@ class TestCaseDocuments(TransactionCase):
         self.assertFalse(self.document_txt.active, 'the document should be inactive')
         self.document_txt.unlink()
         self.assertFalse(self.document_txt.exists(), 'the document should not exist')
+
+    def test_link_document(self):
+        """
+            Test whether a user can link a document to a record
+            even if he does not have read access to the `ir.model`.
+        """
+        partner = self.env['res.partner'].create({'name': 'Partner Test'})
+        attachment_txt_test = self.env['ir.attachment'].with_user(self.env.user).create({
+            'datas': TEXT,
+            'name': 'fileText_test.txt',
+            'mimetype': 'text/plain',
+            'res_model': 'res.partner',
+            'res_id': partner.id,
+        })
+        document = self.env['documents.document'].search([('attachment_id', '=', attachment_txt_test.id)])
+
+        res_partner_model = self.env['ir.model'].search([('model', '=', 'res.partner')], limit=1)
+
+        workflow = self.env['documents.workflow.rule'].create({
+            'name': 'test',
+            'domain_folder_id': self.folder_a.id,
+            'link_model': res_partner_model.id,
+        })
+
+        admin = new_test_user(self.env, login='Admin', groups='documents.group_documents_manager,base.group_partner_manager,base.group_system')
+        manager = new_test_user(self.env, login='Manager', groups='documents.group_documents_manager,base.group_partner_manager')
+
+        document.available_rule_ids.unlink_record(document.id)
+        self.env['ir.model'].with_user(admin).check_access_rights('read')
+        workflow.with_user(admin).link_to_record(document)
+
+        document.available_rule_ids.unlink_record(document.id)
+        with self.assertRaises(AccessError):
+            self.env['ir.model'].with_user(manager).check_access_rights('read')
+        workflow.with_user(manager).link_to_record(document)

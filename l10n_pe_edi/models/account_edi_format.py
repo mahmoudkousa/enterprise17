@@ -295,8 +295,7 @@ class AccountEdiFormat(models.Model):
     # -------------------------------------------------------------------------
 
     def _l10n_pe_edi_get_iap_buy_credits_message(self, company):
-        base_url = 'https://iap-sandbox.odoo.com/iap/1/credit' if company.l10n_pe_edi_test_env else ''
-        url = self.env['iap.account'].get_credits_url(service_name="l10n_pe_edi", base_url=base_url)
+        url = self.env['iap.account'].get_credits_url(service_name="l10n_pe_edi")
         return '''<p><b>%s</b></p><p>%s</p>''' % (
             _('You have insufficient credits to sign or verify this document!'),
             _('Please proceed to buy more credits <a href="%s">here.</a>', html_escape(url)),

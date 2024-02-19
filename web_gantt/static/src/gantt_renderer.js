@@ -17,7 +17,6 @@ import { formatDateTime, serializeDate, serializeDateTime } from "@web/core/l10n
 import { localization } from "@web/core/l10n/localization";
 import { usePopover } from "@web/core/popover/popover_hook";
 import { evaluateBooleanExpr } from "@web/core/py_js/py";
-import { sortBy } from "@web/core/utils/arrays";
 import { useService } from "@web/core/utils/hooks";
 import { omit } from "@web/core/utils/objects";
 import { debounce, throttleForAnimation } from "@web/core/utils/timing";
@@ -43,6 +42,7 @@ import { GanttPopover } from "./gantt_popover";
 import { GanttResizeBadge } from "./gantt_resize_badge";
 import { GanttRowProgressBar } from "./gantt_row_progress_bar";
 import { computeRange } from "./gantt_model";
+import { browser } from "@web/core/browser/browser";
 
 const { DateTime } = luxon;
 
@@ -602,12 +602,13 @@ export class GanttRenderer extends Component {
     computeColumnWidth() {
         const { cellPart } = this.model.metaData.scale;
         const subColumnCount = this.columns.length * cellPart;
-        const totalWidth = window.innerWidth;
+        const totalWidth = browser.innerWidth;
         const rowHeaderWidthPercentage = this.constructor.getRowHeaderWidth(totalWidth);
         const cellContainerWidthPercentage = 100 - rowHeaderWidthPercentage;
         let cellContainerWidth = totalWidth * (cellContainerWidthPercentage / 100);
         cellContainerWidth = Math.round(cellContainerWidth / subColumnCount) * subColumnCount;
         this.state.rowHeaderWidth = totalWidth - cellContainerWidth;
+        this.state.pillsWidth = cellContainerWidth / subColumnCount;
     }
 
     computeDerivedParams() {
@@ -1166,13 +1167,18 @@ export class GanttRenderer extends Component {
      */
     getPills() {
         const { records } = this.model.data;
+        const { dateStartField } = this.model.metaData;
         const pills = [];
         for (const record of records) {
             const pill = this.getPill(record);
             pills.push(this.enrichPill(pill));
         }
         // sorting cannot be done when fetching data --> the snapping of pills breaks order
-        return sortBy(pills, (pill) => pill.grid.column[0]);
+        return pills.sort(
+            (p1, p2) =>
+                p1.grid.column[0] - p2.grid.column[0] ||
+                p1.record[dateStartField] - p2.record[dateStartField]
+        );
     }
 
     /**
@@ -1364,13 +1370,20 @@ export class GanttRenderer extends Component {
         pill.highlighted = highlighted;
         const pillWrapper = this.getPillWrapperEl(pillId);
         pillWrapper?.classList.toggle("highlight", highlighted);
-        pillWrapper?.classList.toggle("o_connector_creator_highlight", highlighted && this.connectorDragState.dragging);
+        pillWrapper?.classList.toggle(
+            "o_connector_creator_highlight",
+            highlighted && this.connectorDragState.dragging
+        );
     }
 
     initializeConnectors() {
         for (const connectorId in this.connectors) {
             this.deleteConnector(connectorId);
         }
+    }
+
+    isPillSmall(pill) {
+        return this.state.pillsWidth * pill.grid.column[1] < (pill.displayName.length * 10);
     }
 
     /**
@@ -1410,9 +1423,15 @@ export class GanttRenderer extends Component {
     }
 
     onWillRender() {
+        if (this.noDisplayedConnectors && this.shouldRenderConnectors()) {
+            delete this.noDisplayedConnectors;
+            this.computeDerivedParams();
+        }
+
         this.visibleRows = [...new Set([...toRaw(this.virtualRows), ...this.extraRows])];
 
         if (!this.shouldRenderConnectors()) {
+            this.noDisplayedConnectors = true;
             return;
         }
 
@@ -1517,7 +1536,7 @@ export class GanttRenderer extends Component {
             } else {
                 const level = this.calculatePillsLevel(rowPills);
                 span = level * baseSpan;
-                if(!this.isTouchDevice){
+                if (!this.isTouchDevice) {
                     span += 4;
                 }
             }
@@ -1913,7 +1932,7 @@ export class GanttRenderer extends Component {
         const { start, stop } = this.getColumnStartStop(columnStart, columnStop);
         this.dialogService.add(
             SelectCreateDialog,
-            this.getSelectCreateDialogProps({ rowId, start, stop })
+            this.getSelectCreateDialogProps({ rowId, start, stop, withDefault: true })
         );
     }
 

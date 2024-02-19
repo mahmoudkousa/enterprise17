@@ -104,7 +104,7 @@ class Planning(models.Model):
     state = fields.Selection([
             ('draft', 'Draft'),
             ('published', 'Published'),
-    ], string='Status', default='draft', copy=True) # "state" field is not copied by default in the orm, which is not a desired behavior in planning
+    ], string='Status', default='draft')
     # template dummy fields (only for UI purpose)
     template_creation = fields.Boolean("Save as Template", store=False, inverse='_inverse_template_creation')
     template_autocomplete_ids = fields.Many2many('planning.slot.template', store=False, compute='_compute_template_autocomplete_ids')
@@ -426,7 +426,7 @@ class Planning(models.Model):
         templates = self.env['planning.slot.template'].search(domain, order='start_time', limit=10)
         self.template_autocomplete_ids = templates + self.template_id
 
-    @api.depends('employee_id', 'role_id', 'start_datetime', 'end_datetime', 'allocated_hours')
+    @api.depends('employee_id', 'role_id', 'start_datetime', 'end_datetime')
     def _compute_template_id(self):
         for slot in self.filtered(lambda s: s.template_id):
             slot.previous_template_id = slot.template_id
@@ -541,13 +541,7 @@ class Planning(models.Model):
                 slot.recurrency_id._repeat_slot()
             # user wants to delete the recurrence
             # here we also check that we don't delete by mistake a slot of which the repeat parameters have been changed
-            elif not slot.repeat and slot.recurrency_id.id and (
-                slot.repeat_unit == slot.recurrency_id.repeat_unit and
-                slot.repeat_type == slot.recurrency_id.repeat_type and
-                slot.repeat_until == slot.recurrency_id.repeat_until and
-                slot.repeat_number == slot.recurrency_id.repeat_number and
-                slot.repeat_interval == slot.recurrency_id.repeat_interval
-            ):
+            elif not slot.repeat and slot.recurrency_id.id:
                 slot.recurrency_id._delete_slot(slot.end_datetime)
                 slot.recurrency_id.unlink()  # will set recurrency_id to NULL
 
@@ -855,6 +849,14 @@ class Planning(models.Model):
                     recurrence._delete_slot(end_datetime)
                     recurrence._repeat_slot()
         return result
+
+    @api.returns(None, lambda value: value[0])
+    def copy_data(self, default=None):
+        if default is None:
+            default = {}
+        if self._context.get('planning_split_tool'):
+            default['state'] = self.state
+        return super().copy_data(default=default)
 
     @api.returns('self', lambda value: value.id)
     def copy(self, default=None):
@@ -1167,11 +1169,11 @@ class Planning(models.Model):
 
         values = []
         # Sum and sort increments by instant.
-        increments = [
-            (group[0], sum(increment[1] for increment in group[1]))
-            for group in itertools.groupby(increments, key=lambda increment: increment[0])
-        ]
-        increments.sort(key=lambda x: x[0])
+        increments_sum_per_instant = defaultdict(float)
+        for instant, increment in increments:
+            increments_sum_per_instant[instant] += increment
+        increments = list(increments_sum_per_instant.items())
+        increments.sort(key=lambda increment: increment[0])
 
         def get_instant_plus_days(instant, days):
             return instant + relativedelta(days=days, hour=0, minute=0, second=0, microsecond=0)
@@ -1250,7 +1252,7 @@ class Planning(models.Model):
                 )
         # Add the flexible status per resource to the output
         flexible_per_resource = {resource.id: not bool(resource.calendar_id) for resource in set(resources)}
-        flexible_per_resource[False] = False
+        flexible_per_resource[False] = True
         return [work_interval_per_resource, flexible_per_resource]
 
     @api.model

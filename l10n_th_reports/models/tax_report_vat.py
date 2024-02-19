@@ -14,28 +14,30 @@ class AccountGenericTaxReport(models.AbstractModel):
 
     def _custom_options_initializer(self, report, options, previous_options=None):
         super()._custom_options_initializer(report, options, previous_options=previous_options)
-        options.setdefault('buttons', []).extend((
-            {
-                'name': _('VAT-202-01 (xlsx)'),
-                'action': 'export_file',
-                'action_param': 'l10n_th_print_sale_tax_report',
-                'sequence': 82,
-                'file_export_type': _('VAT-202-01 (xlsx)')
-            },
-            {
-                'name': _('VAT-202-02 (xlsx)'),
-                'action': 'export_file',
-                'action_param': 'l10n_th_print_purchase_tax_report',
-                'sequence': 83,
-                'file_export_type': _('VAT-202-02 (xlsx)')
-            }
-        ))
+        if self.env.company.account_fiscal_country_id.code == 'TH':
+            options.setdefault('buttons', []).extend((
+                {
+                    'name': _('Sales Tax Report (xlsx)'),
+                    'action': 'export_file',
+                    'action_param': 'l10n_th_print_sale_tax_report',
+                    'sequence': 82,
+                    'file_export_type': _('Sales Tax Report (xlsx)')
+                },
+                {
+                    'name': _('Purchase Tax Report (xlsx)'),
+                    'action': 'export_file',
+                    'action_param': 'l10n_th_print_purchase_tax_report',
+                    'sequence': 83,
+                    'file_export_type': _('Purchase Tax Report (xlsx)')
+                }
+            ))
 
     def _dynamic_lines_generator(self, report, options, all_column_groups_expression_totals, warnings=None):
         return []
 
     def l10n_th_print_sale_tax_report(self, options):
-        domain = [('journal_id.type', '=', 'sale')]
+        domain = [('journal_id.type', '=', 'sale'), ('payment_state', '!=', 'reversed'),
+                  '|', ('reversed_entry_id.payment_state', '!=', 'reversed'), ('reversed_entry_id', '=', False)]
         data = self._l10n_th_print_tax_report(options, domain, origin_type='sale')
         return {
             "file_name": _("Sales Tax Report"),
@@ -44,7 +46,8 @@ class AccountGenericTaxReport(models.AbstractModel):
         }
 
     def l10n_th_print_purchase_tax_report(self, options):
-        domain = [('journal_id.type', '=', 'purchase')]
+        domain = [('journal_id.type', '=', 'purchase'), ('payment_state', '!=', 'reversed'),
+                  '|', ('reversed_entry_id.payment_state', '!=', 'reversed'), ('reversed_entry_id', '=', False)]
         data = self._l10n_th_print_tax_report(options, domain, origin_type='purchase')
         return {
             "file_name": _("Purchase Tax Report"),
@@ -90,7 +93,7 @@ class AccountGenericTaxReport(models.AbstractModel):
 
         title_dict = {'sale': _('Sales Tax Report'), 'purchase': _('Purchase Tax Report')}
         title = title_dict.get(origin_type, _('Tax Report'))
-        sheet.merge_range(y_offset, 0, y_offset, 7, title, title_style)
+        sheet.merge_range(y_offset, 0, y_offset, 9, title, title_style)
         y_offset += 1
 
         date_from = fields.Date.to_date(date_from).strftime('%d/%m/%Y')
@@ -100,40 +103,55 @@ class AccountGenericTaxReport(models.AbstractModel):
         company_name = company.name
         vat = company.vat or ''
 
-        infos = [date, company_name, vat, company.partner_id._l10n_th_get_branch_name()]
+        infos = [date, company_name, vat, company.partner_id.l10n_th_branch_name]
         for info in infos:
-            sheet.merge_range(y_offset, 0, y_offset, 7, info, center_style)
+            sheet.merge_range(y_offset, 0, y_offset, 9, info, center_style)
             y_offset += 1
         y_offset += 1
 
         sheet.set_row(y_offset, 32.7)
-        headers = [_("No."), _("Tax Invoice No."), _("Invoice Date"), _("Contact Name"),
-                   _("Tax ID"), _("Company Information"), _("Total Amount"), _("Vat Amount")]
+        headers = [_("No."), _("Tax Invoice No."), _("Reference"), _("Invoice Date"), _("Contact Name"),
+                   _("Tax ID"), _("Company Information"), _("Total Amount"), _("Total Excluding VAT Amount"), _("Vat Amount")]
         for index, header in enumerate(headers):
             sheet.write(y_offset, index, header, col_header_style)
         y_offset += 1
 
         accumulate_total = 0
+        accumulate_untaxed_signed = 0
         accumulate_tax = 0
 
+        tax_group_vat_7 = self.env.ref(f'account.{self.env.company.id}_tax_group_vat_7')
         for index, move in enumerate(moves):
+            sign = move.reversed_entry_id.payment_state == 'partial' and -1 or 1
+            amount_total = sign * move.amount_total
+            amount_untaxed_signed = sign * abs(move.amount_untaxed_signed)
+            # Only include tax amount from VAT 7% tax group
+            amount_tax = 0.0
+            for taxes in move.tax_totals['groups_by_subtotal'].values():
+                for tax in taxes:
+                    if tax['tax_group_id'] == tax_group_vat_7.id:
+                        amount_tax += sign * tax['tax_group_amount']
             sheet.write(y_offset, 0, index + 1, default_style)
             sheet.write(y_offset, 1, move.name, default_style)
-            sheet.write(y_offset, 2, move.date, date_default_style)
-            sheet.write(y_offset, 3, move.partner_id.name or '', default_style)
-            sheet.write(y_offset, 4, move.partner_id.vat or '', default_style)
-            sheet.write(y_offset, 5, move.partner_id._l10n_th_get_branch_name(), default_style)
-            sheet.write(y_offset, 6, move.amount_total_signed, currency_default_style)
-            sheet.write(y_offset, 7, move.amount_tax_signed, currency_default_style)
-            accumulate_total += move.amount_total_signed
-            accumulate_tax += move.amount_tax_signed
+            sheet.write(y_offset, 2, move.ref or '', default_style)
+            sheet.write(y_offset, 3, move.date, date_default_style)
+            sheet.write(y_offset, 4, move.partner_id.name or '', default_style)
+            sheet.write(y_offset, 5, move.partner_id.vat or '', default_style)
+            sheet.write(y_offset, 6, move.partner_id.l10n_th_branch_name, default_style)
+            sheet.write(y_offset, 7, amount_total, currency_default_style)
+            sheet.write(y_offset, 8, amount_untaxed_signed, currency_default_style)
+            sheet.write(y_offset, 9, amount_tax, currency_default_style)
+            accumulate_total += amount_total
+            accumulate_untaxed_signed += amount_untaxed_signed
+            accumulate_tax += amount_tax
             y_offset += 1
         y_offset += 1
         y_offset += 1
 
-        sheet.write(y_offset, 5, "Total", default_style)
-        sheet.write(y_offset, 6, accumulate_total, currency_default_style)
-        sheet.write(y_offset, 7, accumulate_tax, currency_default_style)
+        sheet.write(y_offset, 6, "Total", default_style)
+        sheet.write(y_offset, 7, accumulate_total, currency_default_style)
+        sheet.write(y_offset, 8, accumulate_untaxed_signed, currency_default_style)
+        sheet.write(y_offset, 9, accumulate_tax, currency_default_style)
         y_offset += 1
 
         workbook.close()

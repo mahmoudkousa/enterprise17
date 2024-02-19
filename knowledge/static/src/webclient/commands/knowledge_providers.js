@@ -2,6 +2,7 @@
 
 
 import { _t } from "@web/core/l10n/translation";
+import { memoize } from "@web/core/utils/functions";
 import { registry } from "@web/core/registry";
 import { HotkeyCommandItem } from "@web/core/commands/default_providers";
 import { splitCommandName } from "@web/core/commands/command_palette";
@@ -21,7 +22,7 @@ KnowledgeExtraCommand.template = 'KnowledgeExtraCommandTemplate';
 
 const commandSetupRegistry = registry.category("command_setup");
 commandSetupRegistry.add("?", {
-    debounceDelay: 200,
+    debounceDelay: 500,
     emptyMessage: _t("No article found."),
     name: _t("articles"),
     placeholder: _t("Search for an article..."),
@@ -30,6 +31,18 @@ commandSetupRegistry.add("?", {
 const commandProviderRegistry = registry.category("command_provider");
 
 const fn = (hidden) => {
+    // Check if the user has enough rights to create a new article
+    const canCreate = memoize(env => {
+        return env.services.orm.call(
+            "knowledge.article",
+            "check_access_rights",
+            [],
+            {
+                operation: "create",
+                raise_exception: false,
+            },
+        );
+    });
     return async function provide(env, options) {
         const articlesData = await env.services.orm.call(
             "knowledge.article",
@@ -42,18 +55,9 @@ const fn = (hidden) => {
         );
         if (!hidden){
             if (articlesData.length === 0) {
-                // check if user has enough rights to create a new article
-                const canCreate = await env.services.orm.call(
-                    "knowledge.article",
-                    "check_access_rights",
-                    [],
-                    {
-                        operation: "create",
-                        raise_exception: false,
-                    },
-                );
-                // only display the "create article" command when there are at least 3 character
-                if (canCreate && options.searchValue.length > 2) {
+                // Only display the "create article" command when the user can
+                // create an article and when the user inputs at least 3 characters
+                if (await canCreate(env) && options.searchValue.length > 2) {
                     return [{
                         Component: Knowledge404Command,
                         async action() {
@@ -130,18 +134,18 @@ const fn = (hidden) => {
 };
 
 commandProviderRegistry.add("knowledge", {
-    debounceDelay: 200,
+    debounceDelay: 500,
     namespace: "?",
     provide: fn(false),
 });
 
 commandSetupRegistry.add("$", {
-    debounceDelay: 200,
+    debounceDelay: 500,
     emptyMessage: _t("No hidden articles found"),
     placeholder: _t("Search a hidden article to join"),
 });
 commandProviderRegistry.add("knowledge_members_only_articles", {
-    debounceDelay: 200,
+    debounceDelay: 500,
     namespace: "$",
     provide: fn(true),
 });

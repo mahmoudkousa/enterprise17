@@ -9,7 +9,7 @@
             <xpath expr="//field[@name='stream_type_id']" position="after">
                 <field name="twitter_followed_account_search"
                     invisible="stream_type_type not in ('twitter_follow', 'twitter_likes') or not account_id or id"
-                    required="not id and stream_type_type in ('twitter_follow', 'twitter_likes')"
+                    required="not id and stream_type_type in ('twitter_follow', 'twitter_likes') and not twitter_followed_account_id"
                     widget="twitter_users_autocomplete" />
                 <field name="twitter_followed_account_id" invisible="1" />
                 <field name="twitter_searched_keyword" placeholder="e.g. #odoo"

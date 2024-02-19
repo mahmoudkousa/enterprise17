@@ -3,6 +3,7 @@
 
 from odoo.tests import Form
 from odoo.tests.common import TransactionCase
+from odoo import Command
 
 
 class TestQuality(TransactionCase):
@@ -59,3 +60,55 @@ class TestQuality(TransactionCase):
         # Product should be replaced by the product linked to the bom
         self.assertEqual(len(quality_point_form.product_ids), 1)
         self.assertEqual(quality_point_form.product_ids[0].id, self.bom.product_id.id)
+
+    def test_quality_check_action_next_when_no_move_line(self):
+        """
+        Process a MO based on a BoM with one operation. That operation has two steps
+        step1: Call action_continue method to  create a quality check with no move line
+        step2: Call action_next method to create a new move line if no move line
+        """
+        self.env['quality.point'].create({
+            'title': 'Qp1',
+            'product_ids': [(4, self.product_1.id, 0)],
+            'operation_id': self.bom.operation_ids.id,
+            'component_id': self.product_2.id,
+            'test_type_id': self.env.ref('mrp_workorder.test_type_register_consumed_materials').id
+            })
+        mo_form = Form(self.env['mrp.production'])
+        mo_form.bom_id = self.bom
+        mo = mo_form.save()
+        mo.action_confirm()
+
+        mo.workorder_ids.current_quality_check_id.action_continue()
+        self.assertEqual(len(mo.workorder_ids.check_ids), 2)
+        # Check the current quality check has no move line
+        self.assertEqual(len(mo.workorder_ids.check_ids[1].move_line_id), 0)
+        mo.workorder_ids.current_quality_check_id.write({'qty_done': 5})
+        mo.workorder_ids.current_quality_check_id.action_next()
+        # check a new move line is created or not for the above quality check record
+        self.assertEqual(len(mo.workorder_ids.check_ids[1].move_line_id), 1)
+
+    def test_delete_move_linked_to_quality_check(self):
+        """
+        Test that a quality check is deleted when its linked move is deleted.
+        """
+        self.bom.bom_line_ids.product_id.tracking = 'lot'
+        self.bom.bom_line_ids.product_id.type = 'product'
+        self.bom.operation_ids[0].quality_point_ids = [Command.create({
+            'product_ids': [(4, self.product_1.id)],
+            'picking_type_ids': [(4, self.env['stock.picking.type'].search([('code', '=', 'mrp_operation')], limit=1).id)],
+            'test_type_id': self.env.ref('mrp_workorder.test_type_register_consumed_materials').id,
+            'component_id': self.product_2.id,
+        })]
+        mo_form = Form(self.env['mrp.production'])
+        mo_form.bom_id = self.bom
+        mo = mo_form.save()
+        mo.action_confirm()
+        qc = self.env['quality.check'].search([('product_id', '=', self.bom.product_id.id)])[-1]
+        move = qc.move_id
+        self.assertEqual(len(qc), 1)
+        self.assertFalse(move.move_line_ids)
+        move.state = 'draft'
+        move.unlink()
+        self.assertFalse(move.exists())
+        self.assertFalse(qc.exists())

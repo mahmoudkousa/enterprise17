@@ -64,6 +64,7 @@ class Document(models.Model):
         if self.sudo().handler != "spreadsheet":
             raise ValidationError(_("The spreadsheet you are trying to access does not exist."))
         data = super().join_spreadsheet_session(share_id, access_token)
+        self._update_spreadsheet_contributors()
         return dict(data, is_favorited=self.sudo().is_favorited, folder_id=self.sudo().folder_id.id)
 
     def _check_spreadsheet_share(self, operation, share_id, access_token):

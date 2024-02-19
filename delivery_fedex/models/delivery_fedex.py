@@ -11,33 +11,11 @@ from odoo.exceptions import UserError
 from odoo.tools import pdf, float_repr
 from odoo.tools.safe_eval import const_eval
 
-from .fedex_request import FedexRequest
+from .fedex_request import FedexRequest, _convert_curr_iso_fdx, _convert_curr_fdx_iso
 
 
 _logger = logging.getLogger(__name__)
 
-# Why using standardized ISO codes? It's way more fun to use made up codes...
-# https://www.fedex.com/us/developer/WebHelp/ws/2014/dvg/WS_DVG_WebHelp/Appendix_F_Currency_Codes.htm
-FEDEX_CURR_MATCH = {
-    u'UYU': u'UYP',
-    u'XCD': u'ECD',
-    u'MXN': u'NMP',
-    u'KYD': u'CID',
-    u'CHF': u'SFR',
-    u'GBP': u'UKL',
-    u'IDR': u'RPA',
-    u'DOP': u'RDD',
-    u'JPY': u'JYE',
-    u'KRW': u'WON',
-    u'SGD': u'SID',
-    u'CLP': u'CHP',
-    u'JMD': u'JAD',
-    u'KWD': u'KUD',
-    u'AED': u'DHS',
-    u'TWD': u'NTD',
-    u'ARS': u'ARN',
-    u'LVL': u'EURO',
-}
 
 FEDEX_STOCK_TYPE = [
     ('PAPER_4X6', 'PAPER_4X6'),
@@ -193,8 +171,7 @@ class ProviderFedex(models.Model):
         srm.set_master_package(weight_value, 1)
 
         # Commodities for customs declaration (international shipping)
-        if 'INTERNATIONAL' in self.fedex_service_type or is_india:
-
+        if 'INTERNATIONAL' in self.fedex_service_type or self.fedex_service_type == 'FEDEX_REGIONAL_ECONOMY' or is_india:
             commodities = self._get_commodities_from_order(order)
             for commodity in commodities:
                 srm.commodities(self, commodity, _convert_curr_iso_fdx(order_currency.name))
@@ -258,7 +235,7 @@ class ProviderFedex(models.Model):
             net_weight = self._fedex_convert_weight(picking.shipping_weight, self.fedex_weight_unit)
 
             # Commodities for customs declaration (international shipping)
-            if 'INTERNATIONAL' in self.fedex_service_type  or (picking.partner_id.country_id.code == 'IN' and picking.picking_type_id.warehouse_id.partner_id.country_id.code == 'IN'):
+            if 'INTERNATIONAL' in self.fedex_service_type or self.fedex_service_type == 'FEDEX_REGIONAL_ECONOMY' or (picking.partner_id.country_id.code == 'IN' and picking.picking_type_id.warehouse_id.partner_id.country_id.code == 'IN'):
 
                 commodities = self._get_commodities_from_stock_move_lines(picking.move_line_ids)
                 for commodity in commodities:
@@ -394,7 +371,7 @@ class ProviderFedex(models.Model):
         for pkg in packages:
             srm.add_package(self, pkg, _convert_curr_iso_fdx(pkg.company_id.currency_id.name), reference=picking.display_name, po_number=po_number, dept_number=dept_number)
         srm.set_master_package(net_weight, 1)
-        if 'INTERNATIONAL' in self.fedex_service_type  or (picking.partner_id.country_id.code == 'IN' and picking.picking_type_id.warehouse_id.partner_id.country_id.code == 'IN'):
+        if 'INTERNATIONAL' in self.fedex_service_type or self.fedex_service_type == 'FEDEX_REGIONAL_ECONOMY' or (picking.partner_id.country_id.code == 'IN' and picking.picking_type_id.warehouse_id.partner_id.country_id.code == 'IN'):
 
             order_currency = picking.sale_id.currency_id or picking.company_id.currency_id
 
@@ -548,10 +525,3 @@ class ProviderFedex(models.Model):
         return srm
 
 
-def _convert_curr_fdx_iso(code):
-    curr_match = {v: k for k, v in FEDEX_CURR_MATCH.items()}
-    return curr_match.get(code, code)
-
-
-def _convert_curr_iso_fdx(code):
-    return FEDEX_CURR_MATCH.get(code, code)

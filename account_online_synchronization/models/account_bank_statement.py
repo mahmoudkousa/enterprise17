@@ -44,7 +44,7 @@ class AccountBankStatementLine(models.Model):
                 continue
 
             sorted_transactions = sorted(transactions, key=lambda transaction: transaction['date'])
-            total = sum([transaction['amount'] for transaction in transactions])
+            total = self.env.context.get('transactions_total') or sum([transaction['amount'] for transaction in transactions])
 
             # For first synchronization, an opening line is created to fill the missing bank statement data
             any_st_line = self.search_count([('journal_id', '=', journal.id)], limit=1)

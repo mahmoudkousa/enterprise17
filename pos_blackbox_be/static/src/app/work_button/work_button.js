@@ -6,6 +6,7 @@ import { Component,  useState, onWillStart } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { _t } from "@web/core/l10n/translation";
 import { ErrorPopup } from "@point_of_sale/app/errors/popups/error_popup";
+import { OrderReceipt } from "@point_of_sale/app/screens/receipt_screen/receipt/order_receipt";
 
 export class WorkButton extends Component {
     static template = "pos_blackbox_be.WorkButton";
@@ -13,6 +14,7 @@ export class WorkButton extends Component {
     setup() {
         this.pos = usePos();
         this.orm = useService("orm");
+        this.printer = useService("printer");
         this.state = useState({
             status: false,
             buttonDisabled: false
@@ -76,7 +78,6 @@ export class WorkButton extends Component {
             await this.createOrderForClocking();
             await this.setUserSessionStatus(true);
             this.state.status = true;
-            this.pos.showScreen('ReceiptScreen');
         } catch (err) {
             console.error(err);
         }
@@ -86,7 +87,6 @@ export class WorkButton extends Component {
         await this.createOrderForClocking();
         await this.setUserSessionStatus(false);
         this.state.status = false;
-        this.pos.showScreen('ReceiptScreen');
     }
 
     async createOrderForClocking() {
@@ -96,8 +96,22 @@ export class WorkButton extends Component {
         order.clock = this.state.status ? 'out' : 'in';
 
         await this.pos.push_single_order(order);
+        await this.printer.print(
+            OrderReceipt,
+            {
+                data: order.export_for_printing(),
+                formatCurrency: this.env.utils.formatCurrency,
+            }
+        );
         order.finalized = true;
         this.pos.db.remove_unpaid_order(order);
+        if(this.pos.config.module_pos_restaurant) {
+            this.pos.showScreen("FloorScreen");
+        } else {
+            this.pos.removeOrder(this.pos.get_order());
+            this.pos.add_new_order();
+            this.pos.showScreen("ProductScreen");
+        }
     }
 }
 

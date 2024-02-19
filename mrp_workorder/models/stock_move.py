@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo import models
+from odoo import models, api
 
 
 class StockMove(models.Model):
@@ -23,3 +23,7 @@ class StockMove(models.Model):
                     continue
                 check.write(workorder._defaults_from_move(check.move_id))
         return res
+
+    @api.ondelete(at_uninstall=False)
+    def _unlink_quality_check(self):
+        self.env['quality.check'].search([('move_id', 'in', self.ids)]).unlink()

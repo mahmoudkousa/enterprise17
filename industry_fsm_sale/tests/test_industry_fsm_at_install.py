@@ -7,9 +7,12 @@ from odoo.exceptions import UserError
 
 class TestFsmFlowSaleAtInstall(TestFsmFlowCommon):
     """
-    When the 'industry_fsm_stock' module is installed, it updates the behavior of the SO linked to fsm tasks by forcing those SO to be in a confirmed state.
-    Since service product can be removed from a fsm task only if the SO linked is in a draft state, the stock module prevent this behavior. Therefore, the tag 'at_install' is
-    not removed from this class in order to ensure adding/removing product from a task works both when the stock module is installed and when it is not.
+    When the 'industry_fsm_stock' module is installed, it updates the behavior
+    of the SO linked to fsm tasks by forcing those SO to be in a confirmed state.
+    Since service product can be removed from a fsm task only if the SO linked is in
+    a draft state, the stock module prevent this behavior. Therefore, the tag 'at_install' is
+    not removed from this class in order to ensure adding/removing product from a task
+    works both when the stock module is installed and when it is not.
     """
 
     def test_fsm_flow(self):
@@ -23,6 +26,9 @@ class TestFsmFlowSaleAtInstall(TestFsmFlowCommon):
             And assert after each operation on product count
         3) Set product quantity after confirming SO
         """
+        if not self.env.company.chart_template:
+            self.env["account.chart.template"].try_loading('generic_coa', self.env.company)
+
         self.assertFalse(self.task.material_line_product_count, "No product should be linked to a new task")
         with self.assertRaises(UserError, msg='Should not be able to get to material without customer set'):
             self.task.action_fsm_view_material()

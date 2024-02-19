@@ -1,7 +1,7 @@
 /** @odoo-module */
 
 import { _t } from "@web/core/l10n/translation";
-import { astToFormula, UIPlugin } from "@odoo/o-spreadsheet";
+import { astToFormula, UIPlugin, tokenize } from "@odoo/o-spreadsheet";
 import { sprintf } from "@web/core/utils/strings";
 import { getFirstListFunction, getNumberOfListFormulas } from "@spreadsheet/list/list_helpers";
 
@@ -20,10 +20,11 @@ export class ListAutofillPlugin extends UIPlugin {
      * @returns Autofilled value
      */
     getNextListValue(formula, isColumn, increment) {
-        if (getNumberOfListFormulas(formula) !== 1) {
+        const tokens = tokenize(formula);
+        if (getNumberOfListFormulas(tokens) !== 1) {
             return formula;
         }
-        const { functionName, args } = getFirstListFunction(formula);
+        const { functionName, args } = getFirstListFunction(tokens);
         const evaluatedArgs = args
             .map(astToFormula)
             .map((arg) => this.getters.evaluateFormula(this.getters.getActiveSheetId(), arg));
@@ -85,7 +86,7 @@ export class ListAutofillPlugin extends UIPlugin {
         if (!formula) {
             return [];
         }
-        const { functionName, args } = getFirstListFunction(formula);
+        const { functionName, args } = getFirstListFunction(tokenize(formula));
         const evaluatedArgs = args
             .map(astToFormula)
             .map((arg) => this.getters.evaluateFormula(this.getters.getActiveSheetId(), arg));

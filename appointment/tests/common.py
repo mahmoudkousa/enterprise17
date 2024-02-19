@@ -18,13 +18,13 @@ class AppointmentCommon(MailCommon, common.HttpCase):
     @classmethod
     def setUpClass(cls):
         super(AppointmentCommon, cls).setUpClass()
-
         # ensure admin configuration
         cls.admin_user = cls.env.ref('base.user_admin')
         cls.admin_user.write({
             'country_id': cls.env.ref('base.be').id,
             'login': 'admin',
             'notification_type': 'inbox',
+            'tz': "Europe/Brussels",
         })
         cls.company_admin = cls.admin_user.company_id
         # set country in order to format Belgian numbers

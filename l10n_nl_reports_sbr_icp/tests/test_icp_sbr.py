@@ -76,7 +76,7 @@ class TestNlICPSBR(AccountSalesReportCommon):
                     xlink:href="http://www.nltaxonomie.nl/nt16/bd/20211208/entrypoints/bd-rpt-icp-opgaaf-2022.xsd" />
                 <xbrli:context id="CD_Opgaaf">
                     <xbrli:entity>
-                        <xbrli:identifier scheme="www.belastingdienst.nl/omzetbelastingnummer">NL123456782B90</xbrli:identifier>
+                        <xbrli:identifier scheme="www.belastingdienst.nl/omzetbelastingnummer">123456782B90</xbrli:identifier>
                     </xbrli:entity>
                     <xbrli:period>
                         <xbrli:startDate>2019-01-01</xbrli:startDate>
@@ -99,31 +99,31 @@ class TestNlICPSBR(AccountSalesReportCommon):
                 <bd-i:ContactPrefix contextRef="CD_Opgaaf">I am</bd-i:ContactPrefix>
                 <bd-i:ContactSurname contextRef="CD_Opgaaf">accountman!</bd-i:ContactSurname>
                 <bd-i:ContactTelephoneNumber contextRef="CD_Opgaaf">+31432112345</bd-i:ContactTelephoneNumber>
-                <bd-i:VATIdentificationNumberNLFiscalEntityDivision contextRef="CD_Opgaaf" />
+                <bd-i:VATIdentificationNumberNLFiscalEntityDivision contextRef="CD_Opgaaf">123456782B90</bd-i:VATIdentificationNumberNLFiscalEntityDivision>
                 <bd-t:IntraCommunitySupplies>
                     <bd-i:CountryCodeISO-EC contextRef="CD_Opgaaf">FR</bd-i:CountryCodeISO-EC>
-                    <bd-i:SuppliesAmount contextRef="CD_Opgaaf" unitRef="EUR" decimals="INF">1000.0</bd-i:SuppliesAmount>
-                    <bd-i:VATIdentificationNumberNational contextRef="CD_Opgaaf">FR23334175221</bd-i:VATIdentificationNumberNational>
+                    <bd-i:SuppliesAmount contextRef="CD_Opgaaf" unitRef="EUR" decimals="INF">1000</bd-i:SuppliesAmount>
+                    <bd-i:VATIdentificationNumberNational contextRef="CD_Opgaaf">23334175221</bd-i:VATIdentificationNumberNational>
                 </bd-t:IntraCommunitySupplies>
                 <bd-t:IntraCommunitySupplies>
                     <bd-i:CountryCodeISO-EC contextRef="CD_Opgaaf">BE</bd-i:CountryCodeISO-EC>
-                    <bd-i:SuppliesAmount contextRef="CD_Opgaaf" unitRef="EUR" decimals="INF">1000.0</bd-i:SuppliesAmount>
-                    <bd-i:VATIdentificationNumberNational contextRef="CD_Opgaaf">BE0477472701</bd-i:VATIdentificationNumberNational>
+                    <bd-i:SuppliesAmount contextRef="CD_Opgaaf" unitRef="EUR" decimals="INF">1000</bd-i:SuppliesAmount>
+                    <bd-i:VATIdentificationNumberNational contextRef="CD_Opgaaf">0477472701</bd-i:VATIdentificationNumberNational>
                 </bd-t:IntraCommunitySupplies>
                 <bd-t:IntraCommunityServices>
                     <bd-i:CountryCodeISO-EC contextRef="CD_Opgaaf">FR</bd-i:CountryCodeISO-EC>
-                    <bd-i:ServicesAmount contextRef="CD_Opgaaf" unitRef="EUR" decimals="INF">750.0</bd-i:ServicesAmount>
-                    <bd-i:VATIdentificationNumberNational contextRef="CD_Opgaaf">FR23334175221</bd-i:VATIdentificationNumberNational>
+                    <bd-i:ServicesAmount contextRef="CD_Opgaaf" unitRef="EUR" decimals="INF">750</bd-i:ServicesAmount>
+                    <bd-i:VATIdentificationNumberNational contextRef="CD_Opgaaf">23334175221</bd-i:VATIdentificationNumberNational>
                 </bd-t:IntraCommunityServices>
                 <bd-t:IntraCommunityServices>
                     <bd-i:CountryCodeISO-EC contextRef="CD_Opgaaf">BE</bd-i:CountryCodeISO-EC>
-                    <bd-i:ServicesAmount contextRef="CD_Opgaaf" unitRef="EUR" decimals="INF">750.0</bd-i:ServicesAmount>
-                    <bd-i:VATIdentificationNumberNational contextRef="CD_Opgaaf">BE0477472701</bd-i:VATIdentificationNumberNational>
+                    <bd-i:ServicesAmount contextRef="CD_Opgaaf" unitRef="EUR" decimals="INF">750</bd-i:ServicesAmount>
+                    <bd-i:VATIdentificationNumberNational contextRef="CD_Opgaaf">0477472701</bd-i:VATIdentificationNumberNational>
                 </bd-t:IntraCommunityServices>
                 <bd-t:IntraCommunityABCSupplies>
                     <bd-i:CountryCodeISO-EC contextRef="CD_Opgaaf">FR</bd-i:CountryCodeISO-EC>
-                    <bd-i:SuppliesAmount contextRef="CD_Opgaaf" unitRef="EUR" decimals="INF">500.0</bd-i:SuppliesAmount>
-                    <bd-i:VATIdentificationNumberNational contextRef="CD_Opgaaf">FR23334175221</bd-i:VATIdentificationNumberNational>
+                    <bd-i:SuppliesAmount contextRef="CD_Opgaaf" unitRef="EUR" decimals="INF">500</bd-i:SuppliesAmount>
+                    <bd-i:VATIdentificationNumberNational contextRef="CD_Opgaaf">23334175221</bd-i:VATIdentificationNumberNational>
                 </bd-t:IntraCommunityABCSupplies>
             </xbrli:xbrl>
         ''')

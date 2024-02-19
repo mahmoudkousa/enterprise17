@@ -171,3 +171,11 @@ class TestDeduplication(test_common.TestCommon):
 
         self.assertEqual(records_model1[0].name, 'abc', "Should have read name abc")
         self.assertEqual(records_model2[0].name, 'abc', "Should have read name abc")
+
+    def test_search_company_id_data_merge_record(self):
+        dmm = self.DMModel.with_user(self.env.ref('base.user_admin')).create({
+            'name': 'Test new',
+            'res_model_id': self.DMTestModel.id,
+        })
+        dmm.modified(['records_to_merge_count'])
+        self.assertEqual(dmm.records_to_merge_count, 0, "records_to_merge_count is calulated without error")

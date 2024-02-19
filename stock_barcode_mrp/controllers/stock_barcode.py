@@ -13,7 +13,8 @@ class MRPStockBarcode(StockBarcodeController):
     @http.route()
     def main_menu(self, barcode):
         ret_open_production = self._try_open_production(barcode)
-        return ret_open_production or super().main_menu(barcode)
+        ret_new_production = self._try_create_production(barcode)
+        return ret_open_production or ret_new_production or super().main_menu(barcode)
 
     @http.route('/stock_barcode_mrp/save_barcode_data', type='json', auth='user')
     def save_barcode_mrp_data(self, model_vals):
@@ -25,7 +26,7 @@ class MRPStockBarcode(StockBarcodeController):
         target_record = request.env['mrp.production']
         for model, res_id, vals in model_vals:
             if res_id == 0:
-                record = request.env[model].create(vals)
+                record = request.env[model].with_context(newByProduct=vals.pop('byProduct', False)).create(vals)
                 # difficult to use precompute as there are lots of depends fields to precompute
                 if model == 'mrp.production':
                     record._compute_move_finished_ids()
@@ -36,7 +37,6 @@ class MRPStockBarcode(StockBarcodeController):
                     if isinstance(vals[key], dict):
                         sub_model = request.env[model]._fields[key].comodel_name
                         vals[key] = request.env[sub_model].create(vals[key]).id
-
                 record.write(vals)
         target_record = record if model == 'mrp.production' else record.production_id
         if target_record.state == 'draft':
@@ -59,6 +59,19 @@ class MRPStockBarcode(StockBarcodeController):
             'group_mrp_byproducts': request.env.user.has_group('mrp.group_mrp_byproducts')
         })
         return group_data
+
+    def _try_create_production(self, barcode):
+        """ If barcode represents a manufacure picking type, create and open a
+        new manufacturing order.
+        """
+        picking_type = request.env['stock.picking.type'].search([
+            ('barcode', '=', barcode),
+            ('code', '=', 'mrp_operation'),
+        ], limit=1)
+        if picking_type:
+            action = request.env["ir.actions.actions"]._for_xml_id("stock_barcode_mrp.stock_barcode_mo_client_action")
+            return {'action': action}
+        return False
 
     def _try_open_production(self, barcode):
         """ If barcode represents a production order, open it

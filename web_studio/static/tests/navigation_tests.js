@@ -1093,4 +1093,33 @@ QUnit.module("Studio", (hooks) => {
             "/web/dataset/call_kw/pony/web_read",
         ]);
     });
+
+    QUnit.test("create new menu uses the studio context key", async (assert) => {
+        serverData.models.pony.fields.selection = {
+            type: "selection",
+            selection: [["1", "1"]],
+            manual: true,
+        };
+        serverData.models.pony.records = [{ id: 1, selection: "1" }];
+
+        serverData.views["pony,false,form"] = `<form><field name="selection" /></form>`;
+        const mockRPC = async (route, args) => {
+            if (route === "/web_studio/create_new_menu") {
+                assert.strictEqual(args.context.studio, 1);
+                return { action_id: 3 };
+            }
+        };
+
+        await createEnterpriseWebClient({ serverData, mockRPC });
+        await click(target.querySelector(".o_app[data-menu-xmlid=app_2]"));
+        await contains(".o_data_cell");
+        await click(target.querySelector(".o_data_cell"));
+        await contains(".o_form_view");
+        await openStudio(target);
+        await contains(".o_studio");
+        await click(target, ".o_web_create_new_model");
+        await editInput(target, '.modal input[name="model_name"]', "ABCD");
+        await click(target, ".modal footer .btn-primary");
+        await click(target, ".modal .o_web_studio_model_configurator_next");
+    });
 });

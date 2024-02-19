@@ -128,9 +128,16 @@ registry.category("web_tour.tours").add('knowledge_main_flow_tour', {
     trigger: '.o_field_many2many_tags_email[name=partner_ids] input',
     run: 'text micheline@knowledge.com',
 }, {
-    // Create the partner
-    trigger: '.ui-autocomplete.dropdown-menu a:contains("micheline@knowledge.com")',
-    in_modal: false,
+    // Open the simplified create form view
+    trigger: '.o-autocomplete--dropdown-menu .o_m2o_dropdown_option_create_edit a',
+    run: 'click',
+}, {
+    // Give an email address to the partner
+    trigger: '.o_field_widget[name=email] input',
+    run: 'text micheline@knowledge.com',
+}, {
+    // Save the new partner
+    trigger: '.o_form_button_save',
 }, {
     // Submit the invite wizard
     trigger: 'button:contains("Invite")',

@@ -121,9 +121,6 @@ class CustomerPortal(payment_portal.PaymentPortal):
         enable_token_management = request.env.user.partner_id in (order_sudo.partner_id.child_ids | order_sudo.partner_id)
         display_close = order_sudo.plan_id.sudo().user_closable and order_sudo.subscription_state == '3_progress'
         is_follower = request.env.user.partner_id in order_sudo.message_follower_ids.partner_id
-        if order_sudo.pending_transaction and not message:
-            message = _("This subscription has a pending payment transaction.")
-            message_class = 'alert-warning'
         periods = {'week': 'weeks', 'month': 'months', 'year': 'years'}
         # Calculate the duration when the customer can reopen his subscription
         missing_periods = 1
@@ -165,6 +162,7 @@ class CustomerPortal(payment_portal.PaymentPortal):
             'payment_action_id': request.env.ref('payment.action_payment_provider').id,
             'display_payment_message': display_payment_message,
             'backend_url': backend_url,
+            'product_documents': order_sudo._get_product_documents(),
         }
 
         portal_page_values = self._get_page_view_values(
@@ -189,6 +187,12 @@ class CustomerPortal(payment_portal.PaymentPortal):
             **payment_context,
         }
         return request.render("sale_subscription.subscription_portal_template", rendering_context)
+
+    @http.route([
+        '/my/orders/<int:order_id>/document/<int:document_id>',
+        '/my/subscriptions/<int:order_id>/document/<int:document_id>'])
+    def portal_quote_document(self, *args, **kwargs):
+        return super().portal_quote_document(*args, **kwargs)
 
     @http.route(['/my/subscriptions/<int:order_id>/close', '/my/subscription/<int:order_id>/close'], type='http', methods=["POST"], auth="public", website=True)
     def close_account(self, order_id, access_token=None, **kw):
@@ -261,6 +265,9 @@ class PaymentPortal(payment_portal.PaymentPortal):
         )
         if sale_order_id:
             sale_order_id = self._cast_as_int(sale_order_id)
+            extra_payment_form_values.update({
+                'sale_order_id': sale_order_id,  # Allow Stripe to check if tokenization is required.
+            })
             if manage_subscription:
                 order_sudo = self._document_check_access('sale.order', sale_order_id, access_token)
                 extra_payment_form_values.update({
@@ -288,8 +295,9 @@ class PaymentPortal(payment_portal.PaymentPortal):
         tx_sudo = super()._create_transaction(
             *args, **kwargs
         )
-        subscriptions = tx_sudo.sale_order_ids.filtered('is_subscription')
-        subscriptions.pending_transaction = True
+        if tx_sudo.operation != 'validation':
+            subscriptions = tx_sudo.sale_order_ids.filtered('is_subscription')
+            subscriptions.pending_transaction = True
         return tx_sudo
 
 

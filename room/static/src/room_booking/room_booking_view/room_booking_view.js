@@ -1,6 +1,7 @@
 /** @odoo-module **/
 
 import { _t } from "@web/core/l10n/translation";
+import { browser } from "@web/core/browser/browser";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { deserializeDateTime, serializeDateTime } from "@web/core/l10n/dates";
 import { redirect } from "@web/core/utils/urls";
@@ -30,14 +31,22 @@ export class RoomBookingView extends Component {
         RoomBookingRemainingTime,
         RoomDisplayTime,
     };
+    static props = {
+        accessToken: String,
+        bookableBgColor: String,
+        bookedBgColor: String,
+        description: String,
+        id: Number,
+        name: String,
+    };
     static template = "room.RoomBookingView";
 
     setup() {
         this.manageRoomUrl = `/room/${this.props.accessToken}`;
         this.state = useState({
             bookings: [],
-            bookingName: null,
-            bookingToEdit: null,
+            bookingName: undefined,
+            bookingToEdit: undefined,
             currentBooking: null,
             currentDate: this.now.startOf("day"),
             scheduleBooking: false,
@@ -46,15 +55,15 @@ export class RoomBookingView extends Component {
         // Show bookings updates in live
         this.busService = this.env.services.bus_service;
         this.busService.addChannel("room_booking#" + this.props.accessToken);
-        this.busService.subscribe("booking/create", (bookings) =>
-            bookings.forEach((booking) => this.addBooking(booking)),
-        );
-        this.busService.subscribe("booking/delete", (bookings) =>
-            bookings.forEach((booking) => this.removeBooking(booking.id)),
-        );
-        this.busService.subscribe("booking/update", (bookings) =>
-            bookings.forEach((booking) => this.udpateBooking(booking)),
-        );
+        this.busService.subscribe("booking/create", (bookings) => {
+            bookings.forEach((booking) => this.addBooking(booking));
+        });
+        this.busService.subscribe("booking/delete", (bookings) => {
+            bookings.forEach((booking) => this.removeBooking(booking.id));
+        });
+        this.busService.subscribe("booking/update", (bookings) => {
+            bookings.forEach((booking) => this.udpateBooking(booking));
+        });
         this.busService.subscribe("reload", (url) => redirect(url));
         this.rpc = useService("rpc");
         this.notificationService = useService("notification");
@@ -65,15 +74,15 @@ export class RoomBookingView extends Component {
         useInterval(this.refreshBookingView.bind(this), 1000);
 
         // If the user is inactive for more than the  INACTIVITY_TIMEOUT, reset the view
-        ["pointderdown", "keydown"].forEach((event) =>
+        ["pointerdown", "keydown"].forEach((event) =>
             useExternalListener(window, event, () => {
-                clearTimeout(this.inactivityTimer);
-                this.inactivityTimer = setTimeout(() => {
+                browser.clearTimeout(this.inactivityTimer);
+                this.inactivityTimer = browser.setTimeout(() => {
                     this.resetBookingForm();
                 }, INACTIVITY_TIMEOUT);
             }),
         );
-        onWillUnmount(() => clearTimeout(this.inactivityTimer));
+        onWillUnmount(() => browser.clearTimeout(this.inactivityTimer));
     }
 
     //----------------------------------------------------------------------
@@ -190,9 +199,8 @@ export class RoomBookingView extends Component {
         }
         const currentBooking =
             this.state.bookings[0]?.interval.start < this.now ? this.state.bookings[0] : null;
-        // Check if next booking has started or if current booking has been
-        // rescheduled later
-        if (this.state.currentBooking?.id !== currentBooking?.id) {
+        // Check if next booking has started or if current booking has been rescheduled
+        if (this.state.currentBooking?.interval.end !== currentBooking?.interval.end) {
             this.state.currentBooking = currentBooking;
         }
         // Update the currentDate that is used in the sidebar
@@ -207,8 +215,8 @@ export class RoomBookingView extends Component {
     resetBookingForm() {
         this.state.scheduleBooking = false;
         this.state.scheduleBookingQuickCreate = false;
-        this.state.bookingToEdit = null;
-        this.state.bookingName = null;
+        this.state.bookingToEdit = undefined;
+        this.state.bookingName = undefined;
     }
 
     /**
@@ -239,10 +247,18 @@ export class RoomBookingView extends Component {
      * @param {String} newBooking.name
      */
     addBooking(newBooking) {
-        newBooking.interval = luxon.Interval.fromDateTimes(
-            deserializeDateTime(newBooking.start_datetime),
-            deserializeDateTime(newBooking.stop_datetime),
-        );
+        newBooking = {
+            id: newBooking.id,
+            name: newBooking.name,
+            interval: luxon.Interval.fromDateTimes(
+                deserializeDateTime(newBooking.start_datetime),
+                deserializeDateTime(newBooking.stop_datetime),
+            ),
+        };
+        // Do not add bookings that are already finished
+        if (newBooking.interval.end < this.now) {
+            return;
+        }
         const newBookingInsertIdx = this.state.bookings.findIndex(
             (booking) => booking.interval.start > newBooking.interval.start,
         );
@@ -250,6 +266,10 @@ export class RoomBookingView extends Component {
             this.state.bookings.push(newBooking);
         } else {
             this.state.bookings.splice(newBookingInsertIdx, 0, newBooking);
+        }
+        // If the new booking has already started (eg. book now), refresh the view
+        if (newBooking.interval.start < this.now) {
+            this.refreshBookingView();
         }
     }
 
@@ -259,7 +279,18 @@ export class RoomBookingView extends Component {
      */
     removeBooking(bookingId) {
         const bookingIdx = this.state.bookings.findIndex((booking) => booking.id === bookingId);
-        this.state.bookings.splice(bookingIdx, 1);
+        if (bookingIdx !== -1) {
+            this.state.bookings.splice(bookingIdx, 1);
+            // Refresh view if the booking deleted was the current one
+            if (this.state.currentBooking?.id === bookingId) {
+                this.refreshBookingView();
+            }
+        }
+        // Leave form view if booking being edited has been deleted
+        if (this.state.bookingToEdit?.id === bookingId) {
+            this.resetBookingForm();
+            this.notificationService.add(_t("The booking you were editing has been deleted."));
+        }
     }
 
     /**

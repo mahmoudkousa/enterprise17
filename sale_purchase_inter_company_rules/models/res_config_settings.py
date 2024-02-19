@@ -20,7 +20,7 @@ class ResConfigSettings(models.TransientModel):
             self.auto_validation = False
             self.warehouse_id = False
             self.copy_lots_delivery = False
-        else:
+        elif self.rule_type != self.env.company.rule_type:
             warehouse_id = self.warehouse_id or self.env['stock.warehouse'].search([('company_id', '=', self.env.company.id)], limit=1)
             self.warehouse_id = warehouse_id
             self.copy_lots_delivery = self.env.user.has_group('stock.group_production_lot')

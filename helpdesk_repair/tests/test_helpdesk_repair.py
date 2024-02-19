@@ -9,6 +9,7 @@ class TestRepair(HelpdeskCommon):
     def test_lot_id(self):
         """ This test purpose is to ensure that, if present, the context key default_lot_id is not
         propagated to the action_repair_done(). """
+        self.env.ref('base.group_user').implied_ids = [(4, self.env.ref('stock.group_production_lot').id)]
 
         company = self.env.company
         product = self.env['product.product'].create({'name': 'Product'})

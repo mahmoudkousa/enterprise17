@@ -48,8 +48,9 @@ export class Digipad extends Component {
      */
     async _increment(interval=1) {
         this._checkInputValue();
+        const fraction = this.value.split('.')[1]
         const numberValue = Number(this.value || 0);
-        this.value = String(numberValue + interval);
+        this.value = (numberValue + interval).toFixed(fraction?.length);
         await this.props.record.update(this.changes);
     }
 

@@ -147,7 +147,7 @@ class TestInvoiceExtract(AccountTestInvoicingCommon, TestExtractMixin, MailCommo
             expected_get_results_params = {
                 'version': OCR_VERSION,
                 'document_token': 'some_token',
-                'account_token': self.env['iap.account'].get('invoice_ocr').account_token,
+                'account_token': invoice._get_iap_account().account_token,
             }
 
             with self._mock_iap_extract(
@@ -594,7 +594,7 @@ class TestInvoiceExtract(AccountTestInvoicingCommon, TestExtractMixin, MailCommo
                 }
             },
             'document_token': 'some_token',
-            'account_token': self.env['iap.account'].get('invoice_ocr').account_token,
+            'account_token': invoice._get_iap_account().account_token,
         }
 
         with self._mock_iap_extract(
@@ -707,8 +707,6 @@ class TestInvoiceExtract(AccountTestInvoicingCommon, TestExtractMixin, MailCommo
         self.assertEqual(invoice.extract_state, 'waiting_extraction')
         self.assertEqual(invoice.extract_document_uuid, 'some_token')
 
-    # TODO: Test working thanks to a bug. Now the bug is fixed and since we need to merge now and since the test is not passing, let's skip it for now.
-    @unittest.skip
     def test_automatic_sending_customer_invoice_email_alias_pdf_filter(self):
         # test that alias_auto_extract_pdfs_only option successfully prevent non pdf attachments to be sent to OCR
         self.env.company.extract_out_invoice_digitalization_mode = 'auto_send'

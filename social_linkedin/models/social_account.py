@@ -4,6 +4,7 @@
 import base64
 import requests
 from datetime import datetime, timedelta
+from urllib.parse import quote
 from werkzeug.urls import url_join
 
 from odoo import _, models, fields, api
@@ -127,40 +128,57 @@ class SocialAccountLinkedin(models.Model):
             'Authorization': 'Bearer %s' % linkedin_access_token,
             'cache-control': 'no-cache',
             'X-Restli-Protocol-Version': '2.0.0',
-            'LinkedIn-Version': '202211',
+            'LinkedIn-Version': '202401',
         }
 
     def _get_linkedin_accounts(self, linkedin_access_token):
         """Make an API call to get all LinkedIn pages linked to the actual access token."""
-        response = requests.get(
-            url_join(self.env['social.media']._LINKEDIN_ENDPOINT, 'organizationAcls'),
+        response = self._linkedin_request(
+            'organizationAcls',
             params={
                 'q': 'roleAssignee',
                 'role': 'ADMINISTRATOR',
-                'projection': '(elements*(*,organization~(%s)))' % self.env['social.media']._LINKEDIN_ORGANIZATION_PROJECTION,
+                'state': 'APPROVED',
             },
-            headers=self._linkedin_bearer_headers(linkedin_access_token),
-            timeout=5).json()
+            linkedin_access_token=linkedin_access_token,
+        )
+        if not response.ok:
+            raise SocialValidationException(_('An error occurred when fetching your pages: %r.', response.text))
 
-        # Avoid duplicates accounts
+        account_ids = [
+            organization['organization'].split(':')[-1]
+            for organization in response.json().get('elements', [])
+        ]
+
+        response = self._linkedin_request(
+            'organizations',
+            object_ids=account_ids,
+            fields=('id', 'name', 'localizedName', 'vanityName', 'logoV2:(original)'),
+            linkedin_access_token=linkedin_access_token,
+        )
+        if not response.ok:
+            raise SocialValidationException(_('An error occurred when fetching your pages data: %r.', response.text))
+
+        organization_results = response.json().get('results', {})
+
+        images_urns = [
+            values.get('logoV2', {}).get('original')
+            for values in organization_results.values()
+        ]
+        image_url_by_id = self._linkedin_request_images(images_urns, linkedin_access_token)
+
         accounts = []
-        accounts_urn = []
-        if 'elements' in response and isinstance(response.get('elements'), list):
-            for organization in response.get('elements'):
-                if organization.get('state') != 'APPROVED':
-                    continue
-                image_url = self._extract_linkedin_picture_url(organization.get('organization~'))
-                image_data = requests.get(image_url, timeout=10).content if image_url else None
-                account_urn = organization.get('organization')
-                if account_urn not in accounts_urn:
-                    accounts_urn.append(account_urn)
-                    accounts.append({
-                        'name': organization.get('organization~', {}).get('localizedName'),
-                        'linkedin_account_urn': account_urn,
-                        'linkedin_access_token': linkedin_access_token,
-                        'social_account_handle': organization.get('organization~', {}).get('vanityName'),
-                        'image': base64.b64encode(image_data) if image_data else False,
-                    })
+        for account_id, organization in organization_results.items():
+            image_id = organization.get('logoV2', {}).get('original', '').split(':')[-1]
+            image_url = image_id and image_url_by_id.get(image_id)
+            image_data = image_url and requests.get(image_url, timeout=10).content
+            accounts.append({
+                'name': organization.get('localizedName'),
+                'linkedin_account_urn': f"urn:li:organization:{account_id}",
+                'linkedin_access_token': linkedin_access_token,
+                'social_account_handle': organization.get('vanityName'),
+                'image': base64.b64encode(image_data) if image_data else False,
+            })
 
         return accounts
 
@@ -222,15 +240,58 @@ class SocialAccountLinkedin(models.Model):
             self.env['social.stream'].create(streams_to_create)
 
     def _extract_linkedin_picture_url(self, json_data):
-        """The LinkedIn API returns a very complicated and nested structure for author/company information.
-        This method acts as a helper to extract the image URL from the passed data."""
-        elements = None
-        if json_data and 'logoV2' in json_data:
-            # company picture
-            elements = json_data.get('logoV2', {}).get('original~', {})
-        elif json_data and 'profilePicture' in json_data:
-            # personal picture
-            elements = json_data.get('profilePicture', {}).get('displayImage~', {})
-        if elements:
-            return elements.get('elements', [{}])[0].get('identifiers', [{}])[0].get('identifier', '')
+        # TODO: remove in master
         return ''
+
+    ################
+    # External API #
+    ################
+
+    def _linkedin_request(self, endpoint, params=None, linkedin_access_token=None,
+                          object_ids=None, fields=None, method="GET", json=None):
+        if not linkedin_access_token:
+            self.ensure_one()
+
+        url = url_join(self.env['social.media']._LINKEDIN_ENDPOINT, endpoint)
+
+        # need to be added manually, so requests doesn't escape them
+        get_params = []
+        if object_ids:
+            get_params.append("ids=List(%s)" % ','.join(map(quote, object_ids)))
+        if fields:
+            get_params.append('fields=%s' % ','.join(fields))
+        if get_params:
+            url += "?" + "&".join(get_params)
+
+        return requests.request(
+            method,
+            url,
+            params=params,
+            json=json,
+            headers=self._linkedin_bearer_headers(linkedin_access_token),
+            timeout=5,
+        )
+
+    def _linkedin_request_images(self, images_ids, linkedin_access_token=None):
+        """Make an API call to get the downloadable URL of the images.
+
+        :param images_ids: Image ids (li:image or digital asset)
+        :param linkedin_access_token: Access token to use
+        """
+        images_urns = [
+            f"urn:li:image:{images_id.split(':')[-1]}"
+            for images_id in images_ids
+            if images_id
+        ]
+        if not images_urns:
+            return {}
+        response = self._linkedin_request(
+            'images',
+            object_ids=images_urns,
+            fields=('downloadUrl',),
+            linkedin_access_token=linkedin_access_token,
+        )
+        return {
+            image_urn.split(':')[-1]: image_values['downloadUrl']
+            for image_urn, image_values in response.json().get('results', {}).items()
+        } if response.ok else {}

@@ -77,6 +77,40 @@
         <field name="rule_parameter_id" ref="rule_parameter_federal_income_tax_withholding_rates_1"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_federal_income_tax_withholding_rates_1_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">{
+    'jointly': [
+        (0, 16300, 0.00, 0, 0),
+        (16300, 39500, 0.00, 10, 16300),
+        (39500, 110600, 2320.00, 12, 39500),
+        (110600, 217350, 10852.00, 22, 110600),
+        (217350, 400200, 34337.00, 24, 217350),
+        (400200, 503750, 78221.00, 32, 400200),
+        (503750, 747500, 111357.00, 35, 503750),
+        (747500, 999999999999, 196669.50, 37, 747500)],
+    'separately': [
+        (0, 6000, 0.00, 0, 0),
+        (6000, 17600, 0.00, 10, 6000),
+        (17600, 53150, 1160.00, 12, 17600),
+        (53150, 106525, 5426.00, 22, 53150),
+        (106525, 197950, 17168.50, 24, 106525),
+        (197950, 249725, 39110.50, 32, 197950),
+        (249725, 615350, 55678.50, 35, 249725),
+        (615350, 999999999999, 183647.25, 37, 615350)],
+    'head': [
+        (0, 13300, 0.00, 0, 0),
+        (13300, 29850, 0.00, 10, 13300),
+        (29850, 76400, 1655.00, 12, 29850),
+        (76400, 113800, 7241.00, 22, 76400),
+        (113800, 205250, 15469.00, 24, 113800),
+        (205250, 257000, 37417.00, 32, 205250),
+        (257000, 622650, 53977.00, 35, 257000),
+        (622650, 999999999999, 181954.50, 37, 622650),
+    ]
+}</field>
+        <field name="rule_parameter_id" ref="rule_parameter_federal_income_tax_withholding_rates_1"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <!--
         Use these if the Form W-4 is from 2020 or later and the box in Step 2
@@ -121,6 +155,40 @@
         <field name="rule_parameter_id" ref="rule_parameter_federal_income_tax_withholding_rates_2"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_federal_income_tax_withholding_rates_2_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">{
+    'jointly': [
+        (0, 14600, 0.00, 0, 0),
+        (14600, 26200, 0.00, 10, 14600),
+        (26200, 61750, 1160.00, 12, 26200),
+        (61750, 115125, 5426.00, 22, 61750),
+        (115125, 206550, 17168.50, 24, 115125),
+        (206550, 258325, 39110.50, 32, 206550),
+        (258325, 380200, 55678.50, 35, 258325),
+        (380200, 999999999999, 98334.75, 37, 380200)],
+    'separately': [
+        (0, 7300, 0.00, 0, 0),
+        (7300, 13100, 0.00, 10, 7300),
+        (13100, 30875, 580.00, 12, 13100),
+        (30875, 57563, 2713.00, 22, 30875),
+        (57563, 103275, 8584.25, 24, 57563),
+        (103275, 129163, 19555.25, 32, 103275),
+        (129163, 311975, 27839.25, 35, 129163),
+        (311975, 999999999999, 91823.63, 37, 311975)],
+    'head': [
+        (0, 10950, 0.00, 0, 0),
+        (10950, 19225, 0.00, 10, 10950),
+        (19225, 42500, 827.50, 12, 19225),
+        (42500, 61200, 3620.50, 22, 42500),
+        (61200, 106925, 7734.50, 24, 61200),
+        (106925, 132800, 18708.50, 32, 106925),
+        (132800, 315625, 26988.50, 35, 132800),
+        (315625, 999999999999, 90977.25, 37, 315625),
+    ]
+}</field>
+        <field name="rule_parameter_id" ref="rule_parameter_federal_income_tax_withholding_rates_2"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_ca_low_income_exemption_table" model="hr.rule.parameter">
         <field name="name">US: California Withholding - Low Income Exemption Table</field>
@@ -140,6 +208,20 @@
 }</field>
         <field name="rule_parameter_id" ref="rule_parameter_ca_low_income_exemption_table"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="rule_parameter_ca_low_income_exemption_table_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">{
+    'weekly': [332, 332, 683, 683],
+    'bi-weekly': [683, 683, 1367, 1367],
+    'semi-monthly': [740, 740, 1481, 1481],
+    'monthly': [1481, 1481, 2962, 2962],
+    'quarterly': [4442, 4442, 8885, 8885],
+    'semi-annually': [8885, 8885, 17769, 17769],
+    'annually': [17769, 17769, 35538, 35538],
+    'daily': [68, 68, 137, 137],
+}</field>
+        <field name="rule_parameter_id" ref="rule_parameter_ca_low_income_exemption_table"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 
     <record id="rule_parameter_ca_estimated_deduction_table" model="hr.rule.parameter">
@@ -181,9 +263,23 @@
         <field name="rule_parameter_id" ref="rule_parameter_ca_standard_deduction_table"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_ca_standard_deduction_table_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">{
+    'weekly': [103, 103, 206, 206],
+    'bi-weekly': [206, 206, 413, 413],
+    'semi-monthly': [223, 223, 447, 447],
+    'monthly': [447, 447, 894, 894],
+    'quarterly': [1341, 1341, 2682, 2682],
+    'semi-annually': [2682, 2682, 5363, 5363],
+    'annually': [5363, 5363, 10726, 10726],
+    'daily': [21, 21, 41, 41],
+}</field>
+        <field name="rule_parameter_id" ref="rule_parameter_ca_standard_deduction_table"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_ca_exemption_allowance_table" model="hr.rule.parameter">
-        <field name="name">US: California Withholding - Estimated Deduction Table</field>
+        <field name="name">US: California Withholding - Exemption Allowance Table</field>
         <field name="code">l10n_us_ca_exemption_allowance_table</field>
         <field name="country_id" ref="base.us"/>
     </record>
@@ -200,6 +296,20 @@
 }</field>
         <field name="rule_parameter_id" ref="rule_parameter_ca_exemption_allowance_table"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="rule_parameter_ca_exemption_allowance_table_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">{
+    'weekly': [0, 3.05, 6.09, 9.14, 12.18, 15.23, 18.28, 21.32, 24.37, 27.42, 30.46],
+    'bi-weekly': [0, 6.09, 12.18, 18.28, 24.37, 30.46, 36.55, 42.65, 48.74, 54.83, 60.92],
+    'semi-monthly': [0, 6.6, 13.20, 19.80, 26.40, 33.00, 39.60, 46.20, 52.80, 59.40, 66.00],
+    'monthly': [0, 13.20, 26.40, 39.60, 52.80, 66.00, 79.20, 92.40, 105.60, 118.80, 132.00],
+    'quarterly': [0, 39.60, 79.20, 118.80, 158.40, 198.00, 237.60, 277.20, 316.80, 356.40, 396.00],
+    'semi-annually': [0, 79.20, 158.40, 237.60, 316.80, 396.00, 475.20, 554.40, 633.60, 712.80, 792.00],
+    'annually': [0, 158.40, 316.80, 475.20, 633.60, 792.00, 950.40, 1108.80, 1267.20, 1425.60, 1584.00],
+    'daily': [0, 0.61, 1.22, 1.83, 2.44, 3.05, 3.66, 4.26, 4.87, 5.48, 6.09],
+}</field>
+        <field name="rule_parameter_id" ref="rule_parameter_ca_exemption_allowance_table"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 
     <record id="rule_parameter_ca_tax_rate_tables" model="hr.rule.parameter">
@@ -493,6 +603,292 @@
         <field name="rule_parameter_id" ref="rule_parameter_ca_tax_rate_tables"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_ca_tax_rate_table_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">{
+    'weekly': {
+        'separately': [
+            (0, 200, 1.100, 0, 0.00),
+            (200, 475, 2.200, 200, 2.20),
+            (475, 749, 4.400, 475, 8.25),
+            (749, 1040, 6.600, 749, 20.31),
+            (1040, 1314, 8.800, 1040, 39.52),
+            (1314, 6714, 10.230, 1314, 63.63),
+            (6714, 8057, 11.330, 6714, 616.05),
+            (8057, 13428, 12.430, 8057, 768.21),
+            (13428, 19231, 13.530, 13428, 1435.83),
+            (19231, 99999999999999, 14.630, 19231, 2220.98)],
+        'jointly': [
+            (0, 400, 1.100, 0, 0.00),
+            (400, 950, 2.200, 400, 4.40),
+            (950, 1498, 4.400, 950, 16.50),
+            (1498, 2080, 6.600, 1498, 40.61),
+            (2080, 2628, 8.800, 2080, 79.02),
+            (2628, 13428, 10.230, 2628, 127.24),
+            (13428, 16114, 11.330, 13428, 1232.08),
+            (16114, 19231, 12.430, 16114, 1536.40),
+            (19231, 26857, 13.530, 19231, 1923.84),
+            (26857, 99999999999999, 14.630, 26857, 2955.64)],
+        'head': [
+            (0, 401, 1.100, 0, 0.00),
+            (401, 949, 2.200, 401, 4.41),
+            (949, 1224, 4.400, 949, 16.47),
+            (1224, 1515, 6.600, 1224, 28.57),
+            (1515, 1789, 8.800, 1515, 47.78),
+            (1789, 9131, 10.230, 1789, 71.89),
+            (9131, 10958, 11.330, 9131, 822.98),
+            (10958, 18262, 12.430, 10958, 1029.98),
+            (18262, 19231, 13.530, 18262, 1937.87),
+            (19231, 99999999999999, 14.630, 19231, 2068.98)],
+    },
+    'bi-weekly': {
+        'separately': [
+            (0, 400, 1.100, 0, 0.00),
+            (400, 950, 2.200, 400, 4.40),
+            (950, 1498, 4.400, 950, 16.50),
+            (1498, 2080, 6.600, 1498, 40.61),
+            (2080, 2628, 8.800, 2080, 79.02),
+            (2628, 13428, 10.230, 2628, 127.24),
+            (13428, 16114, 11.330, 13428, 1232.08),
+            (16114, 26856, 12.430, 16114, 1536.40),
+            (26856, 38462, 13.530, 26856, 2871.63),
+            (38462, 99999999999999, 14.630, 38462, 4441.92)],
+        'jointly': [
+            (0, 800, 1.100, 0, 0.00),
+            (800, 1900, 2.200, 800, 8.80),
+            (1900, 2996, 4.400, 1900, 33.00),
+            (2996, 4160, 6.600, 2996, 81.22),
+            (4160, 5256, 8.800, 4160, 158.04),
+            (5256, 26856, 10.230, 5256, 254.49),
+            (26856, 32228, 11.330, 26856, 2464.17),
+            (32228, 38462, 12.430, 32228, 3072.82),
+            (38462, 53714, 13.530, 38462, 3847.71),
+            (53714, 99999999999999, 14.630, 53714, 5911.31)],
+        'head': [
+            (0, 802, 1.100, 0, 0.00),
+            (802, 1898, 2.200, 802, 8.82),
+            (1898, 2448, 4.400, 1898, 32.93),
+            (2448, 3030, 6.600, 2448, 57.13),
+            (3030, 3578, 8.800, 3030, 95.54),
+            (3578, 18262, 10.230, 3578, 143.76),
+            (18262, 21916, 11.330, 18262, 1645.93),
+            (21916, 36524, 12.430, 21916, 2059.93),
+            (36524, 38462, 13.530, 36524, 3875.70),
+            (38462, 99999999999999, 14.630, 38462, 4137.91)],
+    },
+    'semi-monthly': {
+        'separately': [
+            (0, 434, 1.100, 0, 0.00),
+            (434, 1029, 2.200, 434, 4.77),
+            (1029, 1623, 4.400, 1029, 17.86),
+            (1623, 2253, 6.600, 1623, 44.00),
+            (2253, 2848, 8.800, 2253, 85.58),
+            (2848, 14547, 10.230, 2848, 137.94),
+            (14547, 17457, 11.330, 14547, 1334.75),
+            (17457, 29095, 12.430, 17457, 1664.45),
+            (29095, 41667, 13.530, 29095, 3111.05),
+            (41667, 99999999999999, 14.630, 41667, 4812.04)],
+        'jointly': [
+            (0, 868, 1.100, 0, 0.00),
+            (868, 2058, 2.200, 868, 9.55),
+            (2058, 3246, 4.400, 2058, 35.73),
+            (3246, 4506, 6.600, 3246, 88.00),
+            (4506, 5696, 8.800, 4506, 171.16),
+            (5696, 29094, 10.230, 5696, 275.88),
+            (29094, 34914, 11.330, 29094, 2669.50),
+            (34914, 41667, 12.430, 34914, 3328.91),
+            (41667, 58189, 13.530, 41667, 4168.31),
+            (58189, 99999999999999, 14.630, 58189, 6403.74)],
+        'head': [
+            (0, 868, 1.100, 0, 0.00),
+            (868, 2057, 2.200, 868, 9.55),
+            (2057, 2652, 4.400, 2057, 35.71),
+            (2652, 3282, 6.600, 2652, 61.89),
+            (3282, 3877, 8.800, 3282, 103.47),
+            (3877, 19784, 10.230, 3877, 155.83),
+            (19784, 23741, 11.330, 19784, 1783.12),
+            (23741, 39569, 12.430, 23741, 2231.45),
+            (39569, 41667, 13.530, 39569, 4198.87),
+            (41667, 99999999999999, 14.630, 41667, 4482.73)],
+    },
+    'monthly': {
+        'separately': [
+            (0, 868, 1.100, 0, 0.00),
+            (868, 2058, 2.200, 868, 9.55),
+            (2058, 3246, 4.400, 2058, 35.73),
+            (3246, 4506, 6.600, 3246, 88.00),
+            (4506, 5696, 8.800, 4506, 171.16),
+            (5696, 29094, 10.230, 5696, 275.88),
+            (29094, 34914, 11.330, 29094, 2669.50),
+            (34914, 58190, 12.430, 34914, 3328.91),
+            (58190, 83334, 13.530, 58190, 6222.12),
+            (83334, 99999999999999, 14.630, 83334, 9624.10)],
+        'jointly': [
+            (0, 1736, 1.100, 0, 0.00),
+            (1736, 4116, 2.200, 1736, 19.10),
+            (4116, 6492, 4.400, 4116, 71.46),
+            (6492, 9012, 6.600, 6492, 176.00),
+            (9012, 11392, 8.800, 9012, 342.32),
+            (11392, 58188, 10.230, 11392, 551.76),
+            (58188, 69828, 11.330, 58188, 5338.99),
+            (69828, 83334, 12.430, 69828, 6657.80),
+            (83334, 116378, 13.530, 83334, 8336.60),
+            (116378, 99999999999999, 14.630, 116378, 12807.45)],
+        'head': [
+            (0, 1736, 1.100, 0, 0.00),
+            (1736, 4114, 2.200, 1736, 19.10),
+            (4114, 5304, 4.400, 4114, 71.42),
+            (5304, 6564, 6.600, 5304, 123.78),
+            (6564, 7754, 8.800, 6564, 206.94),
+            (7754, 39568, 10.230, 7754, 311.66),
+            (39568, 47482, 11.330, 39568, 3566.23),
+            (47482, 79138, 12.430, 47482, 4462.89),
+            (79138, 83334, 13.530, 79138, 8397.73),
+            (83334, 99999999999999, 14.630, 83334, 8965.45)],
+    },
+    'quarterly': {
+        'separately': [
+            (0, 2603, 1.100, 0, 0.00),
+            (2603, 6171, 2.200, 2603, 28.63),
+            (6171, 9740, 4.400, 6171, 107.13),
+            (9740, 13520, 6.600, 9740, 264.17),
+            (13520, 17088, 8.800, 13520, 513.65),
+            (17088, 87284, 10.230, 17088, 827.63),
+            (87284, 104740, 11.330, 87284, 8008.68),
+            (104740, 174568, 12.430, 104740, 9986.44),
+            (174568, 250000, 13.530, 174568, 18666.06),
+            (250000, 99999999999999, 14.630, 250000, 28872.01)],
+        'jointly': [
+            (0, 5206, 1.100, 0, 0.00),
+            (5206, 12342, 2.200, 5206, 57.27),
+            (12342, 19480, 4.400, 12342, 214.26),
+            (19480, 27040, 6.600, 19480, 528.33),
+            (27040, 34176, 8.800, 27040, 1027.29),
+            (34176, 174568, 10.230, 34176, 1655.26),
+            (174568, 209480, 11.330, 174568, 16017.36),
+            (209480, 250000, 12.430, 209480, 19972.89),
+            (250000, 349136, 13.530, 250000, 25009.53),
+            (349136, 99999999999999, 14.630, 349136, 38422.63)],
+        'head': [
+            (0, 5210, 1.100, 0, 0.00),
+            (5210, 12343, 2.200, 5210, 57.31),
+            (12343, 15911, 4.400, 12343, 214.24),
+            (15911, 19691, 6.600, 15911, 371.23),
+            (19691, 23259, 8.800, 19691, 620.71),
+            (23259, 118706, 10.230, 23259, 934.69),
+            (118706, 142448, 11.330, 118706, 10698.92),
+            (142448, 237412, 12.430, 142448, 13388.89),
+            (237412, 250000, 13.530, 237412, 25192.92),
+            (250000, 99999999999999, 14.630, 250000, 26896.08)],
+    },
+    'semi-annually': {
+        'separately': [
+            (0, 5206, 1.100, 0, 0.00),
+            (5206, 12342, 2.200, 5206, 57.27),
+            (12342, 19480, 4.400, 12342, 214.26),
+            (19480, 27040, 6.600, 19480, 528.33),
+            (27040, 34176, 8.800, 27040, 1027.29),
+            (34176, 174568, 10.230, 34176, 1655.26),
+            (174568, 209480, 11.330, 174568, 16017.36),
+            (209480, 349136, 12.430, 209480, 19972.89),
+            (349136, 500000, 13.530, 349136, 37332.13),
+            (500000, 99999999999999, 14.630, 500000, 57744.03)],
+        'jointly': [
+            (0, 10412, 1.100, 0, 0.00),
+            (10412, 24684, 2.200, 10412, 114.53),
+            (24684, 38960, 4.400, 24684, 428.51),
+            (38960, 54080, 6.600, 38960, 1056.65),
+            (54080, 68352, 8.800, 54080, 2054.57),
+            (68352, 349136, 10.230, 68352, 3310.51),
+            (349136, 418960, 11.330, 349136, 32034.71),
+            (418960, 500000, 12.430, 418960, 39945.77),
+            (500000, 698272, 13.530, 500000, 50019.04),
+            (698272, 99999999999999, 14.630, 698272, 76845.24)],
+        'head': [
+            (0, 10420, 1.100, 0, 0.00),
+            (10420, 24686, 2.200, 10420, 114.62),
+            (24686, 31822, 4.400, 24686, 428.47),
+            (31822, 39382, 6.600, 31822, 742.45),
+            (39382, 46518, 8.800, 39382, 1241.41),
+            (46518, 237412, 10.230, 46518, 1869.38),
+            (237412, 284896, 11.330, 237412, 21397.84),
+            (284896, 474824, 12.430, 284896, 26777.78),
+            (474824, 500000, 13.530, 474824, 50385.83),
+            (500000, 99999999999999, 14.630, 500000, 53792.14)],
+    },
+    'annually': {
+        'separately': [
+            (0, 10412, 1.100, 0, 0.00),
+            (10412, 24684, 2.200, 10412, 114.53),
+            (24684, 38959, 4.400, 24684, 428.51),
+            (38959, 54081, 6.600, 38959, 1056.61),
+            (54081, 68350, 8.800, 54081, 2054.66),
+            (68350, 349137, 10.230, 68350, 3310.33),
+            (349137, 418961, 11.330, 349137, 32034.84),
+            (418961, 698271, 12.430, 418961, 39945.90),
+            (698271, 1000000, 13.530, 698271, 74664.13),
+            (1000000, 99999999999999, 14.630, 1000000, 115488.06)],
+        'jointly': [
+            (0, 20824, 1.100, 0, 0.00),
+            (20824, 49368, 2.200, 20824, 229.06),
+            (49368, 77918, 4.400, 49368, 857.03),
+            (77918, 108162, 6.600, 77918, 2113.23),
+            (108162, 136700, 8.800, 108162, 4109.33),
+            (136700, 698274, 10.230, 136700, 6620.67),
+            (698274, 837922, 11.330, 698274, 64069.69),
+            (837922, 1000000, 12.430, 837922, 79891.81),
+            (1000000, 1396542, 13.530, 1000000, 100038.11),
+            (1396542, 99999999999999, 14.630, 1396542, 153690.24)],
+        'head': [
+            (0, 20839, 1.100, 0, 0.00),
+            (20839, 49371, 2.200, 20839, 229.23),
+            (49371, 63644, 4.400, 49371, 856.93),
+            (63644, 78765, 6.600, 63644, 1484.94),
+            (78765, 93037, 8.800, 78765, 2482.93),
+            (93037, 474824, 10.230, 93037, 3738.87),
+            (474824, 569790, 11.330, 474824, 42795.68),
+            (569790, 949649, 12.430, 569790, 53555.33),
+            (949649, 1000000, 13.530, 949649, 100771.80),
+            (1000000, 99999999999999, 14.630, 1000000, 107584.29)],
+    },
+    'daily': {
+        'separately': [
+            (0, 40, 1.100, 0, 0.00),
+            (40, 95, 2.200, 40, 0.44),
+            (95, 150, 4.400, 95, 1.65),
+            (150, 208, 6.600, 150, 4.07),
+            (208, 263, 8.800, 208, 7.90),
+            (263, 1343, 10.230, 263, 12.74),
+            (1343, 1611, 11.330, 1343, 123.22),
+            (1611, 2686, 12.430, 1611, 153.58),
+            (2686, 3846, 13.530, 2686, 287.20),
+            (3846, 99999999999999, 14.630, 3846, 444.15)],
+        'jointly': [
+            (0, 80, 1.100, 0, 0.00),
+            (80, 190, 2.200, 80, 0.88),
+            (190, 300, 4.400, 190, 3.30),
+            (300, 416, 6.600, 300, 8.14),
+            (416, 526, 8.800, 416, 15.80),
+            (526, 2686, 10.230, 526, 25.48),
+            (2686, 3222, 11.330, 2686, 246.45),
+            (3222, 3846, 12.430, 3222, 307.18),
+            (3846, 5371, 13.530, 3846, 384.74),
+            (5371, 99999999999999, 14.630, 5371, 591.07)],
+       'head': [
+            (0, 80, 1.100, 0, 0.00),
+            (80, 190, 2.200, 80, 0.88),
+            (190, 245, 4.400, 190, 3.30),
+            (245, 303, 6.600, 245, 5.72),
+            (303, 358, 8.800, 303, 9.55),
+            (358, 1826, 10.230, 358, 14.39),
+            (1826, 2192, 11.330, 1826, 164.57),
+            (2192, 3652, 12.430, 2192, 206.04),
+            (3652, 3846, 13.530, 3652, 387.52),
+            (3846, 99999999999999, 14.630, 3846, 413.77)],
+    },
+}</field>
+        <field name="rule_parameter_id" ref="rule_parameter_ca_tax_rate_tables"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_OASDI_tax_rate" model="hr.rule.parameter">
         <field name="name">US: FICA OASDI tax rate</field>
@@ -514,6 +910,11 @@
         <field name="parameter_value">160200</field>
         <field name="rule_parameter_id" ref="rule_parameter_OASDI_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="rule_parameter_OASDI_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">168600</field>
+        <field name="rule_parameter_id" ref="rule_parameter_OASDI_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 
     <record id="rule_parameter_FUTA_tax_rate" model="hr.rule.parameter">
@@ -583,6 +984,11 @@
         <field name="rule_parameter_id" ref="rule_parameter_ak_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_ak_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">49700</field>
+        <field name="rule_parameter_id" ref="rule_parameter_ak_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_az_sui_rate" model="hr.rule.parameter">
         <field name="name">US: Arizona SUI Rate</field>
@@ -626,6 +1032,11 @@
         <field name="parameter_value">10000</field>
         <field name="rule_parameter_id" ref="rule_parameter_ar_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="rule_parameter_ar_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">7000</field>
+        <field name="rule_parameter_id" ref="rule_parameter_ar_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 
     <record id="rule_parameter_ca_sui_rate" model="hr.rule.parameter">
@@ -671,6 +1082,11 @@
         <field name="rule_parameter_id" ref="rule_parameter_co_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_co_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">23800</field>
+        <field name="rule_parameter_id" ref="rule_parameter_co_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_ct_sui_rate" model="hr.rule.parameter">
         <field name="name">US: Connecticut SUI Rate</field>
@@ -692,6 +1108,11 @@
         <field name="parameter_value">15000</field>
         <field name="rule_parameter_id" ref="rule_parameter_ct_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="rule_parameter_ct_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">25000</field>
+        <field name="rule_parameter_id" ref="rule_parameter_ct_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 
     <record id="rule_parameter_de_sui_rate" model="hr.rule.parameter">
@@ -715,6 +1136,11 @@
         <field name="rule_parameter_id" ref="rule_parameter_de_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_de_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">10500</field>
+        <field name="rule_parameter_id" ref="rule_parameter_de_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_dc_sui_rate" model="hr.rule.parameter">
         <field name="name">US: District of Columbia SUI Rate</field>
@@ -726,6 +1152,11 @@
         <field name="rule_parameter_id" ref="rule_parameter_dc_sui_rate"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_dc_sui_rate_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">9</field>
+        <field name="rule_parameter_id" ref="rule_parameter_dc_sui_rate"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_dc_sui_cap" model="hr.rule.parameter">
         <field name="name">US: District of Columbia SUI Cap</field>
@@ -736,6 +1167,11 @@
         <field name="parameter_value">0</field>
         <field name="rule_parameter_id" ref="rule_parameter_dc_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="rule_parameter_dc_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">9000</field>
+        <field name="rule_parameter_id" ref="rule_parameter_dc_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 
     <record id="rule_parameter_fl_sui_rate" model="hr.rule.parameter">
@@ -803,6 +1239,11 @@
         <field name="rule_parameter_id" ref="rule_parameter_hi_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_hi_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">59100</field>
+        <field name="rule_parameter_id" ref="rule_parameter_hi_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_id_sui_rate" model="hr.rule.parameter">
         <field name="name">US: Idaho SUI Rate</field>
@@ -825,6 +1266,11 @@
         <field name="rule_parameter_id" ref="rule_parameter_id_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_id_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">53500</field>
+        <field name="rule_parameter_id" ref="rule_parameter_id_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_il_sui_rate" model="hr.rule.parameter">
         <field name="name">US: Illinois SUI Rate</field>
@@ -846,6 +1292,11 @@
         <field name="parameter_value">12960</field>
         <field name="rule_parameter_id" ref="rule_parameter_il_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="rule_parameter_il_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">13590</field>
+        <field name="rule_parameter_id" ref="rule_parameter_il_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 
     <record id="rule_parameter_in_sui_rate" model="hr.rule.parameter">
@@ -891,6 +1342,11 @@
         <field name="rule_parameter_id" ref="rule_parameter_ia_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_ia_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">38200</field>
+        <field name="rule_parameter_id" ref="rule_parameter_ia_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_ks_sui_rate" model="hr.rule.parameter">
         <field name="name">US: Kansas SUI Rate</field>
@@ -934,6 +1390,11 @@
         <field name="parameter_value">10800</field>
         <field name="rule_parameter_id" ref="rule_parameter_ky_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="rule_parameter_ky_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">11400</field>
+        <field name="rule_parameter_id" ref="rule_parameter_ky_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 
     <record id="rule_parameter_la_sui_rate" model="hr.rule.parameter">
@@ -1001,6 +1462,11 @@
         <field name="rule_parameter_id" ref="rule_parameter_mt_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_mt_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">43000</field>
+        <field name="rule_parameter_id" ref="rule_parameter_mt_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_ne_sui_rate" model="hr.rule.parameter">
         <field name="name">US: Nebraska SUI Rate</field>
@@ -1044,6 +1510,11 @@
         <field name="parameter_value">40100</field>
         <field name="rule_parameter_id" ref="rule_parameter_nv_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="rule_parameter_nv_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">40600</field>
+        <field name="rule_parameter_id" ref="rule_parameter_nv_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 
     <record id="rule_parameter_nh_sui_rate" model="hr.rule.parameter">
@@ -1089,6 +1560,11 @@
         <field name="rule_parameter_id" ref="rule_parameter_nj_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_nj_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">42300</field>
+        <field name="rule_parameter_id" ref="rule_parameter_nj_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_nm_sui_rate" model="hr.rule.parameter">
         <field name="name">US: New Mexico SUI Rate</field>
@@ -1111,7 +1587,11 @@
         <field name="rule_parameter_id" ref="rule_parameter_nm_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
-
+    <record id="rule_parameter_nm_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">31500</field>
+        <field name="rule_parameter_id" ref="rule_parameter_nm_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_ny_sui_rate" model="hr.rule.parameter">
         <field name="name">US: New York SUI Rate</field>
@@ -1133,6 +1613,11 @@
         <field name="parameter_value">12300</field>
         <field name="rule_parameter_id" ref="rule_parameter_ny_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="rule_parameter_ny_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">12500</field>
+        <field name="rule_parameter_id" ref="rule_parameter_ny_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 
     <record id="rule_parameter_nc_sui_rate" model="hr.rule.parameter">
@@ -1156,6 +1641,11 @@
         <field name="rule_parameter_id" ref="rule_parameter_nc_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_nc_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">31400</field>
+        <field name="rule_parameter_id" ref="rule_parameter_nc_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_nd_sui_rate" model="hr.rule.parameter">
         <field name="name">US: North Dakota SUI Rate</field>
@@ -1177,6 +1667,11 @@
         <field name="parameter_value">38400</field>
         <field name="rule_parameter_id" ref="rule_parameter_nd_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="rule_parameter_nd_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">43800</field>
+        <field name="rule_parameter_id" ref="rule_parameter_nd_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 
     <record id="rule_parameter_oh_sui_rate" model="hr.rule.parameter">
@@ -1222,6 +1717,11 @@
         <field name="rule_parameter_id" ref="rule_parameter_ok_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_ok_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">27000</field>
+        <field name="rule_parameter_id" ref="rule_parameter_ok_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_or_sui_rate" model="hr.rule.parameter">
         <field name="name">US: Oregon SUI Rate</field>
@@ -1243,6 +1743,11 @@
         <field name="parameter_value">51600</field>
         <field name="rule_parameter_id" ref="rule_parameter_or_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="rule_parameter_or_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">52800</field>
+        <field name="rule_parameter_id" ref="rule_parameter_or_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 
     <record id="rule_parameter_md_sui_rate" model="hr.rule.parameter">
@@ -1332,6 +1837,11 @@
         <field name="rule_parameter_id" ref="rule_parameter_mn_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_mn_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">42000</field>
+        <field name="rule_parameter_id" ref="rule_parameter_mn_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_ms_sui_rate" model="hr.rule.parameter">
         <field name="name">US: Mississippi SUI Rate</field>
@@ -1419,6 +1929,11 @@
         <field name="parameter_value">24600</field>
         <field name="rule_parameter_id" ref="rule_parameter_ri_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="rule_parameter_ri_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">29200</field>
+        <field name="rule_parameter_id" ref="rule_parameter_ri_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 
     <record id="rule_parameter_sc_sui_rate" model="hr.rule.parameter">
@@ -1508,6 +2023,11 @@
         <field name="rule_parameter_id" ref="rule_parameter_tx_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_tx_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">9000</field>
+        <field name="rule_parameter_id" ref="rule_parameter_tx_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_ut_sui_rate" model="hr.rule.parameter">
         <field name="name">US: Utah SUI Rate</field>
@@ -1530,6 +2050,11 @@
         <field name="rule_parameter_id" ref="rule_parameter_ut_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_ut_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">47000</field>
+        <field name="rule_parameter_id" ref="rule_parameter_ut_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_vt_sui_rate" model="hr.rule.parameter">
         <field name="name">US: Vermont SUI Rate</field>
@@ -1551,6 +2076,11 @@
         <field name="parameter_value">13500</field>
         <field name="rule_parameter_id" ref="rule_parameter_vt_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="rule_parameter_vt_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">14300</field>
+        <field name="rule_parameter_id" ref="rule_parameter_vt_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 
     <record id="rule_parameter_va_sui_rate" model="hr.rule.parameter">
@@ -1595,6 +2125,11 @@
         <field name="parameter_value">67600</field>
         <field name="rule_parameter_id" ref="rule_parameter_wa_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="rule_parameter_wa_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">68500</field>
+        <field name="rule_parameter_id" ref="rule_parameter_wa_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 
     <record id="rule_parameter_wv_sui_rate" model="hr.rule.parameter">
@@ -1661,6 +2196,11 @@
         <field name="parameter_value">29100</field>
         <field name="rule_parameter_id" ref="rule_parameter_wy_sui_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="rule_parameter_wy_sui_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">30900</field>
+        <field name="rule_parameter_id" ref="rule_parameter_wy_sui_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 
     <record id="rule_parameter_as_sui_rate" model="hr.rule.parameter">
@@ -1915,6 +2455,11 @@
         <field name="rule_parameter_id" ref="rule_parameter_401k_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
     </record>
+    <record id="rule_parameter_401k_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">23000</field>
+        <field name="rule_parameter_id" ref="rule_parameter_401k_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
 
     <record id="rule_parameter_medicare_additional_cap" model="hr.rule.parameter">
         <field name="name">US: Medicare Additional Tax Cap</field>
@@ -1958,6 +2503,11 @@
         <field name="parameter_value">66000</field>
         <field name="rule_parameter_id" ref="rule_parameter_benefits_matching_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="rule_parameter_benefits_matching_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">69000</field>
+        <field name="rule_parameter_id" ref="rule_parameter_benefits_matching_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 
     <record id="rule_parameter_ny_state_income_tax_table_a" model="hr.rule.parameter">
@@ -2414,5 +2964,26 @@
         <field name="parameter_value">12300</field>
         <field name="rule_parameter_id" ref="l10n_us_employee_salary_ny_reimployment_cap"/>
         <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="l10n_us_employee_salary_ny_reimployment_cap_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">12500</field>
+        <field name="rule_parameter_id" ref="l10n_us_employee_salary_ny_reimployment_cap"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+    </record>
+
+    <record id="l10n_us_employee_salary_ca_sdi_tax_rate" model="hr.rule.parameter">
+        <field name="name">CA: SDI Tax Rate</field>
+        <field name="code">l10n_us_ca_sdi_tax_rate</field>
+        <field name="country_id" ref="base.us"/>
+    </record>
+    <record id="l10n_us_employee_salary_ca_sdi_tax_rate_2023" model="hr.rule.parameter.value">
+        <field name="parameter_value">0.9</field>
+        <field name="rule_parameter_id" ref="l10n_us_employee_salary_ca_sdi_tax_rate"/>
+        <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+    </record>
+    <record id="l10n_us_employee_salary_ca_sdi_tax_rate_2024" model="hr.rule.parameter.value">
+        <field name="parameter_value">1.1</field>
+        <field name="rule_parameter_id" ref="l10n_us_employee_salary_ca_sdi_tax_rate"/>
+        <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
     </record>
 </odoo>

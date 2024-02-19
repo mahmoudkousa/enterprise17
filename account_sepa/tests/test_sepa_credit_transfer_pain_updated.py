@@ -22,6 +22,8 @@ class TestSEPACreditTransferUpdate(AccountTestInvoicingCommon):
             'account_sepa_lei': '04774727010477472701',
         })
 
+        cls.env.ref('base.EUR').active = True
+
         cls.bank_ing = cls.env['res.bank'].create({
             'name': 'ING',
             'bic': 'BBRUBEBB',

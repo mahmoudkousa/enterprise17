@@ -218,8 +218,10 @@ registry.category("web_tour.tours").add('knowledge_calendar_command_tour', {
     //-------------------------------------------------------------------------
 
     // Open the view props editor
-    trigger: '.o_knowledge_behavior_type_embedded_view .o_knowledge_toolbar button:contains("Edit")',
+    trigger: '.o_control_panel_breadcrumbs_actions .dropdown-toggle',
     run: 'click',
+}, {
+    trigger: '.dropdown-item:contains(Edit)'
 }, { // Change the start property
     trigger: '.o_knowledge_item_calendar_dialog_date_start .o_select_menu_toggler',
     run: 'click',
@@ -258,8 +260,10 @@ registry.category("web_tour.tours").add('knowledge_calendar_command_tour', {
     extra_trigger: '.fc-view:not(:has(.fc-event-container))',
     run: () => {},
 }, { // Change start and stop dates again
-    trigger: '.o_knowledge_behavior_type_embedded_view .o_knowledge_toolbar button:contains("Edit")',
+    trigger: '.o_control_panel_breadcrumbs_actions .dropdown-toggle',
     run: 'click',
+}, {
+    trigger: '.dropdown-item:contains(Edit)'
 }, { // Change the start property
     trigger: '.o_knowledge_item_calendar_dialog_date_start .o_select_menu_toggler',
     run: 'click',
@@ -279,8 +283,10 @@ registry.category("web_tour.tours").add('knowledge_calendar_command_tour', {
     trigger: '.modal-footer .btn-primary',
     run: 'click',
 }, { // Open the view
-    trigger: '.o_knowledge_behavior_type_embedded_view .o_knowledge_toolbar button:contains("Open")',
+    trigger: '.o_control_panel_breadcrumbs_actions .dropdown-toggle',
     run: 'click',
+}, {
+    trigger: '.dropdown-item:contains(Open)'
 }, { // Check that the item is shown
     trigger: '.fc-view .o_event_title:contains("Item Article")',
     extra_trigger: '.o_knowledge_article_view_calendar_embedded_view.o_action',

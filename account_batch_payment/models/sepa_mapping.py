@@ -1,6 +1,7 @@
 import re
+from xml.sax.saxutils import escape
 
-def _replace_characters_SEPA(string):
+def _replace_characters_SEPA(string, size=None):
     """
     Replace non-latin characters according to the official SEPA mapping.
     See https://www.europeanpaymentscouncil.eu/document-library/guidance-documents/sepa-requirements-extended-character-set-unicode-subset-best
@@ -9,7 +10,16 @@ def _replace_characters_SEPA(string):
     for match in re.finditer('[^-A-Za-z0-9/?:().,\'&<>+ ]', string):
         match_index = match.start()
         string_array[match_index] = sepa_mapping.get(string_array[match_index], '')
-    return ''.join(string_array)
+    string = ''.join(string_array)
+
+    if size:
+        string = string[:size]
+        i = 0
+        while len(escape(string)) > size:
+            i += 1
+            string = string[:size - i]
+
+    return string
 
 sepa_mapping = {
     "\u0021": "\u002E", "\u0023": "\u002E", "\u0024": "\u002E", "\u0025": "\u002E", "\u002A": "\u002E", "\u003B": "\u002C", "\u003C": "\u002E", "\u003D": "\u002E",

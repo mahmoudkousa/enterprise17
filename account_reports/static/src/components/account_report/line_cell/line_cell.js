@@ -6,7 +6,7 @@ import { useService } from "@web/core/utils/hooks";
 import { AccountReportCarryoverPopover } from "@account_reports/components/account_report/line_cell/popover/carryover_popover";
 import { AccountReportEditPopover } from "@account_reports/components/account_report/line_cell/popover/edit_popover";
 
-import { Component, useState } from "@odoo/owl";
+import { Component, markup, useState } from "@odoo/owl";
 
 export class AccountReportLineCell extends Component {
     static template = "account_reports.AccountReportLineCell";
@@ -92,6 +92,9 @@ export class AccountReportLineCell extends Component {
                 context: this.controller.context,
             }
         );
+        if (auditAction.help) {
+            auditAction.help = markup(auditAction.help);
+        }
 
         return this.action.doAction(auditAction);
     }

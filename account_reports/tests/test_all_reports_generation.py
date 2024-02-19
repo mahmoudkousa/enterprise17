@@ -85,10 +85,8 @@ class TestAllReportsGeneration(AccountTestInvoicingCommon):
 
                 options = report.get_options({'selected_variant_id': report.id, '_running_export_test': True})
 
-                export_report = report
                 if report.use_sections:
                     self.assertNotEqual(options['report_id'], report.id, "Composite reports should always reroute.")
-                    export_report = self.env['account.report'].browse(options['report_id'])
 
                 for option_button in options['buttons']:
                     if option_button['name'] in ('PDF', 'XLSX'):  # keep "Save" and other actions

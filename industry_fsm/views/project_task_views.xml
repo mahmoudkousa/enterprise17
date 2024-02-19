@@ -35,7 +35,10 @@
                 <attribute name="invisible">is_fsm</attribute>
             </xpath>
             <xpath expr="//field[@name='date_deadline']" position="after">
-                <field name="date_deadline" widget="daterange" options="{'start_date_field': 'planned_date_begin'}" nolabel="1" invisible="not is_fsm" required="False"/>
+                <field name="date_deadline" widget="daterange" options="{'start_date_field': 'planned_date_begin', 'always_range': '1'}" nolabel="1" invisible="not is_fsm" required="is_fsm and (date_deadline or planned_date_begin)"/>
+            </xpath>
+            <xpath expr="//field[@name='planned_date_begin']" position="attributes">
+                <attribute name="required">is_fsm and date_deadline</attribute>
             </xpath>
             <xpath expr="//page[@name='extra_info']" position="attributes">
                 <attribute name="groups">base.group_no_one</attribute>
@@ -52,7 +55,7 @@
             </xpath>
             <field name="is_fsm" string="is FSM?" invisible="1"/>
             <field name="partner_id" position="attributes">
-                <attribute name="context">{'show_address': is_fsm, 'res_partner_search_mode': 'customer'}</attribute>
+                <attribute name="context">{'show_address_if_fsm': 1, 'res_partner_search_mode': 'customer'}</attribute>
                 <attribute name="invisible">not project_id</attribute>
                 <attribute name="required">is_fsm</attribute>
             </field>
@@ -136,18 +139,18 @@
     </record>
 
     <!-- Quick create for the kanban view in Project when the user selects a project in the main view of project app -->
+    <!-- TODO: Remove me in master -->
     <record id="quick_create_task_in_project" model="ir.ui.view">
         <field name="name">project.task.quick_create_in_project.view.form.inherit</field>
         <field name="model">project.task</field>
         <field name="mode">primary</field>
         <field name="inherit_id" ref="quick_create_task_form_fsm"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='project_id']" position="replace">
-                <field name="project_id" invisible="not is_fsm" domain="[('is_fsm', '=', True)]"/>
-            </xpath>
+            <xpath expr="//form" position="inside"/>
         </field>
     </record>
 
+    <!-- TODO: Remove me in master -->
     <record id="project_task_in_project_view_kanban" model="ir.ui.view">
         <field name="name">project.task.in.project.kanban</field>
         <field name="model">project.task</field>

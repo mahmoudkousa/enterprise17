@@ -13,6 +13,14 @@
             </div>
         </xpath>
 
+        <xpath expr="//div[hasclass('row')][3]" position="after">
+            <div class="row" t-if="is_cfdi_signed and o.partner_id.l10n_mx_edi_fiscal_regime">
+                <div class="col-6">
+                    Fiscal Regime: (<span t-out="o.partner_id.l10n_mx_edi_fiscal_regime"/>) <span t-field="o.partner_id.l10n_mx_edi_fiscal_regime"/>
+                </div>
+            </div>
+        </xpath>
+
         <xpath expr="//table[@name='invoices']" position="before">
             <t t-if="cdfi and cfdi['cfdi_node']">
                 <t t-set="payment_info" t-value="cfdi.get('payment_info')"/>

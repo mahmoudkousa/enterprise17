@@ -270,6 +270,17 @@ class SpreadsheetDocuments(SpreadsheetTestCommon):
         spreadsheet_ids = [s["id"] for s in spreadsheets]
         self.assertEqual(spreadsheet_ids, [spreadsheet1.id, spreadsheet2.id])
 
+    def test_spreadsheet_to_display_join_session(self):
+        self.archive_existing_spreadsheet()
+        with freeze_time("2020-02-02 18:00"):
+            spreadsheet1 = self.create_spreadsheet()
+        with freeze_time("2020-02-15 18:00"):
+            spreadsheet2 = self.create_spreadsheet()
+        spreadsheet1.join_spreadsheet_session()
+        spreadsheets = self.env["documents.document"].get_spreadsheets_to_display([])
+        spreadsheet_ids = [s["id"] for s in spreadsheets]
+        self.assertEqual(spreadsheet_ids, [spreadsheet1.id, spreadsheet2.id])
+
     def test_spreadsheet_to_display_without_contrib(self):
         self.archive_existing_spreadsheet()
         user = new_test_user(
@@ -643,3 +654,10 @@ class SpreadsheetDocuments(SpreadsheetTestCommon):
         with freeze_time("2023-05-16 19:00"):
             self.env["documents.document"]._gc_spreadsheet()
         self.assertEqual(len(self.env["documents.document"].search([('handler', '=', 'spreadsheet')])), 1)
+
+    def test_join_session_name_is_a_string(self):
+        spreadsheet = self.create_spreadsheet(name="")
+        self.assertEqual(spreadsheet.name, "")
+        self.assertEqual(spreadsheet.display_name, False)
+        session_data = spreadsheet.join_spreadsheet_session()
+        self.assertEqual(session_data["name"], "")

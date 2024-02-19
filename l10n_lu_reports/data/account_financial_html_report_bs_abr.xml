@@ -181,17 +181,22 @@
                                 <field name="name">V. Profit or loss brought forward</field>
                                 <field name="code">LU_BSABR_319</field>
                                 <field name="expression_ids">
-                                    <record id="account_financial_report_l10n_lu_bs_abr_line_2_1_5_pre_balance" model="account.report.expression">
-                                        <field name="label">pre_balance</field>
-                                        <field name="engine">domain</field>
-                                        <field name="formula" eval="['|', ('account_id.internal_group', 'in', ['income', 'expense']), '|', ('account_id.code', '=like', '141%'), ('account_id.code', '=like', '142%')]"/>
-                                        <field name="date_scope">from_beginning</field>
-                                        <field name="subformula">-sum</field>
+                                    <record id="account_financial_report_l10n_lu_bs_abr_line_2_1_5_past_pnl" model="account.report.expression">
+                                        <field name="label">past_pnl</field>
+                                        <field name="engine">aggregation</field>
+                                        <field name="subformula">cross_report</field>
+                                        <field name="formula">LU_PLABR_669.balance</field>
+                                        <field name="date_scope">to_beginning_of_fiscalyear</field>
+                                    </record>
+                                    <record id="account_financial_report_l10n_lu_bs_abr_line_2_1_5_accounts" model="account.report.expression">
+                                        <field name="label">accounts</field>
+                                        <field name="engine">account_codes</field>
+                                        <field name="formula">-14</field>
                                     </record>
                                     <record id="account_financial_report_l10n_lu_bs_abr_line_2_1_5_balance" model="account.report.expression">
                                         <field name="label">balance</field>
                                         <field name="engine">aggregation</field>
-                                        <field name="formula">LU_BSABR_319.pre_balance - LU_BSABR_321.balance</field>
+                                        <field name="formula">LU_BSABR_319.past_pnl + LU_BSABR_319.accounts</field>
                                     </record>
                                 </field>
                             </record>
@@ -202,10 +207,10 @@
                                 <field name="expression_ids">
                                     <record id="account_financial_report_l10n_lu_bs_abr_line_2_1_6_balance" model="account.report.expression">
                                         <field name="label">balance</field>
-                                        <field name="engine">domain</field>
-                                        <field name="formula" eval="[('account_id.internal_group', 'in', ['income', 'expense'])]"/>
+                                        <field name="engine">aggregation</field>
+                                        <field name="subformula">cross_report</field>
+                                        <field name="formula">LU_PLABR_669.balance</field>
                                         <field name="date_scope">from_fiscalyear</field>
-                                        <field name="subformula">-sum</field>
                                     </record>
                                 </field>
                             </record>

@@ -73,8 +73,8 @@ class AccountEdiXmlUBLPE(models.AbstractModel):
         if spot:
             vals.append({
                 'id': spot['id'],
-                'currency_name': invoice.currency_id.name,
-                'currency_dp': invoice.currency_id.decimal_places,
+                'currency_name': 'PEN',
+                'currency_dp': 2,
                 'payment_means_id': spot['payment_means_id'],
                 'payment_percent': spot['payment_percent'],
                 'amount': spot['amount'],
@@ -225,9 +225,8 @@ class AccountEdiXmlUBLPE(models.AbstractModel):
     def _get_invoice_monetary_total_vals(self, invoice, taxes_vals, line_extension_amount, allowance_total_amount, charge_total_amount):
         # EXTENDS account.edi.xml.ubl_21
         vals = super()._get_invoice_monetary_total_vals(invoice, taxes_vals, line_extension_amount, allowance_total_amount, charge_total_amount)
-        if invoice.move_type == 'out_refund':
-            vals['payable_amount'] += vals['prepaid_amount']
-            vals['prepaid_amount'] = 0.0
+        vals['payable_amount'] += vals['prepaid_amount']
+        vals['prepaid_amount'] = 0.0
         return vals
 
     def _export_invoice_vals(self, invoice):

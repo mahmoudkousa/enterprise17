@@ -33,6 +33,10 @@ class Attendee(models.Model):
             if appointment_type.booked_mail_template_id:
                 # groupby returns a list -> convert back to a recordset
                 calendar_attendees = self.env['calendar.attendee'].concat(*attendees)
-                super(Attendee, calendar_attendees)._send_mail_to_attendees(
+                super(Attendee, calendar_attendees).with_context(mail_notify_author=True)._send_mail_to_attendees(
                     appointment_type.booked_mail_template_id
                 )
+
+    def _should_notify_attendee(self):
+        """ Notify all attendees for meeting linked to appointment type """
+        return self.event_id.appointment_type_id or super()._should_notify_attendee()

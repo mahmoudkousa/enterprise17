@@ -11,8 +11,6 @@ class AccountChartTemplate(models.AbstractModel):
 
     def _configure_payroll_account_ch(self, companies):
         account_codes = [
-            '2990',  # Indemnities,
-            '2999',  # Company Car Correction,
             '5000',  # Basic Salary,
             '5003',  # Advance
             '5004',  # Holidays payment after departure
@@ -20,9 +18,10 @@ class AccountChartTemplate(models.AbstractModel):
             '5006',  # Gratification
             '5007',  # Bonus, Commissions
             '5009',  # Jubilee Gift
-            '5601',  # CA Fees
             '5030',  # Free Meals, House, Room, Private Car
+            '5031',  # Company Car Correction,
             '5040',  # Salary Allowances
+            '5601',  # CA Fees
             '5700',  # AVS
             '5701',  # AC
             '5720',  # Optional LPP
@@ -37,6 +36,7 @@ class AccountChartTemplate(models.AbstractModel):
             '5830',  # Representation Fees
             '5831',  # Car Fees
             '5832',  # Other Fees
+            '5840',  # Indemnities,
         ]
         default_account = '5000'
         rules_mapping = defaultdict(dict)
@@ -118,22 +118,22 @@ class AccountChartTemplate(models.AbstractModel):
         rules_mapping[rule]['credit'] = '5731'
 
         rule = self.env.ref('l10n_ch_hr_payroll.l10n_ch_employees_indemnity_apg')
-        rules_mapping[rule]['credit'] = '2990'
+        rules_mapping[rule]['credit'] = '5840'
 
         rule = self.env.ref('l10n_ch_hr_payroll.l10n_ch_employees_indemnity_ai')
-        rules_mapping[rule]['credit'] = '2990'
+        rules_mapping[rule]['credit'] = '5840'
 
         rule = self.env.ref('l10n_ch_hr_payroll.l10n_ch_employees_annuities_ai')
-        rules_mapping[rule]['credit'] = '2990'
+        rules_mapping[rule]['credit'] = '5840'
 
         rule = self.env.ref('l10n_ch_hr_payroll.l10n_ch_employees_indemnity_accident')
-        rules_mapping[rule]['credit'] = '2990'
+        rules_mapping[rule]['credit'] = '5840'
 
         rule = self.env.ref('l10n_ch_hr_payroll.l10n_ch_employees_indemnity_illness')
-        rules_mapping[rule]['credit'] = '2990'
+        rules_mapping[rule]['credit'] = '5840'
 
         rule = self.env.ref('l10n_ch_hr_payroll.l10n_ch_employees_indemnity_maternity')
-        rules_mapping[rule]['credit'] = '2990'
+        rules_mapping[rule]['credit'] = '5840'
 
         rule = self.env.ref('l10n_ch_hr_payroll.l10n_ch_employees_child_allowance')
         rules_mapping[rule]['credit'] = '5040'
@@ -184,7 +184,7 @@ class AccountChartTemplate(models.AbstractModel):
         rules_mapping[rule]['credit'] = '5790'
 
         rule = self.env.ref('l10n_ch_hr_payroll.l10n_ch_employees_company_car_employee_2')
-        rules_mapping[rule]['credit'] = '2999'
+        rules_mapping[rule]['credit'] = '5031'
 
         rule = self.env.ref('l10n_ch_hr_payroll.l10n_ch_employees_travel_expense')
         rules_mapping[rule]['credit'] = '5820'

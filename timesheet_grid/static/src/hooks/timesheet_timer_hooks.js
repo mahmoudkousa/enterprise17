@@ -23,7 +23,6 @@ export class TimesheetTimerRendererHook {
         this.env = env;
         this.setup();
         this._setProjectTaskDebounce = useDebounced(this._setProjectTask.bind(this), 500);
-        this.showTimer = propsList.records.some((record) => record.data.display_timer);
     }
 
     setup() {
@@ -38,6 +37,10 @@ export class TimesheetTimerRendererHook {
             timerRunning: false,
             headerReadonly: false,
         });
+    }
+
+    get showTimer() {
+        return this.timesheetUOMService.timesheetWidget === "float_time";
     }
 
     get fields() {
@@ -111,7 +114,31 @@ export class TimesheetTimerRendererHook {
     }
 
     async newTimesheetTimer() {
-        return this.propsList.addNewRecord(true);
+        if (this.propsList.addNewRecord) {
+            return this.propsList.addNewRecord(true);
+        }
+        const values = await this.propsList.model._loadNewRecord({
+            resModel: this.propsList.resModel,
+            activeFields: this.propsList.activeFields,
+            fields: this.propsList.fields,
+            context: this.propsList.context,
+        });
+        return new this.propsList.model.constructor.Record(
+            this.propsList.model,
+            {
+                context: this.propsList.context,
+                activeFields: this.propsList.activeFields,
+                resModel: this.propsList.resModel,
+                fields: this.propsList.fields,
+                resId: values.id || false,
+                resIds: values.id ? [values.id] : [],
+                isMonoRecord: true,
+                currentCompanyId: this.propsList.currentCompanyId,
+                mode: "edit",
+            },
+            values,
+            { manuallyAdded: !values.id }
+        );
     }
 
     async _onTimerStarted() {
@@ -172,16 +199,18 @@ export class TimesheetTimerRendererHook {
             return;
         }
 
-        if (propsList instanceof DynamicRecordList) {
-            const timesheet =
-                propsList.records.find((record) => record.resId === this.timerState.timesheetId) ||
-                (await propsList.addExistingRecord(this.timerState.timesheetId, true));
-            if (this.propsList.editedRecord) {
-                this.propsList.leaveEditMode();
-            }
-            await this.propsList.enterEditMode(timesheet);
-            this.timesheet = timesheet;
+        let timesheet = propsList.records.find((record) => record.resId === this.timerState.timesheetId);
+        if (!timesheet && propsList instanceof DynamicRecordList) {
+            timesheet = await propsList.addExistingRecord(this.timerState.timesheetId, true);
         }
+        if (!timesheet) {
+            return;
+        }
+        if (this.propsList.editedRecord) {
+            this.propsList.leaveEditMode();
+        }
+        await this.propsList.enterEditMode(timesheet);
+        this.timesheet = timesheet;
     }
 
     async _fetchRunningTimer() {

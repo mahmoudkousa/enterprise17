@@ -4,14 +4,15 @@
 # 
 # Translators:
 # Wil Odoo, 2023
+# Rasareeyar Lappiam, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:21+0000\n"
+"POT-Creation-Date: 2024-01-23 16:33+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Wil Odoo, 2023\n"
+"Last-Translator: Rasareeyar Lappiam, 2024\n"
 "Language-Team: Thai (https://app.transifex.com/odoo/teams/41243/th/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -25,6 +26,8 @@ msgid ""
 "<i class=\"fa fa-fw fa-lg fa-barcode me-3\" title=\"Serial/Lot Number\" "
 "invisible=\"product_tracking not in ['serial', 'lot']\"/>"
 msgstr ""
+"<i class=\"fa fa-fw fa-lg fa-barcode me-3\" title=\"หมายเลขซีเรียล/ล็อต\" "
+"invisible=\"product_tracking not in ['serial', 'lot']\"/>"
 
 #. module: stock_barcode_mrp
 #: model_terms:ir.ui.view,arch_db:stock_barcode_mrp.scrap_product_selector
@@ -32,6 +35,8 @@ msgid ""
 "<i class=\"fa fa-fw fa-lg fa-barcode me-3\" title=\"Serial/Lot Number\" "
 "invisible=\"tracking not in ['serial', 'lot']\"/>"
 msgstr ""
+"<i class=\"fa fa-fw fa-lg fa-barcode me-3\" title=\"หมายเลขซีเรียล/ล็อต\" "
+"invisible=\"การติดตามไม่อยู่ใน ['ซีเรียล', 'ล็อต']\"/>"
 
 #. module: stock_barcode_mrp
 #: model_terms:ir.ui.view,arch_db:stock_barcode_mrp.mrp_product_selector
@@ -112,6 +117,13 @@ msgstr "การดำเนินการของบาร์โค้ดล
 #: model_terms:ir.ui.view,arch_db:stock_barcode_mrp.res_config_settings_view_form
 msgid "Barcode Nomenclature"
 msgstr "การตั้งชื่อบาร์โค้ด"
+
+#. module: stock_barcode_mrp
+#. odoo-javascript
+#: code:addons/stock_barcode_mrp/static/src/models/barcode_mrp_model.js:0
+#, python-format
+msgid "Cancel Manufacturing Order"
+msgstr "ยกเลิกใบสั่งผลิต"
 
 #. module: stock_barcode_mrp
 #. odoo-javascript
@@ -268,6 +280,14 @@ msgid "Product Variant"
 msgstr "ตัวแปรสินค้า"
 
 #. module: stock_barcode_mrp
+#. odoo-javascript
+#: code:addons/stock_barcode_mrp/static/src/models/barcode_mrp_model.js:0
+#: code:addons/stock_barcode_mrp/static/src/models/barcode_mrp_model.js:0
+#, python-format
+msgid "Product not Allowed"
+msgstr "ไม่อนุญาตให้ใช้ผลิตภัณฑ์"
+
+#. module: stock_barcode_mrp
 #: model:ir.model,name:stock_barcode_mrp.model_mrp_production
 msgid "Production Order"
 msgstr "คำสั่งผลิต"
@@ -332,6 +352,13 @@ msgstr "ย้ายสต็อก"
 
 #. module: stock_barcode_mrp
 #. odoo-javascript
+#: code:addons/stock_barcode_mrp/static/src/models/barcode_mrp_model.js:0
+#, python-format
+msgid "The Manufacturing Order has been cancelled"
+msgstr "คำสั่งผลิตถูกยกเลิก"
+
+#. module: stock_barcode_mrp
+#. odoo-javascript
 #: code:addons/stock_barcode_mrp/static/src/models/barcode_picking_model.js:0
 #, python-format
 msgid ""
@@ -393,3 +420,11 @@ msgid ""
 msgstr ""
 "เมื่อเปิดใช้งาน การลงทะเบียนปริมาณการใช้งานสำหรับส่วนประกอบนั้นจะถูกบันทึกด้วยตนเองโดยเฉพาะ\n"
 "หากไม่ได้เปิดใช้งาน และปริมาณการใช้งานส่วนประกอบได้รับการแก้ไขด้วยตนเองในใบสั่งผลิต Odoo จะถือว่าปริมาณการใช้งานก็ดำเนินการด้วยตนเองเช่นกัน"
+
+#. module: stock_barcode_mrp
+#. odoo-javascript
+#: code:addons/stock_barcode_mrp/static/src/models/barcode_mrp_model.js:0
+#: code:addons/stock_barcode_mrp/static/src/models/barcode_mrp_model.js:0
+#, python-format
+msgid "You can't add the final product of a MO as a byproduct."
+msgstr "คุณไม่สามารถเพิ่มผลิตภัณฑ์ขั้นสุดท้ายของ MO เป็นผลิตภัณฑ์พลอยได้"

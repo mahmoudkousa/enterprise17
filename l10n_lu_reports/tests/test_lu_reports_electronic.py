@@ -26,7 +26,7 @@ class LuxembourgElectronicReportTest(TestAccountReportsCommon):
         cls.out_invoice = cls.env['account.move'].create({
             'move_type': 'out_invoice',
             'partner_id': cls.partner_a.id,
-            'invoice_date': '2017-01-01',
+            'invoice_date': '2019-01-01',
             'invoice_line_ids': [
                 (0, 0, {
                     'name': 'line_1',
@@ -41,7 +41,7 @@ class LuxembourgElectronicReportTest(TestAccountReportsCommon):
         cls.in_invoice = cls.env['account.move'].create({
             'move_type': 'in_invoice',
             'partner_id': cls.partner_a.id,
-            'invoice_date': '2017-01-01',
+            'invoice_date': '2019-01-01',
             'invoice_line_ids': [
                 (0, 0, {
                     'name': 'line_1',
@@ -88,7 +88,7 @@ class LuxembourgElectronicReportTest(TestAccountReportsCommon):
 
     def test_balance_sheet(self):
         report = self.env.ref('l10n_lu_reports.account_financial_report_l10n_lu_bs')
-        options = self._generate_options(report, fields.Date.from_string('2017-01-01'), fields.Date.from_string('2017-12-31'))
+        options = self._generate_options(report, fields.Date.from_string('2019-01-01'), fields.Date.from_string('2019-12-31'))
 
         self.assertLinesValues(
             self._filter_zero_lines(report._get_lines(options)),
@@ -116,7 +116,7 @@ class LuxembourgElectronicReportTest(TestAccountReportsCommon):
 
     def test_profit_and_loss(self):
         report = self.env.ref('l10n_lu_reports.account_financial_report_l10n_lu_pl')
-        options = self._generate_options(report, fields.Date.from_string('2017-01-01'), fields.Date.from_string('2017-12-31'))
+        options = self._generate_options(report, fields.Date.from_string('2019-01-01'), fields.Date.from_string('2019-12-31'))
 
         self.assertLinesValues(
             self._filter_zero_lines(report._get_lines(options)),
@@ -441,3 +441,120 @@ class LuxembourgElectronicReportTest(TestAccountReportsCommon):
         report_lines = report._get_lines(options)
         self.assertEqual(report_lines[2]['columns'][0]['no_format'], 7150)
         self.assertEqual(report_lines[3]['columns'][0]['no_format'], 7150)
+
+    @freeze_time('2019-12-31')
+    def test_generate_bs_pnl_xml(self):
+        report = self.env.ref('l10n_lu_reports.account_financial_report_l10n_lu_bs')
+        options = report.get_options()
+        # Add the filename in the options, which is initially done by the get_report_filename() method
+        now_datetime = datetime.now()
+        file_ref_data = {
+            'ecdf_prefix': self.env.company.ecdf_prefix,
+            'datetime': now_datetime.strftime('%Y%m%dT%H%M%S%f')[:-4]
+        }
+        options['unposted_in_period'] = False
+        options['filename'] = '{ecdf_prefix}X{datetime}'.format(**file_ref_data)
+
+        expected_xml = """
+            <eCDFDeclarations xmlns="http://www.ctie.etat.lu/2011/ecdf">
+                <FileReference>%s</FileReference>
+                <eCDFFileVersion>2.0</eCDFFileVersion>
+                <Interface>MODL5</Interface>
+                <Agent>
+                    <MatrNbr>12345678900</MatrNbr>
+                    <RCSNbr>NE</RCSNbr>
+                    <VATNbr>12345613</VATNbr>
+                </Agent>
+                <Declarations>
+                    <Declarer>
+                        <MatrNbr>12345678900</MatrNbr>
+                        <RCSNbr>NE</RCSNbr>
+                        <VATNbr>12345613</VATNbr>
+                            <Declaration type="CA_COMPP" model="1" language="EN">
+                                <Year>2019</Year>
+                                <Period>1</Period>
+                                <FormData>
+                                    <TextField id="01">01/01/2019</TextField>
+                                    <TextField id="02">31/12/2019</TextField>
+                                    <TextField id="03">EUR</TextField>
+                                    <NumericField id="701">1000,00</NumericField>
+                                    <NumericField id="671">-800,00</NumericField>
+                                    <NumericField id="601">-800,00</NumericField>
+                                    <NumericField id="667">200,00</NumericField>
+                                    <NumericField id="669">200,00</NumericField>
+                                </FormData>
+                            </Declaration>
+                            <Declaration type="CA_BILAN" model="1" language="EN">
+                                <Year>2019</Year>
+                                <Period>1</Period>
+                                <FormData>
+                                    <TextField id="01">01/01/2019</TextField>
+                                    <TextField id="02">31/12/2019</TextField>
+                                    <TextField id="03">EUR</TextField>
+                                    <NumericField id="151">1306,00</NumericField>
+                                    <NumericField id="163">1306,00</NumericField>
+                                    <NumericField id="165">1170,00</NumericField>
+                                    <NumericField id="167">1170,00</NumericField>
+                                    <NumericField id="183">136,00</NumericField>
+                                    <NumericField id="185">136,00</NumericField>
+                                    <NumericField id="201">1306,00</NumericField>
+                                    <NumericField id="301">200,00</NumericField>
+                                    <NumericField id="321">200,00</NumericField>
+                                    <NumericField id="435">1106,00</NumericField>
+                                    <NumericField id="367">936,00</NumericField>
+                                    <NumericField id="369">936,00</NumericField>
+                                    <NumericField id="451">170,00</NumericField>
+                                    <NumericField id="393">170,00</NumericField>
+                                    <NumericField id="405">1306,00</NumericField>
+                                </FormData>
+                            </Declaration>
+                            <Declaration type="CA_PLANCOMPTA" model="1" language="EN">
+                                <Year>2019</Year>
+                                <Period>1</Period>
+                                <FormData>
+                                    <TextField id="01">01/01/2019</TextField>
+                                    <TextField id="02">31/12/2019</TextField>
+                                    <TextField id="03">EUR</TextField>
+                                    <NumericField id="0565">1170,00</NumericField>
+                                    <NumericField id="0567">1170,00</NumericField>
+                                    <NumericField id="0569">1170,00</NumericField>
+                                    <NumericField id="0657">136,00</NumericField>
+                                    <NumericField id="0659">136,00</NumericField>
+                                    <NumericField id="0687">136,00</NumericField>
+                                    <NumericField id="0689">136,00</NumericField>
+                                    <NumericField id="0691">136,00</NumericField>
+                                    <NumericField id="0812">936,00</NumericField>
+                                    <NumericField id="0814">936,00</NumericField>
+                                    <NumericField id="0816">936,00</NumericField>
+                                    <NumericField id="0818">936,00</NumericField>
+                                    <NumericField id="0908">170,00</NumericField>
+                                    <NumericField id="0910">170,00</NumericField>
+                                    <NumericField id="0954">170,00</NumericField>
+                                    <NumericField id="0956">170,00</NumericField>
+                                    <NumericField id="0958">170,00</NumericField>
+                                    <NumericField id="1113">800,00</NumericField>
+                                    <NumericField id="1115">800,00</NumericField>
+                                    <NumericField id="1852">1000,00</NumericField>
+                                    <NumericField id="1862">1000,00</NumericField>
+                                    <NumericField id="1112">-0,00</NumericField>
+                                    <NumericField id="2258">200,00</NumericField>
+                                    <NumericField id="0162">200,00</NumericField>
+                                    <NumericField id="0158">200,00</NumericField>
+                                    <NumericField id="2939">1,00</NumericField>
+                                </FormData>
+                            </Declaration>
+                    </Declarer>
+                </Declarations>
+            </eCDFDeclarations>
+        """ % options['filename']
+
+        wizard = self.env['l10n_lu.generate.accounts.report'].create({})
+        new_context = self.env.context.copy()
+        new_context['report_generation_options'] = options
+        wizard.with_context(new_context).get_xml()
+        declaration_to_compare = b64decode(wizard.report_data.decode("utf-8"))[38:]
+
+        self.assertXmlTreeEqual(
+            self.get_xml_tree_from_string(declaration_to_compare),
+            self.get_xml_tree_from_string(expected_xml)
+        )

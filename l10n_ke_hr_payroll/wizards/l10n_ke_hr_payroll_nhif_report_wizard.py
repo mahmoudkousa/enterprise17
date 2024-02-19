@@ -17,14 +17,9 @@ class L10nKeHrPayrollNhifReportWizard(models.TransientModel):
             raise UserError(_('You must be logged in a Kenyan company to use this feature'))
         return super().default_get(field_list)
 
-    def _default_reference_year(self):
-        if datetime.now().month == 1:
-            return str(datetime.now().year - 1)
-        return str(datetime.now().year)
-
     def _get_year_selection(self):
         current_year = datetime.now().year
-        return [(str(i), i) for i in range(current_year - 25, current_year + 1)]
+        return [(str(i), i) for i in range(1990, current_year + 1)]
 
     reference_month = fields.Selection(
         [
@@ -43,12 +38,12 @@ class L10nKeHrPayrollNhifReportWizard(models.TransientModel):
         ],
         string='Month',
         required=True,
-        default=lambda self: str(datetime.now().month - 1))
+        default=lambda self: str((date.today() - relativedelta(months=1)).month))
     reference_year = fields.Selection(
         selection='_get_year_selection',
         string='Year',
         required=True,
-        default=_default_reference_year)
+        default=lambda self: str((date.today() - relativedelta(months=1)).year))
     name = fields.Char(
         compute='_compute_name',
         readonly=False,

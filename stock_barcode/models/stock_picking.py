@@ -136,6 +136,8 @@ class StockPicking(models.Model):
             picking['note'] = False if is_html_empty(picking['note']) else html2plaintext(picking['note'])
 
         data['config'] = self.picking_type_id._get_barcode_config()
+        if self.return_id:
+            data['config']['create_backorder'] = 'never'
         data['line_view_id'] = self.env.ref('stock_barcode.stock_move_line_product_selector').id
         data['form_view_id'] = self.env.ref('stock_barcode.stock_picking_barcode').id
         data['package_view_id'] = self.env.ref('stock_barcode.stock_quant_barcode_kanban').id
@@ -191,6 +193,7 @@ class StockPicking(models.Model):
             'use_create_lots',
             'use_existing_lots',
             'user_id',
+            'return_id',
         ]
 
     @api.model

@@ -81,6 +81,7 @@ class TestForecastCreationAndEditing(TestCommonForecast):
 
         self.assertEqual(self.slot.allocated_hours, 8 * 6, 'allocated hours should be equal to the real period since the resource has a flexible hours.')
 
+    @freeze_time("2023-11-20")
     def test_shift_creation_from_project(self):
         self.env.user.tz = 'Asia/Calcutta'
         self.env.user.company_id.resource_calendar_id.tz = 'Asia/Calcutta'

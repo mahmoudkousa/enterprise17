@@ -32,6 +32,11 @@ class TestAccountBankStatementImportCamt(AccountTestInvoicingCommon):
             'partner_id': partner_norbert.id,
             'bank_id': bank_norbert.id,
         })
+        self.env['res.partner.bank'].create({
+            'acc_number': '10987654323',
+            'partner_id': self.partner_a.id,
+            'bank_id': bank_norbert.id,
+        })
 
         # Get CAMT file content
         camt_file_path = 'account_bank_statement_import_camt/test_camt_file/test_camt.xml'
@@ -66,7 +71,7 @@ class TestAccountBankStatementImportCamt(AccountTestInvoicingCommon):
                 'ref': 'TESTBANK/NL/20151129/01206408',
                 'partner_name': 'China Export',
                 'amount': -564.05,
-                'partner_id': self.env.ref('base.res_partner_3').id,
+                'partner_id': self.partner_a.id,
             },
         ])
 

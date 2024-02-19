@@ -9,7 +9,7 @@ import { IconCreatorDialog } from "./icon_creator_dialog/icon_creator_dialog";
 import { onMounted, onWillUnmount, useRef } from "@odoo/owl";
 const NEW_APP_BUTTON = {
     isNewAppButton: true,
-    label: "New App",
+    label: _t("New App"),
     webIconData: "/web_studio/static/src/img/default_icon_app.png",
 };
 

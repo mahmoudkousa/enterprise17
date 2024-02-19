@@ -4,15 +4,16 @@
 # 
 # Translators:
 # Wil Odoo, 2023
-# Fernanda Alvarez, 2023
+# Fernanda Alvarez, 2024
+# Patricia Gutiérrez Capetillo <pagc@odoo.com>, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-26 16:09+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Fernanda Alvarez, 2023\n"
+"Last-Translator: Patricia Gutiérrez Capetillo <pagc@odoo.com>, 2024\n"
 "Language-Team: Spanish (Latin America) (https://app.transifex.com/odoo/teams/41243/es_419/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -93,13 +94,13 @@ msgstr ""
 #: code:addons/helpdesk/static/src/js/tours/helpdesk.js:0
 #, python-format
 msgid ""
-"<b>Log notes</b> for internal communications (you will only notify the persons you specifically tag). \n"
-"    Use <b>@ mentions</b> to ping a colleague \n"
-"    or <b># mentions</b> to contact a group of people."
+"<b>Log notes</b> for internal communications (you will only notify the "
+"persons you specifically tag). Use <b>@ mentions</b> to ping a colleague or "
+"<b># mentions</b> to contact a group of people."
 msgstr ""
-"<b>Registre notas</b> para comunicación interna (solo notificará a las personas que etiquete).\n"
-"Use <b>@ menciones</b> para notificar a un colega\n"
-"o <b># menciones</b> para contactar a un grupo de personas."
+"<b>Registre notas</b> para comunicación interna (solo notificará a las "
+"personas que etiquete). Use <b>@ menciones</b> para notificar a un colegao "
+"<b># menciones</b> para contactar a un grupo de personas."
 
 #. module: helpdesk
 #. odoo-javascript
@@ -268,7 +269,7 @@ msgid ""
 "        <a t-attf-href=\"/my/ticket/{{ object.id }}/{{ object.access_token }}\" t-out=\"object.name or ''\">Table legs are unbalanced</a>\n"
 "    </t>\n"
 "    has been received and is being reviewed by our <t t-out=\"object.team_id.name or ''\">VIP Support</t> team.<br><br>\n"
-"    The reference for your ticket is <strong><t t-out=\"object.id or ''\">15</t></strong>.<br><br>\n"
+"    The reference for your ticket is <strong><t t-out=\"object.ticket_ref or ''\">15</t></strong>.<br><br>\n"
 "\n"
 "    To provide any additional information, simply reply to this email.<br><br>\n"
 "    <t t-if=\"object.team_id.show_knowledge_base\">\n"
@@ -295,21 +296,21 @@ msgid ""
 "        "
 msgstr ""
 "<div>\n"
-"    Apreciable <t t-out=\"object.sudo().partner_id.name or object.sudo().partner_name or 'Madam/Sir'\">Señora/Señor</t>,<br><br>\n"
-"    Su solicitud\n"
+"    Apreciable <t t-out=\"object.sudo().partner_id.name or object.sudo().partner_name or 'Madam/Sir'\">señora/señor</t>,<br><br>\n"
+"    Recibimos su solicitud\n"
 "    <t t-if=\"object.get_portal_url()\">\n"
 "        <a t-attf-href=\"/my/ticket/{{ object.id }}/{{ object.access_token }}\" t-out=\"object.name or ''\">Las patas de la mesa no están balanceadas</a>\n"
 "    </t>\n"
-"    se recibió y lo está revisando nuestro equipo de <t t-out=\"object.team_id.name or ''\">Asistencia VIP</t>.<br><br>\n"
-"    La referencia de su ticket es <strong><t t-out=\"object.id or ''\">15</t></strong>.<br><br>\n"
+"    y la está revisando nuestro equipo <t t-out=\"object.team_id.name or ''\">Asistencia VIP</t>.<br><br>\n"
+"    La referencia de su ticket es <strong><t t-out=\"object.ticket_ref or ''\">15</t></strong>.<br><br>\n"
 "\n"
-"    Para proporcionar información adicional, responda a este correo electrónico.<br><br>\n"
+"    Si desea proporcionar información adicional, le pedimos que responda a este correo electrónico.<br><br>\n"
 "    <t t-if=\"object.team_id.show_knowledge_base\">\n"
-"        No dude en visitar nuestro <a t-attf-href=\"{{ object.team_id.get_knowledge_base_url() }}\">Centro de Soporte</a>. Puede encontrar la respuesta a su pregunta.\n"
+"        No dude en visitar nuestro <a t-attf-href=\"{{ object.team_id.get_knowledge_base_url() }}\">Centro de ayuda</a>, es posible que allí encuentre una respuesta para su pregunta.\n"
 "        <br><br>\n"
 "    </t>\n"
 "    <t t-if=\"object.team_id.allow_portal_ticket_closing\">\n"
-"        No dude en cerrar su ticket si ya no requiere de nuestra ayuda. Gracias por su colaboración.<br><br>\n"
+"        Puede cerrar su ticket si ya no requiere de nuestra ayuda. Gracias por su colaboración.<br><br>\n"
 "    </t>\n"
 "\n"
 "    <div style=\"text-align: center; padding: 16px 0px 16px 0px;\">\n"
@@ -318,12 +319,12 @@ msgstr ""
 "            <a style=\"background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;\" t-att-href=\"'/my/ticket/close/%s/%s' % (object.id, object.access_token)\" target=\"_blank\">Cerrar ticket</a>\n"
 "        </t>\n"
 "        <t t-if=\"object.team_id.use_website_helpdesk_forum or object.team_id.use_website_helpdesk_knowledge or object.team_id.use_website_helpdesk_slides\">\n"
-"            <a style=\"background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;\" t-att-href=\"object.team_id.feature_form_url\" target=\"_blank\">Visite nuestro centro de asistencia</a>\n"
+"            <a style=\"background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;\" t-att-href=\"object.team_id.feature_form_url\" target=\"_blank\">Visite nuestro Centro de ayuda</a>\n"
 "        </t><br><br>\n"
 "    </div>\n"
 "\n"
 "    Saludos cordiales,<br><br>\n"
-"   Equipo de <t t-out=\"object.team_id.name or 'Helpdesk'\">Servicio de asistencia</t> \n"
+"    Equipo de <t t-out=\"object.team_id.name or 'Helpdesk'\">Servicio de asistencia</t> \n"
 "</div>\n"
 "        "
 
@@ -2337,12 +2338,14 @@ msgstr "Mi fecha límite"
 #. module: helpdesk
 #. odoo-javascript
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
+#: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #, python-format
 msgid "My Performance"
 msgstr "Mi desempeño"
 
 #. module: helpdesk
 #. odoo-javascript
+#: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
@@ -2405,7 +2408,7 @@ msgstr "Más reciente"
 #. module: helpdesk
 #: model:ir.model.fields,field_description:helpdesk.field_helpdesk_ticket__activity_calendar_event_id
 msgid "Next Activity Calendar Event"
-msgstr "Siguiente evento en el calendario de actividades"
+msgstr "Siguiente evento en el calendario"
 
 #. module: helpdesk
 #: model:ir.model.fields,field_description:helpdesk.field_helpdesk_ticket__activity_date_deadline
@@ -3746,8 +3749,8 @@ msgid "Ticket created"
 msgstr "Ticket creado"
 
 #. module: helpdesk
-#. odoo-python
 #. odoo-javascript
+#. odoo-python
 #: code:addons/helpdesk/models/helpdesk_team.py:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
@@ -4013,11 +4016,13 @@ msgstr "Utilice devoluciones"
 #: code:addons/helpdesk/static/src/js/tours/helpdesk.js:0
 #, python-format
 msgid ""
-"Use the chatter to <b>send emails</b> and communicate efficiently with your customers. \n"
-"    Add new people to the followers' list to make them aware of the progress of this ticket."
+"Use the chatter to <b>send emails</b> and communicate efficiently with your "
+"customers. Add new people to the followers' list to make them aware of the "
+"progress of this ticket."
 msgstr ""
-"Utilice el chatter para <b>enviar correos electrónicos</b> y comunicarse de manera eficiente con sus clientes.\n"
-"    Agregue nuevas personas en la lista de seguidores para que estén al tanto de los avances en sus tickets."
+"Utilice el chatter para <b>enviar correos electrónicos</b> y comunicarse de "
+"manera eficiente con sus clientes. Agregue nuevas personas a la lista de "
+"seguidores para que estén al tanto de los avances de sus tickets."
 
 #. module: helpdesk
 #: model:ir.model,name:helpdesk.model_res_users

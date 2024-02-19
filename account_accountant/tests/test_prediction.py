@@ -88,6 +88,35 @@ class TestBillsPrediction(AccountTestInvoicingCommon):
         self._create_bill(self.test_partners[4], "Crate of coca-cola", self.test_accounts[4])
         self._create_bill(self.test_partners[1], "March", self.test_accounts[2])
 
+    def test_account_prediction_from_label_expected_behavior(self):
+        """Prevent the prediction from being annoying."""
+        default_account = self.company_data['default_journal_purchase'].default_account_id
+
+        # There is no prior result, we take the default account
+        self._create_bill(self.test_partners[0], "Drinks", default_account, account_to_set=self.test_accounts[0])
+
+        # There is only one prior account for the partner, we take that one
+        self._create_bill(self.test_partners[0], "Desert", self.test_accounts[0], account_to_set=self.test_accounts[1])
+
+        # We find something close enough, take that one
+        self._create_bill(self.test_partners[0], "Drinks too", self.test_accounts[0])
+
+        # There is no clear preference for any account (both previous accounts have the same rank)
+        # don't make any prediction and let the default behavior fill the account
+        invoice = self._create_bill(self.test_partners[0], "Main course", default_account)
+        invoice.button_draft()
+
+        with Form(invoice) as move_form:
+            with move_form.invoice_line_ids.edit(0) as line_form:
+                # There isn't any account clearly better than the manually set one, we keep the current one
+                line_form.account_id = self.test_accounts[2]
+                line_form.name = "Apple"
+                self.assertEqual(line_form.account_id, self.test_accounts[2])
+
+                # There is an account that looks clearly better, use it
+                line_form.name = "Second desert"
+                self.assertEqual(line_form.account_id, self.test_accounts[1])
+
     def test_account_prediction_with_product(self):
         product = self.env['product.product'].create({
             'name': 'product_a',

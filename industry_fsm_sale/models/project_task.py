@@ -125,6 +125,9 @@ class Task(models.Model):
             else:
                 if task.invoice_status in ['upselling', 'to invoice']:
                     secondary = False
+                elif task.invoice_count > 0 and task.invoice_status == 'no':
+                    secondary = False
+                    primary = False
                 else:  # Means invoice status is 'Nothing to Invoice'
                     primary = False
             task.update({
@@ -261,7 +264,7 @@ class Task(models.Model):
                 'fsm_mode': True,
                 'default_partner_id': self.partner_id.id,
                 'default_task_id': self.id,
-                'default_company_id': self.company_id.id,
+                'default_company_id': self.company_id.id or self.env.company.id,
                 'default_origin': f'{self.project_id.name} - {self.name}',
             },
         })

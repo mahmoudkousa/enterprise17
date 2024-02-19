@@ -59,50 +59,51 @@ class HrContractSalary(main.HrContractSalary):
         if working_schedule == '100':
             pass
         elif working_schedule == '90':
-            new_calendar = old_calendar.copy()
+            new_calendar = old_calendar.copy({'global_leave_ids': False})
             if not new_calendar.two_weeks_calendar:
                 new_calendar.switch_calendar_type()
             new_calendar.attendance_ids.filtered(lambda a: a.day_period != 'lunch')[:2].unlink()
         elif working_schedule == '80':
-            new_calendar = old_calendar.copy()
+            new_calendar = old_calendar.copy({'global_leave_ids': False})
             if new_calendar.two_weeks_calendar:
                 new_calendar.switch_calendar_type()
             new_calendar.attendance_ids.filtered(lambda a: a.day_period != 'lunch')[:2].unlink()
         elif working_schedule == '60':
-            new_calendar = old_calendar.copy()
+            new_calendar = old_calendar.copy({'global_leave_ids': False})
             if new_calendar.two_weeks_calendar:
                 new_calendar.switch_calendar_type()
             new_calendar.attendance_ids.filtered(lambda a: a.day_period != 'lunch')[:4].unlink()
         elif working_schedule == '50':
-            new_calendar = old_calendar.copy()
+            new_calendar = old_calendar.copy({'global_leave_ids': False})
             if new_calendar.two_weeks_calendar:
                 new_calendar.switch_calendar_type()
             new_calendar.attendance_ids.filtered(lambda a: a.day_period != 'lunch')[:5].unlink()
         elif working_schedule == '40':
-            new_calendar = old_calendar.copy()
+            new_calendar = old_calendar.copy({'global_leave_ids': False})
             if new_calendar.two_weeks_calendar:
                 new_calendar.switch_calendar_type()
             new_calendar.attendance_ids.filtered(lambda a: a.day_period != 'lunch')[:6].unlink()
         elif working_schedule == '20':
-            new_calendar = old_calendar.copy()
+            new_calendar = old_calendar.copy({'global_leave_ids': False})
             if new_calendar.two_weeks_calendar:
                 new_calendar.switch_calendar_type()
             new_calendar.attendance_ids.filtered(lambda a: a.day_period != 'lunch')[:8].unlink()
         new_wage_on_payroll = old_wage_on_payroll * int(working_schedule) / 100.0
         new_wage = old_wage * int(working_schedule) / 100.0
 
+        payslip = payslip.with_context(
+            salary_simulation=True,
+            salary_simulation_full_time=working_schedule == '100',
+            origin_contract_id=new_contract.env.context['origin_contract_id'],
+            lang=None
+        )
         if working_schedule != '100':
             payslip.contract_id.write({
                 'resource_calendar_id': new_calendar.id,
                 'wage_on_signature': new_wage_on_payroll,
                 'wage': new_wage,
             })
-
-        payslip.with_context(
-            salary_simulation=True,
-            origin_contract_id=new_contract.env.context['origin_contract_id'],
-            lang=None
-        ).compute_sheet()
+        payslip.compute_sheet()
 
         result['payslip_lines'] = [(
             line.name,

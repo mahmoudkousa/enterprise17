@@ -5,6 +5,7 @@ import { useService } from "@web/core/utils/hooks";
 import { WithSearch } from "@web/search/with_search/with_search";
 import { MrpDisplay } from "@mrp_workorder/mrp_display/mrp_display";
 import { Component, onWillStart } from "@odoo/owl";
+import { MrpDisplaySearchModel } from "@mrp_workorder/mrp_display/search_model";
 
 // from record.js
 const defaultActiveField = { attrs: {}, options: {}, domain: "[]", string: "" };
@@ -138,6 +139,9 @@ export class MrpDisplayAction extends Component {
             const searchViews = await this.viewService.loadViews({
                 resModel: this.resModel,
                 views: [[false, "search"]],
+            }, {
+                load_filters: true,
+                action_id: this.props.action.id
             });
             const domain = [
                 ["state", "in", ["confirmed", "progress", "to_close"]],
@@ -154,12 +158,16 @@ export class MrpDisplayAction extends Component {
                 searchViewId: searchViews.views.search.id,
                 searchViewFields: searchViews.fields,
                 searchMenuTypes: ["filter", "favorite"],
+                irFilters: searchViews.views.search.irFilters,
                 context,
                 domain,
                 orderBy: [
                     { name: "state", asc: false },
                     { name: "date_start", asc: true },
                 ],
+                SearchModel: MrpDisplaySearchModel,
+                searchModelArgs: context,
+                loadIrFilters: true,
             };
         });
     }

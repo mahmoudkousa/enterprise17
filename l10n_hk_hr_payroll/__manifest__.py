@@ -18,6 +18,8 @@ Hong Kong Payroll Rules.
     """,
     'data': [
         "security/ir.model.access.csv",
+        "report/report_payslip.xml",
+        "report/report_payslip_action.xml",
         "data/hr_work_entry_type_data.xml",
         "data/hr_departure_reason_data.xml",
         "data/resource_calendar_data.xml",

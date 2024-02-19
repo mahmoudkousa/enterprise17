@@ -4,11 +4,12 @@
 import base64
 from markupsafe import Markup
 
-from odoo.tests.common import tagged, users, HttpCase
+from odoo.tests.common import tagged
+from odoo.addons.base.tests.common import HttpCaseWithUserDemo
 
 
 @tagged('post_install', '-at_install', 'knowledge', 'knowledge_tour')
-class TestKnowledgeEditorCommands(HttpCase):
+class TestKnowledgeEditorCommands(HttpCaseWithUserDemo):
     """
     This test suit run tours to test the new editor commands of Knowledge.
     """

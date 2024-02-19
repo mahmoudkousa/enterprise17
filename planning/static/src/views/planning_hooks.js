@@ -1,7 +1,7 @@
 /** @odoo-module **/
 
 import { _t } from "@web/core/l10n/translation";
-import { markup, useEnv } from "@odoo/owl";
+import { markup, useEnv, onWillUnmount } from "@odoo/owl";
 import { serializeDateTime } from "@web/core/l10n/dates";
 import { useService } from "@web/core/utils/hooks";
 import { escape } from "@web/core/utils/strings";
@@ -81,6 +81,9 @@ export class PlanningControllerActions {
                 }
             );
             this.toggleHighlightPlannedFilter(result[0]);
+
+            this.notificationFn = notificationRemove;
+
         } else {
             this.notifications.add(
                 _t(
@@ -146,7 +149,13 @@ export class PlanningControllerActions {
 }
 
 export function usePlanningControllerActions() {
-   return new PlanningControllerActions(...arguments);
+    const planningControllerActions = new PlanningControllerActions(...arguments);
+
+    onWillUnmount(() => {
+        planningControllerActions.notificationFn?.();
+    });
+
+    return planningControllerActions;
 }
 
 export function usePlanningModelActions({

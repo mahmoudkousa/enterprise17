@@ -8,17 +8,18 @@ class TestSalaryAttachment(TestPayslipBase):
 
     def setUp(self):
         super().setUp()
+        self.current_year = datetime.now().year
         self.toto = self.env['hr.employee'].create({'name': 'Toto'})
         self.env['hr.contract'].create({
-            'date_start': date(2023, 1, 1),
-            'date_end': date(2023, 12, 31),
+            'date_start': date(self.current_year, 1, 1),
+            'date_end': date(self.current_year, 12, 31),
             'name': 'Contract of Toto',
             'wage': 1000.0,
             'state': 'open',
             'employee_id': self.toto.id,
             'structure_type_id': self.structure_type.id,
-            'date_generated_from': datetime(2023, 1, 1, 0, 0),
-            'date_generated_to': datetime(2023, 1, 1, 0, 0),
+            'date_generated_from': datetime(self.current_year, 1, 1, 0, 0),
+            'date_generated_to': datetime(self.current_year, 1, 1, 0, 0),
         })
         self.attachement_type, self.child_support_type = self.env['hr.salary.attachment.type'].create([
             {
@@ -47,7 +48,7 @@ class TestSalaryAttachment(TestPayslipBase):
             'employee_ids': [self.toto.id],
             'description': 'Fixed amount',
             'deduction_type_id': self.attachement_type.id,
-            'date_start': date(2023, 1, 1),
+            'date_start': date(self.current_year, 1, 1),
             'monthly_amount': 200,
             'total_amount': 600,
         })
@@ -65,7 +66,7 @@ class TestSalaryAttachment(TestPayslipBase):
             'employee_ids': [self.toto.id],
             'description': 'Monthly amount',
             'deduction_type_id': self.child_support_type.id,
-            'date_start': date(2023, 1, 1),
+            'date_start': date(self.current_year, 1, 1),
             'monthly_amount': 500,
         })
         self.action_pay_payslip(self.toto)
@@ -83,7 +84,7 @@ class TestSalaryAttachment(TestPayslipBase):
                 'employee_ids': [self.toto.id],
                 'description': 'Fixed amount A',
                 'deduction_type_id': self.attachement_type.id,
-                'date_start': date(2023, 1, 1),
+                'date_start': date(self.current_year, 1, 1),
                 'monthly_amount': 200,
                 'total_amount': 500,
             },
@@ -91,7 +92,7 @@ class TestSalaryAttachment(TestPayslipBase):
                 'employee_ids': [self.toto.id],
                 'description': 'Fixed amount B',
                 'deduction_type_id': self.attachement_type.id,
-                'date_start': date(2023, 1, 1),
+                'date_start': date(self.current_year, 1, 1),
                 'monthly_amount': 100,
                 'total_amount': 1000,
             }
@@ -113,14 +114,14 @@ class TestSalaryAttachment(TestPayslipBase):
                 'employee_ids': [self.toto.id],
                 'description': 'Monthly amount A',
                 'deduction_type_id': self.child_support_type.id,
-                'date_start': date(2023, 1, 1),
+                'date_start': date(self.current_year, 1, 1),
                 'monthly_amount': 200,
             },
             {
                 'employee_ids': [self.toto.id],
                 'description': 'Monthly amount B',
                 'deduction_type_id': self.child_support_type.id,
-                'date_start': date(2023, 1, 1),
+                'date_start': date(self.current_year, 1, 1),
                 'monthly_amount': 500,
             }
         ])
@@ -134,7 +135,7 @@ class TestSalaryAttachment(TestPayslipBase):
                 'employee_ids': [self.toto.id],
                 'description': 'Fixed amount',
                 'deduction_type_id': self.attachement_type.id,
-                'date_start': date(2023, 1, 1),
+                'date_start': date(self.current_year, 1, 1),
                 'monthly_amount': 200,
                 'total_amount': 600,
             },
@@ -142,7 +143,7 @@ class TestSalaryAttachment(TestPayslipBase):
                 'employee_ids': [self.toto.id],
                 'description': 'Montly amount',
                 'deduction_type_id': self.child_support_type.id,
-                'date_start': date(2023, 1, 1),
+                'date_start': date(self.current_year, 1, 1),
                 'monthly_amount': 500,
             }
         ])
@@ -156,7 +157,7 @@ class TestSalaryAttachment(TestPayslipBase):
                 'employee_ids': [self.toto.id],
                 'description': 'Fixed A',
                 'deduction_type_id': self.attachement_type.id,
-                'date_start': date(2023, 1, 1),
+                'date_start': date(self.current_year, 1, 1),
                 'monthly_amount': 100,
                 'total_amount': 1000,
             },
@@ -164,7 +165,7 @@ class TestSalaryAttachment(TestPayslipBase):
                 'employee_ids': [self.toto.id],
                 'description': 'Fixed B',
                 'deduction_type_id': self.attachement_type.id,
-                'date_start': date(2023, 1, 1),
+                'date_start': date(self.current_year, 1, 1),
                 'monthly_amount': 200,
                 'total_amount': 500,
             },
@@ -172,14 +173,14 @@ class TestSalaryAttachment(TestPayslipBase):
                 'employee_ids': [self.toto.id],
                 'description': 'Montly A',
                 'deduction_type_id': self.child_support_type.id,
-                'date_start': date(2023, 1, 1),
+                'date_start': date(self.current_year, 1, 1),
                 'monthly_amount': 100,
             },
             {
                 'employee_ids': [self.toto.id],
                 'description': 'Montly B',
                 'deduction_type_id': self.child_support_type.id,
-                'date_start': date(2023, 1, 1),
+                'date_start': date(self.current_year, 1, 1),
                 'monthly_amount': 200,
             }
         ])

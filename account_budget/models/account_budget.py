@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+from collections import defaultdict
 from datetime import timedelta
 import itertools
 
@@ -23,25 +24,11 @@ class AccountBudgetPost(models.Model):
     company_id = fields.Many2one('res.company', 'Company', required=True,
         default=lambda self: self.env.company)
 
-    def _check_account_ids(self, vals):
-        # Raise an error to prevent the account.budget.post to have not specified account_ids.
-        # This check is done on create because require=True doesn't work on Many2many fields.
-        if 'account_ids' in vals:
-            account_ids = self.new({'account_ids': vals['account_ids']}, origin=self).account_ids
-        else:
-            account_ids = self.account_ids
-        if not account_ids:
-            raise ValidationError(_('The budget must have at least one account.'))
-
-    @api.model_create_multi
-    def create(self, vals_list):
-        for vals in vals_list:
-            self._check_account_ids(vals)
-        return super().create(vals_list)
-
-    def write(self, vals):
-        self._check_account_ids(vals)
-        return super(AccountBudgetPost, self).write(vals)
+    @api.constrains('account_ids')
+    def _check_account_ids(self):
+        for budget in self:
+            if not budget.account_ids:
+                raise ValidationError(_('The budget must have at least one account.'))
 
 
 class CrossoveredBudget(models.Model):
@@ -148,39 +135,68 @@ class CrossoveredBudgetLines(models.Model):
             record.name = computed_name
 
     def _compute_practical_amount(self):
-        for line in self:
-            acc_ids = line.general_budget_id.account_ids.ids
-            date_to = line.date_to
-            date_from = line.date_from
-            if line.analytic_account_id.id:
-                analytic_line_obj = self.env['account.analytic.line']
-                domain = [('account_id', '=', line.analytic_account_id.id),
-                          ('date', '>=', date_from),
-                          ('date', '<=', date_to),
-                          ]
-                if acc_ids:
-                    domain += [('general_account_id', 'in', acc_ids)]
+        def get_accounts(line):
+            if line.analytic_account_id:
+                return 'account.analytic.line', line.analytic_account_id.plan_id._column_name(), set(line.analytic_account_id.ids)
+            return 'account.move.line', 'account_id', set(line.general_budget_id.account_ids.ids)
 
-                where_query = analytic_line_obj._where_calc(domain)
-                analytic_line_obj._apply_ir_rules(where_query, 'read')
-                from_clause, where_clause, where_clause_params = where_query.get_sql()
-                select = "SELECT SUM(amount) from " + from_clause + " where " + where_clause
-
+        def get_query(model, account_fname, date_from, date_to, account_ids):
+            domain = [
+                ('date', '>=', date_from),
+                ('date', '<=', date_to),
+                (account_fname, 'in', list(account_ids)),
+            ]
+            if model == 'account.move.line':
+                fname = '-balance'
+                general_account = 'account_id'
+                domain += [('parent_state', '=', 'posted')]
             else:
-                aml_obj = self.env['account.move.line']
-                domain = [('account_id', 'in',
-                           line.general_budget_id.account_ids.ids),
-                          ('date', '>=', date_from),
-                          ('date', '<=', date_to),
-                          ('parent_state', '=', 'posted')
-                          ]
-                where_query = aml_obj._where_calc(domain)
-                aml_obj._apply_ir_rules(where_query, 'read')
-                from_clause, where_clause, where_clause_params = where_query.get_sql()
-                select = "SELECT sum(credit)-sum(debit) from " + from_clause + " where " + where_clause
+                fname = 'amount'
+                general_account = 'general_account_id'
 
-            self.env.cr.execute(select, where_clause_params)
-            line.practical_amount = self.env.cr.fetchone()[0] or 0.0
+            query = self.env[model]._search(domain)
+            query.order = None
+            query_str, params = query.select('%s', '%s', '%s', '%s', account_fname, general_account, f'SUM({fname})')
+            params = [model, account_fname, date_from, date_to] + params
+            query_str += f" GROUP BY {account_fname}, {general_account}"
+
+            return query_str, params
+
+        groups = defaultdict(lambda: defaultdict(set))  # {(model, fname): {(date_from, date_to): account_ids}}
+        for line in self:
+            model, fname, accounts = get_accounts(line)
+            groups[(model, fname)][(line.date_from, line.date_to)].update(accounts)
+
+        queries = []
+        queries_params = []
+        for (model, fname), by_date in groups.items():
+            for (date_from, date_to), account_ids in by_date.items():
+                query, params = get_query(model, fname, date_from, date_to, account_ids)
+                queries.append(query)
+                queries_params += params
+
+        self.env.cr.execute(" UNION ALL ".join(queries), queries_params)
+
+        agg_general = defaultdict(lambda: defaultdict(float))  # {(model, date_from, date_to): {(analytic, general): amount}}
+        agg_analytic = defaultdict(lambda: defaultdict(float))  # {(model, date_from, date_to): {analytic: amount}}
+        for model, fname, date_from, date_to, account_id, general_account_id, amount in self.env.cr.fetchall():
+            agg_general[(model, fname, date_from, date_to)][(account_id, general_account_id)] += amount
+            agg_analytic[(model, fname, date_from, date_to)][account_id] += amount
+
+        for line in self:
+            model, fname, accounts = get_accounts(line)
+            general_accounts = line.general_budget_id.account_ids
+            if general_accounts:
+                line.practical_amount = sum(
+                    agg_general.get((model, fname, line.date_from, line.date_to), {}).get((account, general_account), 0)
+                    for account in accounts
+                    for general_account in general_accounts.ids
+                )
+            else:
+                line.practical_amount = sum(
+                    agg_analytic.get((model, fname, line.date_from, line.date_to), {}).get(account, 0)
+                    for account in accounts
+                )
 
     @api.depends('date_from', 'date_to')
     def _compute_theoritical_amount(self):
@@ -247,7 +263,7 @@ class CrossoveredBudgetLines(models.Model):
         if self.analytic_account_id:
             # if there is an analytic account, then the analytic items are loaded
             action = self.env['ir.actions.act_window']._for_xml_id('analytic.account_analytic_line_action_entries')
-            action['domain'] = [('account_id', '=', self.analytic_account_id.id),
+            action['domain'] = [('auto_account_id', '=', self.analytic_account_id.id),
                                 ('date', '>=', self.date_from),
                                 ('date', '<=', self.date_to)
                                 ]

@@ -3,16 +3,16 @@
 # 	* knowledge
 # 
 # Translators:
-# Wil Odoo, 2023
 # Thi Huong Nguyen, 2023
+# Wil Odoo, 2023
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-26 16:09+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Thi Huong Nguyen, 2023\n"
+"Last-Translator: Wil Odoo, 2023\n"
 "Language-Team: Vietnamese (https://app.transifex.com/odoo/teams/41243/vi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -983,7 +983,7 @@ msgid ""
 msgstr ""
 "<span style=\"font-size: 14px;\">\n"
 "            <span style=\"font-weight: bolder;\">\n"
-"                <font class=\"text-o-color-2\">Không gian làm việc chung</font>\n"
+"                <font class=\"text-o-color-2\">Không gian làm việc</font>\n"
 "            </span>\n"
 "        </span>\n"
 "        <span style=\"font-size: 14px;\">\n"
@@ -1168,7 +1168,7 @@ msgstr ""
 "        </span>\n"
 "        sang\n"
 "        <span style=\"font-weight: bolder;\">\n"
-"            <font class=\"text-o-color-2\">Không gian làm việc chung</font>\n"
+"            <font class=\"text-o-color-2\">Không gian làm việc</font>\n"
 "        </span>\n"
 "        để chia sẻ với mọi người.\n"
 "    </span>"
@@ -1385,6 +1385,13 @@ msgid ""
 msgstr ""
 "<span style=\"font-size: 14px;\">Bạn cần tài liệu này ở đâu đó? Hãy quay lại"
 " đây bằng cách nhấp vào biểu tượng 📗 trong cửa sổ trò chuyện.</span>"
+
+#. module: knowledge
+#: model_terms:ir.ui.view,arch_db:knowledge.knowledge_article_user_onboarding
+msgid ""
+"<span style=\"font-size: 14px;\">Not sure how to do it? Check the video "
+"below 👇</span>"
+msgstr ""
 
 #. module: knowledge
 #: model_terms:ir.ui.view,arch_db:knowledge.knowledge_article_user_onboarding
@@ -2360,8 +2367,8 @@ msgid ""
 "Are you sure you want to move \"%s%s\" to the Workspace? It will be shared "
 "with all internal users."
 msgstr ""
-"Bạn có chắc chắn muốn chuyển \"%s%s\" vào Không gian làm việc chung không? "
-"Nó sẽ được chia sẻ với tất cả người dùng nội bộ."
+"Bạn có chắc chắn muốn chuyển \"%s%s\" vào Không gian làm việc không? Nó sẽ "
+"được chia sẻ với tất cả người dùng nội bộ."
 
 #. module: knowledge
 #. odoo-javascript
@@ -2576,7 +2583,7 @@ msgstr "Bài viết sử dụng ảnh bìa"
 msgid "As a reader, you can't leave a Workspace article"
 msgstr ""
 "Với vai trò người đọc, bạn không thể rời khỏi bài viết trên Không gian làm "
-"việc chung"
+"việc"
 
 #. module: knowledge
 #. odoo-javascript
@@ -3089,7 +3096,7 @@ msgstr "Liên hệ với luật sư của chúng tôi"
 
 #. module: knowledge
 #. odoo-javascript
-#: code:addons/knowledge/static/src/components/behaviors/template_behavior/template_behavior.xml:0
+#: code:addons/knowledge/static/src/components/behaviors/template_behavior/template_behavior.js:0
 #, python-format
 msgid "Content copied to clipboard."
 msgstr "Nội dung đã được sao chép vào bộ nhớ tạm."
@@ -3227,7 +3234,7 @@ msgstr "Tạo một bài viết lồng nhau"
 #: code:addons/knowledge/static/src/components/sidebar/sidebar_section.xml:0
 #, python-format
 msgid "Create a new article in workspace"
-msgstr "Tạo một bài viết mới trong không gian làm việc chung"
+msgstr "Tạo một bài viết mới trong không gian làm việc"
 
 #. module: knowledge
 #: model_terms:ir.actions.act_window,help:knowledge.knowledge_article_action_item_calendar
@@ -3486,7 +3493,7 @@ msgstr "CHỈNH SỬA"
 
 #. module: knowledge
 #. odoo-javascript
-#: code:addons/knowledge/static/src/components/behaviors/embedded_view_behavior/embedded_view_manager.xml:0
+#: code:addons/knowledge/static/src/components/embedded_view_actions_menu/embedded_view_actions_menu.xml:0
 #, python-format
 msgid "Edit"
 msgstr "Chỉnh sửa"
@@ -3707,6 +3714,13 @@ msgstr "Giới tính: Nam"
 #: model_terms:knowledge.article,template_body:knowledge.knowledge_article_template_marketing_customer_persona_3
 msgid "Gender(s): W"
 msgstr "Giới tính: Nữ"
+
+#. module: knowledge
+#. odoo-javascript
+#: code:addons/knowledge/static/src/components/knowledge_article_html_field/knowledge_article_html_field.xml:0
+#, python-format
+msgid "Generate an Article with AI"
+msgstr ""
 
 #. module: knowledge
 #: model_terms:ir.ui.view,arch_db:knowledge.knowledge_article_favorite_view_search
@@ -4816,18 +4830,7 @@ msgstr "Chuyển vào thùng rác"
 #: code:addons/knowledge/static/src/components/sidebar/sidebar.js:0
 #, python-format
 msgid "Move to Workspace"
-msgstr "Chuyển vào không gian làm việc chung"
-
-#. module: knowledge
-#. odoo-python
-#: code:addons/knowledge/models/knowledge_article.py:0
-#, python-format
-msgid ""
-"Move to target of %(article_name)s is ambiguous, you should specify the "
-"category."
-msgstr ""
-"Mục tiêu chuyển đến của %(article_name)s không rõ ràng, bạn cần xác định "
-"danh mục."
+msgstr "Chuyển vào không gian làm việc"
 
 #. module: knowledge
 #: model:ir.model.fields,field_description:knowledge.field_knowledge_article__my_activity_date_deadline
@@ -4910,6 +4913,11 @@ msgstr "Đề cập mới trong %s"
 #, python-format
 msgid "New property could not be created."
 msgstr "Không thể tạo thuộc tính mới."
+
+#. module: knowledge
+#: model:ir.model.fields,field_description:knowledge.field_knowledge_article__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr "Sự kiện theo lịch cho hoạt động tiếp theo"
 
 #. module: knowledge
 #: model:ir.model.fields,field_description:knowledge.field_knowledge_article__activity_date_deadline
@@ -5003,11 +5011,6 @@ msgstr "Chưa có giai đoạn nào!"
 #, python-format
 msgid "No template yet."
 msgstr "Chưa có mẫu nào."
-
-#. module: knowledge
-#: model_terms:ir.ui.view,arch_db:knowledge.knowledge_article_user_onboarding
-msgid "Not sure how to do it?"
-msgstr "Bạn không chắc chắn nên làm thế nào?"
 
 #. module: knowledge
 #. odoo-javascript
@@ -5114,7 +5117,7 @@ msgstr "Chỉ người dùng nội bộ mới được phép thay đổi tư cá
 msgid "Only internal users are allowed to create workspace root articles."
 msgstr ""
 "Chỉ người dùng nội bộ mới được phép tạo các bài viết gốc trong không gian "
-"làm việc chung."
+"làm việc."
 
 #. module: knowledge
 #. odoo-python
@@ -5154,7 +5157,7 @@ msgstr ""
 
 #. module: knowledge
 #. odoo-javascript
-#: code:addons/knowledge/static/src/components/behaviors/embedded_view_behavior/embedded_view_manager.xml:0
+#: code:addons/knowledge/static/src/components/embedded_view_actions_menu/embedded_view_actions_menu.xml:0
 #: code:addons/knowledge/static/src/components/sidebar/sidebar.js:0
 #: code:addons/knowledge/static/src/views/item_calendar/item_calendar_views.xml:0
 #, python-format
@@ -5578,7 +5581,6 @@ msgstr "Xoá khỏi danh sách yêu thích"
 
 #. module: knowledge
 #. odoo-javascript
-#: code:addons/knowledge/static/src/components/behaviors/embedded_view_behavior/embedded_view_manager.xml:0
 #: code:addons/knowledge/static/src/components/prompt_embedded_view_name_dialog/prompt_embedded_view_name_dialog.xml:0
 #, python-format
 msgid "Rename"
@@ -5812,11 +5814,6 @@ msgstr "Phần"
 #: model_terms:knowledge.article,template_body:knowledge.knowledge_article_template_hr_faq
 msgid "See a doctor and send us the sick note."
 msgstr "Hãy đến gặp bác sĩ và gửi cho chúng tôi phiếu khám bệnh."
-
-#. module: knowledge
-#: model_terms:ir.ui.view,arch_db:knowledge.knowledge_article_user_onboarding
-msgid "See how it works <i class=\"fa fa-youtube-play\"/>"
-msgstr "Hãy xem cách thực hiện tại đây<i class=\"fa fa-youtube-play\"/>"
 
 #. module: knowledge
 #. odoo-javascript
@@ -6282,6 +6279,15 @@ msgid "The article '%s' needs at least one member with 'Write' access."
 msgstr "Bài viết '%s' cần ít nhất một thành viên có quyền 'Viết'."
 
 #. module: knowledge
+#. odoo-python
+#: code:addons/knowledge/models/knowledge_article.py:0
+#, python-format
+msgid ""
+"The destination placement of %(article_name)s is ambiguous, you should "
+"specify the category."
+msgstr ""
+
+#. module: knowledge
 #. odoo-javascript
 #: code:addons/knowledge/static/src/macros/abstract_macro.js:0
 #, python-format
@@ -6357,7 +6363,7 @@ msgstr "Chế độ xem không tồn tại hoặc bạn không được phép tr
 #: code:addons/knowledge/static/src/components/sidebar/sidebar_section.xml:0
 #, python-format
 msgid "There are no Articles in your Workspace."
-msgstr "Không có bài viết nào trong Không gian làm việc chung của bạn."
+msgstr "Không có bài viết nào trong Không gian làm việc của bạn."
 
 #. module: knowledge
 #: model_terms:knowledge.article,template_body:knowledge.knowledge_article_template_personal_organizer
@@ -6829,7 +6835,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:knowledge.knowledge_article_view_search
 #, python-format
 msgid "Workspace"
-msgstr "Không gian làm việc chung"
+msgstr "Không gian làm việc"
 
 #. module: knowledge
 #. odoo-python
@@ -6837,6 +6843,13 @@ msgstr "Không gian làm việc chung"
 #, python-format
 msgid "Write"
 msgstr "Viết"
+
+#. module: knowledge
+#. odoo-javascript
+#: code:addons/knowledge/static/src/js/knowledge_wysiwyg.js:0
+#, python-format
+msgid "Write an article about"
+msgstr ""
 
 #. module: knowledge
 #: model_terms:knowledge.article,template_body:knowledge.knowledge_article_template_brand_assets
@@ -6852,6 +6865,13 @@ msgstr ""
 #: model_terms:knowledge.article,template_body:knowledge.knowledge_article_template_shared_todos_write_the_next_newsletter
 msgid "Write the next Newsletter"
 msgstr "Viết bản tin email tiếp theo"
+
+#. module: knowledge
+#. odoo-javascript
+#: code:addons/knowledge/static/src/components/permission_panel/permission_panel.xml:0
+#, python-format
+msgid "You"
+msgstr "Bạn"
 
 #. module: knowledge
 #: model:ir.model.constraint,message:knowledge.constraint_knowledge_article_member_unique_article_partner
@@ -6922,6 +6942,15 @@ msgstr "Bạn không thể đánh dấu yêu thích trên bài viết này"
 #, python-format
 msgid "You can't leave an article for which you are the last writer"
 msgstr "Bạn không thể rời khỏi bài viết mà bạn là người viết cuối cùng"
+
+#. module: knowledge
+#. odoo-python
+#: code:addons/knowledge/models/knowledge_article.py:0
+#, python-format
+msgid ""
+"You can't move %(article_name)s under %(item_name)s, as %(item_name)s is an "
+"Article Item. Convert %(item_name)s into an Article first."
+msgstr ""
 
 #. module: knowledge
 #. odoo-javascript

@@ -3,23 +3,32 @@
 # 	* account_online_synchronization
 # 
 # Translators:
-# Wil Odoo, 2023
 # Patricia Gutiérrez Capetillo <pagc@odoo.com>, 2023
+# Lucia Pacheco, 2023
 # Fernanda Alvarez, 2023
+# Wil Odoo, 2024
+# Iran Villalobos López, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-31 14:34+0000\n"
+"POT-Creation-Date: 2024-01-05 13:46+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Fernanda Alvarez, 2023\n"
+"Last-Translator: Iran Villalobos López, 2024\n"
 "Language-Team: Spanish (Latin America) (https://app.transifex.com/odoo/teams/41243/es_419/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Language: es_419\n"
 "Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+
+#. module: account_online_synchronization
+#. odoo-python
+#: code:addons/account_online_synchronization/models/account_online.py:0
+#, python-format
+msgid " If you've already opened this issue don't report it again."
+msgstr "Si ya comunicó este problema, no vuelva a reportarlo."
 
 #. module: account_online_synchronization
 #. odoo-javascript
@@ -521,6 +530,7 @@ msgstr "Obtener transacciones"
 #. module: account_online_synchronization
 #. odoo-python
 #: code:addons/account_online_synchronization/models/account_online.py:0
+#: code:addons/account_online_synchronization/models/account_online.py:0
 #, python-format
 msgid "Fetched Transactions"
 msgstr "Transacciones recuperadas"
@@ -539,8 +549,8 @@ msgid "Fetching..."
 msgstr "Recuperando..."
 
 #. module: account_online_synchronization
-#. odoo-python
 #. odoo-javascript
+#. odoo-python
 #: code:addons/account_online_synchronization/models/account_journal.py:0
 #: code:addons/account_online_synchronization/static/src/components/bank_reconciliation/fetch_missing_transactions_cog_menu.xml:0
 #: model:ir.actions.server,name:account_online_synchronization.account_journal_action_fetch_missing_transactions
@@ -665,6 +675,13 @@ msgstr "Error interno"
 #. odoo-python
 #: code:addons/account_online_synchronization/models/account_online.py:0
 #, python-format
+msgid "Invalid URL"
+msgstr "URL no válida"
+
+#. module: account_online_synchronization
+#. odoo-python
+#: code:addons/account_online_synchronization/models/account_online.py:0
+#, python-format
 msgid "Invalid value for proxy_mode config parameter."
 msgstr "Valor no válido para el parámetro de configuración proxy_mode."
 
@@ -779,6 +796,11 @@ msgid "Name"
 msgstr "Nombre"
 
 #. module: account_online_synchronization
+#: model:ir.model.fields,field_description:account_online_synchronization.field_account_online_link__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr "Siguiente evento en el calendario de actividades"
+
+#. module: account_online_synchronization
 #: model:ir.model.fields,field_description:account_online_synchronization.field_account_online_link__activity_date_deadline
 msgid "Next Activity Deadline"
 msgstr "Siguiente fecha límite de la actividad"
@@ -891,6 +913,11 @@ msgid "Pending"
 msgstr "Pendiente"
 
 #. module: account_online_synchronization
+#: model:ir.model.fields.selection,name:account_online_synchronization.selection__account_online_account__fetching_status__planned
+msgid "Planned"
+msgstr "Planeado"
+
+#. module: account_online_synchronization
 #. odoo-python
 #: code:addons/account_online_synchronization/wizard/account_journal_missing_transactions.py:0
 #, python-format
@@ -914,12 +941,12 @@ msgstr "Seleccione las primeras transacciones que desea importar"
 #. module: account_online_synchronization
 #: model:ir.model.fields.selection,name:account_online_synchronization.selection__account_bank_statement_line_transient__state__posted
 msgid "Posted"
-msgstr "Publicado"
+msgstr "Registrar"
 
 #. module: account_online_synchronization
 #: model_terms:ir.ui.view,arch_db:account_online_synchronization.missing_bank_statement_line_search
 msgid "Posted Transactions"
-msgstr "Transacciones publicadas"
+msgstr "Transacciones registradas"
 
 #. module: account_online_synchronization
 #: model:ir.model.fields.selection,name:account_online_synchronization.selection__account_online_account__fetching_status__processing
@@ -935,6 +962,11 @@ msgstr "Proveedor de datos"
 #: model:ir.model.fields,field_description:account_online_synchronization.field_account_online_link__provider_type
 msgid "Provider Type"
 msgstr "Tipo de proveedor"
+
+#. module: account_online_synchronization
+#: model:ir.model.fields,field_description:account_online_synchronization.field_account_online_link__rating_ids
+msgid "Ratings"
+msgstr "Calificaciones"
 
 #. module: account_online_synchronization
 #: model_terms:ir.ui.view,arch_db:account_online_synchronization.account_online_link_view_form
@@ -1136,7 +1168,7 @@ msgid ""
 "True if that connection still has accounts that are not linked to an Odoo "
 "journal"
 msgstr ""
-"Es \"true\" si la conexión aún tiene cuentas que no están vinculadas a un "
+"Es verdadero si la conexión aún tiene cuentas que no están vinculadas a un "
 "diario de Odoo"
 
 #. module: account_online_synchronization
@@ -1185,7 +1217,7 @@ msgstr ""
 #: code:addons/account_online_synchronization/models/account_online.py:0
 #, python-format
 msgid "You can contact Odoo support"
-msgstr "Puede ponerse en contacto con el soporte de Odoo"
+msgstr "Puede ponerse en contacto con el equipo de soporte de Odoo"
 
 #. module: account_online_synchronization
 #. odoo-python

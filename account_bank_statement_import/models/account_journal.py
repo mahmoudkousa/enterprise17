@@ -279,7 +279,7 @@ class AccountJournal(models.Model):
                 statement_line_ids.extend(statement.line_ids.ids)
 
                 # Create the report.
-                if statement.is_complete:
+                if statement.is_complete and not self._context.get('skip_pdf_attachment_generation'):
                     statement.action_generate_attachment()
 
         if len(statement_line_ids) == 0 and raise_no_imported_file:

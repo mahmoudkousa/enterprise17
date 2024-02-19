@@ -25,13 +25,13 @@
                         <field name="res_model" invisible="1"/>
                         <field name="number_of_free_text" invisible="1"/>
                         <field name="number_of_free_text_button" invisible="1"/>
-                         <field name="is_header_free_text" invisible="1"/>
+                        <field name="is_header_free_text" invisible="1"/>
                         <field name="is_button_dynamic" invisible="1"/>
                         <field name="batch_mode" invisible="1"/>
                         <field name="wa_template_id"
                             options="{'no_create_edit': True, 'no_create': True, 'no_open': True}"
                             domain="[('model', '=', res_model), ('status', '=', 'approved')]"/>
-                        <field name="phone" readonly="batch_mode" required="1"/>
+                        <field name="phone" invisible="not batch_mode" required="batch_mode"/>
                         <field name="header_text_1" invisible="not is_header_free_text" required="is_header_free_text" readonly="0"/>
                         <field name="free_text_1" invisible="number_of_free_text &lt; 1" required="number_of_free_text &gt;= 1" readonly="0"/>
                         <field name="free_text_2" invisible="number_of_free_text &lt; 2" required="number_of_free_text &gt;= 2" readonly="0"/>

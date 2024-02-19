@@ -16,7 +16,7 @@
     <record id="group_hr_payroll_user" model="res.groups">
         <field name="name">Officer: Manage all contracts</field>
         <field name="category_id" ref="base.module_category_human_resources_payroll"/>
-        <field name="implied_ids" eval="[(4, ref('hr.group_hr_user')), (4, ref('hr_payroll.group_hr_payroll_employee_manager')), (4, ref('hr_contract.group_hr_contract_employee_manager'))]"/>
+        <field name="implied_ids" eval="[(4, ref('hr.group_hr_user')), (4, ref('hr_payroll.group_hr_payroll_employee_manager')), (4, ref('hr_contract.group_hr_contract_manager'))]"/>
         <field name="comment">User can manage all contracts, work entries and create payslips.</field>
     </record>
 
@@ -142,6 +142,12 @@
         <field name="name">HR Payroll Employee Declaration: Multi Company</field>
         <field name="model_id" ref="model_hr_payroll_employee_declaration"/>
         <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="ir_rule_hr_payroll_report_multi_company" model="ir.rule">
+        <field name="name">HR Payroll Report: Multi Company</field>
+        <field name="model_id" ref="model_hr_payroll_report"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
     </record>
 </data>
 </odoo>

@@ -39,8 +39,8 @@ msgstr " Anmeldung: %s zum Meeting mit %s"
 #. odoo-python
 #: code:addons/frontdesk/models/frontdesk_visitor.py:0
 #, python-format
-msgid "%(name)s just checked-in. He requested %(drink)s."
-msgstr "%(name)s hat sich gerade angemeldet. Er bitten um %(drink)s."
+msgid "%(name)s just checked-in. Requested Drink: %(drink)s."
+msgstr ""
 
 #. module: frontdesk
 #. odoo-python
@@ -48,15 +48,6 @@ msgstr "%(name)s hat sich gerade angemeldet. Er bitten um %(drink)s."
 #, python-format
 msgid "%s just checked-in."
 msgstr "%s hat sich gerade angemeldet."
-
-#. module: frontdesk
-#. odoo-javascript
-#: code:addons/frontdesk/static/src/visitor_form/visitor_form.xml:0
-#: code:addons/frontdesk/static/src/visitor_form/visitor_form.xml:0
-#: code:addons/frontdesk/static/src/visitor_form/visitor_form.xml:0
-#, python-format
-msgid "(optional)"
-msgstr "(optional)"
 
 #. module: frontdesk
 #: model:mail.template,body_html:frontdesk.frontdesk_mail_template
@@ -68,7 +59,7 @@ msgid ""
 "            "
 msgstr ""
 "<div>\n"
-"                    <p>Hallo <t t-if=\"ctx.get('host_name')\"><t t-out=\"ctx.get('host_name')\"></t>, </t><b><t t-out=\"object.name\"></t></b> <t t-if=\"object.phone\">(<t t-out=\"object.phone\"></t>)</t><t t-if=\"object.company\">, von <t t-out=\"object.company\"></t></t> bittet um ein Treffen an folgendem Standort: <t t-out=\"object.station_id.name\"></t>. Bitte benachrichtigen Sie die Person, dass Sie bald kommen.\n"
+"                    <p>Hallo <t t-if=\"ctx.get('host_name')\"><t t-out=\"ctx.get('host_name')\"></t>, </t><b><t t-out=\"object.name\"></t></b> <t t-if=\"object.phone\">(<t t-out=\"object.phone\"></t>)</t><t t-if=\"object.company\"> von <t t-out=\"object.company\"></t></t> bittet um ein Treffen an folgendem Standort: <t t-out=\"object.station_id.name\"></t>. Bitte benachrichtigen Sie die Person, dass Sie bald kommen.\n"
 "                    </p>\n"
 "                </div>\n"
 "            "
@@ -136,7 +127,7 @@ msgstr "Nach Verantwortlichem"
 #. module: frontdesk
 #: model_terms:ir.ui.view,arch_db:frontdesk.frontdesk_visitor_view_form
 msgid "Cancel"
-msgstr "Stornieren"
+msgstr "Abbrechen"
 
 #. module: frontdesk
 #: model:ir.model.fields.selection,name:frontdesk.selection__frontdesk_visitor__state__canceled
@@ -149,12 +140,12 @@ msgstr "Abgebrochen"
 #: model:ir.model.fields,field_description:frontdesk.field_frontdesk_visitor__check_in
 #, python-format
 msgid "Check In"
-msgstr "Anmeldung"
+msgstr "Anmelden"
 
 #. module: frontdesk
 #: model:ir.model.fields,field_description:frontdesk.field_frontdesk_visitor__check_out
 msgid "Check Out"
-msgstr "Abmeldung"
+msgstr "Abmelden"
 
 #. module: frontdesk
 #. odoo-javascript
@@ -314,7 +305,7 @@ msgstr "Bild des Getränks"
 #. module: frontdesk
 #: model_terms:ir.ui.view,arch_db:frontdesk.frontdesk_visitor_view_search
 msgid "Drink to Serve"
-msgstr "Zu servierende Getränke"
+msgstr "Zu servierendes Getränk"
 
 #. module: frontdesk
 #: model:ir.actions.act_window,name:frontdesk.action_frontdesk_drink
@@ -422,7 +413,7 @@ msgstr ""
 "Hallo, Ihr Gast {{ object.name }} {{ '(%s)' % object.phone if object.phone "
 "else '' }} {{ '(%s)' % object.company if object.company else '' }} möchte "
 "Sie hier treffen: {{ object.station_id.name }}. Bitte benachrichtigen Sie "
-"sie, dass Sie bald kommen."
+"die Person, dass Sie bald kommen."
 
 #. module: frontdesk
 #: model_terms:ir.ui.view,arch_db:frontdesk.frontdesk_visitor_view_search
@@ -576,7 +567,7 @@ msgstr "Per E-Mail benachrichtigen"
 #. module: frontdesk
 #: model_terms:ir.ui.view,arch_db:frontdesk.frontdesk_frontdesk_view_form
 msgid "Notify the host on guest arrival"
-msgstr "Benachrichtigen Sie den Gastgeber über die Ankunft des Gasts"
+msgstr "Benachrichtigen Sie den Gastgeber über die Ankunft des Gastes"
 
 #. module: frontdesk
 #: model:ir.model.fields,field_description:frontdesk.field_frontdesk_frontdesk__drink_offer
@@ -867,15 +858,15 @@ msgstr "Willkommen!"
 #. odoo-javascript
 #: code:addons/frontdesk/static/src/navbar/navbar.xml:0
 #, python-format
-msgid "Welcome to"
-msgstr "Willkommen bei"
+msgid "Who are you visiting?"
+msgstr "Wen möchten Sie sehen?"
 
 #. module: frontdesk
 #. odoo-javascript
-#: code:addons/frontdesk/static/src/host_page/host_page.xml:0
+#: code:addons/frontdesk/static/src/navbar/navbar.xml:0
 #, python-format
-msgid "Who are you visiting?"
-msgstr "Wen möchten Sie sehen?"
+msgid "Who are you?"
+msgstr "Wer sind Sie?"
 
 #. module: frontdesk
 #: model_terms:ir.ui.view,arch_db:frontdesk.frontdesk_frontdesk_view_form
@@ -934,12 +925,12 @@ msgstr "Ihr Gast {{ object.name }} hat darum gebeten, Sie zu treffen"
 #: code:addons/frontdesk/static/src/end_page/end_page.xml:0
 #, python-format
 msgid "Your drink is on the way."
-msgstr "Ihr Getränk ist unterwegs"
+msgstr "Ihr Getränk ist unterwegs. "
 
 #. module: frontdesk
 #: model_terms:ir.ui.view,arch_db:frontdesk.frontdesk_drink_view_form
 msgid "e.g. Coca-Cola"
-msgstr "z. B. Coca-Colas"
+msgstr "z. B. Coca-Cola"
 
 #. module: frontdesk
 #. odoo-javascript
@@ -964,13 +955,6 @@ msgstr "z. B. john@company.com"
 
 #. module: frontdesk
 #. odoo-javascript
-#: code:addons/frontdesk/static/src/visitor_form/visitor_form.xml:0
-#, python-format
-msgid "form-select-lg example"
-msgstr "Beispiel form-select-lg"
-
-#. module: frontdesk
-#. odoo-javascript
 #: code:addons/frontdesk/static/src/end_page/end_page.xml:0
 #, python-format
 msgid "has been informed."
@@ -981,7 +965,7 @@ msgstr "wurde informiert."
 #: code:addons/frontdesk/static/src/welcome_page/welcome_page.xml:0
 #, python-format
 msgid "to"
-msgstr "bis"
+msgstr "bei"
 
 #. module: frontdesk
 #. odoo-javascript

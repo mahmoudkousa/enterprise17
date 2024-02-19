@@ -14,8 +14,7 @@ class SaleSubscriptionPlan(models.Model):
     company_id = fields.Many2one('res.company')
 
     # Billing Period, use billing_period property for access to the timedelta
-    billing_period_value = fields.Integer(string="Duration", required=True, default=1,
-                                          help="Minimum duration before this rule is applied. If set to 0, it represents a fixed temporal price.")
+    billing_period_value = fields.Integer(string="Duration", required=True, default=1)
     billing_period_unit = fields.Selection([("week", "Weeks"), ("month", "Months"), ('year', 'Years')],
                                            string="Unit", required=True, default='month')
 

@@ -354,6 +354,7 @@ class TestPlanning(TestCommonPlanning, MockEmail):
             # only try to get the name, this triggers its compute
             template_slot.name
 
+    @freeze_time("2023-11-20")
     def test_shift_creation_from_role(self):
         self.env.user.tz = 'Asia/Calcutta'
         self.env.user.company_id.resource_calendar_id.tz = 'Asia/Calcutta'
@@ -433,3 +434,34 @@ class TestPlanning(TestCommonPlanning, MockEmail):
             'template_id': template.id,
         })
         self.assertEqual(slot.end_datetime.minute, 6, 'The min should be 6, just like in the template, not 5 due to rounding error')
+
+    def test_copy_planning_shift(self):
+        """ Test state of the planning shift is only copied once we are in the planning split tool
+
+            Test Case:
+            =========
+            1) Create a planning shift with state published.
+            2) Copy the planning shift as we are in the planning split tool (planning_split_tool=True in the context).
+            3) Check the state of the new planning shift is published.
+            4) Copy the planning shift as we are not in the planning split tool (planning_split_tool=False in the context).
+            5) Check the state of the new planning shift is draft.
+            6) Copy the planning shift without the context (= diplicate a shift).
+            7) Check the state of the new planning shift is draft.
+        """
+        self.env.user.tz = 'UTC'
+        slot = self.env['planning.slot'].create({
+            'resource_id': self.resource_bert.id,
+            'start_datetime': datetime(2020, 4, 20, 8, 0),
+            'end_datetime': datetime(2020, 4, 24, 17, 0),
+            'state': 'published',
+        })
+        self.assertEqual(slot.state, 'published', 'The state of the shift should be published')
+
+        slot1 = slot.with_context(planning_split_tool=True).copy()
+        self.assertEqual(slot1.state, 'published', 'The state of the shift should be copied')
+
+        slot2 = slot.with_context(planning_split_tool=False).copy()
+        self.assertEqual(slot2.state, 'draft', 'The state of the shift should not be copied')
+
+        slot3 = slot.copy()
+        self.assertEqual(slot3.state, 'draft', 'The state of the shift should not be copied')

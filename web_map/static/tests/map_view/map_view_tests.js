@@ -45,6 +45,15 @@ QUnit.module("Views", (hooks) => {
                 fields: {
                     display_name: { string: "name", type: "char" },
                     scheduled_date: { string: "Schedule date", type: "datetime" },
+                    task_status: {
+                        string: "Status",
+                        type: "selection",
+                        selection: [
+                            ["abc", "ABC"],
+                            ["def", "DEF"],
+                            ["ghi", "GHI"],
+                        ],
+                    },
                     sequence: { string: "sequence", type: "integer" },
                     partner_id: {
                         string: "partner",
@@ -2293,5 +2302,28 @@ QUnit.module("Views", (hooks) => {
         await nextTick();
 
         assert.verifySteps([]);
+    });
+
+    QUnit.test("Check groupBy on selection field", async function (assert) {
+        assert.expect(1);
+        patchWithCleanup(session, { map_box_token: MAP_BOX_TOKEN });
+        serverData.models["project.task"].records = [
+            { id: 1, name: "Project", sequence: 1, partner_id: 1, task_status: "abc" },
+        ];
+
+        await makeView({
+            serverData,
+            type: "map",
+            resModel: "project.task",
+            arch: `<map res_partner="partner_id" />`,
+            async mockRPC(route) {
+                switch (route) {
+                    case "/web/dataset/call_kw/res.partner/search_read":
+                        return serverData.models["res.partner"].twoRecordsAddressCoordinates;
+                }
+            },
+            groupBy: ["task_status"],
+        });
+        assert.containsOnce(target, ".o-map-renderer--pin-list-group-header", "ABC");
     });
 });

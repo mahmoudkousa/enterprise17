@@ -64,9 +64,10 @@
                 </div>
             </div>
         </div>
+        <t t-set="label">Create your app</t>
         <ModelConfigurator
             t-if="state.step === 'model_configuration'"
-            label="'Create your app'"
+            label="label"
             onConfirmOptions.bind="onConfirmOptions"
             onPrevious="() => this.state.previous()"
         />

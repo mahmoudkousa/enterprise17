@@ -17,7 +17,7 @@
                              t-esc="employee.name"
                              readonly="1"/>
                         <div t-foreach="employee.workorder" t-as="wo" t-key="wo.id" class="d-flex justify-content-between">
-                            <span class="text-muted" t-esc="wo.work_order_name + ' - ' + wo.operation_name"/>
+                            <span class="text-muted" t-esc="wo.work_order_name + (wo.operation_name ? (' - ' + wo.operation_name) : '')"/>
                             <span t-esc="Math.round(wo.duration) + '\''"/>
                         </div>
                     </div>

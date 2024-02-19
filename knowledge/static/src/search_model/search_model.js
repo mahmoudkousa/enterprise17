@@ -15,7 +15,13 @@ export class KnowledgeSearchModel extends SearchModel {
      */
     async load(config) {
         await super.load(config);
-        if (config.state) {
+        if (config.state && !this.isStateCompleteForEmbeddedView) {
+            // If the config contains an imported state that is not directly
+            // coming from a view that was embedded in Knowledge, the favorite
+            // filters have to be loaded, since they come from the
+            // `data-behavior-props` attribute of the anchor for the
+            // EmbeddedViewBehavior. Otherwise, those are already specified in
+            // the state and they should not be duplicated.
             let defaultFavoriteId = null;
             const activateFavorite = "activateFavorite" in config ? config.activateFavorite : true;
             if (activateFavorite) {
@@ -41,5 +47,23 @@ export class KnowledgeSearchModel extends SearchModel {
      */
     async _deleteIrFilters(searchItem) {
         this.onDeleteKnowledgeFavorite(searchItem);
+    }
+
+    /**
+     * @override
+     * @returns {Object}
+     */
+    exportState() {
+        const state = super.exportState();
+        state.isStateCompleteForEmbeddedView = true;
+        return state;
+    }
+
+    /**
+     * @override
+     */
+    _importState(state) {
+        super._importState(state);
+        this.isStateCompleteForEmbeddedView = state.isStateCompleteForEmbeddedView;
     }
 }

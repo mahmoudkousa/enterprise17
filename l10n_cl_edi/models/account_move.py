@@ -735,7 +735,7 @@ services reception has been received as well.
                     if export else currency_round_other_currency.round(self.amount_total),
                 'round_currency': currency_round_other_currency.decimal_places,
                 'name': self._l10n_cl_normalize_currency_name(currency_round_other_currency.name),
-                'rate': round(abs(self.amount_total_signed) / self.amount_total, 4),
+                'rate': round(abs(self.amount_total_signed) / self.amount_total, 4) if self.amount_total else False,
             }
         for line in self.line_ids:
             if line.tax_line_id and line.tax_line_id.l10n_cl_sii_code == 14:
@@ -932,7 +932,7 @@ class AccountMoveLine(models.Model):
             second_currency_field = 'price_subtotal'
             second_currency = self.currency_id
             main_currency_rate = 1
-            second_currency_rate = abs(self.balance) / self.price_subtotal if domestic_invoice_other_currency else False
+            second_currency_rate = abs(self.balance) / self.price_subtotal if domestic_invoice_other_currency and self.price_subtotal else False
             inverse_rate = second_currency_rate if domestic_invoice_other_currency else main_currency_rate
         else:
             # This is to manage case 5 (export docs)
@@ -940,7 +940,7 @@ class AccountMoveLine(models.Model):
             second_currency = self.move_id.company_id.currency_id
             main_currency_field = 'price_subtotal'
             second_currency_field = 'balance'
-            inverse_rate = abs(self.balance) / self.price_subtotal
+            inverse_rate = abs(self.balance) / self.price_subtotal if self.price_subtotal else False
         price_subtotal = abs(self[main_currency_field])
         if self.quantity and self.discount != 100.0:
             price_unit = (price_subtotal / abs(self.quantity)) / (1 - self.discount / 100)

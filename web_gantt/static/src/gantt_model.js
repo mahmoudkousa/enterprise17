@@ -10,7 +10,7 @@ import { groupBy, unique } from "@web/core/utils/arrays";
 import { KeepLast, Mutex } from "@web/core/utils/concurrency";
 import { pick } from "@web/core/utils/objects";
 import { sprintf } from "@web/core/utils/strings";
-import { formatFloat } from "@web/core/utils/numbers";
+import { formatFloatTime } from "@web/views/fields/formatters";
 import { Model } from "@web/model/model";
 
 const { DateTime } = luxon;
@@ -272,9 +272,7 @@ export class GanttModel extends Model {
             }
         }
 
-        Object.assign(context, this.searchParams.context);
-
-        return context;
+        return Object.assign({}, this.searchParams.context, context);
     }
 
     /**
@@ -419,7 +417,7 @@ export class GanttModel extends Model {
                     context,
                 });
                 if (callback) {
-                    callback(result);
+                    await callback(result);
                 }
             } finally {
                 this.fetchData();
@@ -515,6 +513,14 @@ export class GanttModel extends Model {
     // Protected
     //-------------------------------------------------------------------------
 
+    formatTime(floatVal) {
+        const timeStr = formatFloatTime(floatVal, { noLeadingZeroHour: true });
+        const [hourStr, minuteStr] = timeStr.split(":");
+        const hour = parseInt(hourStr, 10);
+        const minute = parseInt(minuteStr, 10);
+        return minute ? _t("%(hour)sh%(minute)s", { hour, minute }) : _t("%sh", hour);
+    }
+
     /**
      * Recursive function to add progressBar info to rows grouped by the field.
      *
@@ -528,12 +534,8 @@ export class GanttModel extends Model {
             if (row.groupedByField === fieldName) {
                 row.progressBar = progressBarInfo[row.resId];
                 if (row.progressBar) {
-                    row.progressBar.value_formatted = formatFloat(row.progressBar.value, {
-                        digits: [false, 0],
-                    });
-                    row.progressBar.max_value_formatted = formatFloat(row.progressBar.max_value, {
-                        digits: [false, 0],
-                    });
+                    row.progressBar.value_formatted = this.formatTime(row.progressBar.value);
+                    row.progressBar.max_value_formatted = this.formatTime(row.progressBar.max_value);
                     row.progressBar.ratio = row.progressBar.max_value
                         ? (row.progressBar.value / row.progressBar.max_value) * 100
                         : 0;

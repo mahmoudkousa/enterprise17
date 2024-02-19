@@ -2,15 +2,18 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo.fields import Date
-from odoo.tests.common import TransactionCase, new_test_user
+from odoo.tests.common import new_test_user
+from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
 from dateutil.relativedelta import relativedelta
 
-class TestPayrollHolidaysBase(TransactionCase):
+
+class TestPayrollHolidaysBase(AccountTestInvoicingCommon):
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.env.user.company_id.resource_calendar_id.tz = "Europe/Brussels"
         cls.env.context = {'tz': 'Europe/Brussels'}
         cls.dep_rd = cls.env['hr.department'].create({
             'name': 'Research & Development - Test',

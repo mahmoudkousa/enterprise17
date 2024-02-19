@@ -80,6 +80,8 @@ class CustomerPortal(portal.CustomerPortal):
         if not sortby:
             sortby = 'date'
         order = searchbar_sortings[sortby]['order']
+        if groupby in searchbar_groupby and groupby != 'none':
+            order = f'{searchbar_groupby[groupby]["input"]}, {order}'
 
         if filterby in ['last_message_sup', 'last_message_cust']:
             discussion_subtype_id = request.env.ref('mail.mt_comment').id

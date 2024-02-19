@@ -59,7 +59,7 @@ class HrApplicant(models.Model):
                 "res_id": self.env['hr.contract'].search([["applicant_id", "=", self.id], '|', ["active", "=", False], ["active", "=", True]]).id,
             })
         else:
-            self.action_vals.update({
+            action_vals.update({
                 "views": [[False, "tree"], [False, "form"]],
             })
         return action_vals

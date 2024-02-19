@@ -4,15 +4,16 @@
 from ast import literal_eval
 
 from odoo.addons.website_event.tests.common import TestEventOnlineCommon
+from odoo.addons.base.tests.common import TransactionCaseWithUserDemo
 
 
-class TestTrackPush(TestEventOnlineCommon):
+class TestTrackPush(TestEventOnlineCommon, TransactionCaseWithUserDemo):
     def test_track_push(self):
         """" Test 'Send Push to Attendees' action and verify that it correctly
         targets all visitors that are registered to the event """
 
         registered_parent_visitor = self.env['website.visitor'].create({
-            'access_token': self.env.ref('base.user_demo').partner_id.id,
+            'access_token': self.user_demo.partner_id.id,
             'push_subscription_ids': [(0, 0, {'push_token': 'AAAAA1'})],
             'event_registration_ids': [(0, 0, {
                 'event_id': self.event_0.id

@@ -5,11 +5,11 @@ import zipfile
 import base64
 
 from odoo import http, fields
-from odoo.tests.common import HttpCase
+from odoo.addons.base.tests.common import HttpCaseWithUserDemo
 from odoo.tools import mute_logger
 
 
-class TestDocumentsRoutes(HttpCase):
+class TestDocumentsRoutes(HttpCaseWithUserDemo):
     def setUp(self):
         super().setUp()
         self.folder_a, self.folder_b = self.env['documents.folder'].create([

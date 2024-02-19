@@ -34,7 +34,7 @@ class CTEPInterface(Interface):
 
     def get_devices(self):
         devices = {}
-        terminal_id = ctypes.create_string_buffer(20)
+        terminal_id = ctypes.create_string_buffer(1000)
         if easyCTEP.connectedTerminal(self.manager, terminal_id):
             devices[terminal_id.value.decode('utf-8')] = self.manager
         return devices

@@ -25,15 +25,6 @@
         </t>
     </div>
     <t t-if="showRainbowMan">
-        <h3>Rainbow Man</h3>
-        <Property
-            name="'effect'"
-            type="'boolean'"
-            value="this.props.node.attrs.effect and this.props.node.attrs.effect !== 'False'"
-            onChange.bind="onChangeAttribute"
-        >
-            Rainbow Effect
-        </Property>
         <RainbowEffect effect="this.props.node.attrs.effect" onChange.bind="onChangeAttribute" />
     </t>
     <LimitGroupVisibility node="props.node" />

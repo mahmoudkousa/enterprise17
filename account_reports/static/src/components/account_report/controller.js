@@ -1,4 +1,5 @@
 /** @odoo-module */
+/* global owl:readonly */
 
 import { browser } from "@web/core/browser/browser";
 import { session } from "@web/session";
@@ -759,6 +760,8 @@ export class AccountReportController {
                 callOnSectionsSource,
             ],
         );
+        if (dispatchReportAction?.help)
+            dispatchReportAction.help = owl.markup(dispatchReportAction.help)
 
         return dispatchReportAction ? this.actionService.doAction(dispatchReportAction) : null;
     }

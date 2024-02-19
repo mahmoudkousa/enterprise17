@@ -376,6 +376,9 @@ export class MapModel extends Model {
                     id = name = date.toFormat(DATE_GROUP_FORMATS[subGroup]);
                 } else if (fieldType === "boolean") {
                     id = name = value ? _t("Yes") : _t("No");
+                } else if (fieldType === "selection") {
+                    const selected = metaData.fields[fieldName].selection.find((o) => o[0] === value);
+                    id = name = selected ? selected[1] : value;
                 } else if (fieldType === "many2one" && value) {
                     id = value.id;
                     name = value.display_name;

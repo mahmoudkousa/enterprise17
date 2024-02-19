@@ -3,7 +3,6 @@
 
 import logging
 from dateutil.relativedelta import relativedelta
-from markupsafe import Markup
 from psycopg2.extensions import TransactionRollbackError
 from ast import literal_eval
 from collections import defaultdict
@@ -46,11 +45,11 @@ class SaleOrder(models.Model):
     ###################
     is_subscription = fields.Boolean("Recurring", compute='_compute_is_subscription', store=True, index=True)
     plan_id = fields.Many2one('sale.subscription.plan', compute='_compute_plan_id', string='Recurring Plan',
-                              ondelete='restrict', readonly=False, store=True)
+                              ondelete='restrict', readonly=False, store=True, index='btree_not_null')
     subscription_state = fields.Selection(
         string='Subscription Status',
         selection=SUBSCRIPTION_STATES,
-        compute='_compute_subscription_state', store=True, tracking=True, group_expand='_group_expand_states',
+        compute='_compute_subscription_state', store=True, index='btree_not_null', tracking=True, group_expand='_group_expand_states',
     )
 
     subscription_id = fields.Many2one('sale.order', string='Parent Contract', ondelete='restrict', copy=False)
@@ -162,15 +161,19 @@ class SaleOrder(models.Model):
             if so.subscription_state == '7_upsell' and so.subscription_id.pricelist_id.currency_id != so.pricelist_id.currency_id:
                 raise ValidationError(_('You cannot upsell a subscription using a different currency.'))
 
-    @api.constrains('plan_id', 'state', 'is_subscription')
+    @api.constrains('plan_id', 'state', 'order_line')
     def _constraint_subscription_plan(self):
         recurring_product_orders = self.order_line.filtered(lambda l: l.product_id.recurring_invoice).order_id
         for so in self:
             if so.state in ['draft', 'cancel'] or so.subscription_state == '7_upsell':
                 continue
+            if so.subscription_id and not so.subscription_state:
+                # so created before merge sale.subscription into sale.order upgrade.
+                # This is the so that created the sale.subscription records.
+                continue
             if so in recurring_product_orders and not so.plan_id:
                 raise UserError(_('You cannot save a sale order with recurring product and no subscription plan.'))
-            if so.plan_id and so.order_line and so not in recurring_product_orders:
+            if so.plan_id and so not in recurring_product_orders:
                 raise UserError(_('You cannot save a sale order with a subscription plan and no recurring product.'))
 
     @api.constrains('subscription_state', 'state')
@@ -186,12 +189,16 @@ class SaleOrder(models.Model):
     def _compute_is_subscription(self):
         for order in self:
             # upsells have recurrence but are not considered subscription. The method don't depend on subscription_state
-            # to avois recomputing the is_subscription value each time the sub_state is updated. it would trigger
+            # to avoid recomputing the is_subscription value each time the sub_state is updated. it would trigger
             # other recompute we want to avoid
             if not order.plan_id or order.subscription_state == '7_upsell':
                 order.is_subscription = False
                 continue
             order.is_subscription = True
+        # is_subscription value is not always updated in this method but subscription_state should always
+        # be recomputed when this method is triggered.
+        # without this call, subscription_state is not updated when it should and
+        self.env.add_to_compute(self.env['sale.order']._fields['subscription_state'], self)
 
     @api.depends('is_subscription')
     def _compute_subscription_state(self):
@@ -333,43 +340,55 @@ class SaleOrder(models.Model):
 
     @api.depends('subscription_child_ids', 'origin_order_id')
     def _get_invoiced(self):
-        so_with_origin = self.filtered('origin_order_id')
-        res = super(SaleOrder, self - so_with_origin)._get_invoiced()
-        if not so_with_origin:
+        """
+        Compute the invoices and their counts
+        For subscription, we find all the invoice lines related to the orders
+        descending from the origin_order_id
+        """
+        subscription_ids = []
+        so_by_origin = defaultdict(lambda: self.env['sale.order'])
+        parent_order_ids = []
+        for order in self:
+            if order.is_subscription and not isinstance(order.id, models.NewId):
+                subscription_ids.append(order.id)
+                origin_key = order.origin_order_id.id if order.origin_order_id else order.id
+                parent_order_ids.append(origin_key)
+                so_by_origin[origin_key] += order
+
+        subscriptions = self.browse(subscription_ids)
+        res = super(SaleOrder, self - subscriptions)._get_invoiced()
+        if not subscriptions:
             return res
         # Ensure that we give value to everyone
-        so_with_origin.update({
+        subscriptions.update({
             'invoice_ids': [],
             'invoice_count': 0
         })
-        so_by_origin = defaultdict(lambda: self.env['sale.order'])
-        for so in so_with_origin:
-            # We only search for existing origin
-            if so.origin_order_id.id:
-                so_by_origin[so.origin_order_id.id] += so
 
-        if not so_by_origin:
+        if not so_by_origin or not subscription_ids:
             return res
 
-        so_with_origin.flush_recordset(fnames=['origin_order_id'])
+        self.flush_recordset(fnames=['origin_order_id'])
+        all_subscription_ids = self.search([('origin_order_id', 'in', parent_order_ids)]).ids + parent_order_ids
 
         query = """
-            SELECT so.origin_order_id, array_agg(DISTINCT am.id)
-
-            FROM sale_order so
-            JOIN sale_order_line sol ON sol.order_id = so.id
-            JOIN sale_order_line_invoice_rel solam ON sol.id = solam.order_line_id
-            JOIN account_move_line aml ON aml.id = solam.invoice_line_id
-            JOIN account_move am ON am.id = aml.move_id
-
-            WHERE so.origin_order_id IN %s
-            AND am.company_id IN %s
-            AND am.move_type IN ('out_invoice', 'out_refund')
-            GROUP BY so.origin_order_id
+            SELECT COALESCE(origin_order_id, so.id),
+                   array_agg(DISTINCT am.id) AS move_ids
+              FROM sale_order so
+              JOIN sale_order_line sol ON sol.order_id = so.id
+              JOIN sale_order_line_invoice_rel solam ON sol.id = solam.order_line_id
+              JOIN account_move_line aml ON aml.id = solam.invoice_line_id
+              JOIN account_move am ON am.id = aml.move_id
+             WHERE am.company_id IN %s
+               AND so.id IN %s
+               AND am.move_type IN ('out_invoice', 'out_refund')
+          GROUP BY COALESCE(origin_order_id, so.id)
         """
-        self.env.cr.execute(query, [tuple(origin for origin in so_by_origin), tuple(self.env.companies.ids)])
-        for origin_id, invoices_ids in self.env.cr.fetchall():
-            so_by_origin[origin_id].update({
+
+        self.env.cr.execute(query, [tuple(self.env.companies.ids), tuple(all_subscription_ids)])
+        orders_vals = self.env.cr.fetchall()
+        for origin_order_id, invoices_ids in orders_vals:
+            so_by_origin[origin_order_id].update({
                 'invoice_ids': invoices_ids,
                 'invoice_count': len(invoices_ids)
             })
@@ -404,7 +423,7 @@ class SaleOrder(models.Model):
             return
         result = self.env['sale.order']._read_group([
                 ('subscription_state', '=', '2_renewal'),
-                ('state', '=', 'draft'),
+                ('state', 'in', ['draft', 'sent']),
                 ('subscription_id', 'in', self.ids)
             ],
             ['subscription_id'],
@@ -421,6 +440,7 @@ class SaleOrder(models.Model):
             return
         result = self.env['sale.order']._read_group([
                 ('subscription_state', '=', '7_upsell'),
+                ('state', 'in', ['draft', 'sent']),
                 ('subscription_id', 'in', self.ids)
             ],
             ['subscription_id'],
@@ -472,7 +492,7 @@ class SaleOrder(models.Model):
         renew_order_ids = self.env['sale.order'].search([
             ('id', 'in', self.subscription_child_ids.ids),
             ('subscription_state', '=', '2_renewal'),
-            ('state', '=', 'draft'),
+            ('state', 'in', ['draft', 'sent']),
         ]).subscription_id
         renew_order_ids.is_renewing = True
 
@@ -480,7 +500,7 @@ class SaleOrder(models.Model):
         self.is_upselling = False
         upsell_order_ids = self.env['sale.order'].search([
             ('id', 'in', self.subscription_child_ids.ids),
-            ('state', '=', 'draft'),
+            ('state', 'in', ['draft', 'sent']),
             ('subscription_state', '=', '7_upsell')
         ]).subscription_id
         upsell_order_ids.is_upselling = True
@@ -488,7 +508,7 @@ class SaleOrder(models.Model):
     def _compute_display_late(self):
         today = fields.Date.today()
         for order in self:
-            order.display_late = order.subscription_state in SUBSCRIPTION_PROGRESS_STATE and order.next_invoice_date < today
+            order.display_late = order.subscription_state in SUBSCRIPTION_PROGRESS_STATE and order.next_invoice_date and order.next_invoice_date < today
 
     @api.depends('order_line')
     def _compute_has_recurring_line(self):
@@ -507,7 +527,7 @@ class SaleOrder(models.Model):
     def _search_note_order(self, operator, value):
         if operator not in ['in', '=']:
             return NotImplemented
-        ooids = self.search_read([('id', operator, value)], ['origin_order_id', 'id'])
+        ooids = self.search_read([('id', operator, value)], ['origin_order_id', 'id'], load=None)
         ooids = [v['origin_order_id'] or v['id'] for v in ooids]
         return [('origin_order_id', 'in', ooids), ('internal_note', '=', False)]
 
@@ -616,9 +636,12 @@ class SaleOrder(models.Model):
         return action
 
     def action_draft(self):
-        if any(order.state == 'cancel' and order.is_subscription and order.invoice_ids for order in self):
-            raise UserError(
-                _('You cannot set to draft a canceled quotation linked to invoiced subscriptions. Please create a new quotation.'))
+        for order in self:
+            if (order.state == 'cancel'
+                and order.is_subscription
+                and any(state in ['draft', 'posted'] for state in order.order_line.invoice_lines.move_id.mapped('state'))):
+                raise UserError(
+                    _('You cannot set to draft a canceled quotation linked to invoiced subscriptions. Please create a new quotation.'))
         return super(SaleOrder, self).action_draft()
 
     def _action_cancel(self):
@@ -629,8 +652,29 @@ class SaleOrder(models.Model):
             elif order.subscription_state == '2_renewal':
                 cancel_message_body = _("The renewal %s has been canceled.", order._get_html_link())
                 order.subscription_id.message_post(body=cancel_message_body)
-            elif order.subscription_state in SUBSCRIPTION_PROGRESS_STATE + SUBSCRIPTION_DRAFT_STATE and not self.invoice_ids:
+            elif (order.subscription_state in SUBSCRIPTION_PROGRESS_STATE + SUBSCRIPTION_DRAFT_STATE
+                  and not any(state in ['draft', 'posted'] for state in order.order_line.invoice_lines.move_id.mapped('state'))):
                 order.order_log_ids.sudo().unlink()
+                parent_transfer_log = order.subscription_id.order_log_ids.filtered(lambda log: log.event_type == '3_transfer' and log.amount_signed < 0)
+                if parent_transfer_log and parent_transfer_log == order.subscription_id.order_log_ids[:1]:
+                    # Delete the parent transfer log if it is the last log of the parent.
+                    parent_transfer_log.sudo().unlink()
+                    # Reopen the parent order and avoid recreating logs
+                    order.subscription_id.with_context(tracking_disable=True).set_open()
+                    parent_link = order.subscription_id._get_html_link()
+                    cancel_activity_body = _("""Subscription %s has been canceled. The parent order %s has been reopened.
+                                                You should close %s if the customer churned, or renew it if the customer continue the service.
+                                                Note: if you already created a new subscription instead of renewing it, please cancel your newly
+                                                created subscription and renew %s instead""", order._get_html_link(),
+                                                                                                parent_link,
+                                                                                                parent_link,
+                                                                                                parent_link)
+                    order.activity_schedule(
+                        'mail.mail_activity_data_todo',
+                        summary=_("Check reopened subscription"),
+                        note=cancel_activity_body,
+                        user_id=order.subscription_id.user_id.id
+                    )
                 order.subscription_state = False
             elif order.subscription_state in SUBSCRIPTION_PROGRESS_STATE:
                 raise ValidationError(_('You cannot cancel a subscription that has been invoiced.'))
@@ -694,11 +738,11 @@ class SaleOrder(models.Model):
             # We set the start date and invoice date at the date of confirmation
             if not sub.start_date:
                 sub.start_date = today
+            if sub.plan_id.billing_period_value <= 0:
+                raise UserError(_("Recurring period must be a positive number. Please ensure the input is a valid positive numeric value."))
             sub._set_deferred_end_date_from_template()
             sub.order_line._reset_subscription_qty_to_invoice()
-            last_transaction = sub.transaction_ids.sudo()._get_last()
-            last_token = last_transaction.token_id
-            if last_token and last_transaction and self.currency_id.compare_amounts(last_transaction.amount, sub.amount_total) >= 0:
+            if sub._check_token_saving_conditions():
                 sub._save_token_from_payment()
 
     def _set_deferred_end_date_from_template(self):
@@ -754,6 +798,15 @@ class SaleOrder(models.Model):
                                     ('subscription_state', 'in', SUBSCRIPTION_PROGRESS_STATE),
                                     ('id', 'not in', [parent.id, renew.id])], limit=1):
                 raise ValidationError(_("You cannot renew a contract that already has an active subscription. "))
+            elif parent.state in ['sale', 'done'] and parent.subscription_state == '6_churn' and parent.next_invoice_date == renew.start_date:
+                parent.reopen_order()
+                auto_commit = not bool(config['test_enable'] or config['test_file'])
+                # Force the creation of the reopen logs.
+                self._subscription_commit_cursor(auto_commit=auto_commit)
+                # Make sure to delete the churn log as it won't be cleaned by mail-track
+                churn_logs = parent.order_log_ids.filtered(lambda log: log.event_type == '2_churn')
+                churn_log = churn_logs and churn_logs[-1]
+                churn_log.sudo().unlink()
             other_renew_so_ids = parent.subscription_child_ids.filtered(lambda so: so.subscription_state == '2_renewal' and so.state != 'cancel') - renew
             if other_renew_so_ids:
                 other_renew_so_ids._action_cancel()
@@ -768,7 +821,17 @@ class SaleOrder(models.Model):
             # This can create hole that are not taken into account by progress_sub upselling, it's an assumed choice over more upselling complexity
             start_date = renew.start_date or parent.next_invoice_date
             renew.write({'date_order': today, 'start_date': start_date})
-            renew._save_token_from_payment()
+            if renew._check_token_saving_conditions():
+                renew._save_token_from_payment()
+
+    def _check_token_saving_conditions(self):
+        """ Check if all conditions match for saving the payment token on the subscription. """
+        self.ensure_one()
+        last_transaction = self.transaction_ids.sudo()._get_last()
+        last_token = last_transaction.token_id
+        subscription_fully_paid = self.currency_id.compare_amounts(last_transaction.amount, self.amount_total) >= 0
+        transaction_authorized = last_transaction and last_transaction.renewal_state == "authorized"
+        return last_token and last_transaction and subscription_fully_paid and transaction_authorized
 
     def _save_token_from_payment(self):
         self.ensure_one()
@@ -823,7 +886,7 @@ class SaleOrder(models.Model):
             action['res_id'] = renewal.id
             action['views'] = [(self.env.ref('sale_subscription.sale_subscription_primary_form_view').id, 'form')]
         else:
-            action['domain'] = [('subscription_id', '=', self.id), ('subscription_state', '=', '2_renewal'), ('state', '=', 'draft')]
+            action['domain'] = [('subscription_id', '=', self.id), ('subscription_state', '=', '2_renewal'), ('state', 'in', ['draft', 'sent'])]
             action['views'] = [(self.env.ref('sale.view_quotation_tree').id, 'tree'),
                                (self.env.ref('sale_subscription.sale_subscription_primary_form_view').id, 'form')]
 
@@ -837,7 +900,7 @@ class SaleOrder(models.Model):
         self.ensure_one()
         action = self._get_associated_so_action()
         action['name'] = _("Upsell Quotations")
-        upsell = self.subscription_child_ids.filtered(lambda so: so.subscription_state == '7_upsell')
+        upsell = self.subscription_child_ids.filtered(lambda so: so.subscription_state == '7_upsell' and so.state in ['draft', 'sent'])
         if len(upsell) == 1:
             action['res_id'] = upsell.id
             action['views'] = [(self.env.ref('sale_subscription.sale_subscription_primary_form_view').id, 'form')]
@@ -949,8 +1012,7 @@ class SaleOrder(models.Model):
     def reopen_order(self):
         if self and set(self.mapped('subscription_state')) != {'6_churn'}:
             raise UserError(_("You cannot reopen a subscription that isn't closed."))
-        self.close_reason_id = False
-        self.subscription_state = '3_progress'
+        self.set_open()
 
     def pause_subscription(self):
         self.filtered(lambda so: so.subscription_state == '3_progress').write({'subscription_state': '4_paused'})
@@ -963,7 +1025,7 @@ class SaleOrder(models.Model):
         alternative_so = self.copy({
             'origin_order_id': self.origin_order_id.id,
             'subscription_id': self.subscription_id.id,
-            'subscription_state': '2_renewal',
+            'subscription_state': self.env.context.get('default_subscription_state', '2_renewal'),
         })
         action = alternative_so._get_associated_so_action()
         action['views'] = [(self.env.ref('sale_subscription.sale_subscription_primary_form_view').id, 'form')]
@@ -1021,11 +1083,21 @@ class SaleOrder(models.Model):
                     close_reason_id = end_of_contract_reason_id
                 else:
                     close_reason_id = close_reason_unknown_id
-                sub.update({'close_reason_id': close_reason_id})
+                sub.update(dict(**values, close_reason_id=close_reason_id))
         return True
 
     def set_open(self):
-        self.filtered('is_subscription').update({'subscription_state': '3_progress'})
+        for order in self:
+            if order.subscription_state == '6_churn' and order.end_date:
+                order.end_date = False
+                reopen_activity_body = _("Subscription %s has been reopened. The end date has been removed", order._get_html_link())
+                order.activity_schedule(
+                    'mail.mail_activity_data_todo',
+                    summary=_("Check reopened subscription"),
+                    note=reopen_activity_body,
+                    user_id=order.user_id.id
+                )
+        self.filtered('is_subscription').update({'subscription_state': '3_progress', 'state': 'sale', 'close_reason_id': False, 'locked': False})
 
     @api.model
     def _cron_update_kpi(self):
@@ -1103,6 +1175,10 @@ class SaleOrder(models.Model):
 
     @api.model
     def _cron_recurring_create_invoice(self):
+        deferred_account = self.env.company.deferred_revenue_account_id
+        deferred_journal = self.env.company.deferred_journal_id
+        if not deferred_account or not deferred_journal:
+            raise ValidationError(_("The deferred settings are not properly set. Please complete them to generate subscription deferred revenues"))
         return self._create_recurring_invoice()
 
     def _get_invoiceable_lines(self, final=False):
@@ -1114,7 +1190,6 @@ class SaleOrder(models.Model):
         invoiceable_line_ids = []
         downpayment_line_ids = []
         pending_section = None
-
         for line in self.order_line:
             if line.display_type == 'line_section':
                 # Only add section if one of its lines is invoiceable
@@ -1144,9 +1219,7 @@ class SaleOrder(models.Model):
             elif line_condition:
                 if(
                     line.product_id.invoice_policy == 'order'
-                    and not line.order_id.locked
-                    # TODO ARJ replace locked check by check on subscription_state
-                    # needed for test_invoice_done_order
+                    and line.order_id.subscription_state != '5_renewed'
                 ):
                     # Invoice due lines
                     line_to_invoice = True
@@ -1213,7 +1286,10 @@ class SaleOrder(models.Model):
         self.ensure_one()
         if not mail_ctx:
             mail_ctx = {}
-        return {**self._context, **mail_ctx, **{'total_amount': self.amount_total, 'currency_name': self.currency_id.name, 'responsible_email': self.user_id.email}}
+        return {**self._context, **mail_ctx, **{'total_amount': self.amount_total,
+                                                'currency_name': self.currency_id.name,
+                                                'responsible_email': self.user_id.email,
+                                                'code': self.client_order_ref}}
 
     def _update_next_invoice_date(self):
         """ Update the next_invoice_date according to the periodicity of the order.
@@ -1363,6 +1439,9 @@ class SaleOrder(models.Model):
     def _subscription_commit_cursor(self, auto_commit):
         if auto_commit:
             self.env.cr.commit()
+        else:
+            self.env.flush_all()
+            self.env.cr.flush()
 
     def _subscription_rollback_cursor(self, auto_commit):
         if auto_commit:
@@ -1394,6 +1473,7 @@ class SaleOrder(models.Model):
 
         lines_to_reset_qty = self.env['sale.order.line']
         account_moves = self.env['account.move']
+        move_to_send_ids = []
         # Set quantity to invoice before the invoice creation. If something goes wrong, the line will appear as "to invoice"
         # It prevents the use of _compute method and compare the today date and the next_invoice_date in the compute which would be bad for perfs
         all_invoiceable_lines._reset_subscription_qty_to_invoice()
@@ -1458,14 +1538,18 @@ class SaleOrder(models.Model):
                     continue
                 self._subscription_commit_cursor(auto_commit)
                 # Handle automatic payment or invoice posting
-                account_moves |= subscription.with_context(recurring_automatic=True)._handle_automatic_invoices(invoice, auto_commit) or self.env['account.move']
+
+                existing_invoices = subscription.with_context(recurring_automatic=True)._handle_automatic_invoices(invoice, auto_commit) or self.env['account.move']
+                account_moves |= existing_invoices
                 subscription.with_context(mail_notrack=True).payment_exception = False
+                if not subscription.mapped('payment_token_id'): # _get_auto_invoice_grouping_keys groups by token too
+                    move_to_send_ids += existing_invoices.ids
             except Exception:
                 name_list = [f"{sub.name} {sub.client_order_ref}" for sub in subscription]
                 _logger.exception("Error during renewal of contract %s", "; ".join(name_list))
                 self._subscription_rollback_cursor(auto_commit)
         self._subscription_commit_cursor(auto_commit)
-        self._process_invoices_to_send(account_moves)
+        self._process_invoices_to_send(self.env['account.move'].browse(move_to_send_ids))
         # There is still some subscriptions to process. Then, make sure the CRON will be triggered again asap.
         if need_cron_trigger:
             self._subscription_launch_cron_parallel(batch_size)
@@ -1526,27 +1610,32 @@ class SaleOrder(models.Model):
             transaction = self._do_payment(payment_token, invoice, auto_commit=auto_commit)
             # commit change as soon as we try the payment, so we have a trace in the payment_transaction table
 
-            # if transaction is a success, post a message
+            # if no transaction or failure, log error, rollback and remove invoice
             if not transaction or transaction.renewal_state == 'cancel':
                 self._handle_subscription_payment_failure(invoice, transaction)
                 self._subscription_commit_cursor(auto_commit)
                 return
-            else: #  transaction.renewal_state in ['pending', 'authorized', 'done']
+            # if transaction is a success, post a message
+            elif transaction.renewal_state == 'authorized':
                 self._subscription_commit_cursor(auto_commit)
-                self.with_context(mail_notrack=True).write({'payment_exception': False})
                 invoice._post()
                 self._subscription_commit_cursor(auto_commit)
-            # if no transaction or failure, log error, rollback and remove invoice
 
-        except Exception:
+        except Exception as e:
             last_tx_sudo = (self.transaction_ids - existing_transactions).sudo()
-            error_message = (f"Error during renewal of contract {self.ids} "
-                             f"{', '.join(self.mapped(lambda order: order.client_order_ref or order.name))} "
-                             f"({'Payment recorded: %s' % last_tx_sudo.reference if last_tx_sudo and last_tx_sudo.renewal_state in ['pending', 'done'] else 'Payment not recorded'})")
+            if last_tx_sudo and last_tx_sudo.renewal_state in ['pending', 'done']:
+                payment_state = _("Payment recorded: %s", last_tx_sudo.reference)
+            else:
+                payment_state = _("Payment not recorded")
+            error_message = _("Error during renewal of contract %s %s %s",
+                             self.ids,
+                             ', '.join(self.mapped(lambda order: order.client_order_ref or order.name)),
+                             payment_state)
+            body = self._get_traceback_body(e, error_message)
             _logger.exception(error_message)
             self._subscription_rollback_cursor(auto_commit)
             mail = Mail.sudo().create([{
-                'body_html': error_message, 'subject': error_message,
+                'body_html': body, 'subject': error_message,
                 'email_to': order._get_subscription_mail_payment_context().get('responsible_email'), 'auto_delete': True
             } for order in self])
             mail.send()
@@ -1558,11 +1647,11 @@ class SaleOrder(models.Model):
 
     def _get_traceback_body(self, exc, body):
         if not str2bool(self.env['ir.config_parameter'].sudo().get_param('sale_subscription.full_mail_traceback')):
-            return body
-        return Markup("%s<br><br>%s<br>%s") % (
+            return plaintext2html("%s\n\n%s" % (body, str(exc)))
+        return plaintext2html("%s\n\n%s\n%s" % (
             body,
-            plaintext2html(''.join(traceback.format_tb(exc.__traceback__))),
-            plaintext2html(str(exc)),
+            ''.join(traceback.format_tb(exc.__traceback__)),
+            str(exc)),
         )
 
     def _get_expired_subscriptions(self):
@@ -1647,7 +1736,7 @@ class SaleOrder(models.Model):
         self.env['account.move.line'].flush_model(fnames=['move_id', 'sale_line_ids'])
         self.env['sale.subscription.plan'].flush_model(fnames=['auto_close_limit'])
         today = fields.Date.today()
-        # set to close if date is passed or if locked sale order is passed
+        # set to close if date is passed or if renewed sale order passed
         domain_close = [
             ('is_subscription', '=', True),
             ('end_date', '<', today),

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+from collections import defaultdict
 from datetime import datetime, time
 
 from odoo import models
@@ -38,3 +39,18 @@ class Partner(models.Model):
                     return False
 
         return True
+
+    def _get_calendar_events(self, start_datetime, end_datetime):
+        """Get a mapping from partner id to attended events intersecting with the time interval.
+
+        :return dict[int, <calendar.event>]:
+        """
+        events = self.env['calendar.event'].search([
+            ('stop', '>=', start_datetime), ('start', '<=', end_datetime), ('partner_ids', 'in', self.ids)])
+
+        event_by_partner_id = defaultdict(lambda: self.env['calendar.event'])
+        for event in events:
+            for partner in event.partner_ids:
+                event_by_partner_id[partner.id] += event
+
+        return dict(event_by_partner_id)

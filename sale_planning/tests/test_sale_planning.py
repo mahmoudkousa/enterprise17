@@ -16,27 +16,6 @@ from .common import TestCommonSalePlanning
 @tagged('post_install', '-at_install')
 class TestSalePlanning(TestCommonSalePlanning):
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.planning_partner = cls.env['res.partner'].create({
-            'name': 'Customer Credee'
-        })
-        cls.plannable_product = cls.env['product.product'].create({
-            'name': 'Home Help',
-            'type': 'service',
-            'planning_enabled': True,
-            'planning_role_id': cls.planning_role_junior.id
-        })
-        cls.plannable_so = cls.env['sale.order'].create({
-            'partner_id': cls.planning_partner.id,
-        })
-        cls.plannable_sol = cls.env['sale.order.line'].create({
-            'order_id': cls.plannable_so.id,
-            'product_id': cls.plannable_product.id,
-            'product_uom_qty': 10,
-        })
-
     def test_planning_slot_form(self):
         slot_form = Form(self.env['planning.slot'])
         slot_form.sale_line_id = self.plannable_sol

@@ -288,6 +288,33 @@ QUnit.module("spreadsheet > pivot_autofill", {}, () => {
         const tooltipContent = model.getters.getAutofillTooltip().props.content;
         assert.deepEqual(tooltipContent, [{ value: "April 2016" }, { value: "" }]);
     });
+    QUnit.test(
+        "Autofill last column cells vertically by targeting col headers",
+        async function (assert) {
+            const { model } = await createSpreadsheetWithPivot();
+            assert.strictEqual(
+                getPivotAutofillValue(model, "F3", { direction: "top", steps: 1 }),
+                getCellFormula(model, "F2")
+            );
+            assert.strictEqual(
+                getPivotAutofillValue(model, "F3", { direction: "top", steps: 2 }),
+                getCellFormula(model, "F1")
+            );
+            assert.strictEqual(
+                getPivotAutofillValue(model, "F5", { direction: "top", steps: 3 }),
+                getCellFormula(model, "F2")
+            );
+            assert.strictEqual(
+                getPivotAutofillValue(model, "F5", { direction: "top", steps: 4 }),
+                getCellFormula(model, "F1")
+            );
+            setCellContent(model, "H10", `=ODOO.PIVOT(1,"probability","bar","true")`);
+            assert.strictEqual(
+                getPivotAutofillValue(model, "H10", { direction: "top", steps: 5 }),
+                ""
+            );
+        }
+    );
 
     QUnit.test("Autofill pivot values with date in rows", async function (assert) {
         assert.expect(6);
@@ -371,6 +398,9 @@ QUnit.module("spreadsheet > pivot_autofill", {}, () => {
             getCellFormula(model, "A3"),
             '=ODOO.PIVOT.HEADER(1,"date:day","04/14/2016")'
         );
+        assert.deepEqual(model.getters.getTooltipFormula(getCellFormula(model, "A3")), [
+            { value: "4/14/2016" },
+        ]);
         assert.strictEqual(
             getPivotAutofillValue(model, "A3", { direction: "bottom", steps: 1 }),
             '=ODOO.PIVOT.HEADER(1,"date:day","04/15/2016")'
@@ -390,6 +420,9 @@ QUnit.module("spreadsheet > pivot_autofill", {}, () => {
             getPivotAutofillValue(model, "A1", { direction: "bottom", steps: 1 }),
             '=ODOO.PIVOT.HEADER(1,"date:week","53/2020")'
         );
+        assert.deepEqual(model.getters.getTooltipFormula(getCellFormula(model, "A1")), [
+            { value: "W52 2020" },
+        ]);
     });
 
     QUnit.test("Autofill empty pivot date value", async function (assert) {
@@ -425,11 +458,12 @@ QUnit.module("spreadsheet > pivot_autofill", {}, () => {
             getPivotAutofillValue(model, "A3", { direction: "bottom", steps: 1 }),
             `=ODOO.PIVOT.HEADER(1,"date:month","05/2016")`
         );
+        assert.deepEqual(model.getters.getTooltipFormula(getCellFormula(model, "A3")), [
+            { value: "April 2016" },
+        ]);
     });
 
     QUnit.test("Autofill pivot values with date (quarter)", async function (assert) {
-        assert.expect(1);
-
         const { model } = await createSpreadsheetWithPivot({
             arch: /*xml*/ `
                 <pivot>
@@ -442,11 +476,12 @@ QUnit.module("spreadsheet > pivot_autofill", {}, () => {
             getPivotAutofillValue(model, "A3", { direction: "bottom", steps: 1 }),
             getCellFormula(model, "A3").replace("2/2016", "3/2016")
         );
+        assert.deepEqual(model.getters.getTooltipFormula(getCellFormula(model, "A3")), [
+            { value: "Q2 2016" },
+        ]);
     });
 
     QUnit.test("Autofill pivot values with date (year)", async function (assert) {
-        assert.expect(1);
-
         const { model } = await createSpreadsheetWithPivot({
             arch: /*xml*/ `
                 <pivot>
@@ -459,6 +494,9 @@ QUnit.module("spreadsheet > pivot_autofill", {}, () => {
             getPivotAutofillValue(model, "A3", { direction: "bottom", steps: 1 }),
             getCellFormula(model, "A3").replace("2016", "2017")
         );
+        assert.deepEqual(model.getters.getTooltipFormula(getCellFormula(model, "A3")), [
+            { value: "2016" },
+        ]);
     });
 
     QUnit.test("Autofill pivot values with date (no defined interval)", async function (assert) {
@@ -500,10 +538,10 @@ QUnit.module("spreadsheet > pivot_autofill", {}, () => {
             { value: "2016" },
         ]);
         assert.deepEqual(model.getters.getTooltipFormula(getCellFormula(model, "B1")), [
-            { value: 1 },
+            { value: "1" },
         ]);
         assert.deepEqual(model.getters.getTooltipFormula(getCellFormula(model, "B2")), [
-            { value: 1 },
+            { value: "1" },
             { value: "Probability" },
         ]);
         assert.deepEqual(model.getters.getTooltipFormula(`=ODOO.PIVOT.HEADER("1")`, true), [

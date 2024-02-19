@@ -417,7 +417,6 @@ QUnit.module(
 
                 await click(target, ".o_side_panel_collapsible_title");
                 assert.doesNotHaveClass(collapsible, "show");
-                assert.hasClass(collapsible, "collapsing");
             }
         );
 
@@ -590,7 +589,10 @@ QUnit.module(
                 assert.ok(target.querySelector(".o-autocomplete--dropdown-menu"));
                 const item1 = target.querySelector(".o-autocomplete--dropdown-item");
                 await click(item1);
-                assert.equal(model.getters.getFilterDisplayValue(label), item1.innerText);
+                assert.equal(
+                    model.getters.getFilterDisplayValue(label)[0][0].value,
+                    item1.innerText
+                );
             }
         );
 
@@ -1164,7 +1166,49 @@ QUnit.module(
             assert.strictEqual(globalFilter.defaultValue, undefined);
         });
 
-        QUnit.test("Choose any year in a year picker", async function (assert) {
+        QUnit.test("Choose any year in a year picker by clicking the picker", async function (assert) {
+            patchDate(2022, 6, 10, 0, 0, 0);
+            const { model } = await createSpreadsheetFromPivotView();
+            await addGlobalFilter(model, THIS_YEAR_GLOBAL_FILTER);
+
+            await openGlobalFilterSidePanel();
+
+            const pivots = target.querySelectorAll(".pivot_filter_section");
+            assert.containsOnce(target, ".pivot_filter_section");
+            assert.containsOnce(target, "i.o_side_panel_filter_icon.fa-cog");
+            assert.containsOnce(target, "i.o_side_panel_filter_icon.fa-times");
+            assert.equal(
+                pivots[0].querySelector(".o_side_panel_filter_label").textContent,
+                THIS_YEAR_GLOBAL_FILTER.label
+            );
+
+            assert.containsOnce(pivots[0], ".pivot_filter_input input.o_datetime_input");
+            const year = pivots[0].querySelector(".pivot_filter_input input.o_datetime_input");
+
+            const this_year = luxon.DateTime.utc().year;
+            assert.equal(year.value, String(this_year));
+
+            await click(year);
+
+            assert.isVisible(target.querySelector('.o_datetime_picker'),
+                "The picker is visible");
+            assert.strictEqual(
+                target.querySelector('button.o_zoom_out.o_datetime_button').title,
+                "Select decade",
+                "The picker should be displaying the years");
+
+            const selectYearSpans = target.querySelectorAll("button.o_date_item_cell");
+            const year2024 = [...selectYearSpans].find((el) => el.textContent === "2024");
+            await click(year2024);
+
+            assert.equal(year.value, "2024");
+            assert.deepEqual(model.getters.getGlobalFilterValue(THIS_YEAR_GLOBAL_FILTER.id), {
+                period: undefined,
+                yearOffset: 2,
+            });
+        });
+
+        QUnit.test("Choose any year in a year picker via input", async function (assert) {
             const { model } = await createSpreadsheetFromPivotView();
             await addGlobalFilter(model, THIS_YEAR_GLOBAL_FILTER);
 

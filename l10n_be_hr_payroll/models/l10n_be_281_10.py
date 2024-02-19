@@ -87,7 +87,7 @@ class L10nBe28110(models.Model):
 
     @api.depends('xml_file')
     def _compute_validation_state(self):
-        xsd_schema_file_path = file_path('l10n_be_hr_payroll/data/161-xsd-2022-20221213.xsd')
+        xsd_schema_file_path = file_path('l10n_be_hr_payroll/data/Belcotax-2023.xsd')
         xsd_root = etree.parse(xsd_schema_file_path)
         schema = etree.XMLSchema(xsd_root)
 
@@ -129,7 +129,7 @@ class L10nBe28110(models.Model):
         if invalid_employees:
             raise UserError(_("Some employee don't have any contract.:\n%s", '\n'.join(invalid_employees.mapped('name'))))
 
-        invalid_employees = employees.filtered(lambda e: not e._is_niss_valid())
+        invalid_employees = employees.filtered(lambda e: e.employee_type != 'trainee' and not e._is_niss_valid())
         if invalid_employees:
             raise UserError(_('Invalid NISS number for those employees:\n %s', '\n'.join(invalid_employees.mapped('name'))))
 
@@ -171,6 +171,7 @@ class L10nBe28110(models.Model):
                 ('date_from', '>=', date(int(sheet.year), 1, 1)),
                 ('state', 'in', ['done', 'paid']),
                 ('company_id', '=', sheet.company_id.id),
+                ('employee_id.employee_type', '!=', 'trainee'),
             ])
             all_employees = all_payslips.mapped('employee_id')
             sheet.write({
@@ -357,6 +358,7 @@ class L10nBe28110(models.Model):
                         round(sum(mapped_total[code] for code in ['ATN.INT', 'ATN.MOB', 'ATN.LAP', 'ATN.CAR']) - other_transport_exemption, 2) if has_company_car else round(sum(mapped_total[code] for code in ['ATN.INT', 'ATN.MOB', 'ATN.LAP', 'ATN.CAR']), 2))),
                 # f10_2077_totaal
                 'f10_2078_compensationamountwithoutstandards': _to_eurocent(round(mapped_total['REP.FEES.VOLATILE'], 2)),
+                'f10_2079_covidovertimeremuneration2023': 0,
                 'f10_2080_detacheringsvergoed': 0,
                 'f10_2081_gewonebijdragenenpremies': 0,
                 'f10_2082_bedrag': _to_eurocent(round(warrant_gross, 2)),
@@ -403,7 +405,8 @@ class L10nBe28110(models.Model):
                 'f10_2134_totaalbedragmobiliteitsbudget': 0,
                 'f10_2135_amountpaidforvolontarysuplementaryhourscovid': 0,
                 'f10_2136_amountcontractofstudent': 0,
-                'f10_2137_amountstudent2020oruntilthirdquarter2021': 0,
+                'f10_2137_amountstudentspecificperiod': 0,
+                'f10_2138_covidovertimehours2023': 0,
                 'f10_2141_total': 0,
                 'f10_2142_totalovertimehours180': 0,
                 'f10_2143_bedragoveruren360horeca': 0,
@@ -426,22 +429,20 @@ class L10nBe28110(models.Model):
                 'f10_2186_amountother2': 0,
                 'f10_2187_amountother3': 0,
                 'f10_2188_amountother4': 0,
+                'f10_2189_purchasingbonus': 0,
                 'f10_2190_covidovertimeremunerationfirstsemester': 0,
                 'f10_2191_covidovertimeremunerationsecondsemester': 0,
                 'f10_2192_covidovertimehoursfirstsemester': 0,
                 'f10_2193_covidovertimehourssecondsemester': 0,
                 'f10_2194_covidovertimehourstotal': 0,
-                'f10_2195_covidovertimehours2020': 0,
-                'f10_2196_covidovertimeremuneration2020': 0,
                 'f10_2197_covidovertimeremuneration2022': 0,
-                'f10_2198_coronabonus': 0,
                 'f10_2199_covidovertimehours2022': 0,
                 'f10_2200_compensationwithstandards': _to_eurocent(round(mapped_total['REP.FEES'], 2)),
                 'f10_2201_compensationwithdocuments': 0,
                 'f10_2202_amount': 0,
                 'f10_2203_amount': 0,
                 'f10_2204_repaidsums': 0,
-                'f10_2204_repaidsums': 0,
+                'f10_2206_grossamountremuneration': 0,
             }
             # Le code postal belge (2016) et le code postal étranger (2112) ne peuvent être
             # ni remplis, ni vides tous les deux.

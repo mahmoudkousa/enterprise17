@@ -11,6 +11,6 @@ patch(ProductScreen.prototype, {
                 val = 9999;
             }
         }
-        super._setValue();
-    }
+        super._setValue(val);
+    },
 });

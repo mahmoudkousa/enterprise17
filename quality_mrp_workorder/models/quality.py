@@ -36,7 +36,7 @@ class QualityCheck(models.Model):
     def _next(self, continue_production=False):
         self.ensure_one()
         result = super()._next(continue_production=continue_production)
-        if self.quality_state == 'fail':
+        if self.quality_state == 'fail' and (self.warning_message or self.failure_message):
             return {
                 'name': _('Quality Check Failed'),
                 'type': 'ir.actions.act_window',

@@ -65,7 +65,7 @@ class TestRecruitmentExtractProcess(TestHrCommon, TestExtractMixin):
         expected_get_results_params = {
             'version': OCR_VERSION,
             'document_token': 'some_token',
-            'account_token': self.env['iap.account'].get('invoice_ocr').account_token,
+            'account_token': self.applicant._get_iap_account().account_token,
         }
         with self._mock_iap_extract(
             extract_response=extract_response,
@@ -156,7 +156,7 @@ class TestRecruitmentExtractProcess(TestHrCommon, TestExtractMixin):
                 'name': {'content': self.applicant.name},
             },
             'document_token': 'some_token',
-            'account_token': self.env['iap.account'].get('invoice_ocr').account_token,
+            'account_token': self.applicant._get_iap_account().account_token,
         }
 
         hired_stages = self.env['hr.recruitment.stage'].search([('hired_stage', '=', True)])

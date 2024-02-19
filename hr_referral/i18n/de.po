@@ -4,15 +4,15 @@
 # 
 # Translators:
 # Wil Odoo, 2023
-# Larissa Manderfeld, 2023
+# Larissa Manderfeld, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-05 13:45+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Larissa Manderfeld, 2023\n"
+"Last-Translator: Larissa Manderfeld, 2024\n"
 "Language-Team: German (https://app.transifex.com/odoo/teams/41243/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -315,9 +315,24 @@ msgid "Cost"
 msgstr "Kosten"
 
 #. module: hr_referral
+#: model_terms:ir.actions.act_window,help:hr_referral.action_hr_referral_friend_configuration
+msgid "Create a new friend"
+msgstr "Einen neuen Freund erstellen"
+
+#. module: hr_referral
+#: model_terms:ir.actions.act_window,help:hr_referral.action_hr_referral_level_configuration
+msgid "Create a new level"
+msgstr "Ein neues Level erstellen"
+
+#. module: hr_referral
 #: model_terms:ir.actions.act_window,help:hr_referral.action_hr_referral_alert_configuration
 msgid "Create new alerts"
 msgstr "Neue Benachrichtigungen erstellen"
+
+#. module: hr_referral
+#: model_terms:ir.actions.act_window,help:hr_referral.action_hr_referral_points
+msgid "Create new reward points"
+msgstr "Neue Belohnungspunkte erstellen"
 
 #. module: hr_referral
 #: model:ir.model.fields,field_description:hr_referral.field_hr_referral_alert__create_uid
@@ -487,7 +502,7 @@ msgstr "Empfohlene Mitarbeiter abgelehnt"
 #. module: hr_referral
 #: model:ir.model,name:hr_referral.model_hr_referral_report
 msgid "Employee Referral Report"
-msgstr "Bericht über Mitarbeiterempfehlungen"
+msgstr "Bericht über Personalempfehlungen"
 
 #. module: hr_referral
 #: model_terms:ir.ui.view,arch_db:hr_referral.view_hr_referral_reward_form
@@ -506,7 +521,7 @@ msgstr "Mitarbeiteranalyse"
 #. module: hr_referral
 #: model:ir.actions.act_window,name:hr_referral.employee_referral_report_action
 msgid "Employees Referral Analysis"
-msgstr "Analyse der Mitarbeiterempfehlungen"
+msgstr "Analyse der Personalempfehlungen"
 
 #. module: hr_referral
 #: model:ir.model.fields,help:hr_referral.field_hr_referral_alert__url
@@ -713,6 +728,11 @@ msgstr "Bild"
 #: model_terms:ir.ui.view,arch_db:hr_referral.view_hr_referral_filter
 msgid "In Progress"
 msgstr "Laufend"
+
+#. module: hr_referral
+#: model:ir.model.fields,field_description:hr_referral.field_hr_applicant__is_accessible_to_current_user
+msgid "Is Accessible To Current User"
+msgstr "Ist für den aktuellen Benutzer zugänglich"
 
 #. module: hr_referral
 #: model:ir.model.fields,field_description:hr_referral.field_hr_referral_reward__message_is_follower
@@ -980,7 +1000,7 @@ msgstr "Laufend"
 #. module: hr_referral
 #: model_terms:ir.ui.view,arch_db:hr_referral.view_hr_job_employee_referral_kanban
 msgid "Open"
-msgstr "Offen"
+msgstr "Offene"
 
 #. module: hr_referral
 #: model_terms:ir.ui.view,arch_db:hr_referral.view_hr_referral_reward_kanban
@@ -1444,7 +1464,7 @@ msgstr ""
 #: model_terms:ir.actions.act_window,help:hr_referral.employee_referral_report_action
 msgid "This reports allow you to follow the referrals and their evolution."
 msgstr ""
-"Mit diesen Berichten können Sie die Mitarbeiterempfehlungen und ihre "
+"Mit diesen Berichten können Sie die Personalempfehlungen und ihre "
 "Entwicklung vergleichen."
 
 #. module: hr_referral
@@ -1499,6 +1519,18 @@ msgstr "UTM-Kampagne"
 #: model:ir.model,name:hr_referral.model_utm_source
 msgid "UTM Source"
 msgstr "UTM-Quelle"
+
+#. module: hr_referral
+#. odoo-python
+#: code:addons/hr_referral/models/hr_applicant.py:0
+#, python-format
+msgid ""
+"Unsupported search on field is_accessible_to_current_user: %s operator & %s "
+"value. Only = and != operator and boolean values are supported."
+msgstr ""
+"Suche für Feld is_accessible_to_current_user nicht unterstützt: Operator %s "
+"& Wert %s. Nur die Operatoren = und != und boolesche Werte werden "
+"unterstützt."
 
 #. module: hr_referral
 #: model:ir.model.fields,field_description:hr_referral.field_hr_referral_link_to_share__url
@@ -1559,6 +1591,19 @@ msgstr "Willkommenseinführung in der Personalempfehlungsapp"
 #, python-format
 msgid "You are not allowed to access applicant records."
 msgstr "Sie haben keinen Zugang zu den Bewerberunterlagen."
+
+#. module: hr_referral
+#. odoo-python
+#: code:addons/hr_referral/models/hr_applicant.py:0
+#, python-format
+msgid ""
+"You are not allowed to access this application record because you're not one"
+" of the interviewers of this application. If you think that's an error, "
+"please contact your administrator."
+msgstr ""
+"Sie sind nicht berechtigt, auf diesen Bewerbungsdatensatz zuzugreifen, da "
+"Sie nicht einer der Interviewer dieser Bewerbung sind. Wenn Sie glauben, "
+"dass dies ein Fehler ist, wenden Sie sich bitte an Ihren Administrator."
 
 #. module: hr_referral
 #. odoo-python

@@ -22,7 +22,7 @@ class AppointmentCalendarController(CalendarController):
     # CALENDAR EVENT VIEW
     # ------------------------------------------------------------
 
-    @route(website=True)
+    @route()
     def view_meeting(self, token, id):
         """Redirect the internal logged in user to the form view of calendar.event, and redirect
            regular attendees to the website page of the calendar.event for appointments"""
@@ -140,7 +140,7 @@ class AppointmentCalendarController(CalendarController):
             return request.not_found()
         if fields.Datetime.from_string(event.allday and event.start_date or event.start) < datetime.now() + timedelta(hours=event.appointment_type_id.min_cancellation_hours):
             return request.redirect(f'/calendar/view/{access_token}?state=no-cancel&partner_id={partner_id}')
-        event.sudo().action_cancel_meeting([int(partner_id)])
+        event.with_context(mail_notify_author=True).sudo().action_cancel_meeting([int(partner_id)])
         if appointment_invite:
             redirect_url = appointment_invite.redirect_url + '&state=cancel'
         else:

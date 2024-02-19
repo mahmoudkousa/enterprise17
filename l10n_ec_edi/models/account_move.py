@@ -62,11 +62,23 @@ L10N_EC_WITHHOLD_FOREIGN_REGIME = [('01', '(01) General Regime'), ('02', '(02) F
 class AccountMove(models.Model):
     _inherit = "account.move"
 
+    # ===== Authorization number show/edit fields =====
+    l10n_show_ec_authorization = fields.Boolean(
+        string='Show Authorization',
+        compute='_compute_l10n_ec_show_edit_authorization',
+        help='Technical field to show "Authorization number" field in the move form.',
+    )
+    l10n_edit_ec_authorization = fields.Boolean(
+        string='Edit Authorization',
+        compute='_compute_l10n_ec_show_edit_authorization',
+        help='Technical field to edit "Authorization number" field in the move form.',
+    )
+
     # ===== EDI fields =====
     l10n_ec_authorization_number = fields.Char(
         string="Authorization number",
         size=49,
-        copy=False, index=True, readonly=True,
+        copy=False, index=True,
         tracking=True,
         help="Ecuador: EDI authorization number (same as access key), set upon posting",
     )
@@ -96,6 +108,12 @@ class AccountMove(models.Model):
         compute='_compute_l10n_ec_withhold_wth_fields',
         help="The withholding lines in a withhold",
     )
+    l10n_ec_related_withhold_line_ids = fields.One2many(
+        comodel_name='account.move.line',
+        inverse_name='l10n_ec_withhold_invoice_id',
+        string="Related withhold lines",
+        help="The withhold lines related to this invoice",
+    )
     # Technical field for the number of invoices linked to a withhold
     l10n_ec_withhold_origin_invoice_count = fields.Integer(
         compute='_compute_l10n_ec_withhold_wth_fields',
@@ -121,6 +139,32 @@ class AccountMove(models.Model):
 
     # ===== COMPUTE / ONCHANGE / CONSTRAINTS METHODS =====
 
+    @api.depends('l10n_latam_document_type_id', 'l10n_ec_authorization_number', 'journal_id')
+    def _compute_l10n_ec_show_edit_authorization(self):
+        not_ec_moves = self.filtered(lambda m: m.country_code != 'EC' or not m.l10n_latam_document_type_id) # Not EC documents and documents without a document type
+        not_ec_moves = not_ec_moves.filtered(lambda m: not m._l10n_ec_is_withholding()) # Not EC withholds
+        not_ec_moves.l10n_show_ec_authorization = False
+        not_ec_moves.l10n_edit_ec_authorization = False
+        ec_moves = (self - not_ec_moves)
+        for move in ec_moves:
+            # Always show and edit the authorization number for EC documents
+            l10n_show_ec_authorization = True
+            l10n_edit_ec_authorization = True
+            allow_electronic_document = move.journal_id.type == 'sale' or move.journal_id.l10n_ec_is_purchase_liquidation or move.journal_id.l10n_ec_withhold_type == 'in_withhold'
+            if allow_electronic_document and (any(x.code == 'ecuadorian_edi' for x in move.journal_id.edi_format_ids) or move.edi_document_ids):
+                # Show authorization number when filled out
+                # Do not edit the authorization number when the journal allow electronic invoicing or have an EDI document
+                l10n_show_ec_authorization = bool(move.l10n_ec_authorization_number)
+                l10n_edit_ec_authorization = False
+            elif move.journal_id.l10n_ec_withhold_type == 'out_withhold' or\
+                (move.journal_id.type == 'purchase' and move._is_manual_document_number()):
+                # Edit and show the autorization number when:
+                # - The document it's an out withhold
+                # - It's a document with manual authorization
+                l10n_edit_ec_authorization = True
+            move.l10n_show_ec_authorization = l10n_show_ec_authorization
+            move.l10n_edit_ec_authorization = l10n_edit_ec_authorization
+
     @api.depends('country_code', 'l10n_latam_document_type_id.code', 'l10n_ec_withhold_ids')
     def _compute_l10n_ec_show_add_withhold(self):
         # shows/hide "ADD WITHHOLD" button on invoices
@@ -131,6 +175,7 @@ class AccountMove(models.Model):
                 '01',  # Factura compra
                 '02',  # Nota de venta
                 '03',  # Liquidacion compra
+                '05',  # Nota de Débito
                 '08',  # Entradas a espectaculos
                 '09',  # Tiquetes
                 '11',  # Pasajes
@@ -141,7 +186,6 @@ class AccountMove(models.Model):
                 '48',  # Nota de débito de reembolso
             ]
             add_withhold = invoice.country_code == 'EC' and invoice.l10n_latam_document_type_id.code in codes_to_withhold
-            add_withhold = add_withhold and not invoice.l10n_ec_withhold_ids.filtered(lambda w: w.state == 'posted')
             invoice.l10n_ec_show_add_withhold = add_withhold
 
     @api.depends('country_code', 'l10n_ec_withhold_type', 'line_ids.tax_ids', 'line_ids.l10n_ec_withhold_invoice_id')

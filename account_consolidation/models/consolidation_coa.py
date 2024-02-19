@@ -17,6 +17,7 @@ class ConsolidationChart(models.Model):
     account_ids_count = fields.Integer(compute='_compute_account_ids_count', string='# Accounts')
     group_ids = fields.One2many('consolidation.group', 'chart_id', 'Account Groups')
     group_ids_count = fields.Integer(compute='_compute_group_ids_count', string='# Groups')
+    rate_ids = fields.One2many('consolidation.rate', 'chart_id', 'Consolidation Rates')
 
     color = fields.Integer('Color Index', help='Used in the kanban view', default=0)
     company_ids = fields.Many2many('res.company', string="Companies")

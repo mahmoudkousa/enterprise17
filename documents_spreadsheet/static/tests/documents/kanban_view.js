@@ -4,7 +4,10 @@ import { startServer } from "@bus/../tests/helpers/mock_python_environment";
 
 import { documentService } from "@documents/core/document_service";
 import { DocumentsSearchPanel } from "@documents/views/search/documents_search_panel";
-import { getEnrichedSearchArch } from "@documents/../tests/documents_test_utils";
+import {
+    getEnrichedSearchArch,
+    createDocumentsViewWithMessaging,
+} from "@documents/../tests/documents_test_utils";
 
 import { XLSX_MIME_TYPE } from "@documents_spreadsheet/helpers";
 import { mockActionService } from "@documents_spreadsheet/../tests/spreadsheet_test_utils";
@@ -506,6 +509,72 @@ QUnit.module(
                 await contains(".o_notification", {
                     text: "Spreadsheets mass download not yet supported.\n Download spreadsheets individually instead.",
                 });
+            }
+        );
+
+        QUnit.test(
+            "can open spreadsheet while multiple documents are selected along with it",
+            async function (assert) {
+                assert.expect(3);
+                const pyEnv = await startServer();
+                const documentsFolderId = pyEnv["documents.folder"].create({
+                    display_name: "demo-workspace",
+                    has_write_access: true,
+                });
+                pyEnv["documents.document"].create([
+                    {
+                        name: "test-spreadsheet",
+                        raw: "{}",
+                        folder_id: documentsFolderId,
+                        handler: "spreadsheet",
+                        thumbnail_status: "present",
+                    },
+                    {
+                        folder_id: documentsFolderId,
+                        mimetype: "image/png",
+                        name: "test-image-1",
+                    },
+                    {
+                        folder_id: documentsFolderId,
+                        mimetype: "image/png",
+                        name: "test-image-2",
+                    },
+                ]);
+                const views = {
+                    "documents.document,false,kanban": `<kanban js_class="documents_kanban">
+                            <templates>
+                                <t t-name="kanban-box">
+                                    <div>
+                                        <div name="document_preview" class="o_kanban_image_wrapper">THUMBNAIL</div>
+                                        <i class="fa fa-circle-thin o_record_selector"/>
+                                        <field name="name"/>
+                                        <field name="handler"/>
+                                    </div>
+                                </t>
+                            </templates>
+                        </kanban>`,
+                };
+                const { env, openView } = await createDocumentsViewWithMessaging({
+                    hasWebClient: true,
+                    serverData: { views },
+                });
+                await openView({
+                    res_model: "documents.document",
+                    views: [[false, "kanban"]],
+                });
+                patchWithCleanup(env.services.action, {
+                    doAction(action) {
+                        assert.step(action.tag);
+                    },
+                });
+                const fixture = getFixture();
+                const records = fixture.querySelectorAll(".o_kanban_record");
+                await click(records[0], ".o_record_selector");
+                await click(records[1], ".o_record_selector");
+                await click(records[2], ".o_record_selector");
+                await click(fixture.querySelector(".oe_kanban_previewer"));
+                assert.containsNone(target, ".o_AttachmentViewer");
+                assert.verifySteps(["action_open_spreadsheet"]);
             }
         );
     }

@@ -11,7 +11,7 @@ from odoo.tools.float_utils import float_compare
 
 from odoo.addons.mail.tests.common import MockEmail
 from odoo.addons.hr_timesheet.tests.test_timesheet import TestCommonTimesheet
-from odoo.exceptions import AccessError
+from odoo.exceptions import AccessError, UserError
 
 try:
     from unittest.mock import patch
@@ -39,6 +39,30 @@ class TestTimesheetValidation(TestCommonTimesheet, MockEmail):
             'date': today - timedelta(days=1),
             'unit_amount': 3.11,
         })
+
+    def test_generate_timesheet_after_validation(self):
+        self.env.company.timesheet_encode_uom_id = self.env.ref('uom.product_uom_day')
+        Timesheet = self.env['account.analytic.line']
+        today = fields.Date.today()
+        timesheet_entry = Timesheet.with_user(self.user_manager).create({
+            'project_id': self.project_customer.id,
+            'task_id': self.task1.id,
+            'name': 'my first timesheet',
+            'unit_amount': 4.0,
+            'employee_id': self.empl_manager.id,
+        })
+        timesheet_entry.with_user(self.user_manager).action_validate_timesheet()
+        timesheet_domain = [('employee_id', '=', self.empl_manager.id), ('date', '=', today)]
+        sheet_count = Timesheet.search_count(timesheet_domain)
+        self.assertEqual(sheet_count, 1)
+
+        Timesheet.with_user(self.user_manager).grid_update_cell([('id', '=', timesheet_entry.id)], 'unit_amount', 2.0)
+        timesheet_entrys = Timesheet.search(timesheet_domain)
+        self.assertEqual(len(timesheet_entrys), 2, "After the timesheet is validated, a new timesheet entry should be generated.")
+
+        Timesheet.with_user(self.user_manager).grid_update_cell([('id', 'in', timesheet_entrys.ids)], 'unit_amount', 5.0)
+        sheet_count1 = Timesheet.search(timesheet_domain)
+        self.assertEqual(len(sheet_count1), 2, "Modify non-validated timesheet entries if there's any.")
 
     def test_timesheet_validation_user(self):
         """ Employee record its timesheets and Officer validate them. Then try to modify/delete it and get Access Error """
@@ -209,22 +233,12 @@ class TestTimesheetValidation(TestCommonTimesheet, MockEmail):
         self.env.company.timesheet_encode_uom_id = current_timesheet_uom
 
     def test_add_time_from_wizard(self):
-        self.env.user.employee_id = self.env['hr.employee'].create({'user_id': self.env.uid})
-        config = self.env["res.config.settings"].create({
-                "timesheet_min_duration": 60,
-                "timesheet_rounding": 15,
-            })
-        config.execute()
-        wizard_min = self.env['project.task.create.timesheet'].create({
-                'time_spent': 0.7,
-                'task_id': self.task1.id,
-            })
-        wizard_round = self.env['project.task.create.timesheet'].create({
-                'time_spent': 1.15,
-                'task_id': self.task1.id,
-            })
-        self.assertEqual(wizard_min.with_user(self.env.user).save_timesheet().unit_amount, 1, "The timesheet's duration should be 1h (Minimum Duration = 60').")
-        self.assertEqual(wizard_round.with_user(self.env.user).save_timesheet().unit_amount, 1.25, "The timesheet's duration should be 1h15 (Rounding = 15').")
+        wizard = self.env['project.task.create.timesheet'].create({
+            'time_spent': 0.15,
+            'task_id': self.task1.id,
+        })
+        wizard.with_user(self.user_employee).save_timesheet()
+        self.assertEqual(self.task1.timesheet_ids[0].unit_amount, 0.15)
 
     def test_action_add_time_to_timer_multi_company(self):
         company = self.env['res.company'].create({'name': 'My_Company'})
@@ -357,26 +371,33 @@ class TestTimesheetValidation(TestCommonTimesheet, MockEmail):
         self.assertEqual(wizard.time_spent, 0.5)
 
     def test_grid_update_cell(self):
-        today_date = fields.Date.today()
-        company = self.env['res.company'].create({'name': 'My_Company'})
-        self.user_manager.company_ids = self.env.companies
-        employee = self.env['hr.employee'].with_company(company).create({
-            'name': 'coucou',
-            'timesheet_manager_id': self.user_manager.id,
-        })
+        """ Test updating timesheet grid cells.
 
+            - A user can update cells belonging to tasks assigned to them,
+              even if they're part of private projects.
+            - A user cannot update their own timesheets after validation.
+            - Updating validated timesheets as timesheet manager should create
+              additional timesheets instead of modifying existing ones.
+        """
         Timesheet = self.env['account.analytic.line']
-        timesheet = Timesheet.with_user(self.user_manager).create({
-            'employee_id': employee.id,
-            'project_id': self.project_customer.id,
-            'date': today_date - timedelta(days=1),
-            'unit_amount': 2,
-        })
-        timesheet.with_user(self.user_manager).action_validate_timesheet()
+        self.empl_employee.timesheet_manager_id = self.user_manager
+        self.project_customer.privacy_visibility = 'followers'
+        self.task1.user_ids += self.user_employee
 
-        Timesheet.grid_update_cell([('id', '=', timesheet.id)], 'unit_amount', 3.0)
+        self.assertNotIn(self.user_employee.partner_id, self.project_customer.message_follower_ids.partner_id,
+                         "Employee shouldn't have to follow a project to update a timesheetable task")
+        Timesheet.with_user(self.user_employee).grid_update_cell([('id', '=', self.timesheet1.id)], 'unit_amount', 2.0)
 
-        self.assertEqual(Timesheet.search_count([('employee_id', '=', employee.id)]), 2, "Should create new timesheet instead of updating validated timesheet in cell")
+        sheet_count = Timesheet.search_count([('employee_id', '=', self.empl_employee.id)])
+        self.timesheet1.with_user(self.user_manager).action_validate_timesheet()
+
+        # employee cannot update cell after validation
+        with self.assertRaises(AccessError):
+            Timesheet.with_user(self.user_employee).grid_update_cell([('id', '=', self.timesheet1.id)], 'unit_amount', 2.0)
+        Timesheet.with_user(self.user_manager).grid_update_cell([('id', '=', self.timesheet1.id)], 'unit_amount', 2.0)
+
+        self.assertEqual(Timesheet.search_count([('employee_id', '=', self.empl_employee.id)]), sheet_count + 1,
+                         "Should create new timesheet instead of updating validated timesheet in cell")
 
     def test_get_last_week(self):
         """Test the get_last_week method. It should return grid_anchor (GA), last_week (LW),
@@ -527,3 +548,68 @@ class TestTimesheetValidation(TestCommonTimesheet, MockEmail):
             'task_name': '',
         })
         self.assertDictEqual(timesheet_timer_data, expected_data)
+
+    def test_new_entry_when_timer_started_on_future_entry(self):
+        """
+            Create a timesheet with a future date.
+            Check for a new entry when a new timesheet is added from timer.
+        """
+        self.user_employee.tz = 'Asia/Calcutta'
+        timesheet = self.env['account.analytic.line'].with_user(self.user_employee).create({
+            'name': "My_timesheet",
+            'project_id': self.project_customer.id,
+            'task_id': self.task2.id,
+            'date': (datetime.now() + timedelta(days=2)),
+            'unit_amount': 10.0,
+        })
+        count = self.env['account.analytic.line'].search_count([('name', '=', 'My_timesheet')])
+        self.assertEqual(count, 1)
+        timesheet.with_user(self.user_employee).action_timer_start()
+        timesheet.with_user(self.user_employee).action_timer_stop()
+        count = self.env['account.analytic.line'].search_count([('name', '=', 'My_timesheet')])
+        self.assertEqual(count, 2, "There should be two entries for timesheet, one for existing future entry and another one for today's entry!")
+
+    def test_timesheet_entry_with_multiple_projects(self):
+        Timesheet = self.env['account.analytic.line']
+
+        # Create project
+        project_customer2 = self.env['project.project'].create({
+            'name': 'Project Y',
+            'allow_timesheets': True,
+            'partner_id': self.partner.id,
+            'analytic_account_id': self.analytic_account.id,
+        })
+
+        # Create two timesheet entries for the same employee, one for each project, with different unit amounts
+        Timesheet.create([
+            {
+                'name': 'Timesheet 1',
+                'project_id': self.project_customer.id,
+                'employee_id': self.empl_employee.id,
+                'unit_amount': 5.0,
+                'date': '2024-01-02',
+            },
+            {
+                'name': 'Timesheet 2',
+                'project_id': project_customer2.id,
+                'employee_id': self.empl_employee.id,
+                'unit_amount': 10.0,
+                'date': '2024-01-02',
+            },
+        ])
+
+        timesheet_count = Timesheet.search_count([('employee_id', '=', self.empl_employee.id), ('date', '=', '2024-01-02')])
+        Timesheet.grid_update_cell([('employee_id', '=', self.empl_employee.id), ('date', '=', '2024-01-02')], 'unit_amount', 3.0)
+        self.assertEqual(
+            Timesheet.search_count([('employee_id', '=', self.empl_employee.id), ('date', '=', '2024-01-02')]),
+            timesheet_count + 1,
+            "Grid update cell should create new timesheet if cell contains multiple timesheets"
+        )
+
+        # Disable timesheet feature for projects
+        self.project_customer.allow_timesheets = False
+        project_customer2.allow_timesheets = False
+
+        # Raise user error if timesheet is disabled in both projects
+        with self.assertRaises(UserError):
+            Timesheet.grid_update_cell([('employee_id', '=', self.empl_employee.id), ('date', '=', '2024-01-02')], 'unit_amount', 5.0)

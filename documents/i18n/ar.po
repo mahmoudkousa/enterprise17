@@ -3,16 +3,16 @@
 # 	* documents
 # 
 # Translators:
-# Malaz Abuidris <msea@odoo.com>, 2023
 # Wil Odoo, 2023
+# Malaz Abuidris <msea@odoo.com>, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-05 13:45+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Wil Odoo, 2023\n"
+"Last-Translator: Malaz Abuidris <msea@odoo.com>, 2024\n"
 "Language-Team: Arabic (https://app.transifex.com/odoo/teams/41243/ar/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -88,13 +88,13 @@ msgstr ""
 
 #. module: documents
 #: model:documents.tag,name:documents.documents_finance_fiscal_year_2017
-msgid "2022"
-msgstr "2022"
+msgid "2023"
+msgstr "2023"
 
 #. module: documents
 #: model:documents.tag,name:documents.documents_finance_fiscal_year_2018
-msgid "2023"
-msgstr "2023"
+msgid "2024"
+msgstr "2024"
 
 #. module: documents
 #: model_terms:digest.tip,tip_description:documents.digest_tip_documents_0
@@ -118,6 +118,15 @@ msgid ""
 "<br/>\n"
 "                    is sharing content with you"
 msgstr ""
+"<br/>\n"
+"                    قام بمشاركة محتوى معك "
+
+#. module: documents
+#. odoo-javascript
+#: code:addons/documents/static/src/js/tours/documents.js:0
+#, python-format
+msgid "<b>Select</b> this page to continue."
+msgstr "<b>قم بتحديد</b> هذه الصفحة للاستمرار. "
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.public_page_layout
@@ -127,7 +136,7 @@ msgstr "<br/>يعمل بواسطة"
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.share_view_form_popup
 msgid "<i class=\"fa fa fa-folder text-primary me-2\" title=\"Workspace\"/>"
-msgstr ""
+msgstr "<i class=\"fa fa fa-folder text-primary me-2\" title=\"مساحة العمل \"/>"
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.share_workspace_page
@@ -137,7 +146,7 @@ msgstr "<i class=\"fa fa-download fa-fw\"/>  تنزيل الكل "
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.document_view_form
 msgid "<i class=\"fa fa-lock oe_inline\" title=\"Locked\" invisible=\"not lock_uid\"/>"
-msgstr ""
+msgstr "<i class=\"fa fa-lock oe_inline\" title=\"مقفل \" invisible=\"not lock_uid\"/>"
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.share_view_form_popup
@@ -145,6 +154,8 @@ msgid ""
 "<i class=\"fa fa-tag o_documents_tag_color ms-2\" invisible=\"not tag_ids\" "
 "title=\"Tags\"/>"
 msgstr ""
+"<i class=\"fa fa-tag o_documents_tag_color ms-2\" invisible=\"not tag_ids\" "
+"title=\"علامات التصنيف \"/>"
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.share_workspace_page
@@ -692,8 +703,8 @@ msgid "Action Needed"
 msgstr "إجراء مطلوب"
 
 #. module: documents
-#. odoo-python
 #. odoo-javascript
+#. odoo-python
 #: code:addons/documents/models/documents_folder.py:0
 #: code:addons/documents/static/src/views/inspector/documents_inspector.xml:0
 #: model:ir.ui.menu,name:documents.workflow_rules_menu
@@ -734,6 +745,11 @@ msgid "Activity Note"
 msgstr "ملاحظة النشاط"
 
 #. module: documents
+#: model:ir.ui.menu,name:documents.mail_activity_plan_menu
+msgid "Activity Plans"
+msgstr "خطط النشاط "
+
+#. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_document__activity_state
 msgid "Activity State"
 msgstr "حالة النشاط"
@@ -747,6 +763,12 @@ msgstr "نوع النشاط"
 #: model:ir.model.fields,field_description:documents.field_documents_document__activity_type_icon
 msgid "Activity Type Icon"
 msgstr "أيقونة نوع النشاط"
+
+#. module: documents
+#: model:ir.actions.act_window,name:documents.mail_activity_type_action_document
+#: model:ir.ui.menu,name:documents.mail_activity_type_menu
+msgid "Activity Types"
+msgstr "أنواع الأنشطة "
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_request_wizard__activity_type_id
@@ -779,6 +801,11 @@ msgstr "إضافة رابط"
 #, python-format
 msgid "Add a Link"
 msgstr "إضافة رابط "
+
+#. module: documents
+#: model_terms:ir.actions.act_window,help:documents.mail_activity_plan_action_document
+msgid "Add a new plan"
+msgstr "إضافة خطة جديدة "
 
 #. module: documents
 #. odoo-javascript
@@ -820,7 +847,7 @@ msgstr "اسم نطاق اللقب "
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_share__alias_full_name
 msgid "Alias Email"
-msgstr ""
+msgstr "لقب البريد الإلكتروني "
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_share__alias_name
@@ -917,7 +944,7 @@ msgstr "مؤرشف"
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.folder_view_search
 msgid "Archived Workspace"
-msgstr ""
+msgstr "مساحة العمل المؤرشفة "
 
 #. module: documents
 #. odoo-javascript
@@ -945,14 +972,14 @@ msgstr "هل أنت متأكد من أنك ترغب في حذف هذه الصف�
 #: code:addons/documents/static/src/views/documents_model_mixin.js:0
 #, python-format
 msgid "Are you sure you want to permanently erase the document?"
-msgstr ""
+msgstr "هل أنت متأكد من أنك ترغب في مسح هذا المستند بشكل نهائي؟ "
 
 #. module: documents
 #. odoo-javascript
 #: code:addons/documents/static/src/views/documents_model_mixin.js:0
 #, python-format
 msgid "Are you sure you want to permanently erase the documents?"
-msgstr ""
+msgstr "هل أنت متأكد من أنك ترغب في مسح المستندات بشكل نهائي؟ "
 
 #. module: documents
 #. odoo-javascript
@@ -1062,7 +1089,7 @@ msgstr "يمكنه الرفع "
 #: code:addons/documents/static/src/views/hooks.js:0
 #, python-format
 msgid "Can't share documents of different workspaces."
-msgstr ""
+msgstr "لا يمكن مشاركة المستندات من مساحات عمل مختلفة. "
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.documents_link_to_record_form_view
@@ -1077,6 +1104,8 @@ msgid ""
 "Cannot move folder under the given parent as this would create a recursive "
 "hierarchy"
 msgstr ""
+"لا يمكن نقل المجلد ضمن الأصل المحدد لأن ذلك سيؤدي إلى إنشاء تسلسل هرمي متكرر"
+" "
 
 #. module: documents
 #: model_terms:documents.folder,description:documents.documents_internal_folder
@@ -1109,7 +1138,7 @@ msgstr "اختر سجلاً لربطه "
 #: model_terms:ir.ui.view,arch_db:documents.share_view_form
 #: model_terms:ir.ui.view,arch_db:documents.share_view_form_popup
 msgid "Choose or Configure Email Servers"
-msgstr ""
+msgstr "قم بتحديد أو تهيئة خوادم البريد الإلكتروني "
 
 #. module: documents
 #. odoo-javascript
@@ -1149,6 +1178,13 @@ msgstr "إغلاق"
 #, python-format
 msgid "Close split tools"
 msgstr "إغلاق أدوات التقسيم "
+
+#. module: documents
+#. openerp-web
+#: code:addons/documents/static/src/js/tours/documents.js:0
+#, python-format
+msgid "Click the cross to <b>exit preview</b>."
+msgstr "اضعط على علامة × <b>للخروج من وضع المعاينة</b>. "
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_document__company_id
@@ -1288,7 +1324,7 @@ msgstr "القيم الافتراضية للمستندات المرفوعة"
 #: model:ir.model.fields,help:documents.field_documents_folder__deletion_delay
 #: model:ir.model.fields,help:documents.field_res_config_settings__deletion_delay
 msgid "Delay after permanent deletion of the document in the trash (days)"
-msgstr ""
+msgstr "التأخير بعد حذف المستند في سلة المهملات بشكل دائم (بالأيام) "
 
 #. module: documents
 #. odoo-javascript
@@ -1317,22 +1353,22 @@ msgstr "حذف الصفحات المحددة "
 #: code:addons/documents/static/src/views/documents_model_mixin.js:0
 #, python-format
 msgid "Delete permanently"
-msgstr ""
+msgstr "الحذف بشكل دائم "
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_res_config_settings__deletion_delay
 msgid "Deletion Delay"
-msgstr ""
+msgstr "مهلة الحذف "
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_folder__deletion_delay
 msgid "Deletion delay"
-msgstr ""
+msgstr "مهلة الحذف "
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.res_config_settings_view_form
 msgid "Deletion delay (days)"
-msgstr ""
+msgstr "مهلة الحذف (بالأيام) "
 
 #. module: documents
 #: model:documents.workflow.rule,name:documents.documents_rule_internal_deprecate
@@ -1416,6 +1452,11 @@ msgid "Document Owner"
 msgstr "مالك المستند"
 
 #. module: documents
+#: model:ir.actions.act_window,name:documents.mail_activity_plan_action_document
+msgid "Document Plans"
+msgstr "خطط المستندات "
+
+#. module: documents
 #: model:ir.model,name:documents.model_documents_request_wizard
 msgid "Document Request"
 msgstr "طلب مستند"
@@ -1466,8 +1507,8 @@ msgid "Document: Document Request"
 msgstr "المستند: طلب المستند "
 
 #. module: documents
-#. odoo-python
 #. odoo-javascript
+#. odoo-python
 #: code:addons/documents/models/documents_folder.py:0
 #: code:addons/documents/models/res_partner.py:0
 #: code:addons/documents/static/src/views/inspector/documents_inspector.xml:0
@@ -1550,7 +1591,7 @@ msgstr "تنزيل ورفع "
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.share_files_page
 msgid "Download file"
-msgstr ""
+msgstr "تنزيل الملف "
 
 #. module: documents
 #. odoo-javascript
@@ -1716,7 +1757,7 @@ msgstr "مركزية الملفات "
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.folder_deletion_form
 msgid "Files will be sent to trash and deleted forever after"
-msgstr ""
+msgstr "سيتم إرسال الملفات إلى سلة المهملات وحذفها للأبد بعد ذلك "
 
 #. module: documents
 #. odoo-javascript
@@ -1724,7 +1765,7 @@ msgstr ""
 #: code:addons/documents/static/src/views/list/folder_list_controller.js:0
 #, python-format
 msgid "Files will be sent to trash and deleted forever after %s days."
-msgstr ""
+msgstr "سيتم إرسال الملفات إلى سلة المهملات وحذفها للأبد بعد %s أيام "
 
 #. module: documents
 #: model:documents.folder,name:documents.documents_finance_folder
@@ -1811,7 +1852,7 @@ msgstr "جمع في مستند واحد "
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.format_file_size
 msgid "Gb"
-msgstr ""
+msgstr "جيجابايت "
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.document_view_search
@@ -1980,7 +2021,7 @@ msgstr "يعد متعدد الصفحات "
 #: code:addons/documents/static/src/views/search/documents_search_model.js:0
 #, python-format
 msgid "Items in trash will be deleted forever after %s days."
-msgstr ""
+msgstr "سيتم حذف العناصر الموجودة في سلة المهملات إلى الأبد بعد %s أيام. "
 
 #. module: documents
 #. odoo-javascript
@@ -1988,11 +2029,12 @@ msgstr ""
 #, python-format
 msgid "Items moved to the trash will be deleted forever after %s days."
 msgstr ""
+"سيتم حذف العناصر التي تم إرسالها إلى سلة المهملات إلى الأبد بعد %s أيام. "
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.format_file_size
 msgid "Kb"
-msgstr ""
+msgstr "كيلوبايت "
 
 #. module: documents
 #: model:documents.facet,name:documents.documents_internal_knowledge
@@ -2112,7 +2154,7 @@ msgstr "مباشر "
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_share__alias_incoming_local
 msgid "Local-part based incoming detection"
-msgstr ""
+msgstr "الكشف عن الوارد على أساس الجزء المحلي"
 
 #. module: documents
 #. odoo-javascript
@@ -2167,7 +2209,7 @@ msgstr "التسويق"
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.format_file_size
 msgid "Mb"
-msgstr ""
+msgstr "ميغابايت "
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_request_wizard__activity_note
@@ -2243,17 +2285,17 @@ msgstr "النقل إلى مساحة العمل "
 #: model_terms:ir.ui.view,arch_db:documents.folder_deletion_form
 #, python-format
 msgid "Move to trash"
-msgstr ""
+msgstr "نقل إلى سلة المهملات "
 
 #. module: documents
-#. odoo-python
 #. odoo-javascript
+#. odoo-python
 #: code:addons/documents/models/documents_folder.py:0
 #: code:addons/documents/static/src/views/form/folder_form_controller.js:0
 #: code:addons/documents/static/src/views/list/folder_list_controller.js:0
 #, python-format
 msgid "Move to trash?"
-msgstr ""
+msgstr "نقل إلى سلة المهملات؟ "
 
 #. module: documents
 #. odoo-javascript
@@ -2353,6 +2395,11 @@ msgstr "ملخص النشاط التالي"
 #: model:ir.model.fields,field_description:documents.field_documents_document__activity_type_id
 msgid "Next Activity Type"
 msgstr "نوع النشاط التالي"
+
+#. module: documents
+#: model_terms:ir.actions.act_window,help:documents.mail_activity_type_action_document
+msgid "No activity types found. Let's create one!"
+msgstr "لم يتم العثور على أنواع أنشطة. فلنقم بإنشائها! "
 
 #. module: documents
 #. odoo-javascript
@@ -2694,6 +2741,8 @@ msgid ""
 "Requested\n"
 "                                ∙"
 msgstr ""
+"مطلوب\n"
+"                                ∙ "
 
 #. module: documents
 #: model:mail.activity.type,name:documents.mail_documents_activity_data_md
@@ -2849,8 +2898,8 @@ msgstr "تسلسل "
 
 #. module: documents
 #: model:documents.workflow.rule,name:documents.documents_rule_finance_2018contracts
-msgid "Set As 2023 Contracts"
-msgstr "التعيين كعقود 2023 "
+msgid "Set As 2024 Contracts"
+msgstr "التعيين كعقود 2024 "
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_workflow_rule__partner_id
@@ -2870,7 +2919,7 @@ msgstr "تعيين علامات التصنيف "
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.res_config_settings_view_form
 msgid "Set deletion delay for documents in the Trash"
-msgstr ""
+msgstr "قم بإعداد مهلة الحذف للمستندات الموجودة في سلة المهملات "
 
 #. module: documents
 #: model:mail.template,description:documents.mail_template_document_request_reminder
@@ -3144,14 +3193,14 @@ msgstr ""
 #. module: documents
 #: model:ir.model.constraint,message:documents.constraint_res_config_settings_check_deletion_delay
 msgid "The deletion delay should be positive."
-msgstr ""
+msgstr "يجب أن تكون مهلة الحذف قيمة موجبة. "
 
 #. module: documents
 #. odoo-javascript
 #: code:addons/documents/static/src/views/hooks.js:0
 #, python-format
 msgid "The links and requested documents are not shareable."
-msgstr ""
+msgstr "الروابط والمستندات المطلوبة غير قابلة للمشاركة. "
 
 #. module: documents
 #: model:ir.model.fields,help:documents.field_documents_share__alias_model_id
@@ -3216,7 +3265,7 @@ msgstr ""
 #: code:addons/documents/models/documents_document.py:0
 #, python-format
 msgid "This file has been restored"
-msgstr ""
+msgstr "لقد تمت استعادة هذا الملف "
 
 #. module: documents
 #. odoo-python
@@ -3224,13 +3273,22 @@ msgstr ""
 #, python-format
 msgid ""
 "This file has been sent to the trash and will be deleted forever on the %s"
-msgstr ""
+msgstr "تم إرسال هذا الملف إلى سلة المهملات وسيتم حذفه نهائياً في %s "
 
 #. module: documents
 #: model:ir.model.fields,help:documents.field_documents_document__company_id
 #: model:ir.model.fields,help:documents.field_documents_folder__company_id
 msgid "This workspace will only be available to the selected company"
 msgstr "سوف تكون مساحة العمل هذه متاحة فقط للشركة المحددة "
+
+#. module: documents
+#: model_terms:ir.actions.act_window,help:documents.mail_activity_type_action_document
+msgid ""
+"Those represent the different categories of things you have to do (e.g. "
+"\"Call\" or \"Send email\")."
+msgstr ""
+"يمثلون الفئات المختلفة للأشياء التي عليك القيام بها (مثال: \"اتصال\" أو "
+"\"إرسال بريد إلكتروني\"). "
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_document__thumbnail
@@ -3421,7 +3479,7 @@ msgstr "تم التصديق "
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.share_files_page
 msgid "Validity date:"
-msgstr ""
+msgstr "تاريخ الصلاحية: "
 
 #. module: documents
 #: model:documents.tag,name:documents.documents_marketing_assets_Videos
@@ -3530,7 +3588,7 @@ msgstr "يمكنك أن ترفع ملفًا من جهازك أو تنسخ وتل
 #: code:addons/documents/static/src/views/documents_controller_mixin.xml:0
 #, python-format
 msgid "You cannot upload content in this workspace"
-msgstr ""
+msgstr "لا يمكنك رفع محتوى في مساحة العمل هذه "
 
 #. module: documents
 #. odoo-python
@@ -3656,7 +3714,7 @@ msgstr "file_extension"
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.share_files_page
 msgid "files"
-msgstr ""
+msgstr "ملفات "
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_link_to_record_wizard__is_readonly_model

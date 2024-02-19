@@ -72,10 +72,12 @@ export class FileBehavior extends AbstractBehavior {
         this.fileNameRef = useRefWithSingleCollaborativeChild(
             'fileNameRef',
             (element) => {
-                if (element) {
-                    this.setFileName(this.fileNameRef.el.textContent);
+                const fileName = this.fileNameSpanTextContent;
+                if (element && fileName.length) {
+                    this.setFileName(fileName);
                 } else {
                     this.renderFileName();
+                    this.editor.historyStep();
                 }
             }
         );
@@ -89,7 +91,7 @@ export class FileBehavior extends AbstractBehavior {
                 }
             }, () => [this.state.editFileName]);
             useEffect(() => {
-                if (this.state.fileModel.filename !== this.fileNameRef.el.textContent) {
+                if (this.state.fileModel.filename !== this.fileNameSpanTextContent) {
                     this.renderFileName();
                     this.editor.historyStep();
                 }
@@ -206,12 +208,23 @@ export class FileBehavior extends AbstractBehavior {
      */
     synchronizeOids(blueprint) {
         super.synchronizeOids(blueprint);
-        const currentFileNameEl = this.props.anchor.querySelector('.o_knowledge_file_name[data-oe-protected="false"]');
-        const blueprintFileNameEl = blueprint.querySelector('.o_knowledge_file_name[data-oe-protected="false"]');
+        const currentFileNameEl = this.props.anchor.querySelector('.o_knowledge_file_name_container[data-oe-protected="false"]');
+        const blueprintFileNameEl = blueprint.querySelector('.o_knowledge_file_name_container[data-oe-protected="false"]');
         if (!blueprintFileNameEl) {
             return;
         }
         copyOids(blueprintFileNameEl, currentFileNameEl);
+    }
+
+    //--------------------------------------------------------------------------
+    // GETTERS/SETTERS
+    //--------------------------------------------------------------------------
+
+    /**
+     * @returns {String} fileName as it is written in the editor.
+     */
+    get fileNameSpanTextContent() {
+        return this.fileNameRef.el.querySelector(".o_knowledge_file_name")?.textContent || "";
     }
 
     //--------------------------------------------------------------------------

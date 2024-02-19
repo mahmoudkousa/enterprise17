@@ -15,7 +15,7 @@ class SDDTest(AccountTestInvoicingCommon):
     @classmethod
     def setUpClass(cls, chart_template_ref=None):
         super().setUpClass(chart_template_ref=chart_template_ref)
-
+        cls.env.ref('base.EUR').active = True
         cls.env.user.email = "ruben.rybnik@sorcerersfortress.com"
 
     def create_account(self, number, partner, bank):

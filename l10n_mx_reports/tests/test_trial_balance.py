@@ -191,10 +191,10 @@ class TestL10nMXTrialBalanceReport(TestAccountReportsCommon):
         """
         expected_sat_xml = b"""<?xml version='1.0' encoding='utf-8'?>
         <BCE:Balanza xmlns:BCE="http://www.sat.gob.mx/esquemas/ContabilidadE/1_3/BalanzaComprobacion" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sat.gob.mx/esquemas/ContabilidadE/1_3/BalanzaComprobacion http://www.sat.gob.mx/esquemas/ContabilidadE/1_3/BalanzaComprobacion/BalanzaComprobacion_1_3.xsd" Version="1.3" RFC="EKU9003173C9" Mes="01" Anio="2021" TipoEnvio="N">
-            <BCE:Ctas Debe="75.00" NumCta="201" Haber="0.00" SaldoFin="1075.00" SaldoIni="1000.00"/>
-            <BCE:Ctas Debe="75.00" NumCta="201.01" Haber="0.00" SaldoFin="1075.00" SaldoIni="1000.00"/>
-            <BCE:Ctas Debe="0.00" NumCta="401" Haber="325.00" SaldoFin="-325.00" SaldoIni="0.00"/>
-            <BCE:Ctas Debe="0.00" NumCta="401.01" Haber="325.00" SaldoFin="-325.00" SaldoIni="0.00"/>
+            <BCE:Ctas Debe="75.00" NumCta="201" Haber="0.00" SaldoFin="-1075.00" SaldoIni="-1000.00"/>
+            <BCE:Ctas Debe="75.00" NumCta="201.01" Haber="0.00" SaldoFin="-1075.00" SaldoIni="-1000.00"/>
+            <BCE:Ctas Debe="0.00" NumCta="401" Haber="325.00" SaldoFin="325.00" SaldoIni="0.00"/>
+            <BCE:Ctas Debe="0.00" NumCta="401.01" Haber="325.00" SaldoFin="325.00" SaldoIni="0.00"/>
             <BCE:Ctas Debe="250.00" NumCta="601" Haber="0.00" SaldoFin="250.00" SaldoIni="0.00"/>
             <BCE:Ctas Debe="250.00" NumCta="601.84" Haber="0.00" SaldoFin="250.00" SaldoIni="0.00"/>
         </BCE:Balanza>

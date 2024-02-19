@@ -20,6 +20,19 @@ patch(PosStore.prototype, {
     doNotAllowRefundAndSales() {
         return this.isChileanCompany() || super.doNotAllowRefundAndSales(...arguments);
     },
+    _getCreateOrderContext(orders, options) {
+        let context = super._getCreateOrderContext(...arguments);
+        if (this.isChileanCompany()) {
+            // FIXME in master: when processing multiple orders, and at least one is an invoice of type Factura,
+            //  then we will generate the pdf for all invoices linked to the orders,
+            //  since the context is applicable for the whole RPC requests `create_from_ui` on all orders.
+            const noOrderRequiresInvoicePrinting = orders.every((order) => order.data.to_invoice && order.data.invoiceType === 'boleta');
+            if (noOrderRequiresInvoicePrinting) {
+                context = { ...context, generate_pdf: false }
+            }
+        }
+        return context;
+    },
 });
 
 patch(Order.prototype, {

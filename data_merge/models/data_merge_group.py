@@ -176,7 +176,7 @@ class DataMergeGroup(models.Model):
         """
         Post a snapshot of each merged records on the master record
         """
-        if not isinstance(self.env[self.res_model_name], type(self.env['mail.thread'])):
+        if not isinstance(self.env[self.res_model_name], self.env.registry['mail.thread']):
            return
 
         values = {

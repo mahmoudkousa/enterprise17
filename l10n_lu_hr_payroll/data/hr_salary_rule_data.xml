@@ -36,7 +36,7 @@ result = categories['BASIC'] + categories['BIK_TRANSPORT']
         <field name="condition_python">result = bool(contract.l10n_lu_meal_voucher_amount)</field>
         <field name="amount_select">code</field>
         <field name="amount_python_compute">
-if 'WORK100' not worked_days:
+if 'WORK100' not in worked_days:
     result_qty = 0
 elif worked_days['WORK100'].number_of_days >= 18:
     result_qty = 18

@@ -42,8 +42,10 @@ registry.category("web_tour.tours").add('knowledge_list_command_tour', {
         behaviorProps = decodeDataBehaviorProps(embeddedViewElement.dataset.behaviorProps);
     }
 }, { // click on rename button
-    trigger: '.o_knowledge_toolbar button:contains(Rename)',
+    trigger: '.o_control_panel_breadcrumbs_actions .dropdown-toggle',
     run: 'click',
+}, {
+    trigger: '.dropdown-item:contains(Edit)'
 }, { // click to validate the modal
     trigger: '.modal-footer button.btn-primary',
     run: 'click'
@@ -52,6 +54,9 @@ registry.category("web_tour.tours").add('knowledge_list_command_tour', {
     run: () => {
         const embeddedViewElement = document.querySelector('.o_knowledge_behavior_type_embedded_view');
         const newBehaviorProps = decodeDataBehaviorProps(embeddedViewElement.dataset.behaviorProps);
+        if (newBehaviorProps.display_name !== behaviorProps.display_name) {
+            throw new Error('The name displayed should not have changed');
+        }
         if (JSON.stringify(newBehaviorProps) !== JSON.stringify(behaviorProps)) {
             // check that knowledge.article render_embedded_view urllib.parse.quote did
             // produce an equivalent data-behavior-props as knowledge_utils encodeDataBehaviorProps encodeURIComponent
@@ -59,8 +64,10 @@ registry.category("web_tour.tours").add('knowledge_list_command_tour', {
         }
     }
 }, { // click on rename button
-    trigger: '.o_knowledge_toolbar button:contains(Rename)',
+    trigger: '.o_control_panel_breadcrumbs_actions .dropdown-toggle',
     run: 'click',
+}, {
+    trigger: '.dropdown-item:contains(Edit)'
 }, { // rename the view
     trigger: '.modal-body input',
     run: 'text New Title',

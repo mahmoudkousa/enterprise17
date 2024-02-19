@@ -9,4 +9,4 @@ class TaxDeductionCardReport(models.AbstractModel):
 
     @api.model
     def _get_report_values(self, docids, data=None):
-        return {'report_data': data}
+        return data

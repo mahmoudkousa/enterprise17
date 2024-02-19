@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
     <t t-name="knowledge.Sidebar">
-        <aside class="o_knowledge_sidebar d-flex d-print-none h-100 bg-view"
-            t-attf-style="width: #{env.isSmall ? 'auto' : state.sidebarSize + 'px' };">
-            <div class="d-flex flex-column h-100 w-100 min-w-0">
+        <aside class="o_knowledge_sidebar d-flex flex-shrink-0 d-print-none bg-view"
+            t-attf-style="--knowledge-article-sidebar-size: #{state.sidebarSize}px">
+            <div class="d-flex flex-column flex-grow-1 min-w-0">
                 <!-- Search bar -->
-                <div class="d-flex align-items-center gap-2 px-sm-3 px-3 ps-2 py-3">
-                    <a role="button" t-on-click="() => env.toggleAsideMobile()" class="o_knowledge_burger_icon d-sm-none btn btn-light px-2 py-1">
+                <div class="d-flex align-items-center gap-2 px-md-3 px-3 ps-2 py-3">
+                    <a role="button" t-on-click="() => env.toggleAsideMobile()" class="o_knowledge_burger_icon d-md-none btn btn-light px-2 py-1">
                         <i class="fa fa-lg fa-bars" title="Toggle aside menu"/>
                     </a>
                     <a t-if="!isInternalUser" class="fa fs-3 fa-home d-inline-block me-2" href="/my"
@@ -24,7 +24,7 @@
                 </div>
                 <t t-else="" t-call="knowledge.ArticlesTree"/>
             </div>
-            <span class="o_knowledge_article_form_resizer d-none d-sm-flex opacity-75 h-100 opacity-100-hover"
+            <span class="o_knowledge_article_form_resizer d-none d-md-flex opacity-75 opacity-100-hover"
                   t-on-pointerdown="resize">
                   <span class="bg-300 pe-1 ms-1"/>
             </span>

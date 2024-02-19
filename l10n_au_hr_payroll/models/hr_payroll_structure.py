@@ -13,6 +13,6 @@ class HrPayrollStructure(models.Model):
         for struct in structures:
             if struct.country_id.code != "AU":
                 continue
-            to_unlink += struct.rule_ids.filtered(lambda r: r.code == 'CHILD_SUPPORT')
+            to_unlink += struct.rule_ids.filtered(lambda r: r.code in ["ATTACH_SALARY", "ASSIG_SALARY", "DEDUCTION", "REIMBURSEMENT", "CHILD_SUPPORT"])
         to_unlink.unlink()
         return structures

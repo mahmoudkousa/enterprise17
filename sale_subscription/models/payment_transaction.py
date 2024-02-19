@@ -55,6 +55,7 @@ class PaymentTransaction(models.Model):
         mandate_values.update({
             # The maximum amount that can be charged with the mandated.
             'amount': self.sale_order_ids.amount_total,
+            'MRR': self.sale_order_ids.recurring_monthly,
             'start_datetime': start_datetime,
             'end_datetime': end_datetime,
             'recurrence_unit': self.sale_order_ids.plan_id.billing_period_unit,
@@ -67,10 +68,12 @@ class PaymentTransaction(models.Model):
         for tx in self:
             if len(tx.sale_order_ids) > 1 or tx.invoice_ids or not tx.sale_order_ids.is_subscription:
                 continue
+            elif tx.renewal_state in ['draft', 'pending', 'cancel']:
+                # tx should be in an authorized renewal_state otherwise _reconcile_after_done will not be called
+                # but this is a safety to prevent issue when the code is called manually
+                continue
             tx_to_invoice += tx
-            draft_invoices = tx.sale_order_ids.order_line.invoice_lines.move_id.filtered(lambda am: am.state == 'draft')
-            if draft_invoices:
-                draft_invoices.state = 'cancel'
+            tx._cancel_draft_invoices()
 
         tx_to_invoice._invoice_sale_orders()
         tx_to_invoice.invoice_ids._post()
@@ -80,7 +83,7 @@ class PaymentTransaction(models.Model):
         # override to force invoice creation if the transaction is done for a subscription
         # We don't take care of the sale.automatic_invoice parameter in that case.
         res = super()._reconcile_after_done()
-        self._create_or_link_to_invoice()
+        self.filtered(lambda tx: tx.operation != 'validation')._create_or_link_to_invoice()
         self._post_subscription_action()
         return res
 
@@ -130,9 +133,14 @@ class PaymentTransaction(models.Model):
         return res
 
     def _finalize_post_processing(self):
-        for tx in self:
-            if tx.operation == 'validation' and tx.subscription_action == 'assign_token':
-                tx.sale_order_ids._assign_token(tx)
+        """ Override of `payment` to handle reconcilation for subscription's validation transaction.
+        references.
+        `super()._finalize_post_processing` never call `_reconcile_after_done` on validation tx.
+        We explicitely calls it here to make sure the token is assigned.
+
+        :return: None
+        """
+        self.filtered(lambda tx: tx.operation == 'validation' and tx.sale_order_ids.is_subscription)._reconcile_after_done()
         super()._finalize_post_processing()
 
     def _post_subscription_action(self):
@@ -145,24 +153,54 @@ class PaymentTransaction(models.Model):
             orders = tx.sale_order_ids
             # quotation subscription paid on portal have pending transactions
             orders.pending_transaction = False
-            if not tx.subscription_action or not tx.renewal_state == 'authorized':
+            if not tx.subscription_action or tx.renewal_state != 'authorized':
                 # We don't assign failing tokens, and we don't send emails
                 continue
-            orders = tx.sale_order_ids
-            orders.set_open()
-            # A mail is always sent for assigned token flow
             if tx.subscription_action == 'assign_token':
                 orders._assign_token(tx)
+            if tx.operation == 'validation':
+                # validation transaction have the `assign_token` `subscription_action`
+                # Once the token is assigned, we are done because we don't send emails in that case.
+                continue
+            orders.set_open()
             orders._send_success_mail(tx.invoice_ids, tx)
             if tx.subscription_action in ['manual_send_mail', 'automatic_send_mail']:
                 automatic = tx.subscription_action == 'automatic_send_mail'
                 for order in orders:
                     order._subscription_post_success_payment(tx, tx.invoice_ids, automatic=automatic)
 
+    def _set_done(self, **kwargs):
+        self.sale_order_ids.filtered('is_subscription').payment_exception = False
+        return super()._set_done(**kwargs)
+
+    def _set_pending(self, **kwargs):
+        self.sale_order_ids.filtered('is_subscription').payment_exception = False
+        return super()._set_pending(**kwargs)
+
+    def _set_authorize(self, **kwargs):
+        self.sale_order_ids.filtered('is_subscription').payment_exception = False
+        return super()._set_authorize(**kwargs)
+
     def _set_canceled(self, **kwargs):
-        self.sale_order_ids.filtered('is_subscription').pending_transaction = False
+        self._handle_unsuccessful_transaction()
         return super()._set_canceled(**kwargs)
 
     def _set_error(self, state_message):
-        self.sale_order_ids.filtered('is_subscription').pending_transaction = False
+        self._handle_unsuccessful_transaction()
         return super()._set_error(state_message)
+
+    def _handle_unsuccessful_transaction(self):
+        """ Unset pending transactions for subscriptions and cancel their draft invoices. """
+        for transaction in self:
+            subscriptions = transaction.sale_order_ids.filtered('is_subscription')
+            if subscriptions:
+                subscriptions.pending_transaction = False
+                transaction._cancel_draft_invoices()
+
+    def _cancel_draft_invoices(self):
+        """ Cancel draft invoices attached to subscriptions. """
+        self.ensure_one()
+        subscriptions = self.sale_order_ids.filtered('is_subscription')
+        draft_invoices = subscriptions.order_line.invoice_lines.move_id.filtered(lambda am: am.state == 'draft')
+        if draft_invoices:
+            draft_invoices.state = 'cancel'

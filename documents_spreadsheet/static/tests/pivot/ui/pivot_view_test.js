@@ -27,6 +27,7 @@ import {
 } from "@spreadsheet_edition/../tests/utils/webclient_helpers";
 import {
     getCell,
+    getEvaluatedCell,
     getCellContent,
     getCells,
     getCellValue,
@@ -305,12 +306,12 @@ QUnit.module("spreadsheet pivot view", {}, () => {
             getCellContent(model, "B5"),
             '=ODOO.PIVOT(1,"probability","date","12/2016","foo",1)'
         );
-        assert.equal(getCellValue(model, "A3"), "April 2016");
-        assert.equal(getCellValue(model, "A4"), "October 2016");
-        assert.equal(getCellValue(model, "A5"), "December 2016");
-        assert.equal(getCellValue(model, "B3"), "");
-        assert.equal(getCellValue(model, "B4"), "11");
-        assert.equal(getCellValue(model, "B5"), "");
+        assert.equal(getEvaluatedCell(model, "A3").formattedValue, "April 2016");
+        assert.equal(getEvaluatedCell(model, "A4").formattedValue, "October 2016");
+        assert.equal(getEvaluatedCell(model, "A5").formattedValue, "December 2016");
+        assert.equal(getEvaluatedCell(model, "B3").formattedValue, "");
+        assert.equal(getEvaluatedCell(model, "B4").formattedValue, "11.00");
+        assert.equal(getEvaluatedCell(model, "B5").formattedValue, "");
     });
 
     QUnit.test("pivot with one level of group bys", async (assert) => {

@@ -47,4 +47,6 @@ class DiscussChannel(models.Model):
             payload['android_channel_id'] = 'ChannelMessage'
         else:
             payload['subject'] = "#%s" % (record_name)
+        # FIXME: mobile apps use old "mail.channel" and cannot be changed on iOS
+        payload['model'] = 'mail.channel'
         return payload

@@ -9,6 +9,7 @@ from odoo.exceptions import UserError, ValidationError
 class WhatsAppTemplateVariable(models.Model):
     _name = 'whatsapp.template.variable'
     _description = 'WhatsApp Template Variable'
+    _order = 'line_type desc, name, id'
 
     name = fields.Char(string="Placeholder", required=True)
     button_id = fields.Many2one('whatsapp.template.button', ondelete='cascade')
@@ -50,20 +51,27 @@ class WhatsAppTemplateVariable(models.Model):
 
     @api.constrains('field_name')
     def _check_field_name(self):
-        for variable in self:
-            if not variable.field_name or self.user_has_groups('base.group_system'):
-                continue
-
+        is_system = self.user_has_groups('base.group_system')
+        for variable in self.filtered('field_name'):
             model = self.env[variable.model]
-            if not model.check_access_rights('read', raise_exception=False):
-                raise ValidationError(_("You can not select field of %r.", variable.model))
-
-            if variable.field_name not in model:
-                raise ValidationError(_("Invalid field name: %r", variable.field_name))
-
-            safe_fields = model._get_whatsapp_safe_fields() if hasattr(model, '_get_whatsapp_safe_fields') else []
-            if variable.field_name not in safe_fields:
-                raise ValidationError(_("You are not allowed to use this field, contact your administrator."))
+            if not is_system:
+                if not model.check_access_rights('read', raise_exception=False):
+                    model_description = self.env['ir.model']._get(variable.model).display_name
+                    raise ValidationError(
+                        _("You can not select field of %(model)s.", model=model_description)
+                    )
+                safe_fields = model._get_whatsapp_safe_fields() if hasattr(model, '_get_whatsapp_safe_fields') else []
+                if variable.field_name not in safe_fields:
+                    raise ValidationError(
+                        _("You are not allowed to use field %(field)s, contact your administrator.",
+                          field=variable.field_name)
+                    )
+            try:
+                model._find_value_from_field_path(variable.field_name)
+            except UserError as err:
+                raise ValidationError(
+                    _("'%(field)s' does not seem to be a valid field path", field=variable.field_name)
+                ) from err
 
     @api.constrains('name')
     def _check_name(self):
@@ -97,6 +105,11 @@ class WhatsAppTemplateVariable(models.Model):
     def _onchange_model_id(self):
         self.field_name = False
 
+    @api.onchange('field_type')
+    def _onchange_field_type(self):
+        if self.field_type != 'field':
+            self.field_name = False
+
     def _get_variables_value(self, record):
         value_by_name = {}
         user = self.env.user
@@ -128,20 +141,7 @@ class WhatsAppTemplateVariable(models.Model):
     def _find_value_from_field_chain(self, record):
         """Get the value of field, returning display_name(s) if the field is a model."""
         self.ensure_one()
-        if len(record) != 1:
-            raise UserError(_('Fetching field value for template variable must use a single record'))
-        if not self.field_type == 'field':
-            raise UserError(_('Cannot get field value from %(variable_type)s template variable', variable_type=self.field_type))
-
-        try:
-            field_value = reduce(lambda record, field: record[field], self.field_name.split('.'), record.sudo(False))
-        except KeyError:
-            raise UserError(_("Invalid field chain %r", self.field_name))
-        except Exception:
-            raise UserError(_("Not able to get the value of field %r", self.field_name))
-        if isinstance(field_value, models.Model):
-            return ' '.join(value.display_name for value in field_value)
-        return field_value
+        return record.sudo(False)._find_value_from_field_path(self.field_name)
 
     def _extract_variable_index(self):
         """ Extract variable index, located between '{{}}' markers. """

@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo.tests import Form, HttpCase, tagged
+import logging
+
+from odoo.tests import Form, HttpCase, tagged, loaded_demo_data
 from odoo.addons.mrp.tests.common import TestMrpCommon
 from odoo.addons.mrp_workorder.tests import test_tablet_client_action
+
+_logger = logging.getLogger(__name__)
 
 
 class TestQualityCheckWorkorder(TestMrpCommon):

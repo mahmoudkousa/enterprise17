@@ -190,12 +190,12 @@ class L10nFrSendVatReport(models.TransientModel):
         writer_vals = {
             'siret': writer.siret,
             'designation': "CEC_EDI_TVA",
-            'designation_cont_1': 0,  # "raison sociale"
+            'designation_cont_1': writer.name,  # "raison sociale"
             'address': self._get_address_dict(writer),
         }
         debtor_vals = {
             'identifier': debtor.siret and debtor.siret[:9],  # siren
-            'designation': 0,  # "raison sociale"
+            'designation': debtor.name,  # "raison sociale"
             'address': self._get_address_dict(debtor),
             'rof': "TVA1",  # "référence obligation fiscale"
         }

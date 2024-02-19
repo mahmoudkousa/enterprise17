@@ -60,6 +60,18 @@ class Payslip(models.Model):
             return self._get_contract_wage()
         return res
 
+    @api.model
+    def _get_last_year_payslips_domain(self, date_from, date_to, employee_ids=None):
+        domain = [
+            ('state', 'in', ['paid', 'done']),
+            ('date_from', '>=', date_from + relativedelta(months=-12, day=1)),
+            ('date_to', '<', date_to + relativedelta(day=1)),
+            ('struct_id', '=', self.env.ref('l10n_hk_hr_payroll.hr_payroll_structure_cap57_employee_salary').id),
+        ]
+        if employee_ids:
+            domain = expression.AND([domain, [('employee_id', 'in', employee_ids)]])
+        return domain
+
     def _get_moving_daily_wage(self):
         self.ensure_one()
 
@@ -74,38 +86,21 @@ class Payslip(models.Model):
         if last_year_payslips:
             gross = last_year_payslips._get_line_values(['713_GROSS'], compute_sum=True)['713_GROSS']['sum']['total']
             gross -= last_year_payslips._get_total_non_full_pay()
-            actual_worked_days = sum([payslip._get_actual_work_days(skip_non_full_pay=True) for payslip in last_year_payslips])
-            if actual_worked_days > 0:
-                return gross / actual_worked_days
+            number_of_days = last_year_payslips._get_number_of_worked_days(only_full_pay=True)
+            if number_of_days > 0:
+                return gross / number_of_days
         return 0
 
-    def _get_actual_work_days(self, skip_non_full_pay=False):
-        self.ensure_one()
+    def _get_number_of_non_full_pay_days(self):
+        wds = self.worked_days_line_ids.filtered(lambda wd: wd.work_entry_type_id.l10n_hk_non_full_pay)
+        return sum([wd.number_of_days for wd in wds])
 
-        def _filtered_worked_days_line(line):
-            if line.code in ['LEAVE90', 'OUT']:
-                return False
-            if skip_non_full_pay and line.work_entry_type_id.l10n_hk_non_full_pay:
-                return False
-            return True
-
-        return sum(self.worked_days_line_ids.filtered(_filtered_worked_days_line).mapped('number_of_days'))
-
-    def _get_actual_work_rate(self):
-        self.ensure_one()
-        days_count = self.worked_days_line_ids.mapped('number_of_days')
-        actual_work_days = self._get_actual_work_days()
-        return actual_work_days / days_count
-
-    @api.model
-    def _get_last_year_payslips_domain(self, date_from, date_to, employee_ids=None):
-        domain = [
-            ('state', 'in', ['paid', 'done']),
-            ('date_from', '>=', date_from + relativedelta(months=-12, day=1)),
-            ('date_to', '<', date_to + relativedelta(day=1))]
-        if employee_ids:
-            domain = expression.AND([domain, [('employee_id', 'in', employee_ids)]])
-        return domain
+    def _get_number_of_worked_days(self, only_full_pay=False):
+        wds = self.worked_days_line_ids.filtered(lambda wd: wd.code not in ['LEAVE90', 'OUT'])
+        number_of_days = sum([wd.number_of_days for wd in wds])
+        if only_full_pay:
+            return number_of_days - self._get_number_of_non_full_pay_days()
+        return number_of_days
 
     def _get_last_year_payslips_per_employee(self, date_from, date_to):
         domain = self._get_last_year_payslips_domain(date_from, date_to, self.employee_id.ids)

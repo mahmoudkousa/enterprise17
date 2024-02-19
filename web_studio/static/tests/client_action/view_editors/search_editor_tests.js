@@ -114,7 +114,7 @@ QUnit.module("View Editors", (hooks) => {
                     assert.step("edit_view");
                     assert.deepEqual(
                         args.operations[0].node.attrs,
-                        { name: "name" },
+                        { name: "display_name" },
                         "we should only specify the name (in attrs) when adding a field"
                     );
                 }
@@ -194,6 +194,7 @@ QUnit.module("View Editors", (hooks) => {
         );
 
         await click(target.querySelector(".o_web_studio_sidebar .nav-link:nth-child(1)"));
+        assert.containsN(target, ".o_web_studio_existing_fields > .o-draggable", 4, "four fields should be available draggable in the view");
 
         await dragAndDrop(
             target.querySelector(
@@ -203,6 +204,7 @@ QUnit.module("View Editors", (hooks) => {
         );
         await nextTick();
         assert.verifySteps(["edit_view"]);
+        assert.containsN(target, ".o_web_studio_existing_fields > .o-draggable", 4, "four fields are still available to drag");
     });
 
     QUnit.test("delete a field", async function (assert) {
@@ -284,9 +286,9 @@ QUnit.module("View Editors", (hooks) => {
 
             // try to add a stored char field in the filters section
             const { cancel, moveTo } = await drag(
-                target.querySelector(
+                target.querySelectorAll(
                     ".o_web_studio_existing_fields .o-draggable.o_web_studio_field_char"
-                )
+                )[1]
             );
             await moveTo(".o_web_studio_hook");
             assert.hasClass(

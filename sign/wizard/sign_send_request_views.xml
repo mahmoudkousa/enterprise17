@@ -35,7 +35,7 @@
                     </group>
                 </group>
 
-                <field name="signer_id" invisible="signers_count != 0 or not template_id" required="signers_count == 0" context="{'force_email':True, 'show_email': True}"/>
+                <field name="signer_id" invisible="signers_count != 0 or not template_id" required="signers_count == 0" options="{'no_quick_create': True}" context="{'show_email': True, 'form_view_ref': 'base.view_partner_simple_form'}"/>
                 <field name="activity_id" invisible="1"/>
                 <field name="signers_count" invisible="1"/>
                 <field name="has_default_template" invisible="1"/>

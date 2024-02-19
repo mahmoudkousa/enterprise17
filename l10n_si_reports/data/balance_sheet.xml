@@ -395,7 +395,7 @@
                     <record id="l10n_si_balance_sheet_liabilities_a" model="account.report.line">
                         <field name="name">A. Capital</field>
                         <field name="code">si_liabilities_a</field>
-                        <field name="aggregation_formula">si_liabilities_a_I.balance + si_liabilities_a_II.balance + si_liabilities_a_III.balance + si_liabilities_a_IV.balance + si_liabilities_a_V.balance + si_liabilities_a_VI.balance + si_liabilities_a_VII.balance + si_liabilities_a_VIII.balance + si_liabilities_a_IX.balance</field>
+                        <field name="aggregation_formula">si_liabilities_a_I.balance + si_liabilities_a_II.balance + si_liabilities_a_III.balance + si_liabilities_a_IV.balance + si_liabilities_a_V.balance + si_liabilities_a_VI.balance + si_liabilities_a_VII.balance</field>
                         <field name="children_ids">
                             <record id="l10n_si_balance_sheet_liabilities_a_I" model="account.report.line">
                                 <field name="name">I. Called-up capital</field>
@@ -482,90 +482,56 @@
                                 <field name="account_codes_formula">-95</field>
                             </record>
                             <record id="l10n_si_balance_sheet_liabilities_a_VI" model="account.report.line">
-                                <field name="name">VI. Retained earnings</field>
+                                <field name="name">VI. Transferred net profit or loss</field>
                                 <field name="code">si_liabilities_a_VI</field>
-                                <field name="groupby">account_id</field>
+                                <field name="groupby" eval="False"/>
                                 <field name="foldable" eval="True"/>
-                                <field name="account_codes_formula">-930</field>
-                            </record>
-                            <record id="l10n_si_balance_sheet_liabilities_a_VII" model="account.report.line">
-                                <field name="name">VII. Carried forward net loss</field>
-                                <field name="code">si_liabilities_a_VII</field>
-                                <field name="aggregation_formula">si_liabilities_a_VII_1.balance + si_liabilities_a_VII_2.balance</field>
+                                <field name="aggregation_formula">si_liabilities_a_VI_1.balance + si_liabilities_a_VI_2.balance</field>
                                 <field name="children_ids">
-                                    <record id="l10n_si_balance_sheet_liabilities_a_VII_1" model="account.report.line">
-                                        <field name="name">1. Carried forward net loss</field>
-                                        <field name="code">si_liabilities_a_VII_1</field>
+                                    <record id="l10n_si_balance_sheet_liabilities_a_VI_1" model="account.report.line">
+                                        <field name="name">1. Retained Earnings / net loss carried forward</field>
+                                        <field name="code">si_liabilities_a_VI_1</field>
                                         <field name="groupby">account_id</field>
                                         <field name="foldable" eval="True"/>
-                                        <field name="account_codes_formula">-931 - 934</field>
+                                        <field name="account_codes_formula">-930 - 931 - 934</field>
                                     </record>
-                                    <record id="l10n_si_balance_sheet_liabilities_a_VII_2" model="account.report.line">
-                                        <field name="name">2. Unallocated earnings</field>
-                                        <field name="code">si_liabilities_a_VII_2</field>
+                                    <record id="l10n_si_balance_sheet_liabilities_a_VI_2" model="account.report.line">
+                                        <field name="name">2. Unallocated earnings from previous years</field>
+                                        <field name="code">si_liabilities_a_VI_2</field>
                                         <field name="expression_ids">
-                                            <record id="l10n_si_balance_sheet_liabilities_a_VII_2_balance" model="account.report.expression">
-                                                <field name="label">balance</field>
-                                                <field name="engine">domain</field>
-                                                <field name="formula" eval="[
-                                                    '|', ('account_id.account_type', '=', 'income'),
-                                                    '|', ('account_id.account_type', '=', 'income_other'),
-                                                    '|', ('account_id.account_type', '=', 'expense'),
-                                                    '|', ('account_id.account_type', '=', 'expense_depreciation'),
-                                                         ('account_id.account_type', '=', 'expense_direct_cost')
-                                                ]"/>
-                                                <field name="subformula">-sum</field>
+                                            <record id="l10n_si_balance_sheet_liabilities_a_VI_accounts" model="account.report.expression">
+                                                <field name="label">accounts</field>
+                                                <field name="engine">account_codes</field>
+                                                <field name="formula">-815 - 933 - 935 - 937</field>
+                                            </record>
+                                            <record id="l10n_si_balance_sheet_liabilities_a_VI_cross_report" model="account.report.expression">
+                                                <field name="label">cross_report</field>
+                                                <field name="engine">aggregation</field>
+                                                <field name="formula">si_pl_19.balance - si_pl_20.balance</field>
+                                                <field name="subformula">cross_report</field>
                                                 <field name="date_scope">to_beginning_of_fiscalyear</field>
+                                            </record>
+                                            <record id="l10n_si_balance_sheet_liabilities_a_VI_balance" model="account.report.expression">
+                                                <field name="label">balance</field>
+                                                <field name="engine">aggregation</field>
+                                                <field name="formula">si_liabilities_a_VI_2.accounts + si_liabilities_a_VI_2.cross_report</field>
                                             </record>
                                         </field>
                                     </record>
                                 </field>
                             </record>
-                            <record id="l10n_si_balance_sheet_liabilities_a_VIII" model="account.report.line">
-                                <field name="name">VIII. Net profit for the financial year</field>
-                                <field name="code">si_liabilities_a_VIII</field>
+                            <record id="l10n_si_balance_sheet_liabilities_a_VII" model="account.report.line">
+                                <field name="name">VII. Net profit or loss for the financial year</field>
+                                <field name="code">si_liabilities_a_VII</field>
                                 <field name="foldable" eval="True"/>
+                                <field name="aggregation_formula" eval="False"/>
                                 <field name="expression_ids">
-                                    <record id="l10n_si_balance_sheet_liabilities_a_VIII_balance_account_codes" model="account.report.expression">
-                                        <field name="label">balance_account_codes</field>
-                                        <field name="engine">account_codes</field>
-                                        <field name="formula">-935 - 815</field>
-                                    </record>
-                                    <record id="l10n_si_balance_sheet_liabilities_a_VIII_balance_aggregate" model="account.report.expression">
-                                        <field name="label">balance_aggregate</field>
-                                        <field name="engine">aggregation</field>
-                                        <field name="formula">si_pl_19.balance</field>
-                                        <field name="subformula">cross_report</field>
-                                        <field name="date_scope">from_fiscalyear</field>
-                                    </record>
-                                    <record id="l10n_si_balance_sheet_liabilities_a_VIII_balance" model="account.report.expression">
+                                    <record id="l10n_si_balance_sheet_liabilities_a_VII_balance" model="account.report.expression">
                                         <field name="label">balance</field>
                                         <field name="engine">aggregation</field>
-                                        <field name="formula">si_liabilities_a_VIII.balance_account_codes + si_liabilities_a_VIII.balance_aggregate</field>
-                                    </record>
-                                </field>
-                            </record>
-                            <record id="l10n_si_balance_sheet_liabilities_a_IX" model="account.report.line">
-                                <field name="name">IX. Net loss for the financial year</field>
-                                <field name="code">si_liabilities_a_IX</field>
-                                <field name="foldable" eval="True"/>
-                                <field name="expression_ids">
-                                    <record id="l10n_si_balance_sheet_liabilities_a_IX_balance_account_codes" model="account.report.expression">
-                                        <field name="label">balance_account_codes</field>
-                                        <field name="engine">account_codes</field>
-                                        <field name="formula">-937 - 933</field>
-                                    </record>
-                                    <record id="l10n_si_balance_sheet_liabilities_a_IX_balance_aggregate" model="account.report.expression">
-                                        <field name="label">balance_aggregate</field>
-                                        <field name="engine">aggregation</field>
-                                        <field name="formula">si_pl_20.balance</field>
+                                        <field name="formula">si_pl_19.balance - si_pl_20.balance</field>
                                         <field name="subformula">cross_report</field>
                                         <field name="date_scope">from_fiscalyear</field>
-                                    </record>
-                                    <record id="l10n_si_balance_sheet_liabilities_a_IX_balance" model="account.report.expression">
-                                        <field name="label">balance</field>
-                                        <field name="engine">aggregation</field>
-                                        <field name="formula">si_liabilities_a_IX.balance_account_codes + si_liabilities_a_IX.balance_aggregate</field>
                                     </record>
                                 </field>
                             </record>

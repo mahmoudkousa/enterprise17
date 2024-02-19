@@ -35,6 +35,7 @@
                 <field name="appointment_tz"/>
                 <field name="schedule_based_on"/>
                 <field name="resource_ids"/>
+                <field name="sequence" widget="handle" groups="appointment.group_appointment_manager"/>
                 <field name="staff_user_ids"/>
                 <templates>
                     <t t-name="kanban-menu">
@@ -56,45 +57,40 @@
                             <div class="ribbon ribbon-top-right" invisible="active">
                                 <span class="text-bg-danger">Archived</span>
                             </div>
-                            <div class="d-flex flex-wrap">
-                                <div class="align-self-center col-sm-2">
-                                    <span class="d-block text-large text-truncate fw-bold o_appointment_kanban_ungrouped_name"
-                                        t-att-title="record.name.value">
-                                        <field name="name"/>
-                                    </span>
-                                    <field name="location_id" invisible="1"/>
-                                    <span class="d-block text-truncate text-large mt-1">
-                                        <field name="category"/>
-                                    </span>
+                            <div class="col-lg-2 col-sm-5 col-11 py-0 my-auto text-large text-truncate">
+                                <span class="fw-bold o_appointment_kanban_ungrouped_name"
+                                    t-att-title="record.name.value">
+                                    <field name="name"/>
+                                </span><br/>
+                                <field name="category"/>
+                            </div>
+                            <div class="col-lg-5 col-sm-7 col-12 py-0 mt-3 mb-2 my-lg-auto d-flex">
+                                <div class="align-self-center me-sm-0 me-3 text-large w-50 w-lg-25">
+                                    <span class="fw-normal">
+                                        <field name="appointment_duration_formatted"/>
+                                    </span><br/>
+                                    <span>Duration</span>
                                 </div>
-                                <div class="align-self-center justify-content-center text-large d-flex col">
-                                    <div>
-                                        <span class="fw-normal">
-                                            <field name="appointment_duration_formatted"/>
-                                        </span><br/>
-                                        <span>Duration</span>
-                                    </div>
-                                </div>
-                                <div class="align-self-center my-sm-auto col">
+                                <div class="my-sm-auto w-50 w-lg-75">
                                     <field name="staff_user_ids" widget="many2many_avatar_user" readonly="True" invisible="schedule_based_on != 'users'"/>
                                     <field name="resource_ids" widget="many2many_tags_avatar" readonly="True" invisible="schedule_based_on == 'users'"/>
                                 </div>
-                                <div class="align-self-center text-large col">
-                                    <span class="fw-normal d-block">
-                                        <field name="appointment_count"/>
-                                        <t t-if="record.schedule_based_on.raw_value == 'users'"> Meetings</t>
-                                        <t t-else=""> Bookings</t>
-                                    </span>
-                                    <span class="d-block">Scheduled</span>
-                                </div>
-                                <div class="align-self-center text-large col">
-                                    <span class="fw-normal">
-                                        <field name="appointment_count_report"/> Total
-                                        <t t-if="record.schedule_based_on.raw_value == 'users'"> Meetings</t>
-                                        <t t-else=""> Bookings</t>
-                                    </span><br/>
-                                    <span>(Last 30 Days)</span>
-                                </div>
+                            </div>
+                            <div class="col-lg-2 col-sm-5 col-6 py-0 my-2 my-lg-auto text-large">
+                                <span class="fw-normal">
+                                    <field name="appointment_count"/>
+                                    <t t-if="record.schedule_based_on.raw_value == 'users'"> Meetings</t>
+                                    <t t-else=""> Bookings</t>
+                                </span><br/>
+                                <span>Scheduled</span>
+                            </div>
+                            <div class="col-lg-3 col-sm-7 col-6 py-0 ps-2 ps-sm-3 my-2 my-lg-auto text-large">
+                                <span class="fw-normal">
+                                    <field name="appointment_count_report"/> Total
+                                    <t t-if="record.schedule_based_on.raw_value == 'users'"> Meetings</t>
+                                    <t t-else=""> Bookings</t>
+                                </span><br/>
+                                <span>(Last 30 Days)</span>
                             </div>
                             <field name="active" invisible="1"/>
                         </div>
@@ -147,7 +143,7 @@
                 <header>
                     <button name="action_share_invite" type="object" string="Share"/>
                 </header>
-                <field name="sequence" widget="handle"/>
+                <field name="sequence" widget="handle" groups="appointment.group_appointment_manager"/>
                 <field name="name" readonly="1"/>
                 <field name="location_id"/>
                 <field name="appointment_tz"/>
@@ -266,7 +262,10 @@
                                 </span>
                             </div>
                             <field name="avatars_display" widget="radio" options="{'horizontal': true}" required="1"/>
-                            <field name="assign_method" widget="radio" required="1"/>
+                            <field name="assign_method" widget="radio"
+                                invisible="schedule_based_on == 'users'" required="schedule_based_on == 'resources'"/>
+                            <field name="user_assign_method" widget="radio"
+                                invisible="schedule_based_on == 'resources'" required="schedule_based_on == 'users'"/>
                         </group>
                     </group>
                     <notebook>
@@ -298,7 +297,7 @@
                                 <group name="options_left_details">
                                     <field name="appointment_tz"/>
                                     <field name="location_id" context="{'show_address': 1}"
-                                           placeholder="Keep it empty if the meeting takes place online"/>
+                                           placeholder="If empty, the meeting is considered as taking place online"/>
                                     <field name="event_videocall_source"/>
                                     <label for="resource_manual_confirmation" invisible="schedule_based_on == 'users'"/>
                                     <div class="d-flex" invisible="schedule_based_on == 'users'">
@@ -430,7 +429,9 @@
         }</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                No custom appointment type has been created!
+                No Custom Availabilities Shared!
+            </p><p>
+                Create invites on the fly from your calendar and share them with anyone by using the Share Availabilities button.
             </p>
         </field>
     </record>

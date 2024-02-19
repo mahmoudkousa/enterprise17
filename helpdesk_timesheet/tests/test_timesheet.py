@@ -2,7 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import Command
-from odoo.tests import tagged
+from odoo.tests import tagged, Form
 from odoo.exceptions import ValidationError
 
 from .common import TestHelpdeskTimesheetCommon
@@ -115,3 +115,22 @@ class TestTimesheet(TestHelpdeskTimesheetCommon):
         timesheet.helpdesk_ticket_id = helpdesk_ticket
         self.assertFalse(timesheet.task_id, "The task should be unset since a helpdesk ticket has been set on the timesheet")
         self.assertEqual(timesheet.project_id, self.project, "The project set on the timesheet should now the project on the helpdesk team of the ticket linked.")
+
+    def test_timesheet_customer_association(self):
+        employee = self.env['hr.employee'].create({'user_id': self.env.uid})
+        ticket_form = Form(self.env['helpdesk.ticket'])
+        ticket_form.partner_id = self.partner
+        ticket_form.name = 'Test'
+        ticket_form.team_id = self.env['helpdesk.team'].browse(2)
+        with ticket_form.timesheet_ids.new() as line:
+            line.employee_id = employee
+            line.name = "/"
+            line.unit_amount = 3
+        ticket = ticket_form.save()
+        self.assertEqual(ticket.timesheet_ids.partner_id, ticket.partner_id, "The timesheet partner should be equal to the ticket's partner/customer")
+        partner = self.env['res.partner'].create({
+            'name': 'Customer ticket',
+            'email': 'customer@ticket.com',
+        })
+        ticket.partner_id = partner
+        self.assertEqual(ticket.timesheet_ids.partner_id, partner, "The partner set on the timesheet should follow the one set on the ticket linked.")

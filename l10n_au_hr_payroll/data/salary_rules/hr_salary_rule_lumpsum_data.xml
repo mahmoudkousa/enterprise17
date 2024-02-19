@@ -16,4 +16,16 @@ result = -payslip._l10n_au_compute_lumpsum_withhold(categories['GROSS'])
         </field>
         <field name="struct_id" ref="l10n_au_hr_payroll.hr_payroll_structure_au_lumpsum"/>
     </record>
+    <record id="l10n_au_super_contribution_lumpsum_structure_5" model="hr.salary.rule">
+        <field name="category_id" ref="l10n_au_hr_payroll.rule_category_super_contribution"/>
+        <field name="name">Super Guarantee</field>
+        <field name="code">SUPER</field>
+        <field name="sequence">300</field>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute">
+rate = payslip._rule_parameter("l10n_au_withholding_super")
+result = categories['GROSS'] * rate/100 + contract.l10n_au_salary_sacrifice_superannuation
+        </field>
+        <field name="struct_id" ref="l10n_au_hr_payroll.hr_payroll_structure_au_lumpsum"/>
+    </record>
 </odoo>

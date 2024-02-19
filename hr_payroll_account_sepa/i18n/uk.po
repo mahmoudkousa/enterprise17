@@ -1,23 +1,23 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # 	* hr_payroll_account_sepa
-#
+# 
 # Translators:
-# Martin Trigaux, 2022
-# Alina Lisnenko <alina.lisnenko@erp.co.ua>, 2023
-#
+# Wil Odoo, 2023
+# Alina Lisnenko <alina.lisnenko@erp.co.ua>, 2024
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 16.0+e\n"
+"Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-16 16:02+0000\n"
-"PO-Revision-Date: 2022-09-22 05:47+0000\n"
-"Last-Translator: Alina Lisnenko <alina.lisnenko@erp.co.ua>, 2023\n"
+"POT-Creation-Date: 2023-10-26 22:21+0000\n"
+"PO-Revision-Date: 2023-10-26 23:10+0000\n"
+"Last-Translator: Alina Lisnenko <alina.lisnenko@erp.co.ua>, 2024\n"
 "Language-Team: Ukrainian (https://app.transifex.com/odoo/teams/41243/uk/)\n"
-"Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
+"Language: uk\n"
 "Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != 11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || (n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
 
 #. module: hr_payroll_account_sepa
@@ -75,6 +75,13 @@ msgid "Employees With Invalid Bank Accounts"
 msgstr "Співробітники з недійсними банківськими рахунками"
 
 #. module: hr_payroll_account_sepa
+#. odoo-python
+#: code:addons/hr_payroll_account_sepa/models/hr_payslip.py:0
+#, python-format
+msgid "Employees with untrusted Bank Account numbers"
+msgstr "Співробітники з ненадійними номерами банківських рахунків"
+
+#. module: hr_payroll_account_sepa
 #: model:ir.model.fields,help:hr_payroll_account_sepa.field_hr_payslip__sepa_export
 msgid "Export file related to this payslip"
 msgstr "Експортований файл належить до цього розрахункового листа"
@@ -129,6 +136,7 @@ msgstr "ID"
 
 #. module: hr_payroll_account_sepa
 #. odoo-python
+#: code:addons/hr_payroll_account_sepa/wizard/hr_payroll_account_sepa_wizard.py:0
 #: code:addons/hr_payroll_account_sepa/wizard/hr_payroll_account_sepa_wizard.py:0
 #, python-format
 msgid ""
@@ -188,19 +196,69 @@ msgstr "Деякі співробітники (%s) не мають банків�
 #. odoo-python
 #: code:addons/hr_payroll_account_sepa/models/hr_payslip.py:0
 #, python-format
-msgid "Some employees (%s) don't have a private address."
-msgstr "Деякі співробітники (%s) не мають приватних адрес."
+msgid "Some employees (%s) don't have a valid name on the work contact."
+msgstr ""
+"Деякі співробітники (%s) не мають підтвердженого імені на робочому контакті."
 
 #. module: hr_payroll_account_sepa
 #. odoo-python
 #: code:addons/hr_payroll_account_sepa/models/hr_payslip.py:0
 #, python-format
-msgid "Some employees (%s) don't have a valid name on the private address."
-msgstr "Деякі співробітники (%s) мають недійсні назви приватних адрес."
+msgid "Some employees (%s) don't have a work contact."
+msgstr "Деякі співробітники (%s) не мають робочого контакту."
+
+#. module: hr_payroll_account_sepa
+#. odoo-python
+#: code:addons/hr_payroll_account_sepa/models/hr_employee.py:0
+#, python-format
+msgid ""
+"The following employees have invalid bank accounts and could not be trusted:\n"
+"%s"
+msgstr ""
+"Наступні співробітники мають недійсні банківські рахунки і їм не можна довіряти:\n"
+"%s"
 
 #. module: hr_payroll_account_sepa
 #. odoo-python
 #: code:addons/hr_payroll_account_sepa/models/hr_payslip.py:0
 #, python-format
-msgid "The journal '%s' requires a proper IBAN account to pay via SEPA. Please configure it first."
-msgstr "Журнал '%s' вимагає правильного рахунку IBAN для оплати через SEPA. Будь ласка, налаштуйте його спочатку."
+msgid ""
+"The journal '%s' requires a proper IBAN account to pay via SEPA. Please "
+"configure it first."
+msgstr ""
+"Журнал '%s' вимагає правильного рахунку IBAN для оплати через SEPA. Будь "
+"ласка, налаштуйте його спочатку."
+
+#. module: hr_payroll_account_sepa
+#: model:ir.actions.server,name:hr_payroll_account_sepa.trust_employee_bank
+msgid "Trust Bank Account"
+msgstr "Надійний банківський рахунок"
+
+#. module: hr_payroll_account_sepa
+#: model:ir.model.fields,field_description:hr_payroll_account_sepa.field_hr_payslip__sepa_uetr
+msgid "UETR"
+msgstr "UETR"
+
+#. module: hr_payroll_account_sepa
+#: model:ir.model.fields,help:hr_payroll_account_sepa.field_hr_payslip__sepa_uetr
+msgid "Unique end-to-end transaction reference"
+msgstr "Унікальне наскрізне посилання на транзакцію"
+
+#. module: hr_payroll_account_sepa
+#. odoo-python
+#: code:addons/hr_payroll_account_sepa/wizard/hr_payroll_account_sepa_wizard.py:0
+#: code:addons/hr_payroll_account_sepa/wizard/hr_payroll_account_sepa_wizard.py:0
+#, python-format
+msgid ""
+"Untrusted bank account for the following employees:\n"
+"%s"
+msgstr ""
+"Ненадійний банківський рахунок у наступних співробітників:\n"
+"%s"
+
+#. module: hr_payroll_account_sepa
+#. odoo-python
+#: code:addons/hr_payroll_account_sepa/models/hr_employee.py:0
+#, python-format
+msgid "You do not have the right to trust or un-trust a bank account."
+msgstr "Ви не маєте права довіряти чи не довіряти банківському рахунку."

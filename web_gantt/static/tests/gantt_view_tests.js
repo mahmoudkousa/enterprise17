@@ -317,12 +317,12 @@ QUnit.test("ungrouped gantt rendering", async (assert) => {
     assert.deepEqual(rows, [
         {
             pills: [
-                { title: "Task 1", level: 0, colSpan: "01 -> 31" },
-                { title: "Task 5", level: 1, colSpan: "01 -> 04 (1/2)" },
-                { title: "Task 2", level: 1, colSpan: "17 (1/2) -> 22 (1/2)" },
+                { title: "Task 5", level: 0, colSpan: "01 -> 04 (1/2)" },
+                { title: "Task 1", level: 1, colSpan: "01 -> 31" },
+                { title: "Task 2", level: 0, colSpan: "17 (1/2) -> 22 (1/2)" },
                 { title: "Task 4", level: 2, colSpan: "20 -> 20 (1/2)" },
                 { title: "Task 7", level: 2, colSpan: "20 (1/2) -> 20" },
-                { title: "Task 3", level: 1, colSpan: "27 -> 31" },
+                { title: "Task 3", level: 0, colSpan: "27 -> 31" },
             ],
         },
     ]);
@@ -850,6 +850,55 @@ QUnit.test("gantt rendering, thumbnails", async (assert) => {
     );
 });
 
+QUnit.test("gantt rendering, pills must be chronologically ordered", async (assert) => {
+    await makeView({
+        type: "gantt",
+        resModel: "tasks",
+        serverData,
+        arch: `<gantt string="Tasks" default_scale="week" date_start="start" date_stop="stop" thumbnails="{'user_id': 'image'}"/>`,
+        mockRPC: function (_, args) {
+            if (args.method === "get_gantt_data") {
+                return {
+                    groups: [
+                        {
+                            user_id: [1, "User 1"],
+                            __record_ids: [1],
+                        },
+                        {
+                            user_id: false,
+                            __record_ids: [2],
+                        },
+                    ],
+                    length: 2,
+                    records: [
+                        {
+                            display_name: "Task 14:30:00",
+                            id: 1,
+                            start: "2018-12-17 14:30:00",
+                            stop: "2018-12-17 18:29:59",
+                        },
+                        {
+                            display_name: "Task 08:30:00",
+                            id: 2,
+                            start: "2018-12-17 08:30:00",
+                            stop: "2018-12-17 13:29:59",
+                        },
+                    ],
+                };
+            }
+        },
+    });
+    const gridContent = getGridContent();
+    assert.deepEqual(gridContent.rows, [
+        {
+            pills: [
+                { title: "Task 08:30:00", level: 0, colSpan: "Monday, 17 -> Monday, 17" },
+                { title: "Task 14:30:00", level: 1, colSpan: "Monday, 17 (1/2) -> Monday, 17" },
+            ],
+        },
+    ]);
+});
+
 QUnit.test("scale switching", async (assert) => {
     await makeView({
         type: "gantt",
@@ -867,12 +916,12 @@ QUnit.test("scale switching", async (assert) => {
     assert.deepEqual(gridContent.rows, [
         {
             pills: [
-                { title: "Task 1", level: 0, colSpan: "01 -> 31" },
-                { title: "Task 5", level: 1, colSpan: "01 -> 04 (1/2)" },
-                { title: "Task 2", level: 1, colSpan: "17 (1/2) -> 22 (1/2)" },
+                { title: "Task 5", level: 0, colSpan: "01 -> 04 (1/2)" },
+                { title: "Task 1", level: 1, colSpan: "01 -> 31" },
+                { title: "Task 2", level: 0, colSpan: "17 (1/2) -> 22 (1/2)" },
                 { title: "Task 4", level: 2, colSpan: "20 -> 20 (1/2)" },
                 { title: "Task 7", level: 2, colSpan: "20 (1/2) -> 20" },
-                { title: "Task 3", level: 1, colSpan: "27 -> 31" },
+                { title: "Task 3", level: 0, colSpan: "27 -> 31" },
             ],
         },
     ]);
@@ -930,12 +979,12 @@ QUnit.test("scale switching", async (assert) => {
     assert.deepEqual(gridContent.rows, [
         {
             pills: [
-                { title: "Task 1", level: 0, colSpan: "01 -> 31" },
-                { title: "Task 5", level: 1, colSpan: "01 -> 04 (1/2)" },
-                { title: "Task 2", level: 1, colSpan: "17 (1/2) -> 22 (1/2)" },
+                { title: "Task 5", level: 0, colSpan: "01 -> 04 (1/2)" },
+                { title: "Task 1", level: 1, colSpan: "01 -> 31" },
+                { title: "Task 2", level: 0, colSpan: "17 (1/2) -> 22 (1/2)" },
                 { title: "Task 4", level: 2, colSpan: "20 -> 20 (1/2)" },
                 { title: "Task 7", level: 2, colSpan: "20 (1/2) -> 20" },
-                { title: "Task 3", level: 1, colSpan: "27 -> 31" },
+                { title: "Task 3", level: 0, colSpan: "27 -> 31" },
             ],
         },
     ]);
@@ -951,13 +1000,13 @@ QUnit.test("scale switching", async (assert) => {
     assert.deepEqual(gridContent.rows, [
         {
             pills: [
-                { title: "Task 1", level: 0, colSpan: "November -> December" },
-                { title: "Task 5", level: 1, colSpan: "November -> December" },
-                { title: "Task 6", level: 2, colSpan: "November -> November" },
-                { title: "Task 2", level: 2, colSpan: "December -> December" },
-                { title: "Task 3", level: 3, colSpan: "December -> December" },
-                { title: "Task 4", level: 4, colSpan: "December -> December" },
-                { title: "Task 7", level: 5, colSpan: "December -> December" },
+                { title: "Task 5", level: 0, colSpan: "November -> December" },
+                { title: "Task 6", level: 1, colSpan: "November -> November" },
+                { title: "Task 1", level: 2, colSpan: "November -> December" },
+                { title: "Task 2", level: 1, colSpan: "December -> December" },
+                { title: "Task 4", level: 3, colSpan: "December -> December" },
+                { title: "Task 7", level: 4, colSpan: "December -> December" },
+                { title: "Task 3", level: 5, colSpan: "December -> December" },
             ],
         },
     ]);
@@ -1336,6 +1385,8 @@ QUnit.test("select cells to plan a task", async (assert) => {
                 add(_, props) {
                     assert.step(`[dialog] ${props.title}`);
                     assert.deepEqual(props.context, {
+                        default_start: "2018-11-30 23:00:00",
+                        default_stop: "2018-12-02 22:59:59",
                         lang: "en",
                         start: "2018-11-30 23:00:00",
                         stop: "2018-12-02 22:59:59",
@@ -1390,6 +1441,9 @@ QUnit.test("select cells to plan a task: 1-level grouped", async (assert) => {
                 add(_, props) {
                     assert.step(`[dialog] ${props.title}`);
                     assert.deepEqual(props.context, {
+                        default_start: "2018-11-30 23:00:00",
+                        default_stop: "2018-12-02 22:59:59",
+                        default_user_id: 1,
                         lang: "en",
                         start: "2018-11-30 23:00:00",
                         stop: "2018-12-02 22:59:59",
@@ -1423,6 +1477,10 @@ QUnit.test("select cells to plan a task: 2-level grouped", async (assert) => {
                 add(_, props) {
                     assert.step(`[dialog] ${props.title}`);
                     assert.deepEqual(props.context, {
+                        default_project_id: 1,
+                        default_start: "2018-11-30 23:00:00",
+                        default_stop: "2018-12-02 22:59:59",
+                        default_user_id: 1,
                         lang: "en",
                         project_id: 1,
                         start: "2018-11-30 23:00:00",
@@ -2130,16 +2188,16 @@ QUnit.test("resize pill in year mode", async (assert) => {
         },
     });
 
-    const initialPillWidth = getPillWrapper("Task 1").getBoundingClientRect().width;
+    const initialPillWidth = getPillWrapper("Task 5").getBoundingClientRect().width;
 
-    assert.hasClass(getPillWrapper("Task 1"), CLASSES.resizable);
+    assert.hasClass(getPillWrapper("Task 5"), CLASSES.resizable);
 
     // Resize way over the limit
-    await resizePill(getPillWrapper("Task 1"), "end", 0, { x: 200 });
+    await resizePill(getPillWrapper("Task 5"), "end", 0, { x: 200 });
 
     assert.strictEqual(
         initialPillWidth,
-        getPillWrapper("Task 1").getBoundingClientRect().width,
+        getPillWrapper("Task 5").getBoundingClientRect().width,
         "the pill should have the same width as before the resize"
     );
 });
@@ -2903,8 +2961,8 @@ QUnit.test("drag&drop on other pill in grouped view", async (assert) => {
         {
             title: "Project 1",
             pills: [
-                { title: "Task 1", level: 0, colSpan: "Sunday, 16 -> Sunday, 16 (1/2)" },
-                { title: "Task 2", level: 1, colSpan: "Sunday, 16 -> Sunday, 16 (1/2)" },
+                { title: "Task 2", level: 0, colSpan: "Sunday, 16 -> Sunday, 16 (1/2)" },
+                { title: "Task 1", level: 1, colSpan: "Sunday, 16 -> Sunday, 16 (1/2)" },
                 { title: "Task 4", level: 0, colSpan: "Thursday, 20 -> Thursday, 20 (1/2)" },
             ],
         },
@@ -2969,12 +3027,12 @@ QUnit.test("edit attribute", async (assert) => {
     assert.deepEqual(getGridContent().rows, [
         {
             pills: [
-                { title: "Task 1", level: 0, colSpan: "01 -> 31" },
-                { title: "Task 5", level: 1, colSpan: "01 -> 04 (1/2)" },
-                { title: "Task 2", level: 1, colSpan: "17 (1/2) -> 22 (1/2)" },
+                { title: "Task 5", level: 0, colSpan: "01 -> 04 (1/2)" },
+                { title: "Task 1", level: 1, colSpan: "01 -> 31" },
+                { title: "Task 2", level: 0, colSpan: "17 (1/2) -> 22 (1/2)" },
                 { title: "Task 4", level: 2, colSpan: "20 -> 20 (1/2)" },
                 { title: "Task 7", level: 2, colSpan: "20 (1/2) -> 20" },
-                { title: "Task 3", level: 1, colSpan: "27 -> 31" },
+                { title: "Task 3", level: 0, colSpan: "27 -> 31" },
             ],
         },
     ]);
@@ -2999,18 +3057,18 @@ QUnit.test("total_row attribute", async (assert) => {
         {
             pills: [
                 {
-                    colSpan: "01 -> 31",
-                    level: 0,
-                    title: "Task 1",
-                },
-                {
                     colSpan: "01 -> 04 (1/2)",
-                    level: 1,
+                    level: 0,
                     title: "Task 5",
                 },
                 {
-                    colSpan: "17 (1/2) -> 22 (1/2)",
+                    colSpan: "01 -> 31",
                     level: 1,
+                    title: "Task 1",
+                },
+                {
+                    colSpan: "17 (1/2) -> 22 (1/2)",
+                    level: 0,
                     title: "Task 2",
                 },
                 {
@@ -3025,7 +3083,7 @@ QUnit.test("total_row attribute", async (assert) => {
                 },
                 {
                     colSpan: "27 -> 31",
-                    level: 1,
+                    level: 0,
                     title: "Task 3",
                 },
             ],
@@ -3355,18 +3413,18 @@ QUnit.test("consolidation feature (single level)", async (assert) => {
         {
             pills: [
                 {
-                    colSpan: "01 -> 31",
-                    level: 0,
-                    title: "Task 1",
-                },
-                {
                     colSpan: "01 -> 04 (1/2)",
-                    level: 1,
+                    level: 0,
                     title: "Task 5",
                 },
                 {
-                    colSpan: "20 -> 20 (1/2)",
+                    colSpan: "01 -> 31",
                     level: 1,
+                    title: "Task 1",
+                },
+                {
+                    colSpan: "20 -> 20 (1/2)",
+                    level: 0,
                     title: "Task 4",
                 },
             ],
@@ -3780,18 +3838,18 @@ QUnit.test("default_group_by attribute", async (assert) => {
                 title: "User 1",
                 pills: [
                     {
-                        colSpan: "01 -> 31",
-                        level: 0,
-                        title: "Task 1",
-                    },
-                    {
                         colSpan: "01 -> 04 (1/2)",
-                        level: 1,
+                        level: 0,
                         title: "Task 5",
                     },
                     {
-                        colSpan: "20 -> 20 (1/2)",
+                        colSpan: "01 -> 31",
                         level: 1,
+                        title: "Task 1",
+                    },
+                    {
+                        colSpan: "20 -> 20 (1/2)",
+                        level: 0,
                         title: "Task 4",
                     },
                 ],
@@ -4758,9 +4816,9 @@ QUnit.test("Progress bar rpc is triggered when option set.", async (assert) => {
         ["50%", "12.5%"]
     );
     await hoverGridCell(1, 1);
-    assert.deepEqual(target.querySelector(SELECTORS.progressBarForeground).textContent, "50 / 100");
+    assert.deepEqual(target.querySelector(SELECTORS.progressBarForeground).textContent, "50h / 100h");
     await hoverGridCell(2, 1);
-    assert.deepEqual(target.querySelector(SELECTORS.progressBarForeground).textContent, "25 / 200");
+    assert.deepEqual(target.querySelector(SELECTORS.progressBarForeground).textContent, "25h / 200h");
 });
 
 QUnit.test("Progress bar when multilevel grouped.", async (assert) => {
@@ -4814,9 +4872,9 @@ QUnit.test("Progress bar when multilevel grouped.", async (assert) => {
         ["50%", "12.5%"]
     );
     await hoverGridCell(1, 1);
-    assert.deepEqual(target.querySelector(SELECTORS.progressBarForeground).textContent, "50 / 100");
+    assert.deepEqual(target.querySelector(SELECTORS.progressBarForeground).textContent, "50h / 100h");
     await hoverGridCell(3, 1);
-    assert.deepEqual(target.querySelector(SELECTORS.progressBarForeground).textContent, "25 / 200");
+    assert.deepEqual(target.querySelector(SELECTORS.progressBarForeground).textContent, "25h / 200h");
 });
 
 QUnit.test("Progress bar warning when max_value is zero", async (assert) => {
@@ -4855,7 +4913,39 @@ QUnit.test("Progress bar warning when max_value is zero", async (assert) => {
     assert.containsOnce(target, SELECTORS.progressBarWarning);
     assert.strictEqual(
         target.querySelector(SELECTORS.progressBarWarning).parentElement.title,
-        "plop 50."
+        "plop 50h."
+    );
+});
+
+QUnit.test("Progress bar when value less than hour", async (assert) => {
+    await makeView({
+        type: "gantt",
+        resModel: "tasks",
+        serverData,
+        arch: `<gantt date_start="start" date_stop="stop"
+                    default_scale="week" scales="week"
+                    default_group_by="user_id"
+                    progress_bar="user_id">
+                    <field name="user_id"/>
+                </gantt>`,
+        async mockRPC(_, { args, method, model }) {
+            if (method === "gantt_progress_bar") {
+                assert.strictEqual(model, "tasks");
+                assert.deepEqual(args[0], ["user_id"]);
+                assert.deepEqual(args[1], { user_id: [1, 2] });
+                return {
+                    user_id: {
+                        1: { value: 0.50, max_value: 100 },
+                    },
+                };
+            }
+        },
+    });
+    assert.containsOnce(target, SELECTORS.progressBar);
+    await hoverGridCell(1, 1);
+    assert.deepEqual(
+        target.querySelector(SELECTORS.progressBarForeground).textContent,
+        "0h30 / 100h"
     );
 });
 
@@ -4894,7 +4984,7 @@ QUnit.test("Progress bar danger when ratio > 100", async (assert) => {
     );
     assert.deepEqual(
         target.querySelector(SELECTORS.progressBarForeground).textContent,
-        "150 / 100"
+        "150h / 100h"
     );
 });
 
@@ -6025,18 +6115,18 @@ QUnit.test("groups_limit attribute (no groupBy)", async (assert) => {
         {
             pills: [
                 {
-                    colSpan: "01 -> 31",
-                    level: 0,
-                    title: "Task 1",
-                },
-                {
                     colSpan: "01 -> 04 (1/2)",
-                    level: 1,
+                    level: 0,
                     title: "Task 5",
                 },
                 {
-                    colSpan: "17 (1/2) -> 22 (1/2)",
+                    colSpan: "01 -> 31",
                     level: 1,
+                    title: "Task 1",
+                },
+                {
+                    colSpan: "17 (1/2) -> 22 (1/2)",
+                    level: 0,
                     title: "Task 2",
                 },
                 {
@@ -6051,7 +6141,7 @@ QUnit.test("groups_limit attribute (no groupBy)", async (assert) => {
                 },
                 {
                     colSpan: "27 -> 31",
-                    level: 1,
+                    level: 0,
                     title: "Task 3",
                 },
             ],
@@ -6390,6 +6480,40 @@ QUnit.test("groups_limit attribute in sample mode (two groupBys)", async (assert
     assert.strictEqual(target.querySelector(".o_pager_limit").innerText, "2");
     assert.verifySteps(["get_views", "get_gantt_data", "with limit 2", "with offset 0"]);
 });
+
+QUnit.test(
+    "context in action should not override context added by the gantt view",
+    async (assert) => {
+        serverData.views["tasks,false,form"] = `
+            <form>
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="start"/>
+                <field name="stop"/>
+            </form>
+        `;
+        await makeView({
+            type: "gantt",
+            resModel: "tasks",
+            serverData,
+            arch: `<gantt date_start="start" date_stop="stop" default_group_by="user_id" plan="false"/>`,
+            context: {
+                gantt_date: "2018-11-30",
+                gantt_scale: "month",
+                default_user_id: false,
+            },
+        });
+
+        await hoverGridCell(1, 1, { ignoreHoverableClass: true });
+        await clickCell(1, 1);
+        assert.containsOnce(target, ".modal .o_field_many2one[name=user_id]");
+        assert.strictEqual(
+            target.querySelector(".modal .o_field_many2one[name=user_id] input").value,
+            "User 1",
+            "The user set should be the one in the row contained the cell clicked to add a record"
+        );
+    }
+);
 
 // MANUAL TESTING
 

@@ -15,7 +15,7 @@ class HrPayslip(models.Model):
     date = fields.Date('Date Account',
         help="Keep empty to use the period of the validation(Payslip) date.")
     journal_id = fields.Many2one('account.journal', 'Salary Journal', related="struct_id.journal_id", check_company=True)
-    move_id = fields.Many2one('account.move', 'Accounting Entry', readonly=True, copy=False)
+    move_id = fields.Many2one('account.move', 'Accounting Entry', readonly=True, copy=False, index='btree_not_null')
     batch_payroll_move_lines = fields.Boolean(related='company_id.batch_payroll_move_lines')
 
     def action_payslip_cancel(self):

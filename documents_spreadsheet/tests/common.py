@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo.tests.common import new_test_user
+from odoo.tests.common import HttpCase, new_test_user
 from odoo.addons.spreadsheet_edition.tests.spreadsheet_test_case import SpreadsheetTestCase
+from odoo.tools import file_open, misc
 
 from uuid import uuid4
 
@@ -51,3 +52,21 @@ class SpreadsheetTestCommon(SpreadsheetTestCase):
             }
         )
         return share
+
+
+class SpreadsheetTestTourCommon(SpreadsheetTestCommon, HttpCase):
+    @classmethod
+    def setUpClass(cls):
+        super(SpreadsheetTestTourCommon, cls).setUpClass()
+        cls.spreadsheet_user.partner_id.country_id = cls.env.ref("base.us")
+        cls.env['res.users'].browse(2).partner_id.country_id = cls.env.ref("base.be")
+        # Avoid interference from the demo data which rename the admin user
+        cls.env['res.users'].browse(2).write({"name": "AdminDude"})
+        data_path = misc.file_path('documents_spreadsheet/demo/files/res_partner_spreadsheet.json')
+        with file_open(data_path, 'rb') as f:
+            cls.spreadsheet = cls.env["documents.document"].create({
+                "handler": "spreadsheet",
+                "folder_id": cls.folder.id,
+                "raw": f.read(),
+                "name": "Res Partner Test Spreadsheet"
+            })

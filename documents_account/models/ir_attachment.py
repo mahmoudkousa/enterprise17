@@ -10,6 +10,6 @@ class IrAttachment(models.Model):
             if vals.get('res_model', False) != 'account.move':
                 continue
             move = self.env['account.move'].browse(vals.get('res_id', False))
-            if move.move_type == 'entry':
+            if move.move_type == 'entry' or (len(move.attachment_ids) == 1 and move.attachment_ids[0] == attachment):
                 move._update_or_create_document(attachment.id)
         return attachments

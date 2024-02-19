@@ -21,6 +21,8 @@ class AccountDebitNote(models.TransientModel):
     def _prepare_default_values(self, move):
         # OVERRIDE
         values = super()._prepare_default_values(move)
+        if move.country_code != "PE":
+            return values
         values.update({
             'l10n_pe_edi_charge_reason': self.l10n_pe_edi_charge_reason,
             'l10n_latam_document_type_id': self.env.ref('l10n_pe.document_type08').id

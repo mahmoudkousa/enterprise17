@@ -52,14 +52,14 @@
                                 <field name="code">pl_micro_assets_b_1</field>
                                 <field name="groupby">account_id</field>
                                 <field name="foldable" eval="True"/>
-                                <field name="account_codes_formula">60 + 62 +  3\(30.03,30.04,30.07)</field>
+                                <field name="account_codes_formula">3\(30.000.3,30.000.4,30.000.7) + 60 + 62</field>
                             </record>
                             <record id="l10n_pl_micro_bs_assets_b_2" model="account.report.line">
                                 <field name="name">- short-term receivables</field>
                                 <field name="code">pl_micro_assets_b_2</field>
                                 <field name="groupby">account_id</field>
                                 <field name="foldable" eval="True"/>
-                                <field name="account_codes_formula">30.03 + 30.07 + 22.02 + 20.00 + 24.06</field>
+                                <field name="account_codes_formula">20.000.1 + 20.000.2 + 22.01 + 24.090.1 + 30.000.3 + 30.000.7</field>
                             </record>
                             <record id="l10n_pl_micro_bs_assets_b_3" model="account.report.line">
                                 <field name="name">- other</field>
@@ -67,7 +67,7 @@
                                 <field name="groupby">account_id</field>
                                 <field name="hide_if_zero" eval="True"/>
                                 <field name="foldable" eval="True"/>
-                                <field name="account_codes_formula">1 + 30.04 + 24.010.2 + 24.020.1 + 24.07 + 24.08 + 24.09 + 29.01 + 29.03 + 64.01 + 65.01</field>
+                                <field name="account_codes_formula">1 + 24.010.2 + 24.020.1 + 24.090.2 + 24.090.3 + 24.090.9 + 29.000.1 + 29.020.1 + 30.000.4 + 64.000.1 + 65.000.1</field>
                             </record>
                         </field>
                     </record>
@@ -76,14 +76,14 @@
                         <field name="code">pl_micro_assets_c</field>
                         <field name="groupby">account_id</field>
                         <field name="foldable" eval="True"/>
-                        <field name="account_codes_formula">80.12</field>
+                        <field name="account_codes_formula">80.000.2</field>
                     </record>
                     <record id="l10n_pl_micro_bs_assets_d" model="account.report.line">
                         <field name="name">D. Owned shares</field>
                         <field name="code">pl_micro_assets_d</field>
                         <field name="groupby">account_id</field>
                         <field name="foldable" eval="True"/>
-                        <field name="account_codes_formula">80.13</field>
+                        <field name="account_codes_formula">80.000.3</field>
                     </record>
                 </field>
             </record>
@@ -107,7 +107,7 @@
                             <record id="l10n_pl_micro_bs_passives_a_balance_account_codes" model="account.report.expression">
                                 <field name="label">balance_account_codes</field>
                                 <field name="engine">account_codes</field>
-                                <field name="formula">-80.0 - 80.19 - 81 - 82 - 85 - 86</field>
+                                <field name="formula">-80.000.1- 80.000.4 - 81 - 82 - 85 - 86</field>
                                 <field name="date_scope">normal</field>
                             </record>
                             <record id="l10n_pl_micro_bs_passives_a_balance_aggregate" model="account.report.expression">
@@ -162,7 +162,7 @@
                                 <field name="code">pl_micro_passives_b_2</field>
                                 <field name="groupby">account_id</field>
                                 <field name="foldable" eval="True"/>
-                                <field name="account_codes_formula">-24.010.1 - 23.02</field>
+                                <field name="account_codes_formula">-24.010.1 - 23.000.2</field>
                             </record>
                             <record id="l10n_pl_micro_bs_passives_b_3" model="account.report.line">
                                 <field name="name">- other</field>
@@ -170,7 +170,7 @@
                                 <field name="groupby">account_id</field>
                                 <field name="hide_if_zero" eval="True"/>
                                 <field name="foldable" eval="True"/>
-                                <field name="account_codes_formula">-84 - 64.02 - 65.02 - 29.02 - 24.03 - 24.05 - 24.020.2 - 23\(23.02) - 22\(22.02) - 20.01 - 21.0 - 28</field>
+                                <field name="account_codes_formula">-84 - 64.01 - 65.01 - 29.01 - 24.03 - 24.05 - 24.020.2 - 23\(23.000.2) - 22\(22.01) - 20.000.3 - 21.00 - 28.00</field>
                             </record>
                         </field>
                     </record>

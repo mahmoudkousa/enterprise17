@@ -83,6 +83,12 @@ class ExtractMixin(models.AbstractModel):
         """ Compute the is_in_extractable_state field. This method is meant to be overridden """
         return None
 
+    def _get_iap_account(self):
+        if self.company_id:
+            return self.env['iap.account'].with_context(allowed_company_ids=[self.company_id.id]).get('invoice_ocr')
+        else:
+            return self.env['iap.account'].get('invoice_ocr')
+
     @api.model
     def check_all_status(self):
         for record in self.search(self._get_to_check_domain()):
@@ -228,7 +234,7 @@ class ExtractMixin(models.AbstractModel):
             return False
         attachment = self.message_main_attachment_id
         if attachment and self.extract_state in ['no_extract_requested', 'not_enough_credit', 'error_status']:
-            account_token = self.env['iap.account'].get('invoice_ocr')
+            account_token = self._get_iap_account()
 
             if not account_token.account_token:
                 self.extract_state = 'error_status'
@@ -291,7 +297,7 @@ class ExtractMixin(models.AbstractModel):
         except ValueError:
             #if the mail template has not been created by an upgrade of the module
             return
-        iap_account = self.env['iap.account'].search([('service_name', '=', "invoice_ocr")], limit=1)
+        iap_account = self._get_iap_account()
         if iap_account:
             # Get the email address of the creators of the records
             res = self.env['res.users'].search_read([('id', '=', 2)], ['email'])
@@ -319,7 +325,10 @@ class ExtractMixin(models.AbstractModel):
             self.extract_state = 'waiting_validation'
             # Set OdooBot as the author of the tracking message
             self._track_set_author(self.env.ref('base.partner_root'))
-            self._fill_document_with_results(result['results'][0], force_write=force_write)
+            ocr_results = result['results'][0]
+            self._fill_document_with_results(ocr_results, force_write=force_write)
+            if 'full_text_annotation' in ocr_results:
+                self.message_main_attachment_id.index_content = ocr_results['full_text_annotation']
 
         elif result['status'] == 'processing':
             self.extract_state = 'extract_not_ready'

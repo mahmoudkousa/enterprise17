@@ -30,3 +30,9 @@ class EventRegistration(models.Model):
                 'event_id.user_id.mobile', 'event_id.address_id.city', 'event_id.address_id.name',
                 'event_id.address_id.contact_address_complete', 'event_id.address_id.partner_latitude',
                 'event_id.address_id.partner_longitude'}
+
+    def _whatsapp_get_timezone(self):
+        if self:
+            self.ensure_one()
+            return self.event_id.date_tz
+        return super()._whatsapp_get_timezone()

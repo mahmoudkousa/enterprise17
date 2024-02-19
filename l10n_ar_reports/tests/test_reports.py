@@ -377,7 +377,7 @@ class TestReports(TestAr, TestAccountReportsCommon):
             # pylint: disable=C0326
             lines,
             #    Move Name              Partner Name    VAT            Taxed   VAT 21%   Total
-            [    0,                     2,              4,             5,      8,        12],
+            [    0,                     2,              4,             5,      8,        15],
             [
                 ('DI 0001-00000001000', 'BEST PARTNER', '30714295698', -1000,  -210,     -1210),
                 ('DI 0001-00000002000', 'BEST PARTNER', '30714295698', -500,   -105,     -605),

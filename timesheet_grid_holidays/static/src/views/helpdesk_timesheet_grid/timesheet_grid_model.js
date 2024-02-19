@@ -9,7 +9,7 @@ patch(TimesheetGridDataPoint.prototype, {
      * @override
      */
     _getPreviousWeekTimesheetDomain() {
-        return Domain.and([super._getPreviousWeekTimesheetDomain(), ["|", ["task_id.is_timeoff_task", "=", false], ["task_id", "=", false]]]);
+        return Domain.and([super._getPreviousWeekTimesheetDomain(), [["holiday_id", "=", false], ["global_leave_id", "=", false]]]);
     },
 
     /**

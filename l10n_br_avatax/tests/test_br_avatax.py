@@ -161,6 +161,7 @@ class TestAvalaraBrCommon(AccountTestInvoicingCommon):
                 }) for product in products
             ],
         })
+        invoice.invoice_line_ids[0].discount = 10
 
         return invoice, generate_response(invoice.invoice_line_ids)
 
@@ -174,8 +175,8 @@ class TestAvalaraBrInvoiceCommon(TestAvalaraBrCommon):
         )
 
         self.assertRecordValues(invoice, [{
-            'amount_total': 95.0,
-            'amount_untaxed': 95.0,
+            'amount_total': 91.50,
+            'amount_untaxed': 91.50,
             'amount_tax': 0.0,
         }])
 
@@ -186,9 +187,9 @@ class TestAvalaraBrInvoiceCommon(TestAvalaraBrCommon):
 
         if test_exact_response:
             expected_amounts = {
-                'amount_total': 95.0,
-                'amount_untaxed': 95.0 - 11.4 - 5.21,
-                'amount_tax': 11.4 + 5.21,
+                'amount_total': 91.50,
+                'amount_untaxed': 91.50 - 10.98 - 5.02,
+                'amount_tax': 10.98 + 5.02,
             }
             self.assertRecordValues(invoice, [expected_amounts])
 
@@ -206,10 +207,10 @@ class TestAvalaraBrInvoiceCommon(TestAvalaraBrCommon):
                     avatax_line['lineAmount'] - avatax_line['lineTaxedDiscount'],
                     f"Tax-included price doesn't match tax returned by Avatax for line {line.id} (product: {line.product_id.display_name})."
                 )
-                self.assertEqual(
+                self.assertAlmostEqual(
                     line.price_subtotal,
-                    avatax_line['lineNetFigure'],
-                    f'Wrong Avatax amount for {line.id} (product: {line.product_id.display_name}), there is probably a mismatch between the test SO and the mocked response.'
+                    avatax_line['lineNetFigure'] - avatax_line['lineTaxedDiscount'],
+                    msg=f'Wrong Avatax amount for {line.id} (product: {line.product_id.display_name}), there is probably a mismatch between the test SO and the mocked response.'
                 )
 
         else:

@@ -128,11 +128,9 @@ WebsiteSale.include({
      * @param {string} inputName
      */
     _verifyValidInput(rentingDates, inputName) {
-        if (!rentingDates[inputName]) {
-            const input = this.el.querySelector('input[name=renting_dates]');
-            if (input) {
-                input.classList.add('border-danger');
-            }
+        const input = this.el.querySelector('input[name=renting_' + inputName + ']');
+        if (input) {
+            input.classList.toggle('is-invalid', !rentingDates[inputName]);
         }
         return rentingDates[inputName];
     },

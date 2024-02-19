@@ -24,6 +24,7 @@ Accounting reports for Denmark
         'data/account_report_ec_sales_list_report.xml',
         'data/saft_report.xml',
         'data/documents_file_data.xml',
+        'views/account_journal_dashboard.xml',
     ],
     'auto_install': [
         'l10n_dk',

@@ -84,6 +84,10 @@ export class KnowledgeCommentsThread extends Component {
         });
 
         useChildSubEnv({
+            // We need to unset the chatter inside the env of the child Components
+            // because this Object contains values and methods that are linked to the form view's
+            // main chatter. By doing this we distinguish the main chatter from the comments.
+            chatter: false,
             closeThread: this.resolveComment.bind(this),
             openThread: this.unresolveComment.bind(this),
             isResolved: this.isResolved

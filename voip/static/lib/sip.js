@@ -5953,7 +5953,12 @@ class Inviter extends _session__WEBPACK_IMPORTED_MODULE_0__.Session {
         })
             .catch((error) => {
             this.logger.log(error.message);
-            this.stateTransition(_session_state__WEBPACK_IMPORTED_MODULE_5__.SessionState.Terminated);
+            // apply fix from https://github.com/onsip/SIP.js/commit/f06939c119149a3e00ad8acf69f37360d3331a62
+            // It's possible we are already terminated,
+            // so don't throw trying to transition again.
+            if (this.state !== _session_state__WEBPACK_IMPORTED_MODULE_5__.SessionState.Terminated) {
+                this.stateTransition(_session_state__WEBPACK_IMPORTED_MODULE_5__.SessionState.Terminated);
+            }
             throw error;
         });
     }

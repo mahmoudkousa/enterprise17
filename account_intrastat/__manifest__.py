@@ -2,6 +2,7 @@
 {
     'name' : 'Intrastat Reports',
     'category': 'Accounting/Accounting',
+    'version': '1.1',
     'description': """
 Intrastat Reports
 ==================
@@ -31,6 +32,7 @@ Intrastat Reports
     'assets': {
         'web.assets_backend': [
             'account_intrastat/static/src/components/**/*',
-        ],
-    },
+            'account_intrastat/static/src/scss/account_intrastat_report.scss',
+        ]
+    }
 }

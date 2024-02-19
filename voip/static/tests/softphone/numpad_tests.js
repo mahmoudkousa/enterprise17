@@ -42,6 +42,54 @@ QUnit.test(
     }
 );
 
+QUnit.test(
+    "Cursor is taken into account when clicking Backspace.",
+    async (assert) => {
+        start();
+        await click(".o_menu_systray button[title='Open Softphone']");
+        await click("button[title='Open Numpad']");
+        await insertText("input[placeholder='Enter the number…']", "01123456");
+        const input = document.querySelector("input[placeholder='Enter the number…']");
+        input.setSelectionRange(3, 3);
+        await click("button[title='Backspace']");
+        assert.strictEqual(input.selectionStart, 2);
+        assert.strictEqual(input.selectionEnd, 2);
+        await contains("input[placeholder='Enter the number…']", { value: "0123456" });
+    }
+);
+
+QUnit.test(
+    "Cursor range selection is taken into account when clicking Backspace.",
+    async (assert) => {
+        start();
+        await click(".o_menu_systray button[title='Open Softphone']");
+        await click("button[title='Open Numpad']");
+        await insertText("input[placeholder='Enter the number…']", "011123456");
+        const input = document.querySelector("input[placeholder='Enter the number…']");
+        input.setSelectionRange(2, 4);
+        await click("button[title='Backspace']");
+        assert.strictEqual(input.selectionStart, 2);
+        assert.strictEqual(input.selectionEnd, 2);
+        await contains("input[placeholder='Enter the number…']", { value: "0123456" });
+    }
+);
+
+QUnit.test(
+    "When cursor is at the beginning of the input, clicking Backspace does nothing.",
+    async (assert) => {
+        start();
+        await click(".o_menu_systray button[title='Open Softphone']");
+        await click("button[title='Open Numpad']");
+        await insertText("input[placeholder='Enter the number…']", "0123456");
+        const input = document.querySelector("input[placeholder='Enter the number…']");
+        input.setSelectionRange(0, 0);
+        await click("button[title='Backspace']");
+        assert.strictEqual(input.selectionStart, 0);
+        assert.strictEqual(input.selectionEnd, 0);
+        await contains("input[placeholder='Enter the number…']", { value: "0123456" });
+    }
+);
+
 QUnit.test("Clicking on a key appends it to the number input.", async () => {
     start();
     await click(".o_menu_systray button[title='Open Softphone']");
@@ -60,6 +108,38 @@ QUnit.test("Number input is focused after clicking on a key.", async () => {
     await nextTick();
     await contains("input[placeholder='Enter the number…']:focus");
 });
+
+QUnit.test(
+    "Cursor is taken into account when clicking on a key.",
+    async (assert) => {
+        start();
+        await click(".o_menu_systray button[title='Open Softphone']");
+        await click("button[title='Open Numpad']");
+        await insertText("input[placeholder='Enter the number…']", "023456");
+        const input = document.querySelector("input[placeholder='Enter the number…']");
+        input.setSelectionRange(1, 1);
+        await click("button", { text: "1" });
+        assert.strictEqual(input.selectionStart, 2);
+        assert.strictEqual(input.selectionEnd, 2);
+        await contains("input[placeholder='Enter the number…']", { value: "0123456" });
+    }
+);
+
+QUnit.test(
+    "Cursor range selection is taken into account when clicking on a key.",
+    async (assert) => {
+        start();
+        await click(".o_menu_systray button[title='Open Softphone']");
+        await click("button[title='Open Numpad']");
+        await insertText("input[placeholder='Enter the number…']", "0223456");
+        const input = document.querySelector("input[placeholder='Enter the number…']");
+        input.setSelectionRange(1, 2);
+        await click("button", { text: "1" });
+        assert.strictEqual(input.selectionStart, 2);
+        assert.strictEqual(input.selectionEnd, 2);
+        await contains("input[placeholder='Enter the number…']", { value: "0123456" });
+    }
+);
 
 QUnit.test("Pressing Enter in the input makes a call to the dialed number.", async (assert) => {
     const pyEnv = await startServer();

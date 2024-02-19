@@ -14,6 +14,9 @@ registry.category("web_tour.tours").add('account_reports', {
             trigger: ".o_content",
             run: () => {
                 Asserts.DOMContainsNumber("tbody > tr:not(.d-none):not(.empty)", 28);
+
+                // Since the total line is not displayed (folded), the amount should be on the line
+                Asserts.isEqual(document.querySelector("tr:nth-child(3) td:nth-child(2)").textContent, "75.00");
             }
         },
         {
@@ -26,6 +29,9 @@ registry.category("web_tour.tours").add('account_reports', {
             trigger: "tr:nth-child(4) .name:contains('101401')",
             run: () => {
                 Asserts.DOMContainsNumber("tbody > tr:not(.d-none):not(.empty)", 30);
+
+                // Since the total line is displayed (unfolded), the amount should not be on the line
+                Asserts.isEqual(document.querySelector("tr:nth-child(3) td:nth-child(2)").textContent, "");
             }
         },
         {
@@ -274,10 +280,10 @@ registry.category("web_tour.tours").add('account_reports', {
         },
         {
             content: "Sortable (asc)",
-            trigger: "tr:nth-child(17) td:nth-child(2):contains('25.00')",
+            trigger: "tr:nth-child(18) td:nth-child(2):contains('25.00')",
             run: () => {
                 // Receivables
-                Asserts.isEqual(document.querySelector("tr:nth-child(17) td:nth-child(2)").textContent, "25.00");
+                Asserts.isEqual(document.querySelector("tr:nth-child(18) td:nth-child(2)").textContent, "25.00");
                 Asserts.isEqual(document.querySelector("tr:nth-child(19) td:nth-child(2)").textContent, "25.00");
 
                 // Bank and Cash Accounts

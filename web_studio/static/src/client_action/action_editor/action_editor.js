@@ -208,11 +208,13 @@ class ActionEditor extends Component {
         if (viewType === "activity") {
             const activityAllowed = await this.studio.isAllowed("activity", resModel);
             if (!activityAllowed) {
-                this.notification.add({
-                    title: false,
-                    type: "danger",
-                    message: _t("Activity view unavailable on this model"),
-                });
+                this.notification.add(
+                    _t("Activity view unavailable on this model"),
+                    {
+                        title: false,
+                        type: "danger",
+                    }
+                );
                 return;
             }
         }

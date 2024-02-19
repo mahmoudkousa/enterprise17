@@ -24,10 +24,8 @@ GST return filing using IAP
     ],
     "demo": [
         "demo/demo_company.xml",
-        "demo/res_partner_demo.xml",
-        "demo/account_invoice_demo.xml",
     ],
-    "auto_install": ['l10n_in_reports', 'l10n_in_edi'],
+    "auto_install": ['l10n_in_reports'],
     "installable": True,
     "license": "OEEL-1",
 }

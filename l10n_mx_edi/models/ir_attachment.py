@@ -55,6 +55,8 @@ class IrAttachment(models.Model):
          'http://www.sat.gob.mx/sitio_internet/cfd/arteantiguedades/obrasarteantiguedades.xsd'],
         ['http://www.sat.gob.mx/ComercioExterior11',
          'http://www.sat.gob.mx/sitio_internet/cfd/ComercioExterior11/ComercioExterior11.xsd'],
+        ['http://www.sat.gob.mx/ComercioExterior20',
+         'http://www.sat.gob.mx/sitio_internet/cfd/ComercioExterior11/ComercioExterior20.xsd'],
         ['http://www.sat.gob.mx/Pagos',
          'http://www.sat.gob.mx/sitio_internet/cfd/Pagos/Pagos10.xsd'],
         ['http://www.sat.gob.mx/iedu',

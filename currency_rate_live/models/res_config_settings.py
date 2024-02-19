@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-from lxml import etree
-from dateutil.relativedelta import relativedelta
-import re
 import logging
-from pytz import timezone
-from urllib.parse import urlencode, quote
+import re
+from itertools import islice
+from urllib.parse import quote, urlencode
 
 import requests
+from dateutil.relativedelta import relativedelta
+from lxml import etree
+from pytz import timezone
 
 from odoo import api, fields, models
-from odoo.exceptions import UserError
-from odoo.tools.translate import _
-from odoo.tools import DEFAULT_SERVER_DATE_FORMAT
 from odoo.addons.account.tools import LegacyHTTPAdapter
+from odoo.exceptions import UserError
+from odoo.tools import DEFAULT_SERVER_DATE_FORMAT
+from odoo.tools.translate import _
 
 BANXICO_DATE_FORMAT = '%d/%m/%Y'
 CBUAE_URL = "https://centralbank.ae/umbraco/Surface/Exchange/GetExchangeRateAllCurrency"
@@ -36,7 +37,7 @@ MAP_CURRENCIES = {
     'Canadian Dollar': 'CAD',
     'Swiss Franc': 'CHF',
     'Chilean Peso': 'CLP',
-    'Chinese Yuan - Offshore': 'CNY',
+    'Chinese Yuan - Offshore': 'CNH',
     'Chinese Yuan': 'CNY',
     'Colombian Peso': 'COP',
     'Czech Koruna': 'CZK',
@@ -136,19 +137,22 @@ def xml2json_from_elementtree(el, preserve_whitespaces=False):
 # countries, provider_code, description
 CURRENCY_PROVIDER_SELECTION = [
     ([], 'ecb', 'European Central Bank'),
-    ([], 'xe_com', 'xe.com'),
-    (['AE'], 'cbuae', 'UAE Central Bank'),
-    (['CA'], 'boc', 'Bank Of Canada'),
-    (['CH'], 'fta', 'Federal Tax Administration (Switzerland)'),
-    (['CL'], 'mindicador', 'Chilean mindicador.cl'),
-    (['EG'], 'cbegy', 'Central Bank of Egypt'),
-    (['MX'], 'banxico', 'Mexican Bank'),
-    (['PE'], 'bcrp', 'SUNAT (replaces Bank of Peru)'),
-    (['RO'], 'bnr', 'National Bank Of Romania'),
-    (['TR'], 'tcmb', 'Turkey Republic Central Bank'),
-    (['PL'], 'nbp', 'National Bank of Poland'),
-    (['BR'], 'bbr', 'Central Bank of Brazil'),
-    (['CZ'], 'cnb', 'Czech National Bank'),
+    (['IN'], 'xe_com', 'xe.com'),
+    (['AE'], 'cbuae', '[AE] Central Bank of the UAE'),
+    (['BG'], 'bnb', '[BG] Bulgaria National Bank'),
+    (['BR'], 'bbr', '[BR] Central Bank of Brazil'),
+    (['CA'], 'boc', '[CA] Bank of Canada'),
+    (['CH'], 'fta', '[CH] Federal Tax Administration of Switzerland'),
+    (['CL'], 'mindicador', '[CL] Central Bank of Chile via mindicador.cl'),
+    (['CZ'], 'cnb', '[CZ] Czech National Bank'),
+    (['EG'], 'cbegy', '[EG] Central Bank of Egypt'),
+    (['GT'], 'banguat', '[GT] Bank of Guatemala'),
+    (['MX'], 'banxico', '[MX] Bank of Mexico'),
+    (['PE'], 'bcrp', '[PE] SUNAT (replaces Bank of Peru)'),
+    (['PL'], 'nbp', '[PL] National Bank of Poland'),
+    (['RO'], 'bnr', '[RO] National Bank of Romania'),
+    (['TR'], 'tcmb', '[TR] Central Bank of the Republic of Turkey'),
+    (['UK'], 'hmrc', '[UK] HM Revenue & Customs')
 ]
 
 class ResCompany(models.Model):
@@ -210,9 +214,15 @@ class ResCompany(models.Model):
             try:
                 parse_results = parse_function(active_currencies)
                 companies._generate_currency_rates(parse_results)
-            except Exception:
-                rslt = False
-                _logger.warning('Unable to connect to the online exchange rate platform %s. The web service may be temporary down.', currency_provider)
+            except Exception as error:
+                if self._context.get('suppress_errors'):
+                    _logger.warning(error)
+                    _logger.warning('Unable to connect to the online exchange rate platform %s. The web service may be temporarily down. Please try again in a moment.', currency_provider)
+                    rslt = False
+                elif isinstance(error, UserError):
+                    raise error
+                else:
+                    raise UserError(_('Unable to connect to the online exchange rate platform %s. The web service may be temporarily down. Please try again in a moment.', currency_provider))
         return rslt
 
     def _group_by_provider(self):
@@ -380,6 +390,74 @@ class ResCompany(models.Model):
 
         if 'EGP' in available_currency_names:
             rslt['EGP'] = (1.0, date_rate)
+        return rslt
+
+    def _parse_banguat_data(self, available_currencies):
+        """ Bank of Guatemala
+        Info: https://banguat.gob.gt/tipo_cambio/
+        * SOAP URL: https://www.banguat.gob.gt/variables/ws/TipoCambio.asmx
+        * Exchange rate is expressed as 1 unit of USD converted into GTQ
+        """
+        available_currency_names = available_currencies.mapped('name')
+        if 'GTQ' not in available_currency_names or 'USD' not in available_currency_names:
+            raise UserError(_('The selected exchange rate provider requires the GTQ and USD currencies to be active.'))
+
+        headers = {
+            'Content-Type': 'application/soap+xml; charset=utf-8',
+        }
+        body = """<?xml version="1.0" encoding="utf-8"?>
+            <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
+                <soap12:Body>
+                    <TipoCambioDia xmlns="http://www.banguat.gob.gt/variables/ws/"/>
+                </soap12:Body>
+            </soap12:Envelope>
+        """
+        res = requests.post(
+            'https://www.banguat.gob.gt/variables/ws/TipoCambio.asmx',
+            data=body,
+            headers=headers,
+            timeout=10
+        )
+        res.raise_for_status()
+
+        xml_tree = etree.fromstring(res.content)
+
+        rslt = {}
+        date_rate = xml_tree.xpath(".//*[local-name()='VarDolar']/*[local-name()='fecha']/text()")[0]
+        if date_rate:
+            date_rate = datetime.datetime.strptime(date_rate, '%d/%m/%Y').date()
+            rslt['GTQ'] = (1.0, date_rate)
+            rate = xml_tree.xpath(".//*[local-name()='VarDolar']/*[local-name()='referencia']/text()")[0] or 0.0
+            if rate:
+                rate = 1.0 / float(rate)
+                rslt['USD'] = (rate, date_rate)
+        return rslt
+
+    def _parse_hmrc_data(self, available_currencies):
+        ''' This method is used to update the currencies by using HMRC service provider.
+            Rates are given against GBP.
+        '''
+        # Date is the first of the current month since rates are given monthly.
+        first_of_month = fields.Date.context_today(self.with_context(tz='Europe/London')).replace(day=1)
+        formatted_date = first_of_month.strftime("%Y-%m")
+
+        request_url = f"https://www.trade-tariff.service.gov.uk/api/v2/exchange_rates/files/monthly_xml_{formatted_date}.xml"
+        response = requests.get(request_url, timeout=10)
+        response.raise_for_status()
+
+        xml_tree = etree.fromstring(response.content)
+        available_currency_names = available_currencies.mapped('name')
+        rslt = {
+            node.find('currencyCode').text: (
+                float(node.find('rateNew').text),
+                first_of_month,
+            )
+            for node in xml_tree.iterfind('exchangeRate')
+            if node.find('currencyCode').text in available_currency_names}
+
+        if rslt and 'GBP' in available_currency_names:
+            rslt['GBP'] = (1.0, first_of_month)
+
         return rslt
 
     def _parse_bbr_data(self, available_currencies):
@@ -778,6 +856,39 @@ class ResCompany(models.Model):
             rslt['CZK'] = (1.0, last_update)
         return rslt
 
+    def _parse_bnb_data(self, available_currencies):
+        """ This method is used to update the currencies by using BNB (Bulgaria National Bank) service API.
+            Rates are given against BGN in an XML file.
+            Source: https://www.bnb.bg/AboutUs/AUFAQ/Contr_Exchange_Rates_FAQ?toLang=_EN
+
+            If a currency has no rate, it will be skipped.
+        """
+        request_url = "https://www.bnb.bg/Statistics/StExternalSector/StExchangeRates/StERForeignCurrencies/index.htm?download=xml&search=&lang=EN"
+
+        try:
+            response = requests.get(request_url, timeout=10)
+            response.raise_for_status()
+            rowset = etree.fromstring(response.content)
+        except (requests.RequestException, etree.ParseError):
+            # connection error, the request wasn't successful or the content could not be parsed
+            return False
+
+        available_currency_names = available_currencies.mapped('name')
+        result = {}
+
+        # Skip the first ROW node that does not contain currency information
+        for row in islice(rowset.iterfind('.//ROW'), 1, None):
+            code = row.findtext('CODE')
+            rate = row.findtext('REVERSERATE')
+            curr_date = datetime.datetime.strptime(row.findtext('CURR_DATE'), '%d.%m.%Y').date()
+
+            if code in available_currency_names and rate:
+                result[code] = (float(rate), curr_date)
+
+        if result and 'BGN' in available_currency_names:
+            result['BGN'] = (1.0, curr_date)
+        return result
+
     @api.model
     def run_update_currency(self):
         """ This method is called from a cron job to update currency rates.
@@ -829,6 +940,4 @@ class ResConfigSettings(models.TransientModel):
 
     def update_currency_rates_manually(self):
         self.ensure_one()
-
-        if not (self.company_id.update_currency_rates()):
-            raise UserError(_('Unable to connect to the online exchange rate platform. The web service may be temporary down. Please try again in a moment.'))
+        self.company_id.update_currency_rates()

@@ -411,6 +411,7 @@
             <field name="currency_id" ref="USD" />
             <field eval="593" name="phone_code" />
             <field name="vat_label">RUC</field>
+            <field name='zip_required'>0</field>
         </record>
         <record id="ee" model="res.country">
             <field name="name">Estonia</field>
@@ -440,7 +441,7 @@
         <record id="es" model="res.country">
             <field name="name">Spain</field>
             <field name="code">es</field>
-            <field eval="'%(street)s\n%(street2)s\n%(zip)s %(city)s (%(state_name)s)\n%(country_name)s'" name="address_format"/>
+            <field eval="'%(street)s\n%(street2)s\n%(zip)s %(city)s\n%(state_name)s\n%(country_name)s'" name="address_format"/>
             <field name="currency_id" ref="EUR" />
             <field eval="34" name="phone_code" />
             <field name="vat_label">VAT</field>
@@ -895,7 +896,7 @@
         <record id="me" model="res.country">
             <field name="name">Montenegro</field>
             <field name="code">me</field>
-            <field name="currency_id" ref="LYD" />
+            <field name="currency_id" ref="EUR" />
             <field eval="382" name="phone_code" />
         </record>
         <record id="mf" model="res.country">
@@ -1466,6 +1467,7 @@
             <field name="code">ug</field>
             <field name="currency_id" ref="UGX" />
             <field eval="256" name="phone_code" />
+            <field name="vat_label">TIN</field>
         </record>
         <record id="uk" model="res.country">
             <field name="name">United Kingdom</field>

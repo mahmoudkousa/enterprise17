@@ -314,7 +314,7 @@ class TestAccountAsset(TestAccountReportsCommon):
         closing_move.action_post()
         self.assertRecordValues(CEO_car, [{
             'original_value': 12000,
-            'book_value': 2000,
+            'book_value': 0,
             'value_residual': 0,
             'salvage_value': 2000,
         }])
@@ -410,7 +410,7 @@ class TestAccountAsset(TestAccountReportsCommon):
         CEO_car.depreciation_move_ids.action_post()
         self.assertRecordValues(CEO_car, [{
             'original_value': 12000,
-            'book_value': 2000,
+            'book_value': 0,
             'value_residual': 0,
             'salvage_value': 2000,
             'state': 'close',
@@ -521,7 +521,7 @@ class TestAccountAsset(TestAccountReportsCommon):
         closing_move.action_post()
         self.assertRecordValues(CEO_car, [{
             'original_value': 12000,
-            'book_value': 2000,
+            'book_value': 0,
             'value_residual': 0,
             'salvage_value': 2000,
         }])
@@ -890,32 +890,6 @@ class TestAccountAsset(TestAccountReportsCommon):
         self.assertEqual(asset.account_depreciation_id, self.company_data['default_account_expense'])
         self.assertEqual(asset.account_depreciation_expense_id, self.company_data['default_account_expense'])
 
-    def test_asset_modify_depreciation(self):
-        """Test the modification of depreciation parameters"""
-        values = {
-            'original_value': 10000,
-            'book_value': 5500,
-            'value_residual': 3000,
-            'salvage_value': 2500,
-        }
-        self.assertRecordValues(self.truck, [values])
-
-        self.assertEqual(10, len(self.truck.depreciation_move_ids))
-        self.env['asset.modify'].create({
-            'asset_id': self.truck.id,
-            'name': 'Test reason',
-            'method_number': 20.0,
-            'date':  fields.Date.today() + relativedelta(months=-6, days=-1),
-            "account_asset_counterpart_id": self.assert_counterpart_account_id,
-        }).modify()
-
-        # I check the proper depreciation lines created.
-        self.assertEqual(14, len(self.truck.depreciation_move_ids)) # a part of the amount has been depreciated too early, there is a hole in the dates
-        # Check if the future deprecation moves are set to be auto posted
-        self.assertTrue(all([move.auto_post != 'no' for move in self.truck.depreciation_move_ids.filtered(lambda x: x.state == 'draft')]))
-        # The values are unchanged
-        self.assertRecordValues(self.truck, [values])
-
     def test_asset_modify_value_00(self):
         """Test the values of the asset and value increase 'assets' after a
         modification of residual and/or salvage values.
@@ -1186,6 +1160,44 @@ class TestAccountAsset(TestAccountReportsCommon):
             'credit': 0,
             'account_id': self.env.company.loss_account_id.id,
         }])
+
+    def test_asset_sale_same_account_as_invoice(self):
+        """Test the sale of an asset with an invoice that has the same account as the Depreciation Account"""
+        closing_invoice = self.env['account.move'].create({
+            'move_type': 'out_invoice',
+            'invoice_line_ids': [
+                Command.create({
+                    'account_id': self.truck.account_depreciation_id.id,
+                    'price_unit': self.truck.book_value - 100
+                })
+            ]
+        })
+        self.env['asset.modify'].create({
+            'asset_id': self.truck.id,
+            'invoice_line_ids': closing_invoice.invoice_line_ids,
+            'date': fields.Date.today() + relativedelta(months=-6, days=-1),
+            'modify_action': 'sell',
+        }).sell_dispose()
+        closing_move = self.truck.depreciation_move_ids.filtered(lambda l: l.state == 'draft')
+        self.assertRecordValues(closing_move.line_ids, [{
+            'debit': 0,
+            'credit': 10000,
+            'account_id': self.truck.account_asset_id.id,
+        }, {
+            'debit': 4500,
+            'credit': 0,
+            'account_id': self.truck.account_depreciation_id.id,
+        }, {
+            'debit': 5400,
+            'credit': 0,
+            'account_id': closing_invoice.invoice_line_ids.account_id.id,
+        }, {
+            'debit': 100,
+            'credit': 0,
+            'account_id': self.env.company.loss_account_id.id,
+        }])
+
+        self.assertEqual(closing_move.depreciation_value, 3000, "Should be the remaining amount before the sale")
 
     def test_asset_modify_dispose(self):
         """Test the loss of the remaining book_value when an asset is disposed using the wizard"""
@@ -1833,39 +1845,22 @@ class TestAccountAsset(TestAccountReportsCommon):
 
     def test_depreciation_schedule_report_with_negative_asset(self):
         """
-        Test the computation of book value and remaining value
-        when posting a depreciation move related with a negative asset
+        Test the computation of depreciation schedule with negative asset
         """
-        depreciation_account = self.company_data['default_account_assets']
-        asset_model = self.env['account.asset'].create({
+        asset = self.env['account.asset'].create({
             'name': 'test',
-            'state': 'model',
-            'active': True,
+            'original_value': -500,
             'method': 'linear',
             'method_number': 5,
             'method_period': '1',
+            'acquisition_date': fields.Date.today() + relativedelta(months=-1),
             'prorata_computation_type': 'none',
-            'account_asset_id': depreciation_account.id,
-            'account_depreciation_id': depreciation_account.id,
+            'account_asset_id': self.company_data['default_account_assets'].id,
+            'account_depreciation_id': self.company_data['default_account_assets'].id,
             'account_depreciation_expense_id': self.company_data['default_account_expense'].id,
             'journal_id': self.company_data['default_journal_misc'].id,
         })
 
-        depreciation_account.can_create_asset = True
-        depreciation_account.create_asset = 'draft'
-        depreciation_account.asset_model = asset_model
-
-        refund = self.env['account.move'].create({
-            'move_type': 'in_refund',
-            'invoice_date': fields.Date.today() + relativedelta(month=1),
-            'partner_id': self.partner_a.id,
-            'invoice_line_ids': [(0, 0, {'name': 'refund', 'account_id': depreciation_account.id, 'price_unit': 500})],
-        })
-        refund.action_post()
-
-        self.assertTrue(refund.asset_ids)
-
-        asset = refund.asset_ids
         asset.validate()
 
         report = self.env.ref('account_asset.assets_report')
@@ -1873,36 +1868,24 @@ class TestAccountAsset(TestAccountReportsCommon):
         options = self._generate_options(report, fields.Date.today() + relativedelta(months=-7, day=1), fields.Date.today() + relativedelta(months=-6, day=31))
 
         expected_values_open_asset = [
-            ("refund", 0, 0, 500.0, -500.0, 0, 0, 100.0, -100.0, -400.0),
+            ("test", 0, 0, 500.0, -500.0, 0, 0, 100.0, -100.0, -400.0),
         ]
 
         self.assertLinesValues(report._get_lines(options)[2:3], [0, 5, 6, 7, 8, 9, 10, 11, 12, 13], expected_values_open_asset, options)
 
-        invoice = self.env['account.move'].create({
-            'move_type': 'in_invoice',
-            'invoice_date': fields.Date.today(),
-            'partner_id': self.partner_a.id,
-            'invoice_line_ids': [
-                (0, 0, {
-                    'name': 'Product B',
-                    'account_id': self.company_data['default_account_revenue'].id,
-                    'price_unit': 200.0,
-                    'quantity': 4,
-                }),
-            ]
-        })
+        expense_account_copy = self.company_data['default_account_expense'].copy()
 
-        res_move = self.env['asset.modify'].create({
+        disposal_action_view = self.env['asset.modify'].create({
             'asset_id': asset.id,
-            'invoice_ids': [Command.set(invoice.ids)],
-            'modify_action': 'sell',
-            'gain_account_id': self.company_data['default_account_receivable'].id,
+            'modify_action': 'dispose',
+            'loss_account_id': expense_account_copy.id,
+            'date': fields.Date.today()
         }).sell_dispose()
 
-        self.env['account.move'].search(res_move['domain']).action_post()
+        self.env['account.move'].browse(disposal_action_view['res_id']).action_post()
 
         expected_values_closed_asset = [
-            ("refund", 0, 500.0, 500.0, 0, 0, 500.0, 500.0, 0, 0),
+            ("test", 0, 500.0, 500.0, 0, 0, 500.0, 500.0, 0, 0),
         ]
         options = self._generate_options(report, fields.Date.today() + relativedelta(months=-7, day=1), fields.Date.today())
         self.assertLinesValues(report._get_lines(options)[2:3], [0, 5, 6, 7, 8, 9, 10, 11, 12, 13], expected_values_closed_asset, options)
@@ -1942,7 +1925,7 @@ class TestAccountAsset(TestAccountReportsCommon):
                 'account_depreciation_expense_id': self.company_data['default_account_expense'].id,
                 'journal_id': self.company_data['default_journal_misc'].id,
                 'name': name,
-                'acquisition_date': fields.Date.from_string('2020-07-01'),
+                'acquisition_date': fields.Date.to_date('2020-07-01'),
                 'original_value': original_value,
                 'method': 'linear',
                 'prorata_computation_type': 'none',
@@ -2050,7 +2033,59 @@ class TestAccountAsset(TestAccountReportsCommon):
         self.env['account.move'].browse(disposal_action_view.get('res_id')).action_post()
 
         expected_values_asset_disposal_posted = [
-            ("test asset", 1000.0, 0.0, 1000.0, 0.0, 400.0, 600.0, 1000.0, 0.0, 0.0),
+            ("test asset", 1000.0, 0.0, 1000.0, 0.0, 400.0, 100.0, 500.0, 0.0, 0.0),
+        ]
+
+        self.assertLinesValues(report._get_lines(options)[2:3], [0, 5, 6, 7, 8, 9, 10, 11, 12, 13], expected_values_asset_disposal_posted, options)
+
+    def test_depreciation_schedule_disposal_move_unposted_with_non_depreciable_value(self):
+        """
+        Test the computation of values when disposing an asset with non-depreciable value, and the difference if the disposal move is posted
+        """
+        asset = self.env['account.asset'].create({
+            'name': 'test asset',
+            'method': 'linear',
+            'original_value': 10000,
+            'salvage_value': 8000,
+            'method_number': 24,
+            'method_period': '1',
+            'acquisition_date': fields.Date.today() + relativedelta(months=-1, day=1),
+            'account_asset_id': self.company_data['default_account_assets'].id,
+            'account_depreciation_id': self.company_data['default_account_assets'].id,
+            'account_depreciation_expense_id': self.company_data['default_account_expense'].id,
+            'journal_id': self.company_data['default_journal_misc'].id,
+        })
+        asset.validate()
+
+        report = self.env.ref('account_asset.assets_report')
+
+        options = self._generate_options(report, '2021-07-01', '2021-07-31')
+
+        expected_values_asset_disposal_unposted = [
+            ("test asset", 10000.0, 0.0, 0.0, 10000.0, 83.33, 0.0, 0.0, 83.33, 9916.67),
+        ]
+
+        self.assertLinesValues(report._get_lines(options)[2:3], [0, 5, 6, 7, 8, 9, 10, 11, 12, 13], expected_values_asset_disposal_unposted, options)
+
+        expense_account_copy = self.company_data['default_account_expense'].copy()
+
+        disposal_action_view = self.env['asset.modify'].create({
+            'asset_id': asset.id,
+            'modify_action': 'dispose',
+            'loss_account_id': expense_account_copy.id,
+            'date': fields.Date.today()
+        }).sell_dispose()
+
+        expected_values_asset_disposal_unposted = [
+            ("test asset", 10000.0, 0.0, 0.0, 10000.0, 83.33, 2.69, 0.0, 86.02, 9913.98),
+        ]
+
+        self.assertLinesValues(report._get_lines(options)[2:3], [0, 5, 6, 7, 8, 9, 10, 11, 12, 13], expected_values_asset_disposal_unposted, options)
+
+        self.env['account.move'].browse(disposal_action_view['res_id']).action_post()
+
+        expected_values_asset_disposal_posted = [
+            ("test asset", 10000.0, 0.0, 10000.0, 0.0, 83.33, 2.69, 86.02, 0.0, 0.0),
         ]
 
         self.assertLinesValues(report._get_lines(options)[2:3], [0, 5, 6, 7, 8, 9, 10, 11, 12, 13], expected_values_asset_disposal_posted, options)
@@ -2346,6 +2381,117 @@ class TestAccountAsset(TestAccountReportsCommon):
         """ Test that we can archive an asset model. """
         self.account_asset_model_fixedassets.active = False
         self.assertFalse(self.account_asset_model_fixedassets.active)
+
+    def test_asset_increase_with_lock_year(self):
+        """ Test the dates at which the moves are posted even with increase, with lock date"""
+        self.company_data['company'].fiscalyear_lock_date = fields.Date.to_date('2021-03-01')
+
+        asset = self.env['account.asset'].create({
+            'account_asset_id': self.company_data['default_account_assets'].id,
+            'account_depreciation_id': self.company_data['default_account_assets'].copy().id,
+            'account_depreciation_expense_id': self.company_data['default_account_expense'].id,
+            'journal_id': self.company_data['default_journal_misc'].id,
+            'name': 'Car',
+            'acquisition_date': fields.Date.today() + relativedelta(months=-6),
+            'original_value': 12000,
+            'method_number': 12,
+            'method_period': '1',
+            'method': 'linear',
+        })
+
+        asset.validate()
+
+        self.assertRecordValues(
+            asset.depreciation_move_ids.sorted(lambda l: (l.date, l.id)),
+            [
+                {'date': fields.Date.to_date('2021-03-31')},
+                {'date': fields.Date.to_date('2021-03-31')},
+                {'date': fields.Date.to_date('2021-03-31')},
+                {'date': fields.Date.to_date('2021-04-30')},
+                {'date': fields.Date.to_date('2021-05-31')},
+                {'date': fields.Date.to_date('2021-06-30')},
+                {'date': fields.Date.to_date('2021-07-31')},
+                {'date': fields.Date.to_date('2021-08-31')},
+                {'date': fields.Date.to_date('2021-09-30')},
+                {'date': fields.Date.to_date('2021-10-31')},
+                {'date': fields.Date.to_date('2021-11-30')},
+                {'date': fields.Date.to_date('2021-12-31')}
+            ]
+        )
+
+        self.assertEqual(asset.book_value, 6000)
+
+        self.env['asset.modify'].create({
+            'asset_id': asset.id,
+            'name': 'Test increase with lock date',
+            'value_residual': 8000.0,
+            'date':  fields.Date.today() + relativedelta(days=-1),
+            "account_asset_counterpart_id": self.assert_counterpart_account_id,
+        }).modify()
+
+        self.assertEqual(asset.book_value, 8000)
+
+        self.assertRecordValues(
+            asset.children_ids.depreciation_move_ids.sorted(lambda dep: (dep.date, dep.id)),
+            [
+                {'date': fields.Date.to_date('2021-07-31'), 'depreciation_value': 333.33},
+                {'date': fields.Date.to_date('2021-08-31'), 'depreciation_value': 333.34},
+                {'date': fields.Date.to_date('2021-09-30'), 'depreciation_value': 333.33},
+                {'date': fields.Date.to_date('2021-10-31'), 'depreciation_value': 333.33},
+                {'date': fields.Date.to_date('2021-11-30'), 'depreciation_value': 333.34},
+                {'date': fields.Date.to_date('2021-12-31'), 'depreciation_value': 333.33}
+            ]
+        )
+
+    def test_asset_decrease_with_lock_year(self):
+        """ Test the dates and values for the moves that are posted with decrease and lock date"""
+        self.company_data['company'].fiscalyear_lock_date = fields.Date.to_date('2021-03-01')
+
+        asset = self.env['account.asset'].create({
+            'account_asset_id': self.company_data['default_account_assets'].id,
+            'account_depreciation_id': self.company_data['default_account_assets'].copy().id,
+            'account_depreciation_expense_id': self.company_data['default_account_expense'].id,
+            'journal_id': self.company_data['default_journal_misc'].id,
+            'name': 'Car',
+            'acquisition_date': fields.Date.today() + relativedelta(months=-6),
+            'original_value': 12000,
+            'method_number': 12,
+            'method_period': '1',
+            'method': 'linear',
+        })
+
+        asset.validate()
+
+        self.assertEqual(asset.book_value, 6000)
+
+        self.env['asset.modify'].create({
+            'asset_id': asset.id,
+            'name': 'Test decrease with lock date',
+            'value_residual': 4000.0,
+            'date':  fields.Date.today() + relativedelta(days=-1),
+            "account_asset_counterpart_id": self.assert_counterpart_account_id,
+        }).modify()
+
+        self.assertEqual(asset.book_value, 4000)
+
+        self.assertRecordValues(
+            asset.depreciation_move_ids.sorted(lambda dep: (dep.date, dep.id)),
+            [
+                {'date': fields.Date.to_date('2021-03-31'), 'depreciation_value': 1000},
+                {'date': fields.Date.to_date('2021-03-31'), 'depreciation_value': 1000},
+                {'date': fields.Date.to_date('2021-03-31'), 'depreciation_value': 1000},
+                {'date': fields.Date.to_date('2021-04-30'), 'depreciation_value': 1000},
+                {'date': fields.Date.to_date('2021-05-31'), 'depreciation_value': 1000},
+                {'date': fields.Date.to_date('2021-06-30'), 'depreciation_value': 1000},
+                {'date': fields.Date.to_date('2021-06-30'), 'depreciation_value': 2000},
+                {'date': fields.Date.to_date('2021-07-31'), 'depreciation_value': 666.67},
+                {'date': fields.Date.to_date('2021-08-31'), 'depreciation_value': 666.67},
+                {'date': fields.Date.to_date('2021-09-30'), 'depreciation_value': 666.67},
+                {'date': fields.Date.to_date('2021-10-31'), 'depreciation_value': 666.67},
+                {'date': fields.Date.to_date('2021-11-30'), 'depreciation_value': 666.67},
+                {'date': fields.Date.to_date('2021-12-31'), 'depreciation_value': 666.65}
+            ]
+        )
 
     def test_asset_onchange_model(self):
         """

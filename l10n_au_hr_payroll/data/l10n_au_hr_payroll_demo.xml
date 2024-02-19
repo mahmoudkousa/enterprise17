@@ -16,6 +16,11 @@
         <field name="vat">83 914 571 673</field>
     </record>
 
+    <record id="res_partner_employee_au" model="res.partner">
+        <field name="name">Harrison Hampton</field>
+        <field name="company_id" ref="l10n_au_hr_payroll.res_company_au"/>
+    </record>
+
     <record id="base.user_admin" model="res.users">
         <field name="company_ids" eval="[(4, ref('l10n_au_hr_payroll.res_company_au'))]"/>
         <field name="tz">Australia/Sydney</field>
@@ -24,6 +29,7 @@
     <record id="hr_employee_au" model="hr.employee">
         <field name="company_id" ref="l10n_au_hr_payroll.res_company_au"/>
         <field name="resource_calendar_id" ref="l10n_au_hr_payroll.resource_calendar_au_38"/>
+        <field name="work_contact_id" ref="l10n_au_hr_payroll.res_partner_employee_au"/>
         <field name="name">Roger</field>
         <field name="work_phone">123456789</field>
         <field name="private_street">Australian Street</field>
@@ -257,7 +263,7 @@
         <field name="acc_number">23455432</field>
         <field name="acc_type">aba</field>
         <field name="allow_out_payment" eval="True"/>
-        <field name="partner_id" ref="l10n_au_hr_payroll.hr_employee_au" />
+        <field name="partner_id" ref="l10n_au_hr_payroll.res_partner_employee_au"/>
         <field name="company_id" ref="l10n_au_hr_payroll.res_company_au"/>
     </record>
 

@@ -7,10 +7,10 @@ import { pick } from "@web/core/utils/objects";
 import { standardWidgetProps } from "@web/views/widgets/standard_widget_props";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 
-import { Component, onMounted } from "@odoo/owl";
+import { Component } from "@odoo/owl";
 
 
-class L10nBeCodaboxSettingsButtons extends Component {
+export class L10nBeCodaboxSettingsButtons extends Component {
     static props = {
         ...standardWidgetProps,
     };
@@ -19,44 +19,31 @@ class L10nBeCodaboxSettingsButtons extends Component {
     setup() {
         super.setup();
         this.dialogService = useService("dialog");
-        onMounted(() => {
-            document.querySelector('[name="l10n_be_codabox_fiduciary_vat"]').addEventListener('change', this._onFiduVatChange.bind(this));
-        });
     }
 
-    _onFiduVatChange() {
-        const vat_input = document.querySelector('[name="l10n_be_codabox_fiduciary_vat"] > input');
-        const revoke_button = document.querySelector('[name="l10nBeCodaboxRevokeButton"]');
-        if (revoke_button === null) {
-            return; // Never connected, button is not rendered
-        }
-        if (vat_input.value) {
-            revoke_button.classList.remove('o_hidden');
-        } else {
-            revoke_button.classList.add('o_hidden');
-        }
+    async saveResConfigSettings(){
+        return await this.env.model.root.save({ reload: false });
     }
 
     async l10nBeCodaboxConnect() {
-        await this._callConfigMethod("l10n_be_codabox_connect", true);
+        await this.saveResConfigSettings();
+        await this._callConfigMethod("l10n_be_codabox_connect");
     }
 
     async l10nBeCodaboxRevoke() {
+        await this.saveResConfigSettings();
         this.dialogService.add(ConfirmationDialog, {
             body: _t(
-                "This will revoke your access between Codabox and Odoo."
+                "This will revoke your access between CodaBox and Odoo."
             ),
             confirm: async () => {
-                await this._callConfigMethod("l10n_be_codabox_revoke", false);
+                await this._callConfigMethod("l10n_be_codabox_revoke");
             },
             cancel: () => { },
         });
     }
 
-    async _callConfigMethod(methodName, save) {
-        if (save) {
-            await this.env.model.root.save({ reload: false });
-        }
+    async _callConfigMethod(methodName) {
         this.env.onClickViewButton({
             clickParams: {
                 name: methodName,

@@ -19,6 +19,7 @@ class AppointmentUICommon(AppointmentCommon, common.HttpCase):
     def setUpClass(cls):
         super(AppointmentUICommon, cls).setUpClass()
 
+        cls.env.user.tz = "Europe/Brussels"
         cls.std_user = mail_new_test_user(
             cls.env,
             company_id=cls.company_admin.id,
@@ -29,7 +30,7 @@ class AppointmentUICommon(AppointmentCommon, common.HttpCase):
             login='std_user',
             tz='Europe/Brussels'  # UTC + 1 (at least in February)
         )
-
+        cls.portal_user = cls._create_portal_user()
 
 @tagged('appointment_ui', '-at_install', 'post_install')
 class AppointmentUITest(AppointmentUICommon):
@@ -191,16 +192,16 @@ class AppointmentUITest(AppointmentUICommon):
         expected_contexts = [{
             'default_scale': 'day',
             'default_appointment_type_id': appointment_types[0].id,
+            'default_duration': appointment_types[0].appointment_duration,
             'search_default_appointment_type_id': appointment_types[0].id,
             'default_mode': 'week',
             'default_partner_ids': [],
             'initial_date': now,
         }, {
-            'appointment_booking_gantt_domain': [('appointment_type_id.schedule_based_on', '=', 'users'),
-                                                 ('user_id', '!=', False)],
             'appointment_default_add_organizer_to_attendees': True,
             'default_scale': 'day',
             'default_appointment_type_id': appointment_types[1].id,
+            'default_duration': appointment_types[1].appointment_duration,
             'search_default_appointment_type_id': appointment_types[1].id,
             'default_mode': 'week',
             'default_partner_ids': [],
@@ -210,6 +211,7 @@ class AppointmentUITest(AppointmentUICommon):
             'appointment_default_add_organizer_to_attendees': False,
             'default_scale': 'day',
             'default_appointment_type_id': appointment_types[2].id,
+            'default_duration': appointment_types[2].appointment_duration,
             'search_default_appointment_type_id': appointment_types[2].id,
             'default_mode': 'month',
             'default_partner_ids': [],
@@ -295,47 +297,6 @@ class AppointmentUITest(AppointmentUICommon):
 @tagged('appointment_ui', '-at_install', 'post_install')
 class CalendarTest(AppointmentUICommon):
 
-    @users('apt_manager')
-    def test_cancel_meeting(self):
-        """ Test that If the person who scheduled the meeting with guests cancels it, then the meeting should be archived"""
-        CalendarEvent = self.env['calendar.event']
-        test_emails_1 = ['new_zealand@test.example.com', 'rrr@gmail.com', '"Raoul" <hello@gmail.com>',
-         'new_zealand@test.example.com, new_zeadland2@test.example.com', 'abc@gmail.com def@gmail.example.com', 'wrong input', ' ']
-        self.authenticate(self.env.user.login, self.env.user.login)
-
-        test_apt_type = self.env['appointment.type'].create({
-            'name': 'Meeting with demo',
-            'staff_user_ids': self.staff_user_bxls,
-            'allow_guests': True
-        })
-
-        meeting_data = {
-            'datetime_str': '2023-11-23 04:30:00',
-            'duration_str': '1.0',
-            'staff_user_id': self.staff_user_bxls.id,
-            'name': 'Manager',
-            'phone': '1234567890',
-            'email': 'apt_manager@test.example.com',
-            'csrf_token': http.Request.csrf_token(self),
-            'guest_emails_str': "\r\n".join(test_emails_1)
-        }
-        res = self.url_open(f"/appointment/{test_apt_type.id}/submit", data=meeting_data)
-        self.assertEqual(res.status_code, 200, "Response should = OK")
-        access_token = res.url.split('?')[0].split('/calendar/view/')[-1]
-        event = CalendarEvent.search([('access_token', '=', access_token)])
-        self.assertEqual(len(event.attendee_ids), 7)
-        self.assertTrue(event.active)
-        cancel_meeting_data = {
-            'access_token': access_token,
-            'partner_id': self.apt_manager.partner_id.id,
-            'csrf_token': http.Request.csrf_token(self),
-        }
-        cancel_meeting_url = f"/calendar/{access_token}/cancel"
-        res = self.url_open(cancel_meeting_url, data=cancel_meeting_data)
-        self.assertEqual(res.status_code, 200, "Response should = OK")
-        event = CalendarEvent.search([('access_token', '=', access_token)])
-        self.assertFalse(event.active)
-
     def test_meeting_accept_authenticated(self):
         event = self.env["calendar.event"].create(
             {"name": "Doom's day",
@@ -368,3 +329,60 @@ class CalendarTest(AppointmentUICommon):
         self.assertEqual(res.status_code, 200, "Response should = OK")
         event.attendee_ids[0].invalidate_recordset()
         self.assertEqual(event.attendee_ids[0].state, "accepted", "Attendee should have accepted")
+
+    @freeze_time('2023, 11, 22')
+    def test_meeting_cancel_authenticated(self):
+        """ Test multiple cancellation scenarios with various cases
+        Case 1: Do not archive the meeting if any other attendee cancel the meeting
+        Case 2: Archive the meeting if the appointment booker cancels the meeting
+        """
+        self.authenticate(self.portal_user.login, self.portal_user.login)
+        self.apt_type_bxls_2days.write({'is_published': 'True'})
+        event_1, event_2 = self.env['calendar.event'].create([{
+            'name': 'Test-Meeting 1',
+            'user_id': self.staff_user_aust.id,
+            'appointment_booker_id': self.staff_user_nz.partner_id.id,
+            'start': datetime(2023, 11, 23, 8, 0),
+            'stop':  datetime(2023, 11, 23, 9, 0),
+            'partner_ids':  [
+                (4, self.staff_user_nz.partner_id.id),
+                (4, self.portal_user.partner_id.id),
+                (4, self.staff_user_aust.partner_id.id),
+            ],
+            'appointment_type_id': self.apt_type_bxls_2days.id,
+        }, {
+            'name': 'Test-Meeting 2',
+            'user_id': self.portal_user.id,
+            'appointment_booker_id': self.portal_user.partner_id.id,
+            'start': datetime(2023, 11, 23, 9, 0),
+            'stop':  datetime(2023, 11, 23, 10, 0),
+            'partner_ids': [
+                (4, self.staff_user_nz.partner_id.id),
+                (4, self.staff_user_aust.partner_id.id),
+                (4, self.apt_manager.partner_id.id),
+                (4, self.portal_user.partner_id.id),
+            ],
+            'appointment_type_id': self.apt_type_bxls_2days.id,
+        }])
+        #Case 1 :
+        cancel_meeting_data = {
+            'access_token': event_1.access_token,
+            'partner_id': self.portal_user.partner_id.id,
+            'csrf_token': http.Request.csrf_token(self),
+        }
+        cancel_meeting_url = f"/calendar/{event_1.access_token}/cancel"
+        res = self.url_open(cancel_meeting_url, data=cancel_meeting_data)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(event_1.active)
+        expected_attendee = self.staff_user_aust.partner_id + self.staff_user_nz.partner_id
+        self.assertEqual(event_1.attendee_ids.partner_id, expected_attendee)
+        #Case 2 :
+        cancel_meeting_data = {
+            'access_token': event_2.access_token,
+            'partner_id': self.portal_user.partner_id.id,
+            'csrf_token': http.Request.csrf_token(self),
+        }
+        cancel_meeting_url = f"/calendar/{event_2.access_token}/cancel"
+        res = self.url_open(cancel_meeting_url, data=cancel_meeting_data)
+        self.assertEqual(res.status_code, 200)
+        self.assertFalse(event_2.active)

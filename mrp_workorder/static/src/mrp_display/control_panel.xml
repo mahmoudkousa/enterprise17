@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="mrp_workorder.ControlPanelButtons">
-    <div class="position-relative d-flex align-items-center">
-        <div class="d-flex gap-1 overflow-x-auto">
+    <div class="position-relative d-flex align-items-center mw-100 overflow-x-auto">
+        <div class="d-flex gap-1">
             <t t-foreach="workcenterButtons" t-as="workcenter" t-key="workcenter[0]">
                 <t t-set="id" t-value="workcenter[0]"/>
                 <t t-set="name" t-value="workcenter[1].name"/>
@@ -17,7 +17,7 @@
             </t>
         </div>
         <div class="position-sticky top-0 end-0 bg-view">
-            <button class="btn btn-light fa fa-plus" t-on-click="this.props.toggleWorkcenter"/>
+            <button class="btn btn-light fa fa-plus" t-on-click="() => {this.props.toggleWorkcenter();}"/>
         </div>
     </div>
     </t>

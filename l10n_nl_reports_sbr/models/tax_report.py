@@ -6,8 +6,7 @@ import datetime
 from lxml import etree
 
 class DutchReportCustomHandler(models.AbstractModel):
-    _name = 'l10n_nl.tax.report.handler'
-    _inherit = 'account.tax.report.handler'
+    _inherit = 'l10n_nl.tax.report.handler'
     _description = 'Dutch Report Custom Handler'
 
     def _custom_options_initializer(self, report, options, previous_options=None):
@@ -27,7 +26,8 @@ class DutchReportCustomHandler(models.AbstractModel):
                 'date_to': closing_date_to,
                 'mode': 'range',
                 'filter': 'custom',
-            }
+            },
+            'integer_rounding_enabled': True,
         })
         return {
             'type': 'ir.actions.act_window',

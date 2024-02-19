@@ -4,16 +4,16 @@
 # 
 # Translators:
 # Wichanon Jamwutthipreecha, 2023
-# Rasareeyar Lappiam, 2023
 # Wil Odoo, 2023
+# Rasareeyar Lappiam, 2023
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-26 16:10+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Wil Odoo, 2023\n"
+"Last-Translator: Rasareeyar Lappiam, 2023\n"
 "Language-Team: Thai (https://app.transifex.com/odoo/teams/41243/th/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -29,6 +29,8 @@ msgid ""
 "\n"
 "%(from_date)s to %(to_date)s"
 msgstr ""
+"\n"
+"%(from_date)s ถึง %(to_date)s"
 
 #. module: sale_renting
 #. odoo-python
@@ -42,14 +44,14 @@ msgstr "%(amount)s (คงที่)"
 #: code:addons/sale_renting/models/product_pricing.py:0
 #, python-format
 msgid "%(amount)s / %(duration)s"
-msgstr ""
+msgstr "%(amount)s / %(duration)s"
 
 #. module: sale_renting
 #. odoo-python
 #: code:addons/sale_renting/models/sale_order_recurrence.py:0
 #, python-format
 msgid "%(duration)s %(unit)s"
-msgstr ""
+msgstr "%(duration)s %(unit)s"
 
 #. module: sale_renting
 #. odoo-python
@@ -65,13 +67,14 @@ msgid ""
 "(object.rental_status not in ('draft', 'sent') and 'Delivery or Return "
 "Receipt - %s' %(object.name)) or 'Order - %s' % (object.name)"
 msgstr ""
-"(object.rental_status not in ('draft', 'sent') and 'Delivery or Return "
-"Receipt - %s' %(object.name)) or 'Order - %s' % (object.name)"
+"(object.rental_status ไม่อยู่ใน ('ร่าง', 'ส่งแล้ว') และ "
+"'การจัดส่งหรือใบเสร็จรับเงินส่งคืน - %s' %(object.name)) หรือ 'สั่งซื้อ - "
+"%s' % (object.name)"
 
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.report_rental_order_document
 msgid "123 Main St"
-msgstr ""
+msgstr "123 Main St"
 
 #. module: sale_renting
 #: model:sale.temporal.recurrence,name:sale_renting.recurrence_2_weeks
@@ -81,12 +84,12 @@ msgstr "2 สัปดาห์"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.report_rental_order_document
 msgid "2023-08-01"
-msgstr ""
+msgstr "2023-08-01"
 
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.report_rental_order_document
 msgid "2023-08-10"
-msgstr ""
+msgstr "2023-08-10"
 
 #. module: sale_renting
 #: model:sale.temporal.recurrence,name:sale_renting.recurrence_3_hours
@@ -101,7 +104,7 @@ msgstr "3 ปี"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.report_rental_order_document
 msgid "456 Other St"
-msgstr ""
+msgstr "456 Other St"
 
 #. module: sale_renting
 #: model:sale.temporal.recurrence,name:sale_renting.recurrence5_year
@@ -126,6 +129,9 @@ msgid ""
 "                    <span invisible=\"duration_days in [0,1]\"> days </span>\n"
 "                    <span invisible=\"duration_days == 0 or remaining_hours == 0\">and </span>"
 msgstr ""
+"<span invisible=\"duration_days != 1\"> วัน </span>\n"
+"                    <span invisible=\"duration_days in [0,1]\"> วัน </span>\n"
+"                    <span invisible=\"duration_days == 0 or remaining_hours == 0\">และ </span>"
 
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_order_form_view
@@ -133,6 +139,8 @@ msgid ""
 "<span invisible=\"remaining_hours != 1\"> hour </span>\n"
 "                    <span invisible=\"remaining_hours in [0,1]\"> hours </span>"
 msgstr ""
+"<span invisible=\"remaining_hours != 1\"> ชั่วโมง </span>\n"
+"                    <span invisible=\"remaining_hours in [0,1]\"> ชั่วโมง </span>"
 
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_schedule_view_gantt
@@ -310,7 +318,7 @@ msgstr "ยืนยันจำนวนที่ส่งคืนแล้ว
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_report_search_view
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_schedule_view_search
 msgid "Confirmed Orders"
-msgstr "ยืนยันคำสั่ง"
+msgstr "ยืนยันคำสั่งซื้อ"
 
 #. module: sale_renting
 #: model:ir.actions.act_window,name:sale_renting.action_create_rental_order
@@ -320,7 +328,7 @@ msgstr "สร้างคำสั่งเช่า"
 #. module: sale_renting
 #: model_terms:ir.actions.act_window,help:sale_renting.sale_temporal_recurrence_action
 msgid "Create a new period"
-msgstr ""
+msgstr "สร้างช่วงเวลาใหม่"
 
 #. module: sale_renting
 #: model_terms:ir.actions.act_window,help:sale_renting.rental_order_action
@@ -522,7 +530,7 @@ msgstr "คาดการณ์การส่งคืน"
 #: code:addons/sale_renting/models/sale_order_line.py:0
 #, python-format
 msgid "Expected: %(date)s"
-msgstr ""
+msgstr "ที่คาดหวัง: %(date)s"
 
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_product_product__extra_daily
@@ -571,7 +579,7 @@ msgstr "กลุ่มโดย"
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_sale_order__show_update_duration
 msgid "Has Duration Changed"
-msgstr ""
+msgstr "มีการเปลี่ยนแปลงระยะเวลา"
 
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_sale_order__has_pickable_lines
@@ -644,7 +652,7 @@ msgstr "เกินกำหนด"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.report_rental_order_document
 msgid "Jane Doe"
-msgstr ""
+msgstr "Jane Doe"
 
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.report_rental_order_document
@@ -713,7 +721,7 @@ msgstr "เวลาล่าช้าขั้นต่ำก่อนปรั
 msgid ""
 "Minimum duration before this rule is applied. If set to 0, it represents a "
 "fixedrental price."
-msgstr ""
+msgstr "ระยะเวลาขั้นต่ำก่อนที่จะใช้กฎนี้ หากตั้งค่าเป็น 0 จะแสดงราคาเช่าคงที่"
 
 #. module: sale_renting
 #. odoo-python
@@ -928,7 +936,7 @@ msgstr "กำหนดราคา"
 #. module: sale_renting
 #: model:ir.model,name:sale_renting.model_product_pricing
 msgid "Pricing rule of rental products"
-msgstr ""
+msgstr "กฎการกำหนดราคาของผลิตภัณฑ์ให้เช่า"
 
 #. module: sale_renting
 #: model:ir.model,name:sale_renting.model_product_template
@@ -946,7 +954,7 @@ msgstr "สินค้า"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.report_rental_order_document
 msgid "Product A"
-msgstr ""
+msgstr "สินค้า A"
 
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_sale_rental_report__categ_id
@@ -1042,12 +1050,12 @@ msgstr "ใบเสนอราคา"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_order_form_view
 msgid "Recompute all prices based on this duration"
-msgstr ""
+msgstr "คำนวณราคาใหม่ทั้งหมดตามระยะเวลานี้"
 
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_sale_order__remaining_hours
 msgid "Remaining duration in hours"
-msgstr ""
+msgstr "ระยะเวลาที่เหลืออยู่เป็นชั่วโมง"
 
 #. module: sale_renting
 #: model:ir.ui.menu,name:sale_renting.rental_menu_root
@@ -1091,13 +1099,13 @@ msgstr "คำสั่งเช่า"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.product_pricelist_view
 msgid "Rental Pricelist Rules"
-msgstr ""
+msgstr "กฎรายการราคาเช่า"
 
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_sale_order__rental_return_date
 #: model:ir.model.fields,field_description:sale_renting.field_sale_order_line__return_date
 msgid "Rental Return Date"
-msgstr ""
+msgstr "วันที่คืนค่าเช่า"
 
 #. module: sale_renting
 #: model:ir.model,name:sale_renting.model_sale_rental_schedule
@@ -1108,7 +1116,7 @@ msgstr "กำหนดเวลาการเช่า"
 #: model:ir.model.fields,field_description:sale_renting.field_sale_order__rental_start_date
 #: model:ir.model.fields,field_description:sale_renting.field_sale_order_line__start_date
 msgid "Rental Start Date"
-msgstr ""
+msgstr "วันที่เริ่มต้นการเช่า"
 
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_sale_order__rental_status
@@ -1129,7 +1137,7 @@ msgstr "โปรแกรมสร้างบรรทัดการเช่
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_order_form_view
 msgid "Rental period"
-msgstr ""
+msgstr "ระยะเวลาการเช่า"
 
 #. module: sale_renting
 #: model:ir.ui.menu,name:sale_renting.menu_sale_renting_periods
@@ -1145,19 +1153,19 @@ msgstr "ราคาเช่า"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.product_template_form_view_rental
 msgid "Rental prices"
-msgstr ""
+msgstr "ราคาเช่า"
 
 #. module: sale_renting
 #. odoo-python
 #: code:addons/sale_renting/models/sale_order.py:0
 #, python-format
 msgid "Rental prices have been recomputed with the new period."
-msgstr ""
+msgstr "ราคาเช่าได้ถูกคำนวณใหม่กับระยะเวลาใหม่แล้ว"
 
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.product_pricelist_view
 msgid "Rental rules"
-msgstr ""
+msgstr "กฎการเช่า"
 
 #. module: sale_renting
 #: model:ir.model,name:sale_renting.model_rental_order_wizard_line
@@ -1172,12 +1180,12 @@ msgstr "การเช่า"
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_product_pricing__recurrence_id
 msgid "Renting Period"
-msgstr ""
+msgstr "ระยะเวลาการเช่า"
 
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_product_pricelist__product_pricing_ids
 msgid "Renting Price Rules"
-msgstr ""
+msgstr "กฎราคาค่าเช่า"
 
 #. module: sale_renting
 #: model:ir.ui.menu,name:sale_renting.menu_rental_reporting
@@ -1236,7 +1244,7 @@ msgstr "ส่งคืนแล้ว"
 #: code:addons/sale_renting/models/sale_order_line.py:0
 #, python-format
 msgid "Returned: %(date)s"
-msgstr ""
+msgstr "ส่งคืน: %(date)s"
 
 #. module: sale_renting
 #: model:ir.model,name:sale_renting.model_sale_temporal_recurrence
@@ -1278,7 +1286,7 @@ msgstr "พนักงานขาย"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.report_rental_order_document
 msgid "Sample Document"
-msgstr ""
+msgstr "เอกสารตัวอย่าง"
 
 #. module: sale_renting
 #. odoo-javascript
@@ -1307,6 +1315,8 @@ msgid ""
 "Select Variants of the Product for which this rule applies.Leave empty if "
 "this rule applies for any variant of this template."
 msgstr ""
+"เลือกตัวเลือกสินค้าของผลิตภัณฑ์ที่จะใช้กฎนี้ เว้นว่างไว้ "
+"หากกฎนี้ใช้กับตัวเลือกสินค้าใดๆ ของเทมเพลตนี้"
 
 #. module: sale_renting
 #: model:ir.model.fields,help:sale_renting.field_product_pricing__product_template_id
@@ -1318,7 +1328,7 @@ msgstr "เลือกสินค้าที่จะใช้ราคาน
 #: code:addons/sale_renting/static/src/js/tours/rental.js:0
 #, python-format
 msgid "Select the rental dates and check the price."
-msgstr ""
+msgstr "เลือกวันเช่าและตรวจสอบราคา"
 
 #. module: sale_renting
 #. odoo-javascript
@@ -1371,12 +1381,12 @@ msgstr "ผลรวมจำนวนการรับรายวัน"
 #. module: sale_renting
 #: model:ir.model.fields,help:sale_renting.field_sale_order__duration_days
 msgid "The duration in days of the rental period."
-msgstr ""
+msgstr "ระยะเวลาเป็นวันของระยะเวลาการเช่า"
 
 #. module: sale_renting
 #: model:ir.model.fields,help:sale_renting.field_sale_order__remaining_hours
 msgid "The leftover hours of the rental period."
-msgstr ""
+msgstr "ชั่วโมงที่เหลือของระยะเวลาเช่า"
 
 #. module: sale_renting
 #: model:ir.model.constraint,message:sale_renting.constraint_sale_temporal_recurrence_temporal_recurrence_duration
@@ -1392,7 +1402,7 @@ msgstr "ใช้สินค้าเพื่อเพิ่มราคาใ
 #: model:ir.model.fields,help:sale_renting.field_rental_order_wizard__is_late
 #: model:ir.model.fields,help:sale_renting.field_sale_order__is_late
 msgid "The products haven't been picked-up or returned in time"
-msgstr ""
+msgstr "สินค้าไม่ได้รับการรับหรือคืนตามเวลาที่กำหนด"
 
 #. module: sale_renting
 #. odoo-javascript
@@ -1404,7 +1414,7 @@ msgstr "การกำหนดค่าการเช่ามีอยู่
 #. module: sale_renting
 #: model:ir.model.constraint,message:sale_renting.constraint_sale_order_rental_period_coherence
 msgid "The rental start date must be before the rental return date if any."
-msgstr ""
+msgstr "วันที่เริ่มต้นการเช่าจะต้องอยู่ก่อนวันคืนการเช่า หากมี"
 
 #. module: sale_renting
 #: model_terms:ir.actions.act_window,help:sale_renting.rental_order_today_pickup_action
@@ -1440,7 +1450,7 @@ msgstr "สินค้านี้จะใช้เพื่อเพิ่ม
 msgid ""
 "This will update the unit price of all rental products based on the new "
 "period."
-msgstr ""
+msgstr "วิธีนี้จะอัปเดตราคาต่อหน่วยของผลิตภัณฑ์เช่าทั้งหมดตามช่วงเวลาใหม่"
 
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.res_config_settings_view_form
@@ -1486,7 +1496,7 @@ msgstr "หน่วยวัด"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_order_form_view
 msgid "Update Rental Prices"
-msgstr ""
+msgstr "อัปเดตราคาเช่า"
 
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_order_wizard_view_form
@@ -1578,7 +1588,7 @@ msgstr ""
 #: code:addons/sale_renting/models/product_pricelist.py:0
 #, python-format
 msgid "You can not have a time-based rule for products that are not rentable."
-msgstr ""
+msgstr "คุณไม่สามารถมีกฎตามเวลาสำหรับผลิตภัณฑ์ที่ไม่สามารถให้เช่าได้"
 
 #. module: sale_renting
 #: model_terms:ir.actions.act_window,help:sale_renting.rental_order_today_pickup_action

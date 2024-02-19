@@ -1,11 +1,11 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 {
-    'name': 'Codabox',
+    'name': 'CodaBox',
     'version': '1.0',
     'author': 'Odoo',
     'website': 'https://www.odoo.com/documentation/17.0/applications/finance/fiscal_localizations/belgium.html#codabox',
     'category': 'Accounting/Localizations',
-    'description': 'Codabox integration to retrieve your CODA and SODA files.',
+    'description': 'CodaBox integration to retrieve your CODA and SODA files.',
     'depends': [
         'l10n_be_coda',
         'l10n_be_soda',

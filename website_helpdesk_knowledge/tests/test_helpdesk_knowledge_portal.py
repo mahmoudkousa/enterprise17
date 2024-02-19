@@ -27,6 +27,7 @@ class TestHelpdeskKnowledgePortalTour(TestHelpdeskPortal):
             'is_published': True,
             'parent_id': help_article.id,
         })
+        self.assertTrue(bool(help_team), "Check helpdesk team is found.")
         help_team.write({
             'use_website_helpdesk_knowledge': True,
             'website_article_id': help_article.id,

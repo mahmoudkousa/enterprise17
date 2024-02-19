@@ -33,7 +33,7 @@ class HelpdeskTicket(models.Model):
 
         if partner and force_update:
             if not partner.email and self.partner_email:
-                partner.phone = self.partner_phone
+                partner.email = self.partner_email
             if not partner.phone and self.partner_phone:
                 partner.phone = self.partner_phone
 

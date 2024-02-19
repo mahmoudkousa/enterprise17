@@ -4,6 +4,8 @@
 # 
 # Translators:
 # Wil Odoo, 2023
+# Junko Augias, 2023
+# Ryoko Tsuda <ryoko@quartile.co>, 2023
 # 
 msgid ""
 msgstr ""
@@ -11,7 +13,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-10-26 22:21+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Wil Odoo, 2023\n"
+"Last-Translator: Ryoko Tsuda <ryoko@quartile.co>, 2023\n"
 "Language-Team: Japanese (https://app.transifex.com/odoo/teams/41243/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -62,7 +64,7 @@ msgstr "新規整備依頼を追加"
 #. module: mrp_maintenance
 #: model:ir.model.fields,field_description:mrp_maintenance.field_maintenance_request__recurring_leaves_count
 msgid "Additional Leaves to Plan Ahead"
-msgstr ""
+msgstr "計画的な追加休暇"
 
 #. module: mrp_maintenance
 #: model:ir.model.fields,field_description:mrp_maintenance.field_mrp_workcenter__message_attachment_count
@@ -78,7 +80,7 @@ msgstr "作業区のブロック"
 #: model:ir.model.fields,help:mrp_maintenance.field_maintenance_request__recurring_leaves_count
 msgid ""
 "Block the workcenter for this many time slots in the future in advance."
-msgstr ""
+msgstr "作業区を、あらかじめこの数だけ先の時間枠にブロックしておきます。"
 
 #. module: mrp_maintenance
 #: model:ir.model.fields,field_description:mrp_maintenance.field_maintenance_request__company_id
@@ -221,7 +223,7 @@ msgstr "フォロー中　"
 msgid ""
 "It won't be possible to plan work orders or other maintenances on this "
 "workcenter during this time."
-msgstr ""
+msgstr "この間、この作業区で作業オーダやその他の整備の計画を立てることはできません。"
 
 #. module: mrp_maintenance
 #: model_terms:ir.ui.view,arch_db:mrp_maintenance.mrp_workcenter_view_form_inherit_maintenance
@@ -236,7 +238,7 @@ msgstr "最終故障日"
 #. module: mrp_maintenance
 #: model:ir.model.fields,field_description:mrp_maintenance.field_maintenance_request__leave_ids
 msgid "Leaves"
-msgstr ""
+msgstr "休暇"
 
 #. module: mrp_maintenance
 #: model:ir.model.fields,field_description:mrp_maintenance.field_mrp_workcenter__mtbf
@@ -306,6 +308,8 @@ msgid ""
 "Manufacturing operations are processed at Work Centers. A Work Center can be composed of\n"
 "            workers and/or machines, they are used for costing, scheduling, capacity planning, etc."
 msgstr ""
+"製造工程は作業区で処理されます。作業区は作業員および/または機械で構成され、コスト計算、\n"
+"　　　　スケジューリング、生産能力計画などに使用されます。"
 
 #. module: mrp_maintenance
 #: model_terms:ir.ui.view,arch_db:mrp_maintenance.mrp_workcenter_view_form_inherit_maintenance
@@ -421,14 +425,14 @@ msgstr "依頼"
 #. module: mrp_maintenance
 #: model:ir.model.fields,field_description:mrp_maintenance.field_maintenance_stage__create_leaves
 msgid "Request Confirmed"
-msgstr ""
+msgstr "依頼確認済"
 
 #. module: mrp_maintenance
 #. odoo-javascript
 #: code:addons/mrp_maintenance/static/src/components/menuPopup.xml:0
 #, python-format
 msgid "Request Maintenance"
-msgstr ""
+msgstr "整備を依頼"
 
 #. module: mrp_maintenance
 #. odoo-python
@@ -480,7 +484,7 @@ msgstr "担当技術者"
 #: code:addons/mrp_maintenance/static/src/components/maintenance_request_form_view.js:0
 #, python-format
 msgid "The maintenance request has successfully been created."
-msgstr ""
+msgstr "整備依頼が正常に作成されました。"
 
 #. module: mrp_maintenance
 #. odoo-python
@@ -489,19 +493,19 @@ msgstr ""
 msgid ""
 "The schedule has changed from %(desired_date)s to %(effective_date)s due to "
 "planned manufacturing orders."
-msgstr ""
+msgstr "予定は計画的な製造オーダのため、%(desired_date)sから%(effective_date)sに変更されました。"
 
 #. module: mrp_maintenance
 #. odoo-python
 #: code:addons/mrp_maintenance/models/mrp_maintenance.py:0
 #, python-format
 msgid "The workcenter is missing for %s."
-msgstr ""
+msgstr "%sの作業区がありません。"
 
 #. module: mrp_maintenance
 #: model:ir.model.fields,help:mrp_maintenance.field_mrp_workcenter__effective_date
 msgid "This date will be used to compute the Mean Time Between Failure."
-msgstr ""
+msgstr "この日付は平均故障間隔を計算するために使用されます。"
 
 #. module: mrp_maintenance
 #: model:ir.model.fields,help:mrp_maintenance.field_mrp_workcenter__activity_exception_decoration
@@ -511,12 +515,12 @@ msgstr "記録上の例外活動の種類。"
 #. module: mrp_maintenance
 #: model:ir.model.fields,field_description:mrp_maintenance.field_mrp_workcenter__website_message_ids
 msgid "Website Messages"
-msgstr "サイトメッセージ"
+msgstr "ウェブサイトメッセージ"
 
 #. module: mrp_maintenance
 #: model:ir.model.fields,help:mrp_maintenance.field_mrp_workcenter__website_message_ids
 msgid "Website communication history"
-msgstr "サイト通信履歴"
+msgstr "ウェブサイト通信履歴"
 
 #. module: mrp_maintenance
 #: model:ir.model.fields,help:mrp_maintenance.field_maintenance_stage__create_leaves
@@ -524,6 +528,8 @@ msgid ""
 "When this box is unticked, and the maintenance is of the type 'Work Center', no leave is created on the respective work center when a maintenance request is created.\n"
 "If the box is ticked, the work center is automatically blocked for the listed duration, either at the specified date, or as soon as possible, if the work center is unavailable then."
 msgstr ""
+"このボックスにチェックが入っておらず、メンテナンスのタイプが\"作業区\"である場合、整備依頼が作成されても、それぞれの作業区に休暇は作成されません。\n"
+"このボックスにチェックが入っている場合、作業区は指定された期間、自動的にブロックされます。"
 
 #. module: mrp_maintenance
 #: model:ir.model,name:mrp_maintenance.model_mrp_workcenter

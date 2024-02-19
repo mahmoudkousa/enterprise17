@@ -154,10 +154,10 @@ export function useConnectedEmployee(controllerType, context, workcenterId, env)
     const toggleSessionOwner = async (employee_id, pin) => {
         if (employees.admin.id == employee_id) {
             await orm.call("hr.employee", "remove_session_owner", [employee_id]);
+            await getConnectedEmployees();
         } else {
             setSessionOwner(employee_id, pin);
         }
-        await getConnectedEmployees();
     };
 
     const setSessionOwner = async (employee_id, pin) => {

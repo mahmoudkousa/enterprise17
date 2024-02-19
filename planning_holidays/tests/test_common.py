@@ -7,7 +7,8 @@ from odoo.tests.common import TransactionCase
 
 class TestCommon(TransactionCase):
     def setUp(self):
-        super(TestCommon, self).setUp()
+        super().setUp()
+        self.env.user.tz = 'Europe/Brussels'
 
         self.calendar = self.env['resource.calendar'].create({
             'name': 'Calendar',

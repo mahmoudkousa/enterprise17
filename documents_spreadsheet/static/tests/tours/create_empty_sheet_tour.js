@@ -45,6 +45,10 @@ registry.category("web_tour.tours").add("spreadsheet_create_empty_sheet", {
             content: "Reopen the sheet",
             run: "click",
         },
+        {
+            trigger: '[data-menu-xmlid="documents.dashboard"]',
+            content: "Wait for the spreadsheet to be properly unloaded",
+        },
     ],
 });
 registry.category("web_tour.tours").add("spreadsheet_create_list_view", {
@@ -97,6 +101,10 @@ registry.category("web_tour.tours").add("spreadsheet_create_list_view", {
             trigger: ".o_pivot_cancel",
             content: "Go back to the list of lists",
             run: "click",
+        },
+        {
+            trigger: '[data-menu-xmlid="documents.dashboard"]',
+            content: "Wait for the spreadsheet to be properly unloaded",
         },
     ],
 });

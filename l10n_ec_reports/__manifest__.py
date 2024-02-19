@@ -4,6 +4,7 @@
 {
     'name': 'Ecuadorian Accounting Reports',
     'version': '2.0',
+    'countries': ['ec'],
     'description': '''
 Accounting reports for Ecuador
 ==============================

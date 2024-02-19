@@ -5,6 +5,7 @@ from odoo import models, fields, api
 from odoo.exceptions import UserError
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
+from odoo.osv.expression import OR
 
 
 class PosConfig(models.Model):
@@ -68,8 +69,8 @@ class PosConfig(models.Model):
             self._check_work_product_taxes()
             self._check_employee_insz_or_bis_number()
             self._check_pos_category()
-            # self._check_cash_rounding()
-            # self._check_printer_connected()
+            self._check_cash_rounding()
+            self._check_printer_connected()
         return super(PosConfig, self)._check_before_creating_new_session()
 
     def _check_work_product_taxes(self):
@@ -164,8 +165,17 @@ class PosConfig(models.Model):
         if not self.iface_print_skip_screen:
             raise ValidationError(_("Skip Preview Screen must be activated"))
 
-    def _get_special_products(self):
+    def _get_work_products(self):
         empty_product = self.env['product.product']
         work_in_product = self.env.ref('pos_blackbox_be.product_product_work_in', raise_if_not_found=False) or empty_product
         work_out_product = self.env.ref('pos_blackbox_be.product_product_work_out', raise_if_not_found=False) or empty_product
-        return super()._get_special_products() | work_in_product | work_out_product
+        return work_in_product | work_out_product
+
+    def _get_special_products(self):
+        return super()._get_special_products() | self._get_work_products()
+
+    def _get_available_product_domain(self):
+        domain = super()._get_available_product_domain()
+        if work_products := self._get_work_products():
+            return OR([domain, [('id', 'in', work_products.ids)]])
+        return domain

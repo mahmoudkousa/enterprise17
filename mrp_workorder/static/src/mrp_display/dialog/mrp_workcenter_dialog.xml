@@ -8,7 +8,7 @@
                             class="btn d-flex align-items-center text-start py-2 fs-3 pointer-cursor"
                             t-att-class="{'active': active}"
                             t-on-click="() => this.selectWorkcenter(workcenter)">
-                            <input t-att-type="props.radioMode ? 'radio' : 'checkbox'" name="workcenter" class="form-check-input position-relative me-2" t-att-checked="active"/>
+                            <input t-att-type="props.radioMode ? 'radio' : 'checkbox'" t-att-name="workcenter.display_name" class="form-check-input position-relative me-2" t-att-checked="active"/>
                             <t t-out="workcenter.display_name"/>
                         </button>
                     </t>

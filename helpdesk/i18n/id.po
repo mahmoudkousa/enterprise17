@@ -3,16 +3,16 @@
 # 	* helpdesk
 # 
 # Translators:
-# Wil Odoo, 2023
-# Abe Manyo, 2023
+# Abe Manyo, 2024
+# Wil Odoo, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-26 16:09+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Abe Manyo, 2023\n"
+"Last-Translator: Wil Odoo, 2024\n"
 "Language-Team: Indonesian (https://app.transifex.com/odoo/teams/41243/id/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -91,13 +91,12 @@ msgstr "<b>Drag &amp; drop</b> kartu untuk merubah tahap tiket Anda."
 #: code:addons/helpdesk/static/src/js/tours/helpdesk.js:0
 #, python-format
 msgid ""
-"<b>Log notes</b> for internal communications (you will only notify the persons you specifically tag). \n"
-"    Use <b>@ mentions</b> to ping a colleague \n"
-"    or <b># mentions</b> to contact a group of people."
+"<b>Log notes</b> for internal communications (you will only notify the "
+"persons you specifically tag). Use <b>@ mentions</b> to ping a colleague or "
+"<b># mentions</b> to contact a group of people."
 msgstr ""
 "<b>Catatan log</b> untuk komunikasi internal (yang akan menotifikasi orang yang Anda tag). \n"
-"    Gunakan <b>@ mentions</b> untuk ping rekan kerja \n"
-"    atau <b># mentions</b> untuk menghubungi kelompok orang."
+"    Gunakan <b>@ mentions</b> untuk ping rekan atau <b># mentions</b> untuk menghubungi kelompok orang."
 
 #. module: helpdesk
 #. odoo-javascript
@@ -266,7 +265,7 @@ msgid ""
 "        <a t-attf-href=\"/my/ticket/{{ object.id }}/{{ object.access_token }}\" t-out=\"object.name or ''\">Table legs are unbalanced</a>\n"
 "    </t>\n"
 "    has been received and is being reviewed by our <t t-out=\"object.team_id.name or ''\">VIP Support</t> team.<br><br>\n"
-"    The reference for your ticket is <strong><t t-out=\"object.id or ''\">15</t></strong>.<br><br>\n"
+"    The reference for your ticket is <strong><t t-out=\"object.ticket_ref or ''\">15</t></strong>.<br><br>\n"
 "\n"
 "    To provide any additional information, simply reply to this email.<br><br>\n"
 "    <t t-if=\"object.team_id.show_knowledge_base\">\n"
@@ -298,16 +297,16 @@ msgstr ""
 "    <t t-if=\"object.get_portal_url()\">\n"
 "        <a t-attf-href=\"/my/ticket/{{ object.id }}/{{ object.access_token }}\" t-out=\"object.name or ''\">Kaki meja tidak seimbang</a>\n"
 "    </t>\n"
-"    telah diterima dan sedang ditinjau tim <t t-out=\"object.team_id.name or ''\">Bantuan VIP</t> kami.<br><br>\n"
-"    Referensi untuk tiket Anda adalah <strong><t t-out=\"object.id or ''\">15</t></strong>.<br><br>\n"
+"    telah diterima dan sedang ditinjau oleh tim <t t-out=\"object.team_id.name or ''\">Bantuan VIP</t> kami.<br><br>\n"
+"    Referensi untuk tiket Anda adalah <strong><t t-out=\"object.ticket_ref or ''\">15</t></strong>.<br><br>\n"
 "\n"
 "    Untuk mendapatkan informasi tambahan apapun, silakan balas email ini.<br><br>\n"
 "    <t t-if=\"object.team_id.show_knowledge_base\">\n"
-"        Jangan sungkan untuk mengunjungi <a t-attf-href=\"{{ object.team_id.get_knowledge_base_url() }}\">Pusat Bantuan</a> kami. Anda mungkin mendapatkan jawaban untuk pertanyaan Anda disana.\n"
+"        Jangan sungkan untuk mengunjungi <a t-attf-href=\"{{ object.team_id.get_knowledge_base_url() }}\">Pusat Bantuan</a>. Anda mungkin mendapatkan jawaban untuk pertanyaan Anda di sana.\n"
 "        <br><br>\n"
 "    </t>\n"
 "    <t t-if=\"object.team_id.allow_portal_ticket_closing\">\n"
-"        Silakan tutup tiket ini bila bantuan kami tidak lagi dibutuhkan. Terima kasih atas kerja sama Anda.<br>\n"
+"        Silakan tutup tiket ini bila bantuan kami tidak lagi dibutuhkan. Terima kasih atas kerja sama Anda.<br><br>\n"
 "    </t>\n"
 "\n"
 "    <div style=\"text-align: center; padding: 16px 0px 16px 0px;\">\n"
@@ -321,7 +320,7 @@ msgstr ""
 "    </div>\n"
 "\n"
 "    Salam hormat,<br><br>\n"
-"    Tim <t t-out=\"object.team_id.name or 'Helpdesk'\">Meja bantuan</t>\n"
+"    Tim <t t-out=\"object.team_id.name or 'Helpdesk'\">Meja Bantuan</t>\n"
 "</div>\n"
 "        "
 
@@ -2321,12 +2320,14 @@ msgstr "Deadline Saya"
 #. module: helpdesk
 #. odoo-javascript
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
+#: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #, python-format
 msgid "My Performance"
 msgstr "Kinerja Saya"
 
 #. module: helpdesk
 #. odoo-javascript
+#: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
@@ -3720,8 +3721,8 @@ msgid "Ticket created"
 msgstr "Tiket dibuat"
 
 #. module: helpdesk
-#. odoo-python
 #. odoo-javascript
+#. odoo-python
 #: code:addons/helpdesk/models/helpdesk_team.py:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
@@ -3986,11 +3987,13 @@ msgstr "Gunakan Pengembalian"
 #: code:addons/helpdesk/static/src/js/tours/helpdesk.js:0
 #, python-format
 msgid ""
-"Use the chatter to <b>send emails</b> and communicate efficiently with your customers. \n"
-"    Add new people to the followers' list to make them aware of the progress of this ticket."
+"Use the chatter to <b>send emails</b> and communicate efficiently with your "
+"customers. Add new people to the followers' list to make them aware of the "
+"progress of this ticket."
 msgstr ""
-"Gunakan chatter untuk <b>mengirim email</b> dan berkomunikasi secara efisien dengan pelanggan Anda.\n"
-"    Tambahkan orang baru ke daftar pengikut agar mereka menyadari kemajuan tiket ini."
+"Gunakan chatter untuk <b>mengirim email</b> dan berkomunikasi secara efisien"
+" dengan pelanggan Anda. Tambahkan orang baru ke daftar pengikut agar mereka "
+"menyadari kemajuan tiket ini."
 
 #. module: helpdesk
 #: model:ir.model,name:helpdesk.model_res_users

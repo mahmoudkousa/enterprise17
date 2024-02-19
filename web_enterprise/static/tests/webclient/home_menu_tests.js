@@ -427,24 +427,24 @@ QUnit.module(
         );
 
         QUnit.test(
-            "home search input shouldn't be focused on mobile devices [REQUIRE FOCUS]",
+            "home search input shouldn't be focused on touch devices [REQUIRE FOCUS]",
             async function (assert) {
-                // simulate a mobile devices
-                patchWithCleanup(
-                    browser,
-                    Object.assign({}, browser, {
-                        setTimeout: (fn) => fn(),
-                        navigator: {
-                            userAgent: "Chrome/0.0.0 (Linux; Android 13; Odoo TestSuite)",
-                        },
-                    })
-                );
+                // patch matchMedia to alter hasTouch value
+                patchWithCleanup(browser, {
+                    setTimeout: (fn) => fn(),
+                    matchMedia: (media) => {
+                        if (media === "(pointer:coarse)") {
+                            return { matches: true };
+                        }
+                        this._super();
+                    },
+                });
                 const target = getFixture();
                 await createHomeMenu(homeMenuProps);
                 const homeMenuInput = target.querySelector(".o_search_hidden");
                 assert.notOk(
                     homeMenuInput.matches(":focus"),
-                    "home menu search input shouldn't be have the focus"
+                    "home menu search input shouldn't have the focus"
                 );
             }
         );

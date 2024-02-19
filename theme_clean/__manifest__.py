@@ -7,6 +7,7 @@
     'version': '2.1.0',
     'depends': ['theme_common'],
     'data': [
+        'data/generate_primary_template.xml',
         'data/ir_asset.xml',
         'views/image_content.xml',
 
@@ -41,6 +42,8 @@
     'configurator_snippets': {
         'homepage': ['s_cover', 's_text_image', 's_title', 's_features', 's_carousel', 's_numbers',
                      's_three_columns', 's_call_to_action'],
+        # TODO In master, remove unused templates instead.
+        '_': ['s_comparisons'],
     },
     'license': 'LGPL-3',
     'live_test_url': 'https://theme-clean.odoo.com',

@@ -6,7 +6,7 @@
             <i class="fa fa-check me-1"/>Sign
         </a>
         <!-- modal relative to the sign action -->
-        <div role="dialog" class="modal fade" id="modalaccept">
+        <div role="dialog" class="modal fade mt-5 pt-5" id="modalaccept">
             <div class="modal-dialog" t-if="task.has_to_be_signed()">
                 <form id="accept" method="POST" t-att-data-task-id="task.id" t-att-data-token="task.access_token" class="js_accept_json modal-content js_website_submit_form">
                     <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
@@ -35,10 +35,11 @@
         <xpath expr="//div[@id='nav-report']" position="attributes">
             <attribute name="t-if">not task.is_fsm and timesheets and allow_timesheets</attribute>
         </xpath>
-        <xpath expr="//div[@id='nav-report']" position="before">
-            <div t-if="task.is_fsm and (task.display_sign_report_primary or task.display_sign_report_secondary)" class="d-grid flex-grow-1 align-items-center mb-2">
-                <t t-call="industry_fsm.portal_task_sign_button"/>
-            </div>
+        <xpath expr="//div[@t-field='task.partner_id']" position="attributes">
+            <attribute name="t-options">{
+                "widget": "contact",
+                "fields": ["phone", "email"] + (["address"] if task.is_fsm else []),
+            }</attribute>
         </xpath>
         <xpath expr="//a[@t-field='task.project_id']" position="after">
             <div t-if="task.planned_date_begin">

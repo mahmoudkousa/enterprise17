@@ -382,6 +382,8 @@ publicWidget.registry.SalaryPackageWidget = publicWidget.Widget.extend({
                         toCheck[0].click();
                     }
                     $(target).val(0).trigger('change');
+                    target.attr("disabled", "disabled");
+                    target.parent().addClass('o_disabled');
                     await this.updateAfterChangingBenefit(type, dependentBenefitField, 0);
                 }
                 target.attr("disabled", "disabled");

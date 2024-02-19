@@ -180,7 +180,7 @@ export class PlanningGanttRenderer extends GanttRenderer {
      * @returns {boolean}
      */
     isFlexibleHours(record) {
-        return !!this.model.data.isFlexibleHours?.[record.resource_id[0]];
+        return !!this.model.data.isFlexibleHours?.[record.resource_id && record.resource_id[0]];
     }
 
     /**
@@ -255,10 +255,12 @@ export class PlanningGanttRenderer extends GanttRenderer {
             fixed_stop: pill.record.end_datetime,
         });
         const values = { start_datetime: serializeDateTime(start) };
+        const context = { planning_split_tool: true };
         await this.model.orm.call(
             this.model.metaData.resModel,
             'copy',
             [pill.record.id, values],
+            { context },
         );
 
         // 2. Reduce the size of the current pill down to the split tool

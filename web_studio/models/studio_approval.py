@@ -129,7 +129,7 @@ class StudioApprovalRule(models.Model):
                 raise ValidationError(_("Can't patch 'create', 'write' and 'unlink'."))
             if model not in patched_models[method_name]:
                 patched_models[method_name].add(model)
-                ModelClass = type(model)
+                ModelClass = model.env.registry[model._name]
                 method = getattr(ModelClass, method_name, None)
                 if method:
                     function.studio_approval_rule_origin = method

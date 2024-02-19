@@ -354,7 +354,7 @@ export default class BarcodeModel extends EventBus {
      */
     notification(message, options={}) {
         if (options.type === "danger") {
-            this.trigger('error');
+            this.trigger("playSound", "error");
         }
         return this.notificationService.add(message, options);
     }
@@ -411,6 +411,9 @@ export default class BarcodeModel extends EventBus {
         }
         if (!location_id && this.lastScanned.sourceLocation) {
             line.location_id = this.lastScanned.sourceLocation;
+            if(line.package_id && line.package_id.location_id != line.location_id.id) {
+                line.package_id = false;
+            }
         }
         if (lot_id) {
             if (typeof lot_id === 'number') {
@@ -479,6 +482,7 @@ export default class BarcodeModel extends EventBus {
             if (action.type == "ir.actions.client") {
                 action.params = Object.assign(action.params || {}, options)
             }
+            this.trigger("playSound");
             return this.action.doAction(action, options);
         }
         return options.onClose();
@@ -566,16 +570,17 @@ export default class BarcodeModel extends EventBus {
     }
 
     _getCommands() {
-        return {
-            'O-CMD.MAIN-MENU': this._goToMainMenu.bind(this),
-            'O-BTN.validate': () => {
+        const commands = {'O-CMD.MAIN-MENU': this._goToMainMenu.bind(this)};
+        if (!this.isDone) {
+            commands['O-BTN.validate'] = () => {
                 if (this.canBeValidate) {
                     this.validate();
                 } else {
-                    this.trigger('error');
+                    this.trigger("playSound", "error");
                 }
-            },
-        };
+            };
+        }
+        return commands;
     }
 
     _getLineIndex() {
@@ -593,6 +598,7 @@ export default class BarcodeModel extends EventBus {
             id: (fieldsParams && fieldsParams.id) || false,
             virtual_id: this._uniqueVirtualId,
             location_id: this._defaultLocation(),
+            package_id: false,
         };
     }
 
@@ -687,6 +693,7 @@ export default class BarcodeModel extends EventBus {
      * @param {Object} line
      */
     _markLineAsDirty(line) {
+        this.scannedLinesVirtualId.push(line.virtual_id);
         if (!this.linesToSave.includes(line.virtual_id)) {
             this.linesToSave.push(line.virtual_id);
         }
@@ -724,6 +731,14 @@ export default class BarcodeModel extends EventBus {
         try {
             const parsedBarcode = this.parser.parse_barcode(barcode);
             if (parsedBarcode.length) { // With the GS1 nomenclature, the parsed result is a list.
+                const productRule = parsedBarcode.find(bc => bc.rule.type === "product");
+                this.gs1Filters = {};
+                if (productRule) {
+                    const product = await this.cache.getRecordByBarcode(productRule.value, 'product.product');
+                    if(product){
+                        this.gs1Filters['stock.lot'] = {product_id: product.id};
+                    }
+                }
                 for (const data of parsedBarcode) {
                     const parsedData = await this._processGs1Data(data);
                     Object.assign(result, parsedData);
@@ -735,6 +750,10 @@ export default class BarcodeModel extends EventBus {
                 result.weight = parsedBarcode;
                 result.match = true;
                 barcode = parsedBarcode.base_code;
+            } else if (parsedBarcode.type === 'product' && parsedBarcode.code !== barcode) {
+                // The scanned barcode should match a product but was either an
+                // alias, either converted from UPC-A to EAN-13 (or vice versa.)
+                barcode = parsedBarcode.code;
             }
         } catch (err) {
             // The barcode can't be parsed but the error is caught to fallback
@@ -742,6 +761,12 @@ export default class BarcodeModel extends EventBus {
             console.log(`%cWarning: error about ${barcode}`, 'text-weight: bold;');
             console.log(err.message);
         }
+        const fetchedRecord = await this._fetchRecordFromTheCache(barcode, filters, result);
+        return Object.assign(result, fetchedRecord);
+    }
+
+    async _fetchRecordFromTheCache(barcode, filters, data) {
+        const result = data || { barcode, match: false };
         const recordByData = await this.cache.getRecordByBarcode(barcode, false, false, filters);
         if (recordByData.size > 1) {
             const message = _t(
@@ -836,7 +861,7 @@ export default class BarcodeModel extends EventBus {
             }
         } else if (rule.type === 'lot') {
             if (this.useExistingLots) {
-                result.lot = await this.cache.getRecordByBarcode(value, 'stock.lot');
+                result.lot = await this.cache.getRecordByBarcode(value, 'stock.lot', false, this.gs1Filters);
             }
             if (!result.lot) { // No existing lot found, set a lot name.
                 result.lotName = value;
@@ -935,9 +960,7 @@ export default class BarcodeModel extends EventBus {
         }
 
         if (barcodeData.packaging) {
-            barcodeData.product = this.cache.getRecord('product.product', barcodeData.packaging.product_id);
-            barcodeData.quantity = ("quantity" in barcodeData ? barcodeData.quantity : 1) * barcodeData.packaging.qty;
-            barcodeData.uom = this.cache.getRecord('uom.uom', barcodeData.product.uom_id);
+            Object.assign(barcodeData, this._retrievePackagingData(barcodeData));
         }
 
         if (barcodeData.product) { // Remembers the product if a (packaging) product was scanned.
@@ -945,7 +968,7 @@ export default class BarcodeModel extends EventBus {
         }
 
         if (barcodeData.lot && !barcodeData.product) {
-            barcodeData.product = this.cache.getRecord('product.product', barcodeData.lot.product_id);
+            Object.assign(barcodeData, this._retrieveTrackingNumberInfo(barcodeData.lot));
         }
 
         await this._processLocation(barcodeData);
@@ -985,7 +1008,26 @@ export default class BarcodeModel extends EventBus {
                 }
             }
         }
-        const {product} = barcodeData;
+        let { product } = barcodeData;
+        if (!product && barcodeData.match && this.parser.nomenclature.is_gs1_nomenclature) {
+            // Special case where something was found using the GS1 nomenclature but no product is
+            // used (eg.: a product's barcode can be read as a lot is starting with 21).
+            // In such case, tries to find a record with the barcode by by-passing the parser.
+            barcodeData = await this._fetchRecordFromTheCache(barcode, filters);
+            if (barcodeData.packaging) {
+                Object.assign(barcodeData, this._retrievePackagingData(barcodeData));
+            } else if (barcodeData.lot) {
+                Object.assign(barcodeData, this._retrieveTrackingNumberInfo(barcodeData.lot));
+            }
+            if (barcodeData.product) {
+                product = barcodeData.product;
+            } else if (barcodeData.match) {
+                await this._processPackage(barcodeData);
+                if (barcodeData.stopped) {
+                    return;
+                }
+            }
+        }
         if (!product) { // Product is mandatory, if no product, raises a warning.
             if (!barcodeData.error) {
                 if (this.groups.group_tracking_lot) {
@@ -1172,13 +1214,23 @@ export default class BarcodeModel extends EventBus {
         );
     }
 
+    _retrievePackagingData(barcodeData) {
+        const product = this.cache.getRecord('product.product', barcodeData.packaging.product_id);
+        const quantity = ("quantity" in barcodeData ? barcodeData.quantity : 1) * barcodeData.packaging.qty;;
+        const uom = this.cache.getRecord('uom.uom', product.uom_id);
+        return { product, quantity, uom };
+    }
+
+    _retrieveTrackingNumberInfo(lot) {
+        return { product: this.cache.getRecord('product.product', lot.product_id) };
+    }
+
     _selectLine(line) {
         const virtualId = line.virtual_id;
         if (this.selectedLineVirtualId === virtualId) {
             return; // Don't select the line if it's already selected.
         }
         this.selectedLineVirtualId = virtualId;
-        this.scannedLinesVirtualId.push(virtualId);
         this.lastScanned.destLocation = false;
     }
 
@@ -1282,9 +1334,12 @@ export default class BarcodeModel extends EventBus {
                     !dataLotName || !lineLotName || dataLotName !== lineLotName
                 ) && (
                     line.qty_done && line.qty_done >= line.reserved_uom_qty &&
-                    line.id && line.virtual_id != this.selectedLine.virtual_id
-            )) {
-                continue;
+                    (line.product_id.tracking === "none" || lineLotName) &&
+                    line.id && (!this.selectedLine || line.virtual_id != this.selectedLine.virtual_id)
+                )) {
+                    // Has enough quantity (and another lot is set if the line's product is tracked)
+                    // and the line wasn't explicitly selected.
+                    continue;
             }
             if (this._lineIsNotComplete(line)) {
                 if (this.lineCanBeTakenFromTheCurrentLocation(line)) {

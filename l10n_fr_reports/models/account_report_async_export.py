@@ -145,11 +145,14 @@ class AccountReportAsyncExport(models.Model):
     # ------------------------------------------------------------
 
     def button_fetch_attachments(self):
-        # Getting the attachment is optional
-        for export in self:
-            response = export._get_recipient_reports_v2()
-            attachments_vals = export._process_recipient_reports_response(response)
-            export.attachment_ids |= export.env['ir.attachment'].create(attachments_vals)
+        # DEPRECATED : This button will be removed in master
+        self.ensure_one()
+        attachments = self.attachment_ids.filtered(lambda a: a.name.endswith(".xml"))
+        if attachments:
+            return {
+                "type": "ir.actions.act_url",
+                "url": f"/web/content/{attachments.ids[0]}?download=true",
+            }
 
     def button_process_report(self):
         self.env.ref('l10n_fr_reports.ir_cron_l10n_fr_reports').method_direct_trigger()
@@ -290,13 +293,5 @@ class AccountReportAsyncExport(models.Model):
         db_uuid = self.env['ir.config_parameter'].sudo().get_param('database.uuid')
         return self._get_fr_webservice_answer(
             url=ENDPOINT + "/api/l10n_fr_aspone/1/get_declaration_details",
-            params={'db_uuid': db_uuid, 'declaration_uid': self.declaration_uid},
-        )
-
-    def _get_recipient_reports_v2(self):
-        """ Third (optional) step: get the documents linked to a single declaration/interchange. """
-        db_uuid = self.env['ir.config_parameter'].sudo().get_param('database.uuid')
-        return self._get_fr_webservice_answer(
-            url=ENDPOINT + "/api/l10n_fr_aspone/1/get_recipient_reports_v2",
             params={'db_uuid': db_uuid, 'declaration_uid': self.declaration_uid},
         )

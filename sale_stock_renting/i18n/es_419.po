@@ -3,17 +3,18 @@
 # 	* sale_stock_renting
 # 
 # Translators:
-# Patricia Gutiérrez Capetillo <pagc@odoo.com>, 2023
-# Wil Odoo, 2023
 # Iran Villalobos López, 2023
+# Fernanda Alvarez, 2024
+# Wil Odoo, 2024
+# Patricia Gutiérrez Capetillo <pagc@odoo.com>, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:21+0000\n"
+"POT-Creation-Date: 2024-01-26 16:12+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Iran Villalobos López, 2023\n"
+"Last-Translator: Patricia Gutiérrez Capetillo <pagc@odoo.com>, 2024\n"
 "Language-Team: Spanish (Latin America) (https://app.transifex.com/odoo/teams/41243/es_419/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -49,15 +50,11 @@ msgstr ""
 "                        </span>"
 
 #. module: sale_stock_renting
-#. odoo-python
-#: code:addons/sale_stock_renting/models/sale_order.py:0
-#, python-format
-msgid ""
-"A new rental period will not propagate to stock pickings. You may need to "
-"manually change that."
+#: model_terms:ir.ui.view,arch_db:sale_stock_renting.res_config_settings_inherit_view_form
+msgid "Activate to use stock deliveries and receipts for rental orders"
 msgstr ""
-"Un nuevo periodo de alquiler no se propagará a recolecciones de inventario. "
-"Es posible que deba cambiarlo manualmente. "
+"Active para usar entregas de inventario y recepciones para órdenes de "
+"alquiler"
 
 #. module: sale_stock_renting
 #: model:ir.model.fields,help:sale_stock_renting.field_res_company__padding_time
@@ -66,8 +63,8 @@ msgid ""
 "Amount of time (in hours) during which a product is considered unavailable "
 "prior to renting (preparation time)."
 msgstr ""
-"Cantidad de tiempo (en horas) durante el cual se considera que un producto "
-"no está disponible antes de su alquiler (tiempo de preparación)."
+"Tiempo (en horas) durante el cual se considera que un producto no está "
+"disponible antes de volver a alquilarlo (tiempo de preparación)."
 
 #. module: sale_stock_renting
 #. odoo-javascript
@@ -155,8 +152,8 @@ msgstr "Tiempo mínimo entre dos alquileres"
 #, python-format
 msgid "No valid quant has been found in location %s for serial number %s!"
 msgstr ""
-"¡No se ha encontrado ninguna cantidad válida en la ubicación  %s para el "
-"núemro de serie %s!"
+"No se ha encontró ninguna cantidad válida en la ubicación  %s para el núemro"
+" de serie %s."
 
 #. module: sale_stock_renting
 #: model_terms:ir.ui.view,arch_db:sale_stock_renting.rental_schedule_view_gantt_inherit_stock
@@ -233,6 +230,11 @@ msgid "Rental Schedule"
 msgstr "Horario de alquiler"
 
 #. module: sale_stock_renting
+#: model_terms:ir.ui.view,arch_db:sale_stock_renting.res_config_settings_inherit_view_form
+msgid "Rental Transfers"
+msgstr "Transferencias de alquiler"
+
+#. module: sale_stock_renting
 #. odoo-python
 #: code:addons/sale_stock_renting/models/sale_order_line.py:0
 #: code:addons/sale_stock_renting/models/sale_order_line.py:0
@@ -242,7 +244,6 @@ msgstr "Movimiento de alquiler:"
 
 #. module: sale_stock_renting
 #: model:ir.model.fields,field_description:sale_stock_renting.field_res_config_settings__group_rental_stock_picking
-#: model_terms:ir.ui.view,arch_db:sale_stock_renting.res_config_settings_inherit_view_form
 msgid "Rental pickings"
 msgstr "Recolecciones de alquier"
 
@@ -317,8 +318,7 @@ msgstr "Regla de inventario"
 #: model:ir.model.fields,help:sale_stock_renting.field_product_template__preparation_time
 msgid "Temporarily make this product unavailable before pickup."
 msgstr ""
-"Hacer que este producto no esté disponible temporalmente antes de su "
-"recolección."
+"El producto no estará disponible de forma temporal antes de su recolección."
 
 #. module: sale_stock_renting
 #: model:ir.model.fields,help:sale_stock_renting.field_res_company__rental_loc_id
@@ -357,11 +357,6 @@ msgstr "Lote no disponible"
 #: model:res.groups,name:sale_stock_renting.group_rental_stock_picking
 msgid "Use pickings for rental orders"
 msgstr "Utilice las recolecciones para las órdenes de alquiler"
-
-#. module: sale_stock_renting
-#: model_terms:ir.ui.view,arch_db:sale_stock_renting.res_config_settings_inherit_view_form
-msgid "Use stock pickings for rental orders"
-msgstr "Utilice las recolecciones de inventario para las órdenes de alquiler"
 
 #. module: sale_stock_renting
 #. odoo-javascript

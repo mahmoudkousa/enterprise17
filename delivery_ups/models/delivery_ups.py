@@ -30,14 +30,14 @@ class ProviderUPS(models.Model):
         ]
 
     delivery_type = fields.Selection(selection_add=[
-        ('ups', "UPS")
+        ('ups', "UPS Legacy")
     ], ondelete={'ups': lambda recs: recs.write({'delivery_type': 'fixed', 'fixed_price': 0})})
 
     ups_username = fields.Char(string='UPS Username', groups="base.group_system")
     ups_passwd = fields.Char(string='UPS Password', groups="base.group_system")
     ups_shipper_number = fields.Char(string='UPS Shipper Number', groups="base.group_system")
     ups_access_number = fields.Char(string='UPS Access Key', groups="base.group_system")
-    ups_default_package_type_id = fields.Many2one('stock.package.type', string='UPS Package Type')
+    ups_default_package_type_id = fields.Many2one('stock.package.type', string='UPS Legacy Package Type')
     ups_default_service_type = fields.Selection(_get_ups_service_types, string="UPS Service Type", default='03')
     ups_duty_payment = fields.Selection([('SENDER', 'Sender'), ('RECIPIENT', 'Recipient')], required=True, default="RECIPIENT")
     ups_package_weight_unit = fields.Selection([('LBS', 'Pounds'), ('KGS', 'Kilograms')], default='LBS')

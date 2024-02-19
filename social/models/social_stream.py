@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import logging
 import requests
 
 from odoo import models, fields, api
+
+_logger = logging.getLogger(__name__)
 
 
 class SocialStream(models.Model):
@@ -60,8 +63,8 @@ class SocialStream(models.Model):
             # and/or a slow response from their side
             try:
                 new_content |= stream._fetch_stream_data()
-            except requests.exceptions.ReadTimeout:
-                pass
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+                _logger.warning("Failed to fetch %s data.", stream.name, exc_info=True)
 
         return new_content
 

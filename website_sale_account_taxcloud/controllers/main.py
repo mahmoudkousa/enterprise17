@@ -7,17 +7,21 @@ from odoo.exceptions import AccessError, MissingError, ValidationError
 
 class WebsiteSale(main.WebsiteSale):
 
-    def _get_shop_payment_values(self, order, **kwargs):
-        res = {}
-        res['on_payment_step'] = True
-
+    def _get_shop_payment_errors(self, order):
+        errors = super()._get_shop_payment_errors(order)
         if order.fiscal_position_id.is_taxcloud:
             try:
                 order.validate_taxes_on_sales_order()
             except ValidationError:
-                res.setdefault('errors', []).append((_("Validation Error"), _("This address does not appear to be valid. Please make sure it has been filled in correctly.")))
+                errors.append((
+                    _("Validation Error"),
+                    _("This address does not appear to be valid. Please make sure it has been filled in correctly."),
+                ))
+        return errors
 
-        res.update(super(WebsiteSale, self)._get_shop_payment_values(order, **kwargs))
+    def _get_shop_payment_values(self, order, **kwargs):
+        res = super()._get_shop_payment_values(order, **kwargs)
+        res['on_payment_step'] = True
         return res
 
     def _update_website_sale_delivery_return(self, order, **post):

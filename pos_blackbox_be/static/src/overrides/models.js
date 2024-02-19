@@ -37,7 +37,7 @@ patch(PosStore.prototype, {
     async pushProFormaOrder(order) {
         order.receipt_type = order.get_total_with_tax() >= 0 ? "PS" : "PR";
         await this.sendDraftToServer();
-        this.pushToBlackbox(order);
+        await this.pushToBlackbox(order);
     },
     async pushToBlackbox(order) {
         try {
@@ -121,8 +121,10 @@ patch(PosStore.prototype, {
         order.blackbox_date = data.value.date.replace(/(\d{4})(\d{2})(\d{2})/g, '$3-$2-$1');
     },
     async _syncTableOrdersToServer() {
-        for (const order of this.ordersToUpdateSet) {
-            await this.pushProFormaOrder(order);
+        if (this.useBlackBoxBe()) {
+            for (const order of this.ordersToUpdateSet) {
+                await this.pushProFormaOrder(order);
+            }
         }
         super._syncTableOrdersToServer();
     },
@@ -133,15 +135,13 @@ patch(PosStore.prototype, {
             return super.cashierHasPriceControlRights();
         }
     },
-    getReceiptHeaderData() {
+    getReceiptHeaderData(order) {
         const result = super.getReceiptHeaderData(...arguments);
-        if(this.useBlackBoxBe()) {
-            const order = this.get_order();
-
-            result.useBlackBoxBe = this.useBlackBoxBe();
+        result.useBlackBoxBe = this.useBlackBoxBe();
+        result.posIdentifier = this.config.name;
+        if (order && this.useBlackBoxBe()) {
             result.receipt_type = order.receipt_type;
             result.blackboxDate = order.blackbox_date;
-            result.posIdentifier = this.config.name;
         }
         return result;
     }
@@ -235,7 +235,7 @@ patch(Order.prototype, {
             const order = this.pos.get_order();
             result.orderlines = result.orderlines.map((l) => ({
                 ...l,
-                price: l.price + " " + l.taxLetter,
+                price: l.price === "free" ? l.price : l.price + " " + l.taxLetter,
             }));
             result.tax_details = result.tax_details.map((t) => ({
                 ...t,

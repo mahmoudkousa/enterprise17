@@ -51,8 +51,7 @@ QUnit.test("Message list loads new messages on scroll", async () => {
     await contains(".o-mail-Message", { count: 60 });
 });
 
-QUnit.skip("Message list is scrolled to new message after posting a message", async () => {
-    // skip because the feature no long works since https://github.com/odoo/odoo/pull/127889
+QUnit.test("Message list is scrolled to new message after posting a message", async () => {
     const pyEnv = await startServer();
     const partnerId = pyEnv["res.partner"].create({
         activity_ids: [],

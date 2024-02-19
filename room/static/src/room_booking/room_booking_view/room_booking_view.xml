@@ -2,7 +2,7 @@
 <templates>
     <t t-name="room.RoomBookingView">
         <div class="row d-flex g-0 h-lg-100 bg-white">
-            <div class="o_room_booking_main col-lg-8 position-relative d-flex flex-column h-lg-100 overflow-lg-auto">
+            <div class="o_room_booking_main col-lg-8 col-xl-9 position-relative d-flex flex-column h-lg-100 overflow-lg-auto">
                 <t t-if="state.scheduleBooking or state.bookingToEdit">
                     <RoomBookingForm bookings="state.bookings" createBooking.bind="scheduleBooking" cancel.bind="resetBookingForm" editBooking.bind="editBooking" bookingName="state.bookingName" bookingToEdit="state.bookingToEdit"/>
                 </t>

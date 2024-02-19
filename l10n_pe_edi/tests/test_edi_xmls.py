@@ -100,7 +100,7 @@ class TestEdiXmls(TestPeEdiCommon):
                         <ID>Detraccion</ID>
                         <PaymentMeansID>001</PaymentMeansID>
                         <PaymentPercent>10.0</PaymentPercent>
-                        <Amount currencyID="USD">472.00</Amount>
+                        <Amount currencyID="PEN">472.00</Amount>
                     </PaymentTerms>
                     <PaymentTerms>
                         <ID>FormaPago</ID>

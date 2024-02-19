@@ -24,7 +24,8 @@ class AccountAutoReconcileWizard(models.TransientModel):
     account_ids = fields.Many2many(
         comodel_name='account.account',
         string='Accounts',
-        domain="[('reconcile', '=', True), ('deprecated', '=', False), ('company_id', '=', company_id), ('internal_group', '!=', 'off_balance')]"
+        check_company=True,
+        domain="[('reconcile', '=', True), ('deprecated', '=', False), ('internal_group', '!=', 'off_balance')]",
     )
     partner_ids = fields.Many2many(
         comodel_name='res.partner',

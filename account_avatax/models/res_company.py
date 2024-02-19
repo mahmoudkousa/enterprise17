@@ -123,14 +123,25 @@ class ResConfigSettings(models.TransientModel):
         client = self.env['account.external.tax.mixin']._get_client(self.company_id)
         query_result = client.ping()
 
+        html_content = self._format_response(query_result)
+
         return {
             'name': _('Test Result'),
             'type': 'ir.actions.act_window',
             'res_model': 'avatax.connection.test.result',
-            'res_id': self.env['avatax.connection.test.result'].create({'server_response': json.dumps(query_result)}).id,
+            'res_id': self.env['avatax.connection.test.result'].create({'server_response': html_content}).id,
             'target': 'new',
             'views': [(False, 'form')],
         }
+
+    def _format_response(self, query_result):
+        html_content = _("Authentication success.") if query_result['authenticated'] else _("Authentication failed.")
+
+        html_content += '<ul>'
+        for key, value in query_result.items():
+            html_content += f'<li><span class="fw-bold">{key.capitalize()}:</span> {value}</li>'
+        html_content += '</ul>'
+        return html_content
 
     def avatax_log(self):
         self.env['account.external.tax.mixin']._enable_external_tax_logging('account_avatax.log.end.date')

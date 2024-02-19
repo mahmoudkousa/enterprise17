@@ -130,17 +130,11 @@ export class PlanningGanttModel extends GanttModel {
      */
     _addProgressBarInfo(_, rows) {
         super._addProgressBarInfo(...arguments);
-        for (const row of rows) {
-            if (row.progressBar) {
-                if (row.progressBar.max_value_formatted) {
-                    row.progressBar.max_value_formatted += _t(" h");
-                    row.progressBar.percentage = formatPercentage(Math.round(row.progressBar.ratio) / 100);
-                }
-                if (row.progressBar.value_formatted) {
-                    row.progressBar.value_formatted += _t(" h");
-                }
+        rows.forEach(row => {
+            if (row.progressBar?.max_value_formatted) {
+                row.progressBar.percentage = formatPercentage(Math.round(row.progressBar.ratio / 100));
             }
-        }
+        });
     }
 
     /**

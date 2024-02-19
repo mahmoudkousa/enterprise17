@@ -57,10 +57,12 @@ class GenerateSimulationLink(models.TransientModel):
                 car_is_driver = self.env['fleet.vehicle'].search([
                     ('future_driver_id', '=', False),
                     ('driver_id', 'in', partner.ids),
+                    ('vehicle_type', '=', 'car'),
                 ], limit=1)
                 car_is_future_driver = self.env['fleet.vehicle'].search([
                     ('future_driver_id', 'in', partner.ids),
                     ('driver_id', '=', False),
+                    ('vehicle_type', '=', 'car'),
                 ], limit=1)
                 car = car_is_driver or car_is_future_driver
             wizard.car_id = car if car else False

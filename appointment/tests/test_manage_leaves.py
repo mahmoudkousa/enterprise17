@@ -129,3 +129,42 @@ class AppointmentManageLeaveTest(AppointmentCommon):
              'slots_enddate': start_monday.date(),  # only test that day
              }
         )
+
+        # From here: Test last day availability.
+        # BXL TZ: Work hours 9h -> 19h / Appt slots 9h -> 21h / Leave on resources' calendar 15h -> 16h
+        start_sunday = datetime(2022, 2, 13, 7, 0, 0)
+        appt_type.slot_ids.end_hour = 21
+
+        # 9 Available slots: 9h -> 15h and 16h -> 19h
+        with freeze_time(start_sunday):
+            slots = appt_type._get_appointment_slots('Europe/Brussels')
+        self.assertEqual(len(self._filter_appointment_slots(slots)), 9, 'Leaves, bookings and work hours should be taken into account on last day')
+
+        # Test with NOW in different days: 22h SAT UTC / 11h SUN NZ
+        # Work hours: 4h -> 7h UTC / 17h -> 20h NZ
+        # Appt slots: 4h -> 8h UTC / 17h -> 21h NZ
+        start_saturday_UTC = datetime(2022, 2, 12, 22, 0, 0)
+        calendar.attendance_ids.write({'hour_from': 4, 'hour_to': 7})
+        appt_type.appointment_tz = 'Pacific/Auckland'
+        appt_type.slot_ids.start_hour = 17
+        self.env['calendar.event'].create([{
+            'name': 'Resource Test Booking',
+            'appointment_type_id': appt_type.id,
+            'booking_line_ids': [(0, 0, {
+                'appointment_resource_id': resource.id,
+                'capacity_reserved': 1,
+                'capacity_used': 1,
+            }) for resource in appt_type.resource_ids],
+            'start': datetime(2022, 2, 14, 4, 0, 0),
+            'stop': datetime(2022, 2, 14, 5, 0, 0),
+        }])
+        self.env['appointment.manage.leaves'].sudo().create({
+            'calendar_id': calendar.id,
+            'leave_start_dt': datetime(2022, 2, 14, 5, 0, 0),
+            'leave_end_dt': datetime(2022, 2, 14, 6, 0, 0),
+        }).action_create_leave()
+
+        # 1 Available appt slot: 6h -> 7h UTC. Other ones are booked / on leave / outside work hours.
+        with freeze_time(start_saturday_UTC):
+            slots = appt_type._get_appointment_slots('UTC')
+        self.assertEqual(len(self._filter_appointment_slots(slots)), 1, 'Leaves, bookings and work hours should be taken into account on last day')

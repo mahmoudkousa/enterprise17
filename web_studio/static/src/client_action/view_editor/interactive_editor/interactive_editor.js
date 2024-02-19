@@ -9,6 +9,7 @@ import {
     isToXpathEquivalentFromXpath,
     cleanHooks,
     getActiveHook,
+    getCurrencyField,
     getHooks,
     hookPositionTolerance,
     randomName,
@@ -19,7 +20,6 @@ import {
     SelectionValuesEditor,
     RelationalFieldConfigurator,
     RelatedChainBuilder,
-    getCurrencyField,
     FilterConfiguration,
 } from "@web_studio/client_action/view_editor/interactive_editor/field_configuration/field_configuration";
 import {
@@ -495,7 +495,7 @@ export class InteractiveEditor extends Component {
             }
         }
 
-        if (fieldType === "monetary") {
+        if (fieldType === "monetary" || (fieldType === "related" && newNode.field_description?.type === 'monetary')) {
             this.setCurrencyInfos(newNode.field_description);
         }
 
@@ -523,7 +523,6 @@ export class InteractiveEditor extends Component {
                 Component: RelatedChainBuilder,
                 componentProps: {
                     resModel: this.viewEditorModel.resModel,
-                    shouldOpenCurrencyDialog: !this.hasCurrencyField(),
                 },
             };
         }
@@ -571,10 +570,6 @@ export class InteractiveEditor extends Component {
             this.setAutoClick(targetInfo, operation.node);
         }
         this.viewEditorModel.doOperation(operation);
-    }
-
-    hasCurrencyField() {
-        return getCurrencyField(this.viewEditorModel.fields);
     }
 
     setCurrencyInfos(object) {

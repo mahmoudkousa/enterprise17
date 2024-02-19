@@ -1,51 +1,20 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo.tests.common import Form, TransactionCase
+from odoo.tests.common import Form
+from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
 
-class TestCommissionsSetup(TransactionCase):
+class TestCommissionsSetup(AccountTestInvoicingCommon):
 
     def _setup_accounting(self):
-        self.account_receivable = self.env['account.account'].create({
-            'code': '...',
-            'name': '...',
-            'account_type': 'asset_receivable',
-            'company_id': self.company.id,
-            'reconcile': True,
-        })
-
-        self.account_sale = self.env['account.account'].create({
-            'code': 'SAL',
-            'name': 'sales',
-            'reconcile': True,
-            'account_type': 'income',
-        })
-
-        self.bank_journal = self.env['account.journal'].create({
-            'name': '...',
-            'code': '...',
-            'type': 'bank',
-        })
-
-        self.sale_journal = self.env['account.journal'].create({
-            'name': 'sales',
-            'code': 'comSA',
-            'type': 'sale',
-        })
+        self.account_receivable = self.company_data['default_account_receivable']
+        self.account_sale = self.company_data['default_account_revenue']
+        self.bank_journal = self.company_data['default_journal_bank']
 
         (self.bank_journal.inbound_payment_method_line_ids + self.bank_journal.outbound_payment_method_line_ids)\
             .filtered(lambda x: x.code != 'manual')\
             .unlink()
-
-        account_journal_payment_debit_account = self.env['account.account'].create({
-            'name': 'Test account',
-            'account_type': 'asset_receivable',
-            'company_id': self.company.id,
-            'reconcile': True,
-            'code': 'testCode',
-        })
-        self.company.account_journal_payment_debit_account_id = account_journal_payment_debit_account.id
 
     def _make_partners(self):
         self.referrer = self.env['res.partner'].create({
@@ -220,7 +189,7 @@ class TestCommissionsSetup(TransactionCase):
     def setUp(self):
         super(TestCommissionsSetup, self).setUp()
 
-        self.company = self.env.ref('base.main_company')
+        self.company = self.company_data['company']
 
         # Test with the following access rights.
         groups = [

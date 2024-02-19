@@ -20,8 +20,8 @@ export const patchListRendererStudio = () => ({
         this.studioService.open();
     },
 
-    get isStudioEditable() {
-        return !this.studioService.mode && super.isStudioEditable;
+    isStudioEditable() {
+        return !this.studioService.mode && super.isStudioEditable();
     },
 });
 

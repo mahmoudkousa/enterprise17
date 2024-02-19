@@ -598,7 +598,7 @@ export class ViewEditorModel extends Reactive {
         return this._fieldsAllowedRename.has(fieldName);
     }
 
-    async renameField(fieldName, newName, autoUnique = true) {
+    async renameField(fieldName, newName, { label, autoUnique = true } = {}) {
         // Sanitization
         newName = newName
             .toLowerCase()
@@ -634,6 +634,7 @@ export class ViewEditorModel extends Reactive {
             model: this.resModel,
             old_name: fieldName,
             new_name: newName,
+            new_label: label,
         });
 
         this._snackBar.add(prom);
@@ -688,22 +689,32 @@ export class ViewEditorModel extends Reactive {
 
     /** Arch Edition */
     async _editView(operations) {
+        const context = {
+            ...this._services.user.context,
+            ...(this._studio.editedAction.context || {}),
+            lang: false, studio: true,
+        };
         return this._rpc("/web_studio/edit_view", {
             view_id: this.mainView.id,
             studio_view_arch: this.studioViewArch,
             operations: operations,
             model: this.resModel,
-            context: { ...this._services.user.context, lang: false, studio: true },
+            context,
         });
     }
 
     async _editViewArch(viewId, viewArch) {
+        // We write views in the base language to make sure we do it on the source term field
+        // of ir.ui.view
+        const context = {
+            ...this._services.user.context,
+            ...(this._studio.editedAction.context || {}),
+            lang: false, studio: true,
+        };
         const result = await this._rpc("/web_studio/edit_view_arch", {
             view_id: viewId,
             view_arch: viewArch,
-            // We write views in the base language to make sure we do it on the source term field
-            // of ir.ui.view
-            context: { ...this._services.user.context, lang: false, studio: true },
+            context,
         });
         return result;
     }
@@ -764,6 +775,11 @@ export class ViewEditorModel extends Reactive {
                 title: _t("Error"),
             }
         );
+
+        Promise.resolve().then(() => {
+            throw error;
+        });
+
         this.resetSidebar("view");
         this.bus.trigger("error");
     }

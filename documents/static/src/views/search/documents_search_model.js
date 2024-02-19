@@ -144,10 +144,11 @@ export class DocumentsSearchModel extends SearchModel {
      * Updates the tag ids of a record matching the given value.
      * @param {number[]} recordIds
      * @param {number} valueId
+     * @param {number} x2mCommand command (4 to add a tag, 3 to remove it)
      */
-    async updateRecordTagId(recordIds, valueId) {
+    async updateRecordTagId(recordIds, valueId, x2mCommand = 4) {
         await this.orm.write("documents.document", recordIds, {
-            tag_ids: [[4, valueId]],
+            tag_ids: [[x2mCommand, valueId]],
         });
         this.trigger("update");
     }

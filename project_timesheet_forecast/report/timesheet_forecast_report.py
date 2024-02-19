@@ -56,6 +56,7 @@ class TimesheetForecastReport(models.Model):
             ) d
                 LEFT JOIN planning_slot F ON d::date >= F.start_datetime::date AND d::date <= F.end_datetime::date
                 LEFT JOIN hr_employee E ON F.employee_id = E.id
+                LEFT JOIN resource_resource R ON E.resource_id = R.id
         """
         return from_str
 
@@ -104,10 +105,21 @@ class TimesheetForecastReport(models.Model):
         """
         return where_str
 
+    @api.model
+    def _where(self):
+        where_str = """
+            WHERE
+                EXTRACT(ISODOW FROM d.date) IN (
+                    SELECT A.dayofweek::integer+1 FROM resource_calendar_attendance A WHERE A.calendar_id = R.calendar_id
+                )
+        """
+        return where_str
+
     def init(self):
-        query = "(%s %s) UNION (%s %s %s %s)" % (
+        query = "(%s %s %s) UNION (%s %s %s %s)" % (
             self._select(),
             self._from(),
+            self._where(),
             self._select_union(),
             self._from_union(),
             self._from_union_timesheet_uom(),

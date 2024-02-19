@@ -5,13 +5,13 @@ from unittest.mock import patch
 from freezegun import freeze_time
 
 from .sign_request_common import SignRequestCommon
-from odoo.tests.common import HttpCase
+from odoo.addons.base.tests.common import HttpCaseWithUserDemo
 from odoo.addons.sign.controllers.main import Sign
 from odoo.exceptions import AccessError, ValidationError
 from odoo.addons.website.tools import MockRequest
 from odoo.tests import tagged
 
-class TestSignControllerCommon(SignRequestCommon, HttpCase):
+class TestSignControllerCommon(SignRequestCommon, HttpCaseWithUserDemo):
     def setUp(self):
         super().setUp()
         self.SignController = Sign()
@@ -55,7 +55,7 @@ class TestSignController(TestSignControllerCommon):
         # we set a field the demo user does not have access and must not be able to set as auto_field
         self.patch(type(self.env['res.partner']).function, 'groups', 'base.group_system')
         with self.assertRaises(AccessError):
-            text_type.with_user(self.env.ref('base.user_demo')).auto_field = 'function'
+            text_type.with_user(self.user_demo).auto_field = 'function'
 
     # test auto_field with multiple sub steps
     def test_sign_controller_multi_step_auto_field(self):

@@ -39,6 +39,16 @@ class TestHelpdeskKnowledgeCrossModuleFeatures(HttpCase):
             'res_id': article.id,
             'res_model': 'knowledge.article',
         })
+        cls.env['helpdesk.ticket'].create({
+            "name": "Test Ticket",
+            "team_id": cls.env.ref('helpdesk.helpdesk_team1').id,
+            "ticket_type_id": cls.env.ref('helpdesk.type_question').id,
+            "user_id": cls.env.ref('base.user_admin').id,
+            "partner_id": cls.env.ref('base.user_admin').partner_id.id,
+            "stage_id": cls.env.ref('helpdesk.stage_new').id,
+            "kanban_state": 'done',
+            "description": 'Test Description',
+        })
 
     # Embedded view block:
 

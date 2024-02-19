@@ -7,13 +7,13 @@
             <field name="count_picking_ready" position="after">
                 <field name="count_mo_confirmed" />
             </field>
-            <button name="get_action_picking_tree_ready_kanban" position="replace">
-                <button class="btn btn-primary" name="get_action_picking_tree_ready_kanban" type="object">
+            <span name="get_action_picking_tree_ready_kanban" position="replace">
+                <span class="row text-muted" name="get_action_picking_tree_ready_kanban" type="object">
                     <t t-if="record.code.raw_value == 'mrp_operation'" t-esc="record.count_mo_confirmed.value"/>
                     <t t-else="" t-esc="record.count_picking_ready.value"/>
                     To Process
-                </button>
-            </button>
+                </span>
+            </span>
         </field>
     </record>
 

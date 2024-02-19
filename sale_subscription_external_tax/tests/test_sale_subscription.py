@@ -23,6 +23,11 @@ class TestSaleSubscriptionExternalCommon:
              patch('odoo.addons.account_external_tax.models.account_external_tax_mixin.AccountExternalTaxMixin._compute_is_tax_computed_externally', is_computed_externally):
             yield mocked_set
 
+    @contextmanager
+    def patch_set_external_taxes_so(self, new_sale_set_external_taxes):
+        with patch('odoo.addons.sale_external_tax.models.sale_order.SaleOrder._set_external_taxes', new_sale_set_external_taxes):
+            yield
+
 
 @tagged("-at_install", "post_install")
 class TestSaleSubscriptionExternal(TestSubscriptionCommon, TestSaleSubscriptionExternalCommon):
@@ -58,3 +63,40 @@ class TestSaleSubscriptionExternal(TestSubscriptionCommon, TestSaleSubscriptionE
             [args[0] for args, kwargs in mocked_set.call_args_list],
             'Should have queried external taxes on the new invoice.'
         )
+
+    def test_03_subscription_fully_paid(self):
+        sub = self.subscription
+        self.assertGreater(sub.amount_tax, 0, 'Subscription should have taxes so this test can test what happens when Avatax overrides it.')
+
+        def new_set_external_taxes(self, mapped_taxes, summary):
+            """Simulate what happens for an exempt sale order: amounts that don't match the set tax."""
+            sub.amount_total = 21.00
+            sub.amount_tax = 0.00
+
+        # Calculate initial taxes
+        with self.patch_set_external_taxes(), self.patch_set_external_taxes_so(new_set_external_taxes):
+            sub.button_external_tax_calculation()
+
+        tx = self.env['payment.transaction'].sudo().create({
+            'payment_method_id': self.payment_method_id,
+            'amount': sub.amount_total,
+            'currency_id': sub.currency_id.id,
+            'provider_id': self.provider.id,
+            'reference': 'test',
+            'operation': 'online_redirect',
+            'partner_id': self.partner.id,
+            'sale_order_ids': sub.ids,
+            'state': 'done',
+        })
+        self.provider.journal_id.inbound_payment_method_line_ids |= self.env["account.payment.method.line"].sudo().create({
+            'payment_method_id': self.env["account.payment.method"].sudo().create({
+                'name': 'test',
+                'payment_type': 'inbound',
+                'code': 'none',
+            }).id,
+        })
+
+        with self.patch_set_external_taxes(), self.patch_set_external_taxes_so(new_set_external_taxes):
+            tx._reconcile_after_done()
+
+        self.assertTrue(sub._is_paid(), 'Subscription should be fully paid')

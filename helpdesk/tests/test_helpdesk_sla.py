@@ -6,7 +6,7 @@ from dateutil.relativedelta import relativedelta
 from datetime import datetime
 from freezegun import freeze_time
 
-from odoo import Command, fields
+from odoo import fields, Command
 from odoo.tests.common import TransactionCase
 
 NOW = datetime(2018, 10, 10, 9, 18)
@@ -18,7 +18,7 @@ class HelpdeskSLA(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super(HelpdeskSLA, cls).setUpClass()
-
+        cls.env.company.resource_calendar_id.tz = "Europe/Brussels"
         # we create a helpdesk user and a manager
         Users = cls.env['res.users'].with_context(tracking_disable=True)
         cls.main_company_id = cls.env.ref('base.main_company').id

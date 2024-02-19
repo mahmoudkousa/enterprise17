@@ -95,19 +95,22 @@ export class TemplateBehavior extends AbstractBehavior {
         if (!this.templateContent.el) {
             return;
         }
-        const blob = [new ClipboardItem({
-            "text/html": new Blob([this.templateContent.el.innerHTML], { type: "text/html" }),
-            "text/plain": new Blob([this.templateContent.el.innerHTML], { type: "text/plain" }),
-        })];
-        try {
-            await browser.navigator.clipboard.write(blob);
+        const selection = document.getSelection();
+        selection.removeAllRanges();
+        const range = new Range();
+        range.selectNodeContents(this.templateContent.el);
+        selection.addRange(range);
+        if (document.execCommand("copy")) {
+            // Nor the original `clipboard.write` function nor the polyfill
+            // written in `clipboard.js` does trigger the `odooEditor` `copy`
+            // handler, therefore `execCommand` should be called here so that
+            // html content is properly handled within the editor.
             this.popover.open(this.copyToClipboardButton.el, {
                 tooltip: _t("Content copied to clipboard."),
             });
             browser.setTimeout(this.popover.close, 800);
-        } catch (error) {
-            browser.console.warn(error);
         }
+        selection.removeAllRanges();
     }
 
     /**

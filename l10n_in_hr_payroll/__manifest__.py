@@ -35,7 +35,6 @@ Indian Payroll Salary Rules.
         'data/salary_rules/hr_salary_rule_worker_data.xml',
         'data/hr_contract_type_data.xml',
         'data/hr_rule_parameters_data.xml',
-        'data/resource_calendar_leaves_data.xml',
         'data/ir_sequence_data.xml',
         'views/hr_contract_views.xml',
         'views/res_users_views.xml',
@@ -50,9 +49,6 @@ Indian Payroll Salary Rules.
         'wizard/hr_yearly_salary_detail_view.xml',
         'views/report_hr_yearly_salary_detail_template.xml',
         'views/report_payroll_advice_template.xml',
-    ],
-    'demo': [
-        'demo/l10n_in_hr_payroll_demo.xml',
     ],
     'license': 'OEEL-1',
 }

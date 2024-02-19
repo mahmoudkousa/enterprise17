@@ -15,6 +15,7 @@ import { getRandomIcon } from '@knowledge/js/knowledge_utils';
 import KnowledgeIcon from '@knowledge/components/knowledge_icon/knowledge_icon';
 import MoveArticleDialog from '@knowledge/components/move_article_dialog/move_article_dialog';
 import PermissionPanel from '@knowledge/components/permission_panel/permission_panel';
+import { KnowledgeFormStatusIndicator } from "@knowledge/components/form_status_indicator/form_status_indicator";
 import HistoryDialog from '@web_editor/components/history_dialog/history_dialog';
 
 
@@ -262,14 +263,8 @@ class KnowledgeTopbar extends Component {
     }
 
     async unarchiveArticle() {
-        this.actionService.doAction(
-            await this.orm.call(
-                'knowledge.article',
-                'action_unarchive_article',
-                [this.props.record.resId]
-            ),
-            {stackPosition: 'replaceCurrentAction'}
-        );
+        await this.orm.call('knowledge.article', 'action_unarchive_article', [this.props.record.resId]);
+        await this.props.record.load();
     }
 
     /**
@@ -311,9 +306,6 @@ class KnowledgeTopbar extends Component {
      */
     async _onNameClick(event) {
         this.env.ensureArticleName();
-        window.setTimeout(() => {
-            event.target.select();
-        });
     }
 
 }
@@ -322,6 +314,7 @@ KnowledgeTopbar.props = {
     ...standardWidgetProps,
 };
 KnowledgeTopbar.components = {
+    KnowledgeFormStatusIndicator,
     KnowledgeIcon,
     PermissionPanel,
 };

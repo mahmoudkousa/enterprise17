@@ -2,7 +2,7 @@
 
 {
     'name': 'WhatsApp-Sale',
-    'category': 'Hidden/Tools',
+    'category': 'WhatsApp',
     'description': """This module integrates sale with WhatsApp""",
     'depends': ['sale', 'whatsapp'],
     'data': [

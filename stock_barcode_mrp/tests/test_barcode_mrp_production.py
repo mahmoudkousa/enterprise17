@@ -223,6 +223,81 @@ class TestMRPBarcodeClientAction(TestBarcodeClientAction):
         url = '/web?debug=assets#action=%s&active_id=%s' % (action.id, mo.id)
         self.start_tour(url, 'test_barcode_production_reserved_from_multiple_locations', login='admin', timeout=180)
 
+    def test_barcode_production_scan_other_than_reserved(self):
+        """ Process a production with a reserved untracked component and a lot tracked component.
+        Scan a different lot than the reserved lot and scan a different (location) component than
+        the reserved location."""
+        self.clean_access_rights()
+        grp_lot = self.env.ref('stock.group_production_lot')
+        grp_multi_loc = self.env.ref('stock.group_stock_multi_locations')
+        self.env.user.write({'groups_id': [(4, grp_lot.id, 0), (4, grp_multi_loc.id, 0)]})
+        picking_type_production = self.env['stock.picking.type'].search([
+            ('code', '=', 'mrp_operation'), ('company_id', '=', self.env.company.id)])
+        picking_type_production.restrict_scan_source_location = 'mandatory'
+        # Prepares a production for 2x final product, then process it in the Barcode App.
+        lot_01 = self.env['stock.lot'].create({
+            'name': 'lot_01',
+            'product_id': self.component_lot.id,
+            'company_id': self.env.company.id,
+        })
+        lot_02 = self.env['stock.lot'].create({
+            'name': 'lot_02',
+            'product_id': self.component_lot.id,
+            'company_id': self.env.company.id,
+        })
+        self.env['stock.quant'].create({
+            'quantity': 2,
+            'product_id': self.component01.id,
+            'location_id': self.stock_location.id,
+        })
+        self.env['stock.quant'].create({
+            'quantity': 2,
+            'product_id': self.component01.id,
+            'location_id': self.shelf1.id,
+        })
+        self.env['stock.quant'].create({
+            'quantity': 2,
+            'product_id': self.component_lot.id,
+            'location_id': self.stock_location.id,
+            'lot_id': lot_01.id
+        })
+        self.env['stock.quant'].create({
+            'quantity': 2,
+            'product_id': self.component_lot.id,
+            'location_id': self.stock_location.id,
+            'lot_id': lot_02.id
+        })
+
+        untracked_product_bom_line = self.bom_lot.bom_line_ids.filtered(lambda l: l.product_id == self.component01)
+        untracked_product_bom_line.manual_consumption = True
+
+        mo_form = Form(self.env['mrp.production'])
+        mo_form.product_id = self.final_product_lot
+        mo_form.product_qty = 2
+        mo = mo_form.save()
+        mo.action_confirm()
+
+        action = self.env.ref('stock_barcode_mrp.stock_barcode_mo_client_action')
+        url = '/web?debug=assets#action=%s&active_id=%s' % (action.id, mo.id)
+        self.start_tour(url, 'test_barcode_production_scan_other_than_reserved', login='admin', timeout=180)
+
+        # Checks move lines values after MO is completed.
+        self.assertEqual(mo.state, "done")
+        # ensure that lot ml not scanned by validation time is removed
+        self.assertEqual(len(mo.move_raw_ids.move_line_ids), 2)
+        self.assertRecordValues(mo.move_raw_ids, [
+            {'product_id': self.component01.id, 'product_uom_qty': 2, 'quantity': 2, 'location_id': self.stock_location.id},
+            {'product_id': self.component_lot.id, 'product_uom_qty': 2, 'quantity': 2, 'lot_ids': lot_02, 'location_id': self.stock_location.id},
+        ])
+        self.assertRecordValues(mo.move_raw_ids.move_line_ids, [
+            {'product_id': self.component01.id, 'quantity': 2, 'location_id': self.shelf1.id},
+            {'product_id': self.component_lot.id, 'quantity': 2, 'lot_id': lot_02, 'location_id': self.stock_location.id},
+        ])
+        self.assertRecordValues(mo.finished_move_line_ids, [
+            {'product_id': self.final_product_lot.id, 'quantity': 2},
+        ])
+        self.assertEqual(mo.finished_move_line_ids.lot_id.name, "finished_lot")
+
     def test_barcode_production_component_no_stock(self):
         """Create MO from barcode for final product with bom but component has not stock
         """
@@ -237,3 +312,72 @@ class TestMRPBarcodeClientAction(TestBarcodeClientAction):
         action_id = self.env.ref('stock_barcode.stock_picking_type_action_kanban')
         url = "/web#action=" + str(action_id.id)
         self.start_tour(url, 'test_barcode_production_component_no_stock', login='admin', timeout=180)
+
+    def test_barcode_production_add_scrap(self):
+        """ Process a production where one of the component is scraped
+        """
+        self.clean_access_rights()
+        # Creates a BoM.
+        component02 = self.env['product.product'].create({
+            'name': 'Compo 02',
+            'type': 'product',
+            'barcode': 'compo02',
+        })
+        self.env['mrp.bom'].create({
+            'product_tmpl_id': self.final_product.product_tmpl_id.id,
+            'product_qty': 1.0,
+            'bom_line_ids': [
+                (0, 0, {'product_id': self.component01.id, 'product_qty': 1.0}),
+                (0, 0, {'product_id': component02.id, 'product_qty': 1.0}),
+            ],
+        })
+        # Adds some quantities in stock for the components.
+        for component in [self.component01, component02]:
+            self.env['stock.quant'].create({
+                'quantity': 99,
+                'product_id': component.id,
+                'location_id': self.stock_location.id,
+            })
+
+        action_id = self.env.ref('stock_barcode.stock_picking_type_action_kanban')
+        url = "/web#action=" + str(action_id.id)
+        self.start_tour(url, 'test_barcode_production_add_scrap', login='admin', timeout=180)
+        mo = self.env['mrp.production'].search([], order='id desc', limit=1)
+        self.assertEqual(mo.scrap_count, 1)
+        self.assertEqual(mo.scrap_ids.product_id.name, 'Compo 01')
+
+    def test_barcode_production_add_byproduct(self):
+        """ Process a production where we add a byproduct.
+        We ensure the final product can't be added as a byproduct.
+        """
+        self.clean_access_rights()
+        grp_by_product = self.env.ref('mrp.group_mrp_byproducts')
+        self.env.user.write({'groups_id': [(4, grp_by_product.id, 0)]})
+        # Creates a BoM.
+        component02 = self.env['product.product'].create({
+            'name': 'Compo 02',
+            'type': 'product',
+            'barcode': 'compo02',
+        })
+        self.env['mrp.bom'].create({
+            'product_tmpl_id': self.final_product.product_tmpl_id.id,
+            'product_qty': 1.0,
+            'bom_line_ids': [
+                (0, 0, {'product_id': self.component01.id, 'product_qty': 1.0}),
+                (0, 0, {'product_id': component02.id, 'product_qty': 1.0}),
+            ],
+        })
+        # Adds some quantities in stock for the components.
+        for component in [self.component01, component02]:
+            self.env['stock.quant'].create({
+                'quantity': 99,
+                'product_id': component.id,
+                'location_id': self.stock_location.id,
+            })
+
+        action_id = self.env.ref('stock_barcode.stock_picking_type_action_kanban')
+        url = "/web#action=" + str(action_id.id)
+        self.start_tour(url, 'test_barcode_production_add_byproduct', login='admin', timeout=180)
+        mo = self.env['mrp.production'].search([], order='id desc', limit=1)
+        self.assertEqual(len(mo.move_byproduct_ids), 1)
+        self.assertEqual(mo.move_byproduct_ids.product_id.display_name, 'By Product')

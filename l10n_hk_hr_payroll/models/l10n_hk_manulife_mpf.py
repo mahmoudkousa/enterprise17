@@ -106,7 +106,7 @@ class L10nHkManulifeMpf(models.Model):
 
         main_data = {
             'company_name': self.company_id.l10n_hk_employer_name,
-            'sub_scheme_no': self.manulife_mpf_scheme + '-01',
+            'sub_scheme_no': self.manulife_mpf_scheme[1:] + '-01',
             'cheque_no': self.cheque_no or '',
             'second_cheque_no': self.second_cheque_no or '',
         }
@@ -119,8 +119,8 @@ class L10nHkManulifeMpf(models.Model):
                 code: sum(all_line_values[code][p.id]['total'] for p in payslips)
                 for code in line_codes}
 
-            employees_data.append({
-                'member_acount': not line.employee_id.identification_id and line.employee_id.l10n_hk_mpf_manulife_account or '',
+            employee_data = {
+                'member_acount': line.employee_id.l10n_hk_mpf_manulife_account or '',
                 'hkid': line.employee_id.identification_id or line.employee_id.passport_id or '',
                 'surname': line.employee_id.l10n_hk_surname or '',
                 'given_name': line.employee_id.l10n_hk_given_name or '',
@@ -135,7 +135,12 @@ class L10nHkManulifeMpf(models.Model):
                 'amount_surcharge': line.amount_surcharge,
                 'basic_salary': employee.contract_id.wage,
                 'last_date_of_employment': employee.contract_id.date_end.strftime('%m/%d/%Y') if employee.contract_id.date_end and employee.contract_id.date_end <= end_period else '',
-            })
+            }
+            if not employee_data['member_acount'] and employee_data['hkid']:
+                employee_data['surname'] = ''
+                employee_data['given_name'] = ' '.join([line.employee_id.l10n_hk_surname, line.employee_id.l10n_hk_given_name])
+            employees_data.append(employee_data)
+
         total_data = {
             'total_amount_eemc': abs(sum(all_line_values['EEMC'][p.id]['total'] for p in all_payslips)),
             'total_amount_ermc': abs(sum(all_line_values['ERMC'][p.id]['total'] for p in all_payslips)),

@@ -3,7 +3,7 @@
 from markupsafe import Markup
 
 from odoo.addons.mrp_workorder.tests.common import TestMrpWorkorderCommon
-from odoo.tests import Form, HttpCase, tagged
+from odoo.tests import Form
 
 
 class TestWorkorderClientActionCommon(TestMrpWorkorderCommon):
@@ -15,6 +15,7 @@ class TestWorkorderClientActionCommon(TestMrpWorkorderCommon):
     @classmethod
     def setUpClass(cls):
         super(TestWorkorderClientActionCommon, cls).setUpClass()
+        cls.env.ref('base.user_admin').name = "Mitchell Admin"
         cls.picking_type_manufacturing = cls.env.ref('stock.warehouse0').manu_type_id
         cls.user_admin = cls.env.ref('base.user_admin')
         cls.potion = cls.env['product.product'].create({

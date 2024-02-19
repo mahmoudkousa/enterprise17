@@ -4,7 +4,7 @@
 {
     'name': 'France - Accounting Reports',
     'countries': ['fr'],
-    'version': '1.1',
+    'version': '1.2',
     'description': """
 Accounting reports for France
 ================================

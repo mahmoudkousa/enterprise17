@@ -118,10 +118,12 @@ export class DocumentsKanbanRenderer extends KanbanRenderer {
     }
 
     getDocumentsInspectorProps() {
+        const documents = this.props.inspectedDocuments.length
+            ? this.props.inspectedDocuments
+            : this.props.list.selection;
+        const documentsIds = documents.map((doc) => doc.resId);
         return {
-            documents: this.props.inspectedDocuments.length
-                ? this.props.inspectedDocuments
-                : this.props.list.selection,
+            documents: this.props.list.records.filter((rec) => documentsIds.includes(rec.resId)),
             count: this.props.list.model.useSampleModel ? 0 : this.props.list.count,
             fileSize: this.props.list.model.fileSize,
             archInfo: this.props.archInfo,

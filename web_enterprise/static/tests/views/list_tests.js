@@ -6,6 +6,11 @@ import { session } from "@web/session";
 import { ListRenderer } from "@web/views/list/list_renderer";
 import { browser } from "@web/core/browser/browser";
 import { patchListRendererDesktop } from "@web_enterprise/views/list/list_renderer_desktop";
+import { doAction, getActionManagerServerData } from "@web/../tests/webclient/helpers";
+import { createEnterpriseWebClient } from "@web_enterprise/../tests/helpers";
+import { registry } from "@web/core/registry";
+import { homeMenuService } from "@web_enterprise/webclient/home_menu/home_menu_service";
+import { enterpriseSubscriptionService } from "@web_enterprise/webclient/home_menu/enterprise_subscription_service";
 
 let config;
 let serverData;
@@ -267,6 +272,58 @@ QUnit.module(
             await click(target.querySelectorAll(".nav-link")[0]);
             assert.containsOnce(target, ".o_field_widget");
             assert.containsNone(target, ".o_optional_columns_dropdown_toggle");
+        });
+
+        QUnit.test("upsell studio feature is not polluted by another view", async (assert) => {
+            patchWithCleanup(session, { is_system: true });
+
+            const serviceRegistry = registry.category("services");
+            serviceRegistry.add("home_menu", homeMenuService);
+            serviceRegistry.add("enterprise_subscription", enterpriseSubscriptionService);
+
+            serverData = getActionManagerServerData();
+
+            serverData.views = {
+                "partner,false,list": `<tree><field name="display_name" /> <field name="name" optional="1" /></tree>`,
+                "partner,false,search": `<search />`,
+            };
+
+            const wc = await createEnterpriseWebClient({ serverData });
+            await doAction(wc, {
+                xml_id: "editable",
+                id: 999,
+                type: "ir.actions.act_window",
+                views: [[false, "list"]],
+                res_model: "partner",
+            });
+
+            await click(target, ".o_optional_columns_dropdown_toggle");
+            let dropdown = target.querySelector(".o_optional_columns_dropdown");
+            assert.containsN(dropdown, ".dropdown-item", 2);
+            assert.containsOnce(dropdown, ".dropdown-item-studio");
+
+            await doAction(wc, {
+                id: 99,
+                xml_id: "in_dialog",
+                type: "ir.actions.act_window",
+                views: [[false, "list"]],
+                res_model: "partner",
+                target: "new",
+            });
+
+            await click(target, ".modal .o_optional_columns_dropdown_toggle");
+            assert.containsOnce(target, ".modal .dropdown-item");
+            assert.containsNone(target, ".modal .dropdown-item-studio");
+            await click(target, ".modal-header .btn-close");
+            assert.containsNone(target, ".modal");
+
+            await click(target, ".o_optional_columns_dropdown_toggle");
+            assert.containsNone(target, ".o_optional_columns_dropdown_toggle o-dropdown-menu");
+            await click(target, ".o_optional_columns_dropdown_toggle");
+
+            dropdown = target.querySelector(".o_optional_columns_dropdown");
+            assert.containsN(dropdown, ".dropdown-item", 2);
+            assert.containsOnce(dropdown, ".dropdown-item-studio");
         });
     }
 );

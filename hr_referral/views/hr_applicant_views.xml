@@ -10,6 +10,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='medium_id']" position="after">
                 <field name="ref_user_id" domain="[('share', '=', False)]" widget="many2one_avatar"/>
+                <field name="is_accessible_to_current_user" invisible="1"/>
             </xpath>
         </field>
     </record>
@@ -26,6 +27,14 @@
                 <filter string="Referred By" name="ref_by_user_id" context="{'group_by':'ref_user_id'}"/>
             </xpath>
         </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="hr_recruitment.crm_case_categ0_act_job">
+        <field name="domain">[('is_accessible_to_current_user', '=', True)]</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="hr_recruitment.action_hr_job_applications">
+        <field name="domain">[('is_accessible_to_current_user', '=', True)]</field>
     </record>
 
     <record id="view_hr_applicant_employee_referral_kanban" model="ir.ui.view">

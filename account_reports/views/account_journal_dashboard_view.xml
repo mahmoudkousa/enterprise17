@@ -33,7 +33,7 @@
             <!-- Replace the displayed amount by an action opening the unmatched payments view -->
             <xpath expr="//div[@id='dashboard_bank_cash_outstanding_balance']" position="replace">
                 <div id="dashboard_bank_cash_outstanding_balance" class="col overflow-hidden text-start">
-                    <a type="action" name="%(account.action_account_all_payments)d" context="{'search_default_unmatched': True}">Payments</a>
+                    <a type="action" name="%(account.action_account_all_payments)d" context="{'search_default_unmatched': True, 'search_default_journal_id': id}">Payments</a>
                 </div>
             </xpath>
 

@@ -67,6 +67,8 @@ class DataMergeRecord(models.Model):
             raise NotImplementedError()
 
         cr = self._cr
+        # flush in case record was just created but not yet in database
+        self.env['data_merge.model'].flush_model()
         restrict_model_ids = self.env.context.get('data_merge_model_ids')
         if restrict_model_ids:
             cr.execute(
@@ -89,7 +91,7 @@ class DataMergeRecord(models.Model):
                  WHERE m.id IN (SELECT r.model_id FROM data_merge_record r)
                 """
             )
-        models_info = cr.fetchall()
+        models_info = [r for r in cr.fetchall() if r[0] in self.env]
         # Initial select id query to apply ir.rules and build Query object.
         query = self.env['data_merge.record'].with_context(active_test=False)._search([])
         if not models_info:
@@ -116,13 +118,10 @@ class DataMergeRecord(models.Model):
         )
 
         subqueries = []
+        subqueries_params = []
         if models_no_company and false_company_domain_is_true:
-            subqueries.append(
-                cr.mogrify(
-                    "SELECT id FROM data_merge_record WHERE res_model_id IN %s",
-                    [tuple(r[1] for r in models_no_company)],
-                ).decode(),
-            )
+            subqueries.append("SELECT id FROM data_merge_record WHERE res_model_id IN %s")
+            subqueries_params += [tuple(r[1] for r in models_no_company)]
 
         template_query = """
         SELECT dmr.id
@@ -140,18 +139,15 @@ class DataMergeRecord(models.Model):
             from_clause, where_clause, where_params = exp.query.get_sql()
             assert from_clause.startswith(f'"{Model._table}"')
 
-            subqueries.append(
-                cr.mogrify(
-                    template_query.format(
-                        model_table=Model._table,
-                        where_clause=where_clause,
-                        extra_joins=from_clause[len(f'"{Model._table}"'):],
-                    ),
-                    where_params + [model_id],
-                ).decode(),
-            )
+            subqueries.append(template_query.format(
+                model_table=Model._table,
+                where_clause=where_clause,
+                extra_joins=from_clause[len(f'"{Model._table}"'):]
+            ))
+            subqueries_params += where_params + [model_id]
+
         if subqueries:
-            query.add_where("data_merge_record.id IN ({})".format("\nUNION\n".join(subqueries)), [])
+            query.add_where("data_merge_record.id IN ({})".format("\nUNION\n".join(subqueries)), subqueries_params)
             return [('id', 'in', query)]
         else:
             # there was a nonempty models_info but no subqueries
@@ -189,7 +185,7 @@ class DataMergeRecord(models.Model):
             return dict()
 
         record_data = record.read(to_read)[0]
-        return {str(field_description(key)):str(format_value(value, self.env)) for key, value in record_data.items() if value and not hidden_field(key)}
+        return {str(field_description(key)):format_value(value, self.env) for key, value in record_data.items() if value and not hidden_field(key)}
 
     @api.depends('res_id')
     def _compute_field_values(self):

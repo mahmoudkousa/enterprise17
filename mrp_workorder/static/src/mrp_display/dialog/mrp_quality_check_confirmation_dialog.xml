@@ -55,24 +55,32 @@
             <div t-if="props.checkInstruction" class="o_tablet_instruction_note"
                  t-out="props.checkInstruction"/>
             <t t-set-slot="footer">
-                <t t-if="recordData.test_type === 'passfail'">
-                        <button class="btn btn-danger me-2" barcode_trigger="fail" t-on-click="fail">
-                            Fail
+                <div class="d-flex justify-content-between w-100">
+                    <div>
+                        <t t-if="recordData.test_type === 'passfail'">
+                            <button class="btn btn-danger me-2" barcode_trigger="fail" t-on-click="fail">
+                                Fail
+                            </button>
+                            <button class="btn btn-success me-2" barcode_trigger="pass" t-on-click="pass">
+                                Pass
+                            </button>
+                        </t>
+                        <button t-if="recordData.test_type === 'worksheet'" class="btn btn-primary me-2"
+                                t-on-click="openWorksheet">
+                            <i class="fa fa-pencil me-2"/>Fill in worksheet
                         </button>
-                        <button class="btn btn-success me-2" barcode_trigger="pass" t-on-click="pass">
-                            Pass
-                        </button>
-                    </t>
-                    <button t-if="recordData.test_type === 'worksheet'" class="btn btn-primary me-2"
-                            t-on-click="openWorksheet">
-                        <i class="fa fa-pencil me-2"/>Fill in worksheet
-                    </button>
-                    <button t-if="recordData.test_type !== 'passfail' || recordData.quality_state !== 'none'"
-                            class="btn btn-primary me-2" t-on-click="validate" t-esc="confirmLabel"
-                            t-att-barcode_trigger="recordData.test_type == 'print_label' ? 'Print' : 'Next'"/>
-                    <button t-if="['register_consumed_materials', 'register_byproducts'].includes(recordData.test_type)"
-                            class="btn btn-secondary me-2" t-on-click="continueProduction"
-                            barcode_trigger="continue">Continue consumption</button>
+                        <button t-if="recordData.test_type !== 'passfail' || recordData.quality_state !== 'none'"
+                                class="btn btn-primary me-2" t-on-click="validate" t-esc="confirmLabel"
+                                t-att-barcode_trigger="recordData.test_type == 'print_label' ? 'Print' : 'Next'"/>
+                        <button t-if="['register_consumed_materials', 'register_byproducts'].includes(recordData.test_type)"
+                                class="btn btn-secondary me-2" t-on-click="continueProduction"
+                                barcode_trigger="continue">Continue consumption</button>
+                    </div>
+                    <div>
+                        <button t-if="props.record.data.previous_check_id" t-on-click="back" class="btn btn-secondary me-2">&lt; Back</button>
+                        <button t-if="props.record.data.next_check_id" t-on-click="skip" class="btn btn-secondary">Skip &gt;</button>
+                    </div>
+                </div>
             </t>
         </Dialog>
         </div>

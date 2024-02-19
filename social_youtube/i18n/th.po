@@ -3,16 +3,17 @@
 # 	* social_youtube
 # 
 # Translators:
-# Wil Odoo, 2023
 # Wichanon Jamwutthipreecha, 2023
+# Wil Odoo, 2023
+# Rasareeyar Lappiam, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:21+0000\n"
+"POT-Creation-Date: 2024-01-05 13:47+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Wichanon Jamwutthipreecha, 2023\n"
+"Last-Translator: Rasareeyar Lappiam, 2024\n"
 "Language-Team: Thai (https://app.transifex.com/odoo/teams/41243/th/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -34,18 +35,13 @@ msgstr "123 วิว •"
 
 #. module: social_youtube
 #: model_terms:ir.ui.view,arch_db:social_youtube.social_stream_post_view_kanban
-msgid "<i class=\"fa fa-comments me-1\" title=\"Comments\"/>"
-msgstr ""
-
-#. module: social_youtube
-#: model_terms:ir.ui.view,arch_db:social_youtube.social_stream_post_view_kanban
-msgid "<i class=\"fa fa-thumbs-up me-1\" title=\"Likes\"/>"
-msgstr ""
+msgid "<i class=\"fa fa-thumbs-o-up me-1\" title=\"Likes\"/>"
+msgstr "<i class=\"fa fa-thumbs-o-up me-1\" title=\"ถูกใจ\"/>"
 
 #. module: social_youtube
 #: model_terms:ir.ui.view,arch_db:social_youtube.youtube_preview
 msgid "<span class=\"fw-bold\">Your YouTube Channel</span>"
-msgstr ""
+msgstr "<span class=\"fw-bold\">ช่อง YouTube ของคุณ</span>"
 
 #. module: social_youtube
 #: model_terms:ir.ui.view,arch_db:social_youtube.social_account_view_form
@@ -65,7 +61,7 @@ msgstr "การเข้าถึงบัญชีของคุณสาม
 #: model:ir.model.fields,help:social_youtube.field_social_account__youtube_access_token
 msgid ""
 "Access token provided by the YouTube API, this should never be set manually."
-msgstr "โทเคนการเข้าถึงที่จัดทำโดย YouTube API ไม่ควรตั้งค่าด้วยตนเอง"
+msgstr "โทเค็นการเข้าถึงที่จัดทำโดย YouTube API ไม่ควรตั้งค่าด้วยตนเอง"
 
 #. module: social_youtube
 #: model:ir.model.fields,field_description:social_youtube.field_social_account_revoke_youtube__account_id
@@ -85,7 +81,7 @@ msgstr "เกิดข้อผิดพลาด"
 #: code:addons/social_youtube/controllers/main.py:0
 #, python-format
 msgid "Auth endpoint did not provide a refresh token. Please try again."
-msgstr "จุดสิ้นสุดการตรวจสอบสิทธิ์ไม่ได้ให้โทเคนการรีเฟรช กรุณาลองอีกครั้ง"
+msgstr "จุดสิ้นสุดการตรวจสอบสิทธิ์ไม่ได้ให้รีเฟชรโทเค็น กรุณาลองอีกครั้ง"
 
 #. module: social_youtube
 #. odoo-javascript
@@ -94,11 +90,6 @@ msgstr "จุดสิ้นสุดการตรวจสอบสิทธ
 #, python-format
 msgid "Author Image"
 msgstr "รูปภาพผู้เขียน"
-
-#. module: social_youtube
-#: model_terms:ir.ui.view,arch_db:social_youtube.social_account_view_form
-msgid "By using our Social YouTube Application, you implicitly agree to the:"
-msgstr "ด้วยการใช้แอปพลิเคชันโซเชียล YouTube แสดงว่าคุณเห็นด้วยโดยปริยายต่อ:"
 
 #. module: social_youtube
 #: model_terms:ir.ui.view,arch_db:social_youtube.social_account_revoke_youtube_view_form
@@ -117,6 +108,14 @@ msgstr "ช่อง"
 #, python-format
 msgid "Clear"
 msgstr "ล้าง"
+
+#. module: social_youtube
+#. odoo-javascript
+#: code:addons/social_youtube/static/src/xml/social_youtube_templates.xml:0
+#: model_terms:ir.ui.view,arch_db:social_youtube.social_stream_post_view_kanban
+#, python-format
+msgid "Comments"
+msgstr "ความคิดเห็น"
 
 #. module: social_youtube
 #. odoo-python
@@ -160,6 +159,8 @@ msgid ""
 "Could not revoke your account.\n"
 "Error: %s"
 msgstr ""
+"ไม่สามารถเพิกถอนบัญชีของคุณได้\n"
+"ข้อผิดพลาด: %s"
 
 #. module: social_youtube
 #: model:ir.model.fields,field_description:social_youtube.field_social_account_revoke_youtube__create_uid
@@ -196,11 +197,12 @@ msgid ""
 "Expiration date of the Access Token provided by the YouTube API, this should"
 " never be set manually."
 msgstr ""
+"วันหมดอายุของโทเค็นการเข้าถึงที่ได้รับจาก YouTube API ไม่ควรตั้งค่าด้วยตนเอง"
 
 #. module: social_youtube
 #: model:ir.model.fields,field_description:social_youtube.field_social_account__youtube_access_token
 msgid "Google Access Token"
-msgstr "โทเคนการเข้าถึง Google"
+msgstr "โทเค็นการเข้าถึง Google"
 
 #. module: social_youtube
 #: model_terms:ir.ui.view,arch_db:social_youtube.social_account_view_form
@@ -210,7 +212,7 @@ msgstr "นโยบายความเป็นส่วนตัว Google"
 #. module: social_youtube
 #: model:ir.model.fields,field_description:social_youtube.field_social_account__youtube_refresh_token
 msgid "Google Refresh Token"
-msgstr "รีเฟรชโทเคน Google"
+msgstr "รีเฟรชโทเค็น Google"
 
 #. module: social_youtube
 #: model:ir.model.fields,field_description:social_youtube.field_social_account_revoke_youtube__id
@@ -262,11 +264,22 @@ msgid ""
 "Odoo will lose access to your YouTube account\n"
 "                        and delete all its related data from your database."
 msgstr ""
+"Odoo จะสูญเสียการเข้าถึงบัญชี YouTube ของคุณ\n"
+"                        และลบข้อมูลที่เกี่ยวข้องทั้งหมดออกจากฐานข้อมูลของคุณ"
 
 #. module: social_youtube
 #: model:ir.model.fields,help:social_youtube.field_social_post__youtube_video_privacy
 msgid "Once posted, set the video as Public/Private/Unlisted"
+msgstr "เมื่อโพสต์แล้ว ให้ตั้งค่าวิดีโอเป็นสาธารณะ/ส่วนตัว/ไม่เป็นสาธารณะ"
+
+#. module: social_youtube
+#: model_terms:ir.ui.view,arch_db:social_youtube.social_account_view_form
+msgid ""
+"Our YouTube Social application uses YouTube API Services.\n"
+"                        By using it, you implicitly agree to the:"
 msgstr ""
+"แอปพลิเคชัน YouTube Social ของเราใช้บริการ YouTube API\n"
+"                        ในการใช้งาน แสดงว่าคุณยอมรับโดยปริยายต่อ:"
 
 #. module: social_youtube
 #. odoo-python
@@ -298,7 +311,7 @@ msgstr "สาธารณะ"
 #: code:addons/social_youtube/controllers/main.py:0
 #, python-format
 msgid "Read More about YouTube Channel"
-msgstr ""
+msgstr "อ่านเพิ่มเติมเกี่ยวกับช่อง YouTube"
 
 #. module: social_youtube
 #. odoo-python
@@ -312,7 +325,7 @@ msgstr "เหตุผล:"
 msgid ""
 "Refresh token provided by the YouTube API, this should never be set "
 "manually."
-msgstr "โทเคนการรีเฟรชที่จัดทำโดย YouTube API ไม่ควรตั้งค่าด้วยตนเอง"
+msgstr "รีเฟรชโทเค็นที่จัดทำโดย YouTube API ไม่ควรตั้งค่าด้วยตนเอง"
 
 #. module: social_youtube
 #: model_terms:ir.ui.view,arch_db:social_youtube.social_account_view_form
@@ -322,28 +335,28 @@ msgstr "เพิกถอน"
 #. module: social_youtube
 #: model_terms:ir.ui.view,arch_db:social_youtube.social_account_revoke_youtube_view_form
 msgid "Revoke & Delete"
-msgstr ""
+msgstr "เพิกถอนและลบ"
 
 #. module: social_youtube
 #. odoo-python
 #: code:addons/social_youtube/models/social_account.py:0
 #, python-format
 msgid "Revoke Account"
-msgstr ""
+msgstr "เพิกถอนบัญชี"
 
 #. module: social_youtube
 #: model:ir.actions.act_window,name:social_youtube.social_account_revoke_youtube_action
 #: model:ir.model,name:social_youtube.model_social_account_revoke_youtube
 #: model_terms:ir.ui.view,arch_db:social_youtube.social_account_revoke_youtube_view_form
 msgid "Revoke YouTube Account"
-msgstr ""
+msgstr "เพิกถอนบัญชี YouTube"
 
 #. module: social_youtube
 #. odoo-python
 #: code:addons/social_youtube/models/social_account.py:0
 #, python-format
 msgid "Revoking access tokens is currently limited to YouTube accounts only."
-msgstr ""
+msgstr "ขณะนี้การเพิกถอนโทเค็นการเข้าถึงจำกัดเฉพาะบัญชี YouTube เท่านั้น"
 
 #. module: social_youtube
 #. odoo-javascript
@@ -440,7 +453,7 @@ msgstr "วิดีโอที่คุณพยายามเผยแพร
 #: code:addons/social_youtube/controllers/main.py:0
 #, python-format
 msgid "There is no channel linked with this YouTube account."
-msgstr ""
+msgstr "ไม่มีช่องที่เชื่อมโยงกับบัญชี YouTube นี้"
 
 #. module: social_youtube
 #: model_terms:ir.ui.view,arch_db:social_youtube.social_account_view_form
@@ -454,7 +467,7 @@ msgstr ""
 #. module: social_youtube
 #: model:ir.model.fields,field_description:social_youtube.field_social_account__youtube_token_expiration_date
 msgid "Token expiration date"
-msgstr "วันหมดอายุโทเคน"
+msgstr "วันหมดอายุของโทเค็น"
 
 #. module: social_youtube
 #. odoo-python
@@ -473,7 +486,7 @@ msgstr "ไม่ทราบ"
 #. module: social_youtube
 #: model:ir.model.fields.selection,name:social_youtube.selection__social_post__youtube_video_privacy__unlisted
 msgid "Unlisted"
-msgstr ""
+msgstr "ไม่อยู่ในรายการ"
 
 #. module: social_youtube
 #. odoo-javascript
@@ -494,7 +507,7 @@ msgstr "การอัปโหลดล้มเหลว กรุณาล�
 #: code:addons/social_youtube/static/src/js/social_youtube_upload_field.js:0
 #, python-format
 msgid "Uploading... %s%"
-msgstr ""
+msgstr "กำลังอัปโหลด... %s%"
 
 #. module: social_youtube
 #. odoo-javascript
@@ -532,7 +545,7 @@ msgstr "คำอธิบายวิดีโอ"
 #. module: social_youtube
 #: model:ir.model.fields,field_description:social_youtube.field_social_post__youtube_video_privacy
 msgid "Video Privacy"
-msgstr ""
+msgstr "ความเป็นส่วนตัวของวิดีโอ"
 
 #. module: social_youtube
 #: model_terms:ir.ui.view,arch_db:social_youtube.social_post_view_form
@@ -591,7 +604,7 @@ msgstr "YouTube"
 #. module: social_youtube
 #: model:ir.model.fields,field_description:social_youtube.field_social_post__youtube_access_token
 msgid "YouTube Access Token"
-msgstr "โทเคนการเข้าถึง YouTube"
+msgstr "โทเค็นการเข้าถึง YouTube"
 
 #. module: social_youtube
 #: model:ir.model.fields,field_description:social_youtube.field_social_post__youtube_video_category_id
@@ -601,7 +614,7 @@ msgstr "ไอดีหมวดหมู่ YouTube"
 #. module: social_youtube
 #: model:ir.model.fields,field_description:social_youtube.field_social_account__youtube_channel_id
 msgid "YouTube Channel ID"
-msgstr ""
+msgstr "รหัสช่อง YouTube"
 
 #. module: social_youtube
 #: model:ir.model.fields,help:social_youtube.field_social_account__youtube_channel_id
@@ -625,7 +638,7 @@ msgstr "จำนวนความคิดเห็นของ YouTube"
 #. module: social_youtube
 #: model_terms:ir.ui.view,arch_db:social_youtube.res_config_settings_view_form
 msgid "YouTube Developer Account"
-msgstr ""
+msgstr "บัญชีนักพัฒนา YouTube"
 
 #. module: social_youtube
 #: model:ir.model.fields,field_description:social_youtube.field_social_stream_post__youtube_dislikes_count
@@ -640,7 +653,7 @@ msgstr "ถูกใจ YouTube"
 #. module: social_youtube
 #: model:ir.model.fields,field_description:social_youtube.field_social_stream_post__youtube_likes_ratio
 msgid "YouTube Likes Ratio"
-msgstr ""
+msgstr "อัตราส่วนการกดไลค์ของ YouTube"
 
 #. module: social_youtube
 #: model:ir.model.fields,field_description:social_youtube.field_res_config_settings__youtube_oauth_client_id
@@ -660,7 +673,7 @@ msgstr "ตัวเลือกของ YouTube"
 #. module: social_youtube
 #: model_terms:ir.ui.view,arch_db:social_youtube.youtube_preview
 msgid "YouTube Placeholder"
-msgstr ""
+msgstr "ตัวยึดตำแหน่ง YouTube"
 
 #. module: social_youtube
 #: model:ir.model.fields,field_description:social_youtube.field_social_post__youtube_preview
@@ -670,7 +683,7 @@ msgstr "ดูตัวอย่าง YouTube"
 #. module: social_youtube
 #: model_terms:ir.ui.view,arch_db:social_youtube.social_account_view_form
 msgid "YouTube Terms of Service (ToS)"
-msgstr "YouTube Terms of Service (ToS)"
+msgstr "ข้อกำหนดในการให้บริการของ YouTube (ToS)"
 
 #. module: social_youtube
 #: model_terms:ir.ui.view,arch_db:social_youtube.social_post_view_kanban
@@ -682,7 +695,7 @@ msgstr "YouTube รูปภาพภาพตัวอย่าง"
 #: model:ir.model.fields,field_description:social_youtube.field_social_post__youtube_thumbnail_url
 #: model:ir.model.fields,field_description:social_youtube.field_social_stream_post__youtube_thumbnail_url
 msgid "YouTube Thumbnail Url"
-msgstr ""
+msgstr "URL ภาพขนาดย่อของ YouTube"
 
 #. module: social_youtube
 #: model:ir.model.fields,field_description:social_youtube.field_social_account__youtube_upload_playlist_id
@@ -718,7 +731,7 @@ msgstr "ชื่อวิดีโอ YouTube"
 #. module: social_youtube
 #: model:ir.model.fields,field_description:social_youtube.field_social_post__youtube_video_url
 msgid "YouTube Video Url"
-msgstr ""
+msgstr "URL วิดีโอ YouTube"
 
 #. module: social_youtube
 #: model:ir.model.fields,field_description:social_youtube.field_social_stream_post__youtube_views_count
@@ -731,7 +744,7 @@ msgstr "ยอดเข้าชม YouTube"
 #, python-format
 msgid "YouTube did not provide a valid access token or it may have expired."
 msgstr ""
-"YouTube ไม่ได้มอบโทเคนเพื่อการเข้าถึงที่ถูกต้อง หรือโทเคนอาจหมดอายุแล้ว"
+"YouTube ไม่ได้มอบโทเค็นเพื่อการเข้าถึงที่ถูกต้อง หรือโทเค็นอาจหมดอายุแล้ว"
 
 #. module: social_youtube
 #. odoo-python
@@ -757,7 +770,7 @@ msgstr "วิดีโอของคุณไม่มีชื่อหรื
 msgid ""
 "Your videos metadata including title and view counts (but never the video "
 "itself)"
-msgstr ""
+msgstr "ข้อมูลเมตาของวิดีโอของคุณ รวมถึงชื่อและยอดวิว (แต่ไม่ใช่วิดีโอ)"
 
 #. module: social_youtube
 #: model_terms:ir.ui.view,arch_db:social_youtube.social_post_view_form
@@ -775,4 +788,4 @@ msgstr "เช่น Odoo Social Tutorial"
 #. module: social_youtube
 #: model_terms:ir.ui.view,arch_db:social_youtube.social_account_view_form
 msgid "the Google Third-party app account access panel"
-msgstr ""
+msgstr "แผงการเข้าถึงบัญชีแอปบุคคลที่สามของ Google"

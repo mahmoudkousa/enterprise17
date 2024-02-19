@@ -9,13 +9,6 @@ patch(TimesheetGridDataPoint.prototype, {
      * @override
      */
     _getPreviousWeekTimesheetDomain() {
-        return Domain.and([super._getPreviousWeekTimesheetDomain(), [["project_id.has_helpdesk_team", "=", false]]]);
-    },
-
-    /**
-     * @override
-     */
-    _getFavoriteTaskDomain() {
-        return Domain.and([super._getFavoriteTaskDomain(), [["project_id.has_helpdesk_team", "=", false]]]);
+        return Domain.and([super._getPreviousWeekTimesheetDomain(), [["helpdesk_ticket_id", "=", false]]]);
     },
 });

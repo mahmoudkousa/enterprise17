@@ -113,10 +113,10 @@ class Picking(models.Model):
         cfdi_infos = self.env['l10n_mx_edi.document']._decode_cfdi_attachment(self.l10n_mx_edi_cfdi_attachment_id.raw)
 
         barcode_value_params = keep_query(
+            id=cfdi_infos['uuid'],
             re=cfdi_infos['supplier_rfc'],
             rr=cfdi_infos['customer_rfc'],
             tt=cfdi_infos['amount_total'],
-            id=cfdi_infos['uuid'],
         )
         barcode_sello = url_quote_plus(cfdi_infos['sello'][-8:], safe='=/').replace('%2B', '+')
         barcode_value = url_quote_plus(f'https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?{barcode_value_params}&fe={barcode_sello}')
@@ -235,7 +235,6 @@ class Picking(models.Model):
         issued_address = cfdi_values['issued_address']
 
         self.env['l10n_mx_edi.document']._add_base_cfdi_values(cfdi_values)
-        self.env['l10n_mx_edi.document']._add_certificate_cfdi_values(cfdi_values)
         self.env['l10n_mx_edi.document']._add_currency_cfdi_values(cfdi_values, company.currency_id)
         self.env['l10n_mx_edi.document']._add_document_name_cfdi_values(cfdi_values, self.name)
         self.env['l10n_mx_edi.document']._add_document_origin_cfdi_values(cfdi_values, self.l10n_mx_edi_cfdi_origin)
@@ -359,7 +358,7 @@ class Picking(models.Model):
         errors = self._l10n_mx_edi_cfdi_check_external_trade_config() \
                  + self._l10n_mx_edi_cfdi_check_picking_config()
         if errors:
-            self._l10n_mx_edi_cfdi_invoice_document_sent_failed("\n".join(errors))
+            self._l10n_mx_edi_cfdi_document_sent_failed("\n".join(errors))
             return
 
         # == Lock ==

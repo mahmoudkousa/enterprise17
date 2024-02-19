@@ -14,7 +14,7 @@ class TestTaskFlow(common.TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-
+        cls.env.company.resource_calendar_id.tz = "Europe/Brussels"
         cls.project_user = mail_new_test_user(
             cls.env, login='Armande',
             name='Armande Project_user', email='armande.project_user@example.com',

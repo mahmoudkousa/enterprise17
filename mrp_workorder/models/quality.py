@@ -419,11 +419,12 @@ class QualityCheck(models.Model):
                 continue
             vals.update({
                 'location_id': quant.location_id.id,
-                'qty_done': min(quantity, qty_done),
+                'quantity': min(quantity, qty_done),
+                'picked': True,
             })
 
             vals_list.append(vals)
-            qty_done -= vals['qty_done']
+            qty_done -= vals['quantity']
             # If all the qty_done is distributed, we can close the loop
             if float_compare(qty_done, 0, precision_rounding=self.product_id.uom_id.rounding) <= 0:
                 break
@@ -432,7 +433,8 @@ class QualityCheck(models.Model):
             vals = shared_vals.copy()
             vals.update({
                 'location_id': self.move_id.location_id.id,
-                'qty_done': qty_done,
+                'quantity': qty_done,
+                'picked': True,
             })
 
             vals_list.append(vals)
@@ -529,7 +531,8 @@ class QualityCheck(models.Model):
         rounding = move.product_uom.rounding
         new_qty = self._prepare_component_quantity(move, self.workorder_id.qty_producing)
         qty_todo = float_round(new_qty, precision_rounding=rounding)
-        qty_todo = qty_todo - move.quantity
+        if (move.picked and self.quality_state != 'pass'):
+            qty_todo = qty_todo - move.quantity
         if self.move_line_id and self.move_line_id.lot_id:
             qty_todo = min(self.move_line_id.quantity, qty_todo)
         self.qty_done = qty_todo

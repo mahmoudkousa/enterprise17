@@ -128,6 +128,28 @@ function getFormEditorServerData() {
                     },
                 ],
             },
+            'ir.model.fields': {
+                fields: {
+                    id: { string: "Id", type: "integer" },
+                    display_name: { string: "Name", type:"char" },
+                    relation: { string: "Relation", type:"char" },
+                    ttype: { string: "Type", type:"char" },
+                    store: { string: "Store", type: "boolean" },
+                },
+                records: [
+                    {
+                        id: 1,
+                        display_name: "Select me",
+                        relation: "coucou",
+                        ttype: "many2one",
+                        store: true,
+                    },
+                ],
+            },
+        },
+        views: {
+            "ir.model.fields,false,list": `<tree><field name="display_name"/></tree>`,
+            "ir.model.fields,false,search": `<search><field name="display_name"/></search>`,
         },
     };
 }
@@ -464,6 +486,59 @@ QUnit.module("View Editors", (hooks) => {
             "Large",
             "The image size should be correctly selected"
         );
+    });
+
+    QUnit.test("image size can be unset from the selection", async function (assert) {
+        const arch = `<form>
+                <sheet>
+                    <field name='image' widget='image' class='oe_avatar' options='{"preview_image": "image", "size": [0,90]}'/>
+                    <div class='oe_title'>
+                        <field name='name'/>
+                    </div>
+                </sheet>
+            </form>`;
+        let editViewCount = 0;
+
+        await createViewEditor({
+            serverData,
+            type: "form",
+            resModel: "partner",
+            arch: arch,
+            mockRPC: function (route, args) {
+                if (route === "/web_studio/edit_view") {
+                    editViewCount++;
+                    let newArch;
+                    if (editViewCount === 1) {
+                        assert.deepEqual(
+                            args.operations[0].new_attrs, {
+                                "options": "{\"preview_image\":\"image\"}"
+                              },
+                            "size is no longer present in the attrs of the image field"
+                        );
+                        newArch = `<form>
+                                <sheet>
+                                    <field name='image' widget='image' class='oe_avatar' options='{"preview_image": "image"}'/>
+                                    <div class='oe_title'>
+                                        <field name='name'/>
+                                    </div>
+                                </sheet>
+                            </form>`;
+                    }
+                    return createMockViewResult(serverData, "form", newArch, "partner");
+                }
+            },
+        });
+
+        assert.containsOnce(
+            target,
+            '.o_field_widget.oe_avatar[name="image"]',
+            "there should be avatar image with field image"
+        );
+
+        await click(target.querySelector(".o_field_widget[name='image']"));
+        assert.strictEqual(target.querySelector(".o_web_studio_property_size .o_select_menu").textContent, "Small");
+        await click(target.querySelector(".o_web_studio_property_size .o_select_menu_toggler_clear"));
+        assert.strictEqual(target.querySelector(".o_web_studio_property_size .o_select_menu").textContent, "");
     });
 
     QUnit.test("signature field edition (change full_name)", async function (assert) {
@@ -1350,6 +1425,36 @@ QUnit.module("View Editors", (hooks) => {
         assert.strictEqual(
             target.querySelectorAll(".o_web_studio_property input")[1].value,
             "field",
+            "the page label is correctly set"
+        );
+    });
+
+    QUnit.test("notebook with empty page and fields inside the element", async (assert) => {
+        await createViewEditor({
+            serverData,
+            type: "form",
+            resModel: "coucou",
+            arch: `<form>
+                        <sheet>
+                            <notebook>
+                                <page string="Page"></page>
+                                <field name='id' invisible='1'/>
+                                <page string="Empty"></page>
+                            </notebook>
+                        </sheet>
+                    </form>`,
+        });
+
+        await click(target.querySelector(".o_web_studio_view_renderer .o_notebook li"));
+        assert.strictEqual(
+            target.querySelector(".o_form_sheet .o_notebook_headers li:nth-child(2)").dataset
+                .studioXpath,
+            "/form[1]/sheet[1]/notebook[1]/page[2]"
+        );
+        await click(target, ".o_form_sheet .o_notebook_headers li:nth-child(2) a", true);
+        assert.strictEqual(
+            target.querySelectorAll(".o_web_studio_property input")[1].value,
+            "Empty",
             "the page label is correctly set"
         );
     });
@@ -2277,7 +2382,7 @@ QUnit.module("View Editors", (hooks) => {
             arch,
             mockRPC(route, args) {
                 if (args.method === "name_search") {
-                    return [[1, " Test Field (Test)"]];
+                    return [[1, "Test Field (Test)"]];
                 }
                 if (route === "/web_studio/edit_view") {
                     assert.deepEqual(args.operations, [
@@ -2314,7 +2419,6 @@ QUnit.module("View Editors", (hooks) => {
             ".o_dialog .o_input_dropdown .o-autocomplete",
             "there should be a many2one for the related field"
         );
-
         await click(target.querySelector(".modal-footer button:first-child"));
         assert.containsOnce(
             target,
@@ -2325,6 +2429,80 @@ QUnit.module("View Editors", (hooks) => {
 
         await click(target.querySelector(".o-autocomplete--input"));
         await click(target.querySelector(".o-autocomplete .o-autocomplete--dropdown-item"));
+        await click(target.querySelector(".modal-footer button:first-child"));
+        assert.containsNone(target, ".o_dialog .modal", "should not display the create modal");
+    });
+
+
+
+    QUnit.test("new button in buttonbox through 'Search more'", async function (assert) {
+        patchWithCleanup(browser, { setTimeout: () => 1 });
+        const arch = `<form><sheet><field name='display_name'/></sheet></form>`;
+        await createViewEditor({
+            serverData,
+            type: "form",
+            resModel: "coucou",
+            arch,
+            mockRPC(route, args) {
+                if (args.method === "name_search") {
+                    return [
+                        [1, "Test Field (Test)"],
+                        [2, "Test Field (Test)"],
+                        [3, "Test Field (Test)"],
+                        [4, "Test Field (Test)"],
+                        [5, "Test Field (Test)"],
+                        [6, "Test Field (Test)"],
+                        [7, "Test Field (Test)"],
+                        [8, "Test Field (Test)"],
+                    ];
+                }
+                if (route === "/web_studio/edit_view") {
+                    assert.deepEqual(args.operations, [
+                        { type: "buttonbox" },
+                        {
+                            type: "add",
+                            target: {
+                                tag: "div",
+                                attrs: {
+                                    class: "oe_button_box",
+                                },
+                            },
+                            position: "inside",
+                            node: {
+                                tag: "button",
+                                field: 1,
+                                string: "New button",
+                                attrs: {
+                                    class: "oe_stat_button",
+                                    icon: "fa-diamond",
+                                },
+                            },
+                        },
+                    ]);
+                    return createMockViewResult(serverData, "form", arch, "partner");
+                }
+            },
+        });
+
+        await click(target.querySelector(".o_web_studio_button_hook"));
+        assert.containsOnce(target, ".o_dialog .modal", "there should be one modal");
+        assert.containsOnce(
+            target,
+            ".o_dialog .o_input_dropdown .o-autocomplete",
+            "there should be a many2one for the related field"
+        );
+        await click(target.querySelector(".modal-footer button:first-child"));
+        assert.containsOnce(
+            target,
+            ".o_notification",
+            "notification shown at confirm when no field selected"
+        );
+        assert.containsOnce(target, ".o_dialog .modal", "dialog is still present");
+        
+        await click(target.querySelector(".o-autocomplete--input"));
+        await click(target.querySelector(".o_m2o_dropdown_option_search_more"));
+        await click(target.querySelector(".o_list_view .o_data_row .o_data_cell"));
+        assert.strictEqual(target.querySelector(".o-autocomplete--input").value, "Select me");
         await click(target.querySelector(".modal-footer button:first-child"));
         assert.containsNone(target, ".o_dialog .modal", "should not display the create modal");
     });
@@ -2935,6 +3113,71 @@ QUnit.module("View Editors", (hooks) => {
         );
     });
 
+    QUnit.test("edit the rainbowman effect from the sidebar", async function (assert) {
+        assert.expect(8);
+
+        let count = 0;
+        const fakeHTTPService = {
+            start() {
+                return {};
+            },
+        };
+        registry.category("services").add("http", fakeHTTPService);
+        await createViewEditor({
+            serverData,
+            type: "form",
+            resModel: 'coucou',
+            arch: `
+                <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_confirm" type="object" effect="{'fadeout': 'medium'}"/>
+                    </div>
+                </sheet>
+                </form>`,
+             mockRPC: function(route, args) {
+                 if (route === "/web_studio/edit_view") {
+                    assert.step("edit_view");
+                    if (count === 0) {
+                        assert.deepEqual(args.operations[0].new_attrs, {
+                            "effect": {
+                                "fadeout": "fast"
+                            }
+                        }, "new fadeout value is being set properly");
+                        const newArch = `
+                            <form>
+                                <sheet>
+                                    <div class="oe_button_box" name="button_box">
+                                        <button name="action_confirm" type="object" effect="{'fadeout': 'fast'}"/>
+                                    </div>
+                                </sheet>
+                            </form>`;
+                        return createMockViewResult(serverData, "form", newArch, "coucou");
+                    } else {
+                        assert.deepEqual(args.operations[0].new_attrs, {
+                            "effect": {}
+                        }, "fadeout attribute has been removed from the effect");
+                    }
+                    count++;
+                 }
+             }
+        });
+
+        await click(target.querySelector("button.oe_stat_button[data-studio-xpath]"));
+        assert.strictEqual(target.querySelector(".o_web_studio_sidebar [name='effect']").checked, true);
+        assert.strictEqual(target.querySelector(".o_web_studio_sidebar .o_select_menu .o_select_menu_toggler").textContent, "Medium", "current value is displayed properly");
+
+        await editAnySelect(
+            target,
+            ".o_web_studio_sidebar .o_select_menu",
+            "Fast"
+        );
+        assert.verifySteps(["edit_view"]);
+
+        await click(target.querySelector(".o_select_menu .o_select_menu_toggler_clear"));
+        assert.verifySteps(["edit_view"]);
+    });
+
     QUnit.test("supports multiple occurences of field", async (assert) => {
         await createViewEditor({
             serverData,
@@ -3144,6 +3387,145 @@ QUnit.module("View Editors", (hooks) => {
         assert.strictEqual(
             target.querySelector(".o_web_studio_existing_fields").textContent,
             "Some FieldIDLast Modified onName"
+        );
+    });
+
+    QUnit.test('Restrict drag and drop of notebook and group in a inner group', async function (assert) {
+        const arch = `<form>
+            <sheet>
+                <group>
+                    <field name='display_name'/>
+                </group>
+            </sheet>
+        </form>`;
+        let editViewCount = 0;
+        await createViewEditor({
+            serverData,
+            type: "form",
+            resModel: "coucou",
+            arch: arch,
+            mockRPC: function (route, args) {
+                if (route === "/web_studio/edit_view") {
+                    editViewCount++;
+                    return createMockViewResult(serverData, "form", arch, "coucou");
+                }
+            },
+        });
+        await dragAndDrop(target.querySelector('.o_web_studio_field_type_container .o_web_studio_field_tabs'), target.querySelector('.o_inner_group .o_wrap_field'));
+        assert.strictEqual(editViewCount, 0,
+            "the notebook cannot be dropped inside a group");
+        await dragAndDrop(target.querySelector('.o_web_studio_field_type_container .o_web_studio_field_columns'), target.querySelector('.o_inner_group .o_wrap_field'));
+        assert.strictEqual(editViewCount, 0,
+            "the group cannot be dropped inside a group");
+    });
+
+    QUnit.test("edit_view route includes the context of the action", async (assert) => {
+        registry.category("services").add("enterprise_subscription", {
+            start() {
+                return {};
+            },
+        });
+        const action = {
+            type: "ir.actions.act_window",
+            xml_id: "coucou_action",
+            res_model: "coucou",
+            res_id: 1,
+            views: [[1, "form"]],
+            context: { action_key: "some_context_value" },
+        };
+
+        serverData.views = {
+            "coucou,1,form": /*xml */ `
+               <form>
+                   <field name="display_name" />
+               </form>`,
+            "coucou,false,search": `<search />`,
+        };
+
+        const mockRPC = (route, args) => {
+            if (route === "/web_studio/edit_view") {
+                assert.step("edit_view");
+                assert.strictEqual(args.context.action_key, "some_context_value");
+            }
+        };
+
+        const webClient = await createEnterpriseWebClient({ serverData, mockRPC });
+        await doAction(webClient, action);
+        await openStudio(target);
+        await click(target, ".o_web_studio_form_view_editor div[name='display_name']");
+        await editInput(target, ".o_web_studio_sidebar input[name='string']", "new Label");
+        assert.verifySteps(["edit_view"]);
+    });
+
+    QUnit.test("subview's buttonbox form doesn't pollute main one", async (assert) => {
+        serverData.models.coucou.fields.product_ids = { type: "one2many", relation: "product" };
+        serverData.models.coucou.records = [{ id: 1, display_name: "Coucou 11", product_ids: [1] }];
+        await createViewEditor({
+            serverData,
+            type: "form",
+            arch: `<form>
+                <field name="product_ids">
+                    <form>
+                        <div name="button_box">
+                            <button name="some_action" type="object" string="my_action"/>
+                        </div>
+                        <field name="display_name" />
+                    </form>
+                    <tree><field name="display_name" /></tree>
+                </field>
+            </form>`,
+            resModel: "coucou",
+            resId: 1,
+        });
+        assert.containsOnce(target, ".o-form-buttonbox button");
+        assert.hasClass(
+            target.querySelector(".o-form-buttonbox button"),
+            "o_web_studio_button_hook"
+        );
+        assert.containsNone(target, "button[name='some_action']");
+
+        await click(target, ".o_field_x2many");
+        await nextTick();
+        await click(target, ".o_web_studio_editX2Many[data-type='form']");
+        await nextTick();
+        assert.containsOnce(target, ".o-form-buttonbox");
+        assert.containsOnce(target, ".o-form-buttonbox button[name='some_action']");
+    });
+
+    QUnit.test("cannot add a related properties field", async (assert) => {
+        serverData.models.coucou.fields.m2o = {
+            type: "many2one",
+            relation: "product",
+            string: "m2o to product",
+        };
+        serverData.models.product.fields = {
+            id: { type: "integer", string: "IDCusto" },
+            properties: { type: "properties", string: "Product Properties" },
+            some_test_field: { type: "char", string: "SomeTestField" },
+        };
+        serverData.models.product.records = [];
+        await createViewEditor({
+            serverData,
+            type: "form",
+            arch: '<form><group><field name="display_name" /></group></form>',
+            resModel: "coucou",
+        });
+        disableHookAnimation(target);
+        await dragAndDrop(
+            ".o_web_studio_new_fields .o_web_studio_field_related",
+            ".o_web_studio_form_view_editor .o_web_studio_hook"
+        );
+        assert.containsOnce(target, ".modal .o_model_field_selector");
+
+        await click(target, ".modal .o_model_field_selector");
+        await click(target, ".o_popover .o_model_field_selector_popover_item_relation");
+        assert.deepEqual(
+            [
+                ...target.querySelectorAll(
+                    ".o_popover .o_model_field_selector_popover_page .o_model_field_selector_popover_item"
+                ),
+            ].map((el) => el.textContent.trim()),
+            ["Display Name", "IDCusto", "Last Modified on", "Name", "SomeTestField"]
         );
     });
 });

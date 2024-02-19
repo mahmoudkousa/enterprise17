@@ -77,7 +77,7 @@ class AppointmentResource(models.Model):
     def _compute_display_name(self):
         """ Display the capacity of the resource next to its name if resource_manage_capacity is enabled """
         for resource in self:
-            resource_name_capacity = f"{resource.name} ({resource.capacity})"
+            resource_name_capacity = f"{resource.name} (🪑{resource.capacity})"
             display_name = resource_name_capacity if resource.capacity > 1 else resource.name
             resource.display_name = display_name
 

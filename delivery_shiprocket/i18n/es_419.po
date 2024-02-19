@@ -4,6 +4,7 @@
 # 
 # Translators:
 # Wil Odoo, 2023
+# Fernanda Alvarez, 2024
 # 
 msgid ""
 msgstr ""
@@ -11,7 +12,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-10-26 22:20+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Wil Odoo, 2023\n"
+"Last-Translator: Fernanda Alvarez, 2024\n"
 "Language-Team: Spanish (Latin America) (https://app.transifex.com/odoo/teams/41243/es_419/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -49,8 +50,8 @@ msgid ""
 "icon near Shiprocket Channel to sync newly created channels.</b>"
 msgstr ""
 "<b>En la configuración de Odoo haga clic en el icono <i class=\"fa fa-"
-"refresh oe_inline\"/> cerca del canal Shiprocket para sincronizar los nuevos"
-" canales.</b>"
+"refresh oe_inline\"/> cerca del canal de Shiprocket para sincronizar los "
+"nuevos canales.</b>"
 
 #. module: delivery_shiprocket
 #: model_terms:ir.ui.view,arch_db:delivery_shiprocket.view_delivery_carrier_form_inherit_delivery_shiprocket
@@ -83,8 +84,8 @@ msgid ""
 msgstr ""
 "<i class=\"fa fa-exclamation-triangle\"/> Para evitar cargos en los entornos"
 " de prueba, los envíos se <b>cancelan</b> de forma automática después de "
-"crear la etiqueta. El importe del envío cancelado se devolverá en los "
-"próximos 3 o 4 días."
+"crear la etiqueta. Se hará la devolución del importe por el envío cancelado "
+"en los próximos 3 o 4 días."
 
 #. module: delivery_shiprocket
 #: model:ir.model.fields,help:delivery_shiprocket.field_delivery_carrier__shiprocket_manifests_generate
@@ -101,6 +102,14 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:delivery_shiprocket.view_delivery_carrier_form_inherit_delivery_shiprocket
 msgid "API User"
 msgstr "Usuario API"
+
+#. module: delivery_shiprocket
+#. odoo-python
+#: code:addons/delivery_shiprocket/models/shiprocket_request.py:0
+#: code:addons/delivery_shiprocket/models/shiprocket_request.py:0
+#, python-format
+msgid "AWB assignment was unsuccessful: %s"
+msgstr "Ocurrió un error con la asignación de la AWB: %s"
 
 #. module: delivery_shiprocket
 #. odoo-python
@@ -184,15 +193,15 @@ msgstr "Código de transportista"
 #. odoo-python
 #: code:addons/delivery_shiprocket/models/shiprocket_request.py:0
 #, python-format
-msgid "Courier is - %s"
-msgstr "Transportista - %s"
+msgid "Courier: %s"
+msgstr "Transportista: %s"
 
 #. module: delivery_shiprocket
 #. odoo-python
 #: code:addons/delivery_shiprocket/models/shiprocket_request.py:0
 #, python-format
-msgid "Courier is - %s, recommended by %s!"
-msgstr "Transportista %s, recomendado por %s"
+msgid "Courier (%s): %s"
+msgstr "Transportista (%s): %s"
 
 #. module: delivery_shiprocket
 #. odoo-python
@@ -212,8 +221,8 @@ msgid ""
 "Create a pickup request for your order shipment using Validate button of the"
 " Delivery Order."
 msgstr ""
-"Crear una solicitud de recolección para el envío de su orden al hacer clic "
-"en el botón Validar en la orden de entrega."
+"Crear una solicitud de recolección para el envío de su orden con el botón "
+"Validar ubicado en la orden de entrega."
 
 #. module: delivery_shiprocket
 #: model:ir.model.fields,field_description:delivery_shiprocket.field_shiprocket_channel__create_uid
@@ -264,8 +273,8 @@ msgid ""
 "Eway Bill number is required to ship an order if order amount is more than "
 "50,000 INR."
 msgstr ""
-"Es necesario poner el número de EWB para enviar una orden si el importe del "
-"mismo es superior a 50,000 INR."
+"Es necesario proporcionar el número de EWB para enviar una orden si el "
+"importe de la misma es superior a 50,000 INR."
 
 #. module: delivery_shiprocket
 #. odoo-python
@@ -273,8 +282,8 @@ msgstr ""
 #, python-format
 msgid "Failed to fetch Shiprocket Channel(s), Please try again later."
 msgstr ""
-"No se han podido recuperar los canales de Shiprocket, inténtelo de nuevo más"
-" tarde."
+"No se pudieron recuperar los canales de Shiprocket, inténtelo de nuevo más "
+"tarde."
 
 #. module: delivery_shiprocket
 #. odoo-python
@@ -282,7 +291,7 @@ msgstr ""
 #, python-format
 msgid "Failed to fetch Shiprocket Couriers(s), Please try again later."
 msgstr ""
-"No se han podido recuperar los transportistas de Shiprocket, inténtelo de "
+"No se pudieron recuperar los transportistas de Shiprocket, inténtelo de "
 "nuevo más tarde."
 
 #. module: delivery_shiprocket
@@ -293,7 +302,7 @@ msgstr "Generar manifesto"
 #. module: delivery_shiprocket
 #: model:ir.model.fields,help:delivery_shiprocket.field_delivery_carrier__shiprocket_access_token
 msgid "Generate access token using Shiprocket credentials"
-msgstr "Generar un token de acceso mediante las credenciales de Shiprocket"
+msgstr "Generar un token de acceso con las credenciales de Shiprocket"
 
 #. module: delivery_shiprocket
 #: model:ir.model.fields,help:delivery_shiprocket.field_delivery_carrier__shiprocket_courier_ids
@@ -302,7 +311,7 @@ msgid ""
 "courier selections the rate will be fetched from the Shiprocket."
 msgstr ""
 "Obtenga todos los transportistas integrados en su cuenta Shiprocket y, según"
-" el transportista seleccionado, se obtendrá la tarifa de Shiprocket."
+" el transportista seleccionado, se obtendrá la tarifa."
 
 #. module: delivery_shiprocket
 #: model:ir.model.fields,help:delivery_shiprocket.field_delivery_carrier__shiprocket_channel_id
@@ -312,8 +321,8 @@ msgid ""
 "order creation."
 msgstr ""
 "Obtenga todos los canales integrados de su cuenta Shiprocket. Este ID de "
-"canal se utiliza para seleccionar un canal personalizado en el momento de la"
-" creación de la orden de Shiprocket."
+"canal se utiliza para seleccionar un canal personalizado al momento de crear"
+" una orden de Shiprocket."
 
 #. module: delivery_shiprocket
 #: model_terms:ir.ui.view,arch_db:delivery_shiprocket.view_delivery_carrier_form_inherit_delivery_shiprocket
@@ -365,7 +374,8 @@ msgstr "Última actualización el"
 #, python-format
 msgid "Length, Width and Height is necessary for Shiprocket Package."
 msgstr ""
-"Es necesario poner la altura, ancho y largo para el paquete de Shiprocket."
+"Es necesario proporcionar la altura, ancho y largo para el paquete de "
+"Shiprocket."
 
 #. module: delivery_shiprocket
 #. odoo-python
@@ -586,9 +596,9 @@ msgid ""
 "Shiprocket requires package dimensions for getting accurate rate, you can "
 "define these in a package type that you set as default"
 msgstr ""
-"Shiprocket requiere las dimensiones del paquete para obtener una tarifa "
-"correcta, puede definirlas en un tipo de paquete que estableció como "
-"predeterminado"
+"Shiprocket necesita las dimensiones del paquete para obtener una tarifa "
+"correcta. Defínales en el tipo de paquete que estableció como "
+"predeterminado."
 
 #. module: delivery_shiprocket
 #: model:ir.model.fields,help:delivery_shiprocket.field_delivery_carrier__shiprocket_token_valid_upto
@@ -602,7 +612,7 @@ msgstr ""
 #. module: delivery_shiprocket
 #: model_terms:ir.ui.view,arch_db:delivery_shiprocket.view_delivery_carrier_form_inherit_delivery_shiprocket
 msgid "Sign up"
-msgstr "Registrarse"
+msgstr "Regístrese"
 
 #. module: delivery_shiprocket
 #: model:ir.model,name:delivery_shiprocket.model_stock_package_type
@@ -647,7 +657,7 @@ msgid ""
 "The method of payment. Can be either COD (Cash on delivery) Or Prepaid while"
 " creating Shiprocket order."
 msgstr ""
-"El método de pago. Puede ser pago a contra entrega o prepagado al crear la "
+"El método de pago. Puede ser pago contra entrega o prepagado al crear la "
 "orden de Shiprocket."
 
 #. module: delivery_shiprocket

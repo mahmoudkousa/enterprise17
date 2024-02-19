@@ -15,7 +15,7 @@
                 class="'border-0'"
                 togglerClass="'bg-dark text-light p-2'"
                 searchable="choices.length > 8"
-                required="props.childProps.required !== undefined ? props.required : true"
+                required="props.childProps.required !== false"
             />
         </div>
 
@@ -41,6 +41,7 @@
             <span t-if="props.isReadonly" t-att-name="props.name" t-esc="props.value" />
             <input
                 t-else=""
+                t-att="props.inputAttributes"
                 t-att-name="props.name"
                 t-att-id="props.name"
                 t-att-type="props.type"
@@ -60,6 +61,7 @@
                 t-else=""
                 t-att-name="props.name"
                 t-att-id="props.name"
+                t-att="props.inputAttributes"
                 t-att-type="props.type"
                 t-att-value="props.value"
                 t-att-class="`form-${props.type}-input`"

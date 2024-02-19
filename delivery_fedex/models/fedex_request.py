@@ -21,6 +21,28 @@ _logger = logging.getLogger(__name__)
 
 STATECODE_REQUIRED_COUNTRIES = ['US', 'CA', 'PR ', 'IN']
 
+# Why using standardized ISO codes? It's way more fun to use made up codes...
+# https://www.fedex.com/us/developer/WebHelp/ws/2014/dvg/WS_DVG_WebHelp/Appendix_F_Currency_Codes.htm
+FEDEX_CURR_MATCH = {
+    u'UYU': u'UYP',
+    u'XCD': u'ECD',
+    u'MXN': u'NMP',
+    u'KYD': u'CID',
+    u'CHF': u'SFR',
+    u'GBP': u'UKL',
+    u'IDR': u'RPA',
+    u'DOP': u'RDD',
+    u'JPY': u'JYE',
+    u'KRW': u'WON',
+    u'SGD': u'SID',
+    u'CLP': u'CHP',
+    u'JMD': u'JAD',
+    u'KWD': u'KUD',
+    u'AED': u'DHS',
+    u'TWD': u'NTD',
+    u'ARS': u'ARN',
+    u'LVL': u'EURO',
+}
 
 class LogPlugin(Plugin):
     """ Small plugin for zeep that catches out/ingoing XML requests and logs them"""
@@ -190,8 +212,15 @@ class FedexRequest():
 
         if carrier.shipping_insurance:
             package.InsuredValue = self.factory.Money()
-            package.InsuredValue.Currency = fdx_company_currency
-            package.InsuredValue.Amount = float_repr(delivery_package.total_cost * carrier.shipping_insurance / 100, 2)
+            insured_value = delivery_package.total_cost * carrier.shipping_insurance / 100
+            pkg_order = delivery_package.order_id or delivery_package.picking_id.sale_id
+            # Get the currency from the sale order if it exists, so that it matches that of customs_value
+            if pkg_order:
+                package.InsuredValue.Currency = _convert_curr_iso_fdx(pkg_order.currency_id.name)
+                package.InsuredValue.Amount = float_repr(delivery_package.company_id.currency_id._convert(insured_value, pkg_order.currency_id, pkg_order.company_id, date.today()), 2)
+            else:
+                package.InsuredValue.Currency = fdx_company_currency
+                package.InsuredValue.Amount = float_repr(insured_value, 2)
 
         package.Weight = package_weight
         if mode == 'rating':
@@ -461,3 +490,11 @@ class FedexRequest():
             formatted_response['errors_message'] = "Fedex Server Not Found"
 
         return formatted_response
+
+def _convert_curr_fdx_iso(code):
+    curr_match = {v: k for k, v in FEDEX_CURR_MATCH.items()}
+    return curr_match.get(code, code)
+
+
+def _convert_curr_iso_fdx(code):
+    return FEDEX_CURR_MATCH.get(code, code)

@@ -96,11 +96,15 @@
             </div>
         </t>
 
-        <t t-if="this.controller.hasDebugColumn">
+        <div id="filter_rounding_unit">
+            <t t-call="account_reports.AccountReportFilterRoundingUnit"/>
+        </div>
+
+        <t t-if="env.debug">
             <div id="filter_configuration" class="o-dropdown dropdown o-dropdown--no-caret">
                 <button
                         class="dropdown-toggle btn btn-secondary"
-                        t-on-click="(ev) => this.controller.reportAction(ev, 'action_open_report_form', {})"
+                        t-on-click="(ev) => this.controller.reportAction(ev, 'action_open_report_form', {}, true)"
                 >
                     <i class="fa fa-cogs me-1"/>
                 </button>

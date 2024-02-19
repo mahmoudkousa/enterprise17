@@ -81,12 +81,7 @@ class SocialTwitterController(SocialController):
         stream_post = self._get_social_stream_post(stream_post_id, 'twitter')
         answering_to = answering_to if comment_id else stream_post.twitter_screen_name
 
-        # Add mention in the message if not present and remove other mentions.
-        # This is needed when answering to a tweet, otherwise the new tweet will not be
-        # displayed as a response on Twitter.
         message = request.env["social.live.post"]._remove_mentions(message, [answering_to])
-        if f'@{answering_to.lower()}' not in message.lower():
-            message = f"@{answering_to} {message}"
 
         files = request.httprequest.files.getlist('attachment')
         attachment = files and files[0]

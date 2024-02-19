@@ -352,6 +352,10 @@ class WorksheetTemplate(models.Model):
 
     def _add_field_node_to_container(self, field_node, form_view_fields, container_col):
         field_name = field_node.attrib['name']
+        invisible = field_node.get("invisible", "False")
+        if invisible in ("True", "1"):
+            return container_col
+
         new_container_col = container_col
         if field_name not in self._get_qweb_arch_omitted_fields():
             field_info = form_view_fields.get(field_name)

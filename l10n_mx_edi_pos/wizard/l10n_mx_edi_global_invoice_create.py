@@ -1,5 +1,4 @@
-from odoo import _, api, fields, models
-from odoo.exceptions import UserError
+from odoo import api, fields, models, Command
 
 
 class L10nMxEdiGlobalInvoiceCreate(models.Model):
@@ -13,19 +12,9 @@ class L10nMxEdiGlobalInvoiceCreate(models.Model):
         results = super().default_get(fields_list)
 
         if 'pos_order_ids' in results:
-            orders = self.env['pos.order'].browse(results['pos_order_ids'][0][2])
-
-            if len(orders.company_id) != 1:
-                raise UserError(_("You can only process orders sharing the same company."))
-            if any(
-                not x.l10n_mx_edi_is_cfdi_needed
-                or x.l10n_mx_edi_cfdi_state == 'global_sent'
-                or x.account_move
-                or x.refunded_order_ids
-                for x in orders
-            ):
-                raise UserError(_("Some orders are already sent or not eligible for CFDI."))
-
+            source_orders = self.env['pos.order'].browse(results['pos_order_ids'][0][2])
+            orders = source_orders._l10n_mx_edi_check_orders_for_global_invoice()
+            results['pos_order_ids'] = [Command.set(orders.ids)]
         return results
 
     def action_create_global_invoice(self):

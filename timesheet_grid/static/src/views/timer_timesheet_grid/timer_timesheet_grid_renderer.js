@@ -137,7 +137,24 @@ export class TimerTimesheetGridRenderer extends TimesheetGridRenderer {
      * @returns {number} overtime for the week
      */
     getWeeklyOvertime() {
+        if (!Object.keys(this.props.model.workingHoursData.daily).length) {
+            return null;
+        }
+
         return this.props.model.columnsArray.reduce((overtime, column) => overtime + this.getDailyOvertime(column), 0);
+    }
+
+    getFooterTotalCellClasses(grandTotal) {
+        const weeklyOvertime = this.getWeeklyOvertime();
+        if (weeklyOvertime == null) {
+            return super.getFooterTotalCellClasses(grandTotal);
+        } else if (weeklyOvertime < 0) {
+            return "text-bg-danger";
+        } else if (weeklyOvertime === 0) {
+            return "text-bg-success";
+        } else {
+            return "text-bg-warning";
+        }
     }
 
     /**

@@ -2,7 +2,7 @@
 
 {
     'name': 'Odoo WhatsApp Integration',
-    'category': 'Hidden/Tools',
+    'category': 'WhatsApp',
     'summary': 'Integrates Odoo with WhatsApp to use WhatsApp messaging service',
     'version': '1.0',
     'description': """This module integrates Odoo with WhatsApp to use WhatsApp messaging service""",

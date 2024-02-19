@@ -1,5 +1,6 @@
 /** @odoo-module **/
 
+import { markup } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 
 registry.category("web_tour.tours").add('planning_test_tour', {
@@ -11,11 +12,11 @@ registry.category("web_tour.tours").add('planning_test_tour', {
     position: 'bottom',
 }, {
     trigger: ".o_gantt_button_add",
-    content: "Let's create your first <b>shift</b>.",
+    content: markup("Let's create your first <b>shift</b>."),
     id: 'project_planning_start',
 }, {
     trigger: ".o_field_widget[name='resource_id'] input",
-    content: "Assign this shift to your <b>resource</b>, or leave it open for the moment.",
+    content: markup("Assign this shift to your <b>resource</b>, or leave it open for the moment."),
     run: 'text Aaron',
 }, {
     trigger: ".o-autocomplete--dropdown-item > a:contains('Aaron')",
@@ -23,7 +24,7 @@ registry.category("web_tour.tours").add('planning_test_tour', {
     in_modal: false,
 }, {
     trigger: ".o_field_widget[name='role_id'] input",
-    content: "Select the <b>role</b> your employee will have (<i>e.g. Chef, Bartender, Waiter, etc.</i>).",
+    content: markup("Select the <b>role</b> your employee will have (<i>e.g. Chef, Bartender, Waiter, etc.</i>)."),
     run: 'text Developer',
 }, {
     trigger: ".o-autocomplete--dropdown-item > a:contains('Developer')",
@@ -64,7 +65,7 @@ registry.category("web_tour.tours").add('planning_test_tour', {
     content: "Save this shift once it is ready.",
 }, {
     trigger: ".o_gantt_pill :contains('11:59')",
-    content: "<b>Drag & drop</b> your shift to reschedule it. <i>Tip: hit CTRL (or Cmd) to duplicate it instead.</i> <b>Adjust the size</b> of the shift to modify its period.",
+    content: markup("<b>Drag & drop</b> your shift to reschedule it. <i>Tip: hit CTRL (or Cmd) to duplicate it instead.</i> <b>Adjust the size</b> of the shift to modify its period."),
     auto: true,
     run: function () {
         if (this.$anchor.length) {
@@ -82,10 +83,10 @@ registry.category("web_tour.tours").add('planning_test_tour', {
     }
 }, {
     trigger: ".o_gantt_button_send_all",
-    content: "If you are happy with your planning, you can now <b>send</b> it to your employees.",
+    content: markup("If you are happy with your planning, you can now <b>send</b> it to your employees."),
 }, {
     trigger: "button[name='action_check_emails']",
-    content: "<b>Publish & send</b> your planning to make it available to your employees.",
+    content: markup("<b>Publish & send</b> your planning to make it available to your employees."),
 }, {
     trigger: ".o_gantt_row_header:contains('Aaron') .o_gantt_progress_bar",
     content: "See employee progress bar",

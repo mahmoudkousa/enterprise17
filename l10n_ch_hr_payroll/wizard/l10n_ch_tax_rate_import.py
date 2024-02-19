@@ -15,7 +15,7 @@ from odoo.exceptions import UserError
 CANTON_CODES = [
     'AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU', 'LU', 'NE', 'NW', 'OW',
     'SG', 'SH', 'SO', 'SZ', 'TG', 'TI', 'UR', 'VD', 'VS', 'ZG', 'ZH']
-TAX_SCALES = list('ABCDEFGHIJKLMNOPQRSTU')
+TAX_SCALES = list('ABCDEFGHIJKLMNOPQRSTUV')
 
 _logger = logging.getLogger(__name__)
 

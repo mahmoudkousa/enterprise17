@@ -181,6 +181,7 @@ class TestUi(odoo.tests.HttpCase):
         image_data = ("/9j/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8Q"
                       "EBEQCgwSExIQEw8QEBD/yQALCAABAAEBAREA/8wABgAQEAX/2gAIAQEAAD8A0s8g/9k=")
 
+        self.env['website'].create({'name': 'Second website to display listings'})
         self.create_empty_app()
         self.env['x_test_model'].create({
             'x_name': 'Record 1',

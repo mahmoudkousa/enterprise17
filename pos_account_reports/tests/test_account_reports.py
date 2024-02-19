@@ -19,8 +19,7 @@ class POSTestTaxReport(TestAccountReportsCommon):
             'name': "Hassaleh",
             'code': 'HH',
         })
-        company.country_id = test_country
-        company.account_fiscal_country_id = test_country
+        cls.change_company_country(company, test_country)
 
         # Create some tax report
         cls.tax_report = cls.env['account.report'].create({

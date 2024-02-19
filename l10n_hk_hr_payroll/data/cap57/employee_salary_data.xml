@@ -63,10 +63,9 @@ result_name = inputs['COMMISSION'].name
         <field name="amount_select">code</field>
         <field name="amount_python_compute">
 prorata_rate = 1
-out_day = payslip._get_worked_days_line_number_of_days('OUT')
-if out_day:
-    days_in_month = (payslip.date_to - payslip.date_from).days + 1
-    prorata_rate = (days_in_month - out_day) / days_in_month
+total_days = sum([wd.number_of_days for wd in payslip.worked_days_line_ids])
+actual_work_days = payslip._get_number_of_worked_days()
+prorata_rate = actual_work_days / total_days
 result = contract.l10n_hk_internet * prorata_rate
         </field>
         <field name="struct_id" ref="l10n_hk_hr_payroll.hr_payroll_structure_cap57_employee_salary"/>
@@ -155,27 +154,27 @@ result = payslip.date_to.month == 12 and last_year_payslips
         <field name="amount_select">code</field>
         <field name="amount_python_compute">
 # Calculate the number of days in current year
-first_day_of_current_year = payslip.date_to + relativedelta(month=1, day=1)
-day_of_year = (payslip.date_to - first_day_of_current_year).days + 1
+first_day = payslip.date_from + relativedelta(month=1, day=1)
+last_day = payslip.date_to + relativedelta(month=12, day=31)
+total_days = (last_day - first_day).days + 1
 
 # Find past 12-month payslips
 domain = payslip._get_last_year_payslips_domain(payslip.date_from, payslip.date_to, [employee.id])
 last_year_payslips = payslip.env['hr.payslip'].search(domain, order='date_from desc')
-no_of_payslips = len(last_year_payslips)
 
 # Calculate the work rate
-actual_work_days = sum([pl._get_actual_work_days(skip_non_full_pay=True) for pl in last_year_payslips])
-work_rate = actual_work_days / day_of_year
-no_of_work_months = work_rate * 12
+number_of_days = last_year_payslips._get_number_of_worked_days(only_full_pay=True)
+number_of_months = number_of_days / total_days * 12  # total_days remains the same for last 12 months and current year
 
 # Calculate the average monthly salary
 gross = last_year_payslips._get_line_values(['713_GROSS'], compute_sum=True)['713_GROSS']['sum']['total']
 gross -= last_year_payslips._get_total_non_full_pay()
-average_monthly_salary = gross / no_of_work_months
+average_monthly_salary = inputs['CUST_AVG_MONTHLY_SALARY'].amount if inputs.get('CUST_AVG_MONTHLY_SALARY') else gross / number_of_months
 
 # Calculate the pro-rata rate
-prorata_rate_per_month = (actual_work_days + payslip.date_to.day) / day_of_year
-prorata_rate = prorata_rate_per_month
+current_year_payslips = last_year_payslips.filtered(lambda p: p.date_from &gt;= first_day) + payslip
+number_of_days = current_year_payslips._get_number_of_worked_days()
+prorata_rate = number_of_days / total_days
 
 result = average_monthly_salary * prorata_rate
         </field>
@@ -203,7 +202,8 @@ result = average_monthly_salary * prorata_rate
         <field name="condition_select">python</field>
         <field name="condition_python">
 first_mpf_date = employee.first_contract_date + relativedelta(days=30)
-result = result_rules['MPF_GROSS']['total'] &gt; payslip._rule_parameter('l10n_hk_mpf_threshold') and first_mpf_date &lt;= payslip.date_from
+is_above_mpf_threshold = result_rules['MPF_GROSS']['total'] &gt; payslip._rule_parameter('l10n_hk_mpf_threshold')
+result = is_above_mpf_threshold and first_mpf_date &lt;= payslip.date_from
         </field>
         <field name="amount_select">code</field>
         <field name="amount_python_compute">
@@ -219,13 +219,24 @@ result = -min(0.05 * result_rules['MPF_GROSS']['total'], payslip._rule_parameter
         <field name="code">ERMC</field>
         <field name="sequence">111</field>
         <field name="condition_select">python</field>
-        <field name="condition_python">result = result_rules['EEMC']['total']</field>
+        <field name="condition_python">
+first_mpf_date = employee.first_contract_date + relativedelta(days=30)
+if first_mpf_date.day != 1:
+    first_mpf_date = first_mpf_date + relativedelta(months=1, day=payslip.date_from.day)
+    if (first_mpf_date - employee.first_contract_date).days + 1 &gt; 60:
+        first_mpf_date = first_mpf_date - relativedelta(months=1)
+is_above_mpf_threshold = result_rules['MPF_GROSS']['total'] &gt; payslip._rule_parameter('l10n_hk_mpf_threshold')
+result = is_above_mpf_threshold and first_mpf_date &lt;= payslip.date_from
+        </field>
         <field name="amount_select">code</field>
         <field name="amount_python_compute">
 result = -min(0.05 * result_rules['MPF_GROSS']['total'], payslip._rule_parameter('l10n_hk_mpf_maximum'))
 first_mpf_date = employee.first_contract_date + relativedelta(days=30)
-last_payslip_date = payslip.date_from - relativedelta(months=1)
-if first_mpf_date == payslip.date_from or (first_mpf_date.day != 1 and first_mpf_date.month == last_payslip_date.month and first_mpf_date.year == last_payslip_date.year):
+if first_mpf_date.day != 1:
+    first_mpf_date = first_mpf_date + relativedelta(months=1, day=payslip.date_from.day)
+    if (first_mpf_date - employee.first_contract_date).days + 1 &gt; 60:
+        first_mpf_date = first_mpf_date - relativedelta(months=1)
+if first_mpf_date == payslip.date_from:
     past_payslip_ids = payslip.env['hr.payslip'].search([
         ('state', 'in', ['paid', 'done']),
         ('date_to', '&gt;=', employee.first_contract_date),
@@ -251,7 +262,7 @@ if first_mpf_date == payslip.date_from or (first_mpf_date.day != 1 and first_mpf
 if employee.l10n_hk_mpf_vc_option == 'custom':
     result = -employee.l10n_hk_mpf_vc_percentage * result_rules['MPF_GROSS']['total']
 else:
-    result = -max(0.05 * result_rules['MPF_GROSS']['total'] - payslip._rule_parameter('l10n_hk_mpf_maximum'), 0)
+    result = -max(0.05 * result_rules['MPF_GROSS']['total'] - payslip._rule_parameter('l10n_hk_mpf_maximum') , 0)
         </field>
         <field name="struct_id" ref="l10n_hk_hr_payroll.hr_payroll_structure_cap57_employee_salary" />
         <field name="appears_on_payslip">True</field>

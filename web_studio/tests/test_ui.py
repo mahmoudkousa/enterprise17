@@ -1,5 +1,8 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 # -*- coding: utf-8 -*-
+
+import logging
+
 from lxml import etree
 from lxml.builder import E
 import json
@@ -9,11 +12,16 @@ from odoo import Command, api, http
 from odoo.tools import mute_logger
 from odoo.addons.web_studio.controllers.main import WebStudioController
 
+_logger = logging.getLogger(__name__)
+
 
 @odoo.tests.tagged('post_install', '-at_install')
 class TestUi(odoo.tests.HttpCase):
 
     def test_new_app_and_report(self):
+        if not odoo.tests.loaded_demo_data(self.env):
+            _logger.warning("This test relies on demo data. To be rewritten independently of demo data for accurate and reliable results.")
+            return
         self.start_tour("/web", 'web_studio_new_app_tour', login="admin")
 
         # the report tour is based on the result of the former tour
@@ -111,6 +119,16 @@ def watch_edit_view(test, on_edit_view):
     test.patch(WebStudioController, "edit_view", edit_view_mocked)
     test.addCleanup(clear_routing)
 
+def watch_create_new_field(test, on_create_new_field):
+    create_new_field = WebStudioController.create_new_field
+
+    def create_new_field_mocked(*args, **kwargs):
+        response = create_new_field(*args, **kwargs)
+        on_create_new_field(*args, **kwargs)
+        return response
+
+    test.patch(WebStudioController, "create_new_field", create_new_field_mocked)
+
 
 @odoo.tests.tagged('post_install', '-at_install')
 class TestStudioUIUnit(odoo.tests.HttpCase):
@@ -118,6 +136,7 @@ class TestStudioUIUnit(odoo.tests.HttpCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.env.company.country_id = cls.env.ref('base.us')
         cls.testView = cls.env["ir.ui.view"].create({
             "name": "simple partner",
             "model": "res.partner",
@@ -199,6 +218,10 @@ class TestStudioUIUnit(odoo.tests.HttpCase):
             "module": "web_studio",
             "res_id": self.newMenu.id,
         })
+
+    @mute_logger('odoo.http')
+    def test_web_studio_check_method_in_model(self):
+        self.start_tour("/web?debug=tests", 'web_studio_check_method_in_model', login="admin")
 
     def test_create_action_button_in_form_view(self):
         self.start_tour("/web?debug=tests", 'web_studio_test_create_action_button_in_form_view', login="admin")
@@ -474,6 +497,38 @@ class TestStudioUIUnit(odoo.tests.HttpCase):
                 </xpath>
             </data>
         """)
+
+    def test_studio_no_fetch_subview(self):
+
+        doesNotHaveGroup = self.env["res.groups"].create({
+            "name": "studio does not have"
+        })
+        doesNotHaveGroupXmlId = self.env["ir.model.data"].create({
+            "name": "studio_test_doesnothavegroup",
+            "model": "res.groups",
+            "module": "web_studio",
+            "res_id": doesNotHaveGroup.id,
+        })
+
+        def create_new_field_mocked(*args, **kwargs):
+            # For this test we need to patch groups from the phone field. Unfortunately it seems
+            # that the patch is erased each time we create a new field so we have to patch after.
+            self.patch(type(self.env["res.partner"]).phone, "groups", doesNotHaveGroupXmlId.complete_name)
+
+        watch_create_new_field(self, create_new_field_mocked)
+        self.patch(type(self.env["res.partner"]).phone, "groups", doesNotHaveGroupXmlId.complete_name)
+
+        self.testView.write({
+            "arch": '''
+                <form>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </form>
+            '''
+        })
+
+        self.start_tour("/web", 'web_studio_no_fetch_subview', login="admin")
 
     def test_elements_with_groups_form(self):
         operations = []
@@ -1032,6 +1087,58 @@ class TestStudioUIUnit(odoo.tests.HttpCase):
         self.start_tour("/web?debug=tests", 'web_studio_monetary_change_currency_name', login="admin")
         self.assertEqual(currency.field_description, "NewCurrency")
 
+    def test_related_monetary_creation(self):
+        res_partner_model_id = self.env["ir.model"].search([("model", "=", "res.partner")]).id
+        self.create_empty_app()
+        self.env["ir.model.fields"].create({
+            "name": "x_studio_currency_test",
+            "model": "res.partner",
+            "model_id": res_partner_model_id,
+            "ttype": "many2one",
+            "relation": "res.currency",
+        })
+        self.env["ir.model.fields"].create({
+            "name": "x_studio_monetary_test",
+            "model": "res.partner",
+            "model_id": res_partner_model_id,
+            "ttype": "monetary",
+            "currency_field": "x_studio_currency_test",
+        })
+        self.testView.arch = '''<form>
+            <group>
+                <field name="name"/>
+                <field name="x_studio_currency_test"/>
+                <field name="x_studio_monetary_test"/>
+            </group>
+        </form>'''
+
+        self.env["ir.model.fields"].create({
+            "name": "x_test",
+            "model": "x_test_model",
+            "model_id": self.newModel.id,
+            "ttype": "many2one",
+            "relation": "res.partner",
+        })
+        self.newView.arch = '''
+        <form>
+            <group>
+                <field name="x_name" />
+                <field name="x_test"/>
+            </group>
+        </form>
+        '''
+        self.start_tour("/web?debug=tests", 'web_studio_related_monetary_creation', login="admin")
+        # There is only one currency and there is a new monetary
+        fields = self.env["x_test_model"]._fields
+        currency_name_list = list(filter(lambda key: fields[key]._description_type == 'many2one' and fields[key]._description_relation == 'res.currency', fields.keys()))
+        monetary_name_list = list(filter(lambda key: fields[key].type == 'monetary', fields.keys()))
+        self.assertEqual(len(currency_name_list), 1)
+        self.assertEqual(len(monetary_name_list), 1)
+        # The monetary has been created and is a related field
+        self.assertEqual(self.env['x_test_model']._fields[monetary_name_list[0]].related, "x_test.x_studio_monetary_test")
+        # A currency has been created because there was none in the model/view
+        self.assertEqual(currency_name_list[0], 'x_studio_currency_id')
+
     def test_monetary_change_currency_field(self):
         self.create_empty_app()
         self.env["ir.model.fields"].create({
@@ -1357,3 +1464,162 @@ class TestStudioUIUnit(odoo.tests.HttpCase):
         </form>
         '''
         self.start_tour("/web?debug=tests", "web_studio_test_undo_new_field", login="admin", timeout=200)
+
+    def test_change_lone_attr_modifier_form(self):
+        self.testView.arch = """<form><field name='name' required="not context.get('something')"/></form>"""
+        self.start_tour("/web?debug=tests", "web_studio_test_change_lone_attr_modifier_form", login="admin")
+        studioView = _get_studio_view(self.testView)
+        assertViewArchEqual(self, studioView.arch, '''
+        <data>
+          <xpath expr="//form[1]/field[@name='name']" position="attributes">
+             <attribute name="required">False</attribute>
+          </xpath>
+        </data>
+        ''')
+
+    def test_drag_and_drop_boolean(self):
+        self.testView.arch = '''
+             <form>
+                 <group>
+                    <field name="name" />
+                 </group>
+             </form>
+        '''
+
+        self.start_tour("/web?debug=tests", 'web_studio_boolean_field_drag_and_drop', login="admin", timeout=200)
+
+        studioView = _get_studio_view(self.testView)
+        boolean_field = self.env['ir.model.fields'].search([('name', 'like', 'x_studio_boolean')])[0]
+
+        assertViewArchEqual(self, studioView.arch, '''
+             <data>
+                <xpath expr="//form[1]/group[1]/field[@name='name']" position="after">
+                    <field name="{boolean_field.name}"/>
+                </xpath>
+            </data>
+        '''.format(boolean_field=boolean_field))
+
+    def test_new_field_rename_description(self):
+        self.testView.arch = '''
+             <form>
+                 <group>
+                    <field name="name" />
+                 </group>
+             </form>
+        '''
+
+        self.start_tour("/web", "web_studio_test_new_field_rename_description", login="admin")
+        new_field = self.env["ir.model.fields"]._get("res.partner", "x_studio_my_new_field")
+        self.assertEqual(new_field.field_description, "my new field")
+        studioView = _get_studio_view(self.testView)
+        self.assertXMLEqual(studioView.arch, """
+            <data>
+                <xpath expr="//form[1]/group[1]/field[@name='name']" position="after">
+                   <field name="x_studio_my_new_field"/>
+                </xpath>
+            </data>
+        """)
+
+    def test_edit_digits_option(self):
+        self.testView.arch = '''<form class="test-user-list">
+            <field name="partner_latitude" />
+        </form>'''
+        self.start_tour("/web?debug=tests", 'web_studio_test_edit_digits_option', login="admin", timeout=200)
+        studioView = _get_studio_view(self.testView)
+        assertViewArchEqual(self, studioView.arch, """
+            <data>
+                <xpath expr="//field[@name='partner_latitude']" position="attributes">
+                    <attribute name="options">{"digits":[4,2]}</attribute>
+                </xpath>
+             </data>
+            """)
+
+    def test_button_rainbow_effect(self):
+        self.testView.arch = """<form><button type="object" name="open_commercial_entity">Button</button></form>"""
+        self.start_tour("/web", "web_studio.test_button_rainbow_effect", login="admin")
+
+        studioView = _get_studio_view(self.testView)
+        attachment = self.env["ir.attachment"].search([("name", "=", "my_studio_image.png")])
+
+        self.assertXMLEqual(studioView.arch, """
+        <data>
+          <xpath expr="//button[@name='open_commercial_entity']" position="attributes">
+            <attribute name="effect">{'img_url': '/web/content/%s'}</attribute>
+          </xpath>
+        </data>
+        """ % attachment.id)
+
+    def test_context_write_cleaned(self):
+        view = self.env["ir.ui.view"].create({
+            "model": "res.users",
+            "type": "form",
+            "arch": """<form>
+                <div class="oe_button_box"/>
+                <field name="display_name" invisible="context.get('default_type')" />
+            </form>"""
+        })
+
+        operations = [
+            {
+                "type": "add",
+                "target": {
+                    "tag": "div",
+                    "attrs": {
+                        "class": "oe_button_box"
+                    }
+                },
+                "position": "inside",
+                "node": {
+                    "tag": "button",
+                    "field": self.env["ir.model.fields"]._get("res.partner", "user_id").id,
+                    "string": "Test studio new button",
+                    "attrs": {
+                        "class": "oe_stat_button",
+                        "icon": "fa-diamond"
+                    }
+                }
+            }
+        ]
+        create_action = self.env.registry["ir.actions.actions"]._create
+        action_created = False
+        def mock_act_create(rec_set, *args, **kwargs):
+            nonlocal action_created
+            action_created = True
+            context = dict(rec_set.env.context)
+            del context["tz"]
+            self.assertEqual(context, {'lang': 'en_US', 'uid': 2, 'arbitrary_key': 'arbitrary'})
+            return create_action(rec_set, *args, **kwargs)
+
+        self.patch(self.env.registry["ir.actions.actions"], "_create", mock_act_create)
+
+        self.authenticate("admin", "admin")
+        with mute_logger("odoo.addons.base.models.ir_ui_view"):
+            response = self.url_open("/web_studio/edit_view",
+                headers={"Content-Type": "application/json"},
+                data=json.dumps({
+                    "params": {
+                        "view_id": view.id,
+                        "studio_view_arch": "",
+                        "model": "res.users",
+                        "operations": operations,
+                        "context": {
+                            "default_type": "some_type",
+                            "arbitrary_key": "arbitrary",
+                        }
+                    },
+            }))
+        action = self.env["ir.actions.act_window"].search([("res_model", "=", "res.partner")], order="create_date DESC", limit=1)
+
+        self.assertTrue(action_created, True)
+        self.assertEqual(action.type, "ir.actions.act_window")
+        self.assertEqual(action.name, "Test studio new button")
+        self.assertXMLEqual(response.json()["result"]["views"]["form"]["arch"], f"""
+        <form>
+          <div class="oe_button_box">
+            <button class="oe_stat_button" icon="fa-diamond" type="action" name="{action.id}">
+              <field widget="statinfo" name="x_user_id_res_partner_count" string="Test studio new button"/>
+            </button>
+          </div>
+          <field name="display_name" invisible="context.get('default_type')"/>
+        </form>
+        """)

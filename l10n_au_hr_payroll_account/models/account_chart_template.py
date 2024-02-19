@@ -42,7 +42,6 @@ class AccountChartTemplate(models.AbstractModel):
         ])
         #  Schedule 2
         structure_schedule_2 = self.env.ref('l10n_au_hr_payroll.hr_payroll_structure_au_horticulture')
-        schedule_2_rule_withholding = self.env.ref("l10n_au_hr_payroll.l10n_au_withholding_structure_2")
         schedule_2_rule_net_withholding = self.env.ref("l10n_au_hr_payroll.l10n_au_withholding_net_structure_2")
         schedule_2_rule_super = self.env.ref("l10n_au_hr_payroll.l10n_au_super_contribution_structure_2")
         schedule_2_rule_child_support = self.env.ref("l10n_au_hr_payroll.l10n_au_child_support_structure_2")
@@ -52,7 +51,6 @@ class AccountChartTemplate(models.AbstractModel):
         ])
         #  Schedule 3 - Actor
         structure_schedule_3 = self.env.ref('l10n_au_hr_payroll.hr_payroll_structure_au_actor')
-        schedule_3_rule_withholding = self.env.ref("l10n_au_hr_payroll.l10n_au_withholding_actors_structure_3")
         schedule_3_rule_net_withholding = self.env.ref("l10n_au_hr_payroll.l10n_au_withholding_net_structure_3")
         schedule_3_rule_super = self.env.ref("l10n_au_hr_payroll.l10n_au_super_contribution_structure_3")
         schedule_3_rule_child_support = self.env.ref("l10n_au_hr_payroll.l10n_au_child_support_structure_3")
@@ -62,7 +60,7 @@ class AccountChartTemplate(models.AbstractModel):
         ])
         #  Schedule 3 - Actor Promotional
         structure_schedule_3_promo = self.env.ref('l10n_au_hr_payroll.hr_payroll_structure_au_actor_promotional')
-        schedule_3_rule_promo_withholding = self.env.ref("l10n_au_hr_payroll.l10n_au_withholding_actors_structure_3_promo")
+        schedule_3_rule_promo_net_withholding = self.env.ref("l10n_au_hr_payroll.l10n_au_withholding_net_structure_3_promo")
         schedule_3_rule_promo_super = self.env.ref("l10n_au_hr_payroll.l10n_au_super_contribution_structure_3_promo")
         schedule_3_rule_promo_child_support = self.env.ref("l10n_au_hr_payroll.l10n_au_child_support_structure_3_promo")
         schedule_3_rule_promo_net = self.env['hr.salary.rule'].search([
@@ -71,7 +69,7 @@ class AccountChartTemplate(models.AbstractModel):
         ])
         #  Schedule 4
         structure_schedule_4 = self.env.ref('l10n_au_hr_payroll.hr_payroll_structure_au_return_to_work')
-        schedule_4_rule_withholding = self.env.ref("l10n_au_hr_payroll.l10n_au_withholding_return_to_work_structure_4")
+        schedule_4_rule_withholding = self.env.ref("l10n_au_hr_payroll.l10n_au_withholding_total_return_to_work_structure_4")
         schedule_4_rule_super = self.env.ref("l10n_au_hr_payroll.l10n_au_super_contribution_structure_4")
         schedule_4_rule_child_support = self.env.ref("l10n_au_hr_payroll.l10n_au_child_support_return_to_work_structure_4")
         schedule_4_rule_net = self.env['hr.salary.rule'].search([
@@ -80,6 +78,7 @@ class AccountChartTemplate(models.AbstractModel):
         ])
         #  Schedule 5
         structure_schedule_5 = self.env.ref('l10n_au_hr_payroll.hr_payroll_structure_au_lumpsum')
+        schedule_5_rule_super = self.env.ref("l10n_au_hr_payroll.l10n_au_super_contribution_lumpsum_structure_5")
         schedule_5_rule_withholding = self.env.ref("l10n_au_hr_payroll.l10n_au_withholding_lumpsum_structure_5")
         schedule_5_rule_net = self.env['hr.salary.rule'].search([
             ('struct_id', '=', structure_schedule_5.id),
@@ -124,10 +123,6 @@ class AccountChartTemplate(models.AbstractModel):
                 "debit": "21500",
             },
             #  Schedule 2
-            schedule_2_rule_withholding: {
-                "credit": "62430",
-                "debit": "21420",
-            },
             schedule_2_rule_net_withholding: {
                 "credit": "62430",
                 "debit": "21420",
@@ -145,10 +140,6 @@ class AccountChartTemplate(models.AbstractModel):
                 "debit": "62430",
             },
             # Schedule 3
-            schedule_3_rule_withholding: {
-                "credit": "62430",
-                "debit": "21420",
-            },
             schedule_3_rule_net_withholding: {
                 "credit": "62430",
                 "debit": "21420",
@@ -166,7 +157,7 @@ class AccountChartTemplate(models.AbstractModel):
                 "debit": "62430",
             },
             # Shedule 3 - Promo
-            schedule_3_rule_promo_withholding: {
+            schedule_3_rule_promo_net_withholding: {
                 "credit": "62430",
                 "debit": "21420",
             },
@@ -203,6 +194,10 @@ class AccountChartTemplate(models.AbstractModel):
             schedule_5_rule_withholding: {
                 "credit": "62430",
                 "debit": "21420",
+            },
+            schedule_5_rule_super: {
+                "credit": "21400",
+                "debit": "62420",
             },
             schedule_5_rule_net: {
                 "credit": "21300",

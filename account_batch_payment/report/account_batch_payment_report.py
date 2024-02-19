@@ -11,6 +11,8 @@ class PrintBatchPayment(models.AbstractModel):
     _template = 'account_batch_payment.print_batch_payment'
     _description = 'Batch Deposit Report'
 
+    # This method is kept for compatibility with the old template (if not updated).
+    # Should be removed in master.
     def get_pages(self, batch):
         """ Returns the data structure used by the template
         """

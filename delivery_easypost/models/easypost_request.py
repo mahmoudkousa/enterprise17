@@ -3,6 +3,7 @@
 
 import datetime
 import requests
+import re
 from werkzeug.urls import url_join
 
 from odoo import _
@@ -196,6 +197,8 @@ class EasypostRequest():
             return {}
 
         customs_info = {}
+        contents_explanation = ', '.join(["%s" % (re.sub(r'[\W_]+', ' ', commodity.product_id.name or '')) for commodity in commodities])[:255]
+        customs_info.update({'order[shipments][%d][customs_info][contents_explanation]' % (shipment_id) : contents_explanation})
         for customs_item_id, commodity in enumerate(commodities):
             customs_info.update({
                 'order[shipments][%d][customs_info][customs_items][%d][description]' % (shipment_id, customs_item_id): commodity.product_id.name,

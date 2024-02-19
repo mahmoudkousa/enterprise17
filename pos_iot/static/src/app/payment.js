@@ -153,7 +153,7 @@ export class PaymentIngenico extends PaymentInterface {
 export class PaymentWorldline extends PaymentIngenico {
     send_payment_cancel(order, cid) {
         if (this.get_terminal()) {
-            this._send_request({ messageType: "Cancel" });
+            this._send_request({ messageType: "Cancel", cid: cid });
         }
 
         return new Promise((resolve) => {

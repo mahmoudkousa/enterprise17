@@ -113,7 +113,7 @@ QUnit.test("Progressbar: check the progressbar percentage visibility.", async (a
     assert.containsN(target, SELECTORS.progressBarForeground, 2, "foreground is visible in mobile");
     assert.deepEqual(
         [...target.querySelectorAll(SELECTORS.progressBarForeground)].map((el) => el.textContent),
-        ["50 / 100", "25 / 200"]
+        ["50h / 100h", "25h / 200h"]
     );
 
     // Check the style of one of the progress bars
@@ -175,7 +175,7 @@ QUnit.test("Progressbar: grouped row", async (assert) => {
     assert.containsN(target, SELECTORS.progressBarForeground, 2, "foreground is visible in mobile");
     assert.deepEqual(
         [...target.querySelectorAll(SELECTORS.progressBarForeground)].map((el) => el.textContent),
-        ["50 / 100", "25 / 200"]
+        ["50h / 100h", "25h / 200h"]
     );
 
     // Check the style of one of the progress bars

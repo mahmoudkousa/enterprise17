@@ -51,5 +51,17 @@
                 </div>
             </t>
         </xpath>
+        <xpath expr="//Orderline" position="inside">
+            <t t-if="props.data.useBlackboxBe and line.discount !== '0'">
+                <div>
+                    Old unit price:
+                    <span>
+                        <s>
+                            <t t-esc="line.price_without_discount" /> / Units
+                        </s>
+                    </span>
+                </div>
+            </t>
+        </xpath>
     </t>
 </templates>

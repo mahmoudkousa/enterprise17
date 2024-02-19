@@ -147,7 +147,7 @@ class DHLProvider():
         bkg_details.ReadyTime = timedelta(hours=1,minutes=2)
         bkg_details.DimensionUnit = "CM" if carrier.dhl_package_dimension_unit == "C" else "IN"
         bkg_details.WeightUnit = "KG" if carrier.dhl_package_weight_unit == "K" else "LB"
-        bkg_details.InsuredValue = float_round(sum(pkg.total_cost for pkg in packages) * carrier.shipping_insurance / 100, precision_digits=3)
+        bkg_details.InsuredValue = float_repr(sum(pkg.total_cost for pkg in packages) * carrier.shipping_insurance / 100, precision_digits=3)
         bkg_details.InsuredCurrency = packages[0].currency_id.name
         pieces = []
         for sequence, package in enumerate(packages):
@@ -188,7 +188,7 @@ class DHLProvider():
         shipment_details.Date = date.today()
         shipment_details.Contents = "MY DESCRIPTION"
         shipment_details.DimensionUnit = picking.carrier_id.dhl_package_dimension_unit
-        shipment_details.InsuredAmount = float_round(sum(pkg.total_cost for pkg in packages) * picking.carrier_id.shipping_insurance / 100, precision_digits=2)
+        shipment_details.InsuredAmount = float_repr(sum(pkg.total_cost for pkg in packages) * picking.carrier_id.shipping_insurance / 100, precision_digits=2)
         if picking.carrier_id.dhl_dutiable:
             shipment_details.IsDutiable = "Y"
         shipment_details.CurrencyCode = packages[0].currency_id.name

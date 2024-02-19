@@ -7,10 +7,12 @@ export class ExistingFields extends Component {
     static props = {
         fieldsInArch: { type: Array },
         fields: { type: Object },
+        filterFields: { type: Boolean, optional: true },
         folded: { type: Boolean, optional: true },
     };
     static defaultProps = {
         folded: true,
+        filterFields: true,
     };
     static template = "web_studio.ViewStructures.ExistingFields";
 
@@ -36,7 +38,7 @@ export class ExistingFields extends Component {
     get existingFields() {
         const fieldsInArch = this.props.fieldsInArch;
         const filtered = Object.entries(this.props.fields).filter(([fName, field]) => {
-            if (fieldsInArch.includes(fName) || !this.isMatchingSearch(field)) {
+            if (!this.isMatchingSearch(field) || this.props.filterFields && fieldsInArch.includes(fName)) {
                 return false;
             }
             return true;

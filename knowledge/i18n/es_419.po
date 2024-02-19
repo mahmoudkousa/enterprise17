@@ -4,16 +4,17 @@
 # 
 # Translators:
 # Wil Odoo, 2023
+# Iran Villalobos López, 2023
 # Fernanda Alvarez, 2023
-# Patricia Gutiérrez Capetillo <pagc@odoo.com>, 2023
+# Patricia Gutiérrez Capetillo <pagc@odoo.com>, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-26 16:09+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Patricia Gutiérrez Capetillo <pagc@odoo.com>, 2023\n"
+"Last-Translator: Patricia Gutiérrez Capetillo <pagc@odoo.com>, 2024\n"
 "Language-Team: Spanish (Latin America) (https://app.transifex.com/odoo/teams/41243/es_419/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1390,6 +1391,15 @@ msgid ""
 msgstr ""
 "<span style=\"font-size: 14px;\">¿Necesita este documento en alguna parte? "
 "Regrese aquí haciendo clic en el icono 📗 en el chatter.</span>"
+
+#. module: knowledge
+#: model_terms:ir.ui.view,arch_db:knowledge.knowledge_article_user_onboarding
+msgid ""
+"<span style=\"font-size: 14px;\">Not sure how to do it? Check the video "
+"below 👇</span>"
+msgstr ""
+"<span style=\"font-size: 14px;\">¿No sabes muy bien cómo hacerlo? Mire el "
+"video aquí abajo 👇</span>"
 
 #. module: knowledge
 #: model_terms:ir.ui.view,arch_db:knowledge.knowledge_article_user_onboarding
@@ -3092,7 +3102,7 @@ msgstr "Contacte a nuestro abogado"
 
 #. module: knowledge
 #. odoo-javascript
-#: code:addons/knowledge/static/src/components/behaviors/template_behavior/template_behavior.xml:0
+#: code:addons/knowledge/static/src/components/behaviors/template_behavior/template_behavior.js:0
 #, python-format
 msgid "Content copied to clipboard."
 msgstr "Contenido copiado al portapapeles."
@@ -3489,7 +3499,7 @@ msgstr "EDITAR"
 
 #. module: knowledge
 #. odoo-javascript
-#: code:addons/knowledge/static/src/components/behaviors/embedded_view_behavior/embedded_view_manager.xml:0
+#: code:addons/knowledge/static/src/components/embedded_view_actions_menu/embedded_view_actions_menu.xml:0
 #, python-format
 msgid "Edit"
 msgstr "Editar"
@@ -3708,6 +3718,13 @@ msgstr "Género: hombre"
 #: model_terms:knowledge.article,template_body:knowledge.knowledge_article_template_marketing_customer_persona_3
 msgid "Gender(s): W"
 msgstr "Género: mujer"
+
+#. module: knowledge
+#. odoo-javascript
+#: code:addons/knowledge/static/src/components/knowledge_article_html_field/knowledge_article_html_field.xml:0
+#, python-format
+msgid "Generate an Article with AI"
+msgstr "Genere un artículo con inteligencia artificial."
 
 #. module: knowledge
 #: model_terms:ir.ui.view,arch_db:knowledge.knowledge_article_favorite_view_search
@@ -4828,17 +4845,6 @@ msgid "Move to Workspace"
 msgstr "Mover al espacio de trabajo"
 
 #. module: knowledge
-#. odoo-python
-#: code:addons/knowledge/models/knowledge_article.py:0
-#, python-format
-msgid ""
-"Move to target of %(article_name)s is ambiguous, you should specify the "
-"category."
-msgstr ""
-"Mover al destino de %(article_name)s es ambiguo, debe especificar la "
-"categoría."
-
-#. module: knowledge
 #: model:ir.model.fields,field_description:knowledge.field_knowledge_article__my_activity_date_deadline
 msgid "My Activity Deadline"
 msgstr "Fecha límite de mi actividad"
@@ -4919,6 +4925,11 @@ msgstr "Nueva mención en %s"
 #, python-format
 msgid "New property could not be created."
 msgstr "No se pudo crear la nueva propiedad."
+
+#. module: knowledge
+#: model:ir.model.fields,field_description:knowledge.field_knowledge_article__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr "Siguiente evento en el calendario de actividades"
 
 #. module: knowledge
 #: model:ir.model.fields,field_description:knowledge.field_knowledge_article__activity_date_deadline
@@ -5012,11 +5023,6 @@ msgstr "Aún no hay etapa"
 #, python-format
 msgid "No template yet."
 msgstr "No hay plantilla."
-
-#. module: knowledge
-#: model_terms:ir.ui.view,arch_db:knowledge.knowledge_article_user_onboarding
-msgid "Not sure how to do it?"
-msgstr "¿No está seguro de cómo hacerlo?"
 
 #. module: knowledge
 #. odoo-javascript
@@ -5163,7 +5169,7 @@ msgstr ""
 
 #. module: knowledge
 #. odoo-javascript
-#: code:addons/knowledge/static/src/components/behaviors/embedded_view_behavior/embedded_view_manager.xml:0
+#: code:addons/knowledge/static/src/components/embedded_view_actions_menu/embedded_view_actions_menu.xml:0
 #: code:addons/knowledge/static/src/components/sidebar/sidebar.js:0
 #: code:addons/knowledge/static/src/views/item_calendar/item_calendar_views.xml:0
 #, python-format
@@ -5586,7 +5592,6 @@ msgstr "Eliminar de favoritos"
 
 #. module: knowledge
 #. odoo-javascript
-#: code:addons/knowledge/static/src/components/behaviors/embedded_view_behavior/embedded_view_manager.xml:0
 #: code:addons/knowledge/static/src/components/prompt_embedded_view_name_dialog/prompt_embedded_view_name_dialog.xml:0
 #, python-format
 msgid "Rename"
@@ -5820,11 +5825,6 @@ msgstr "Sección"
 #: model_terms:knowledge.article,template_body:knowledge.knowledge_article_template_hr_faq
 msgid "See a doctor and send us the sick note."
 msgstr "Consulte a un médico y envíenos la receta."
-
-#. module: knowledge
-#: model_terms:ir.ui.view,arch_db:knowledge.knowledge_article_user_onboarding
-msgid "See how it works <i class=\"fa fa-youtube-play\"/>"
-msgstr "Vea cómo funciona <i class=\"fa fa-youtube-play\"/>"
 
 #. module: knowledge
 #. odoo-javascript
@@ -6292,6 +6292,17 @@ msgstr "Nuestra participación en Future Entrepreneurship"
 #, python-format
 msgid "The article '%s' needs at least one member with 'Write' access."
 msgstr "El artículo \"%s\" necesita al menos un miembro con acceso a \"Editar\"."
+
+#. module: knowledge
+#. odoo-python
+#: code:addons/knowledge/models/knowledge_article.py:0
+#, python-format
+msgid ""
+"The destination placement of %(article_name)s is ambiguous, you should "
+"specify the category."
+msgstr ""
+"La ubicación de destino de %(article_name)s es ambigua, especifique la "
+"categoría."
 
 #. module: knowledge
 #. odoo-javascript
@@ -6853,6 +6864,13 @@ msgid "Write"
 msgstr "Editar"
 
 #. module: knowledge
+#. odoo-javascript
+#: code:addons/knowledge/static/src/js/knowledge_wysiwyg.js:0
+#, python-format
+msgid "Write an article about"
+msgstr "Escriba un artículo al respecto"
+
+#. module: knowledge
 #: model_terms:knowledge.article,template_body:knowledge.knowledge_article_template_brand_assets
 msgid ""
 "Write it without any article(<em><s>the</s> YourCompany, <s>a</s> "
@@ -6866,6 +6884,13 @@ msgstr ""
 #: model_terms:knowledge.article,template_body:knowledge.knowledge_article_template_shared_todos_write_the_next_newsletter
 msgid "Write the next Newsletter"
 msgstr "Escriba el siguiente boletín de noticias"
+
+#. module: knowledge
+#. odoo-javascript
+#: code:addons/knowledge/static/src/components/permission_panel/permission_panel.xml:0
+#, python-format
+msgid "You"
+msgstr "Usted"
 
 #. module: knowledge
 #: model:ir.model.constraint,message:knowledge.constraint_knowledge_article_member_unique_article_partner
@@ -6935,6 +6960,18 @@ msgstr "No puede guardar este artículo como favorito"
 #, python-format
 msgid "You can't leave an article for which you are the last writer"
 msgstr "No puede abandonar un artículo del cual es el último autor"
+
+#. module: knowledge
+#. odoo-python
+#: code:addons/knowledge/models/knowledge_article.py:0
+#, python-format
+msgid ""
+"You can't move %(article_name)s under %(item_name)s, as %(item_name)s is an "
+"Article Item. Convert %(item_name)s into an Article first."
+msgstr ""
+"No puede mover %(article_name)s a %(item_name)s, ya que %(item_name)s es un "
+"elemento de un artículo. Primero debe convertir %(item_name)s en un "
+"artículo."
 
 #. module: knowledge
 #. odoo-javascript

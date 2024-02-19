@@ -11,6 +11,7 @@ from odoo.osv.expression import NEGATIVE_TERM_OPERATORS
 class MarketingParticipant(models.Model):
     _name = 'marketing.participant'
     _description = 'Marketing Participant'
+    _order = 'id ASC'
     _rec_name = 'resource_ref'
 
     @api.model

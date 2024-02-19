@@ -109,6 +109,10 @@ class MrpProductionWorkcenterLine(models.Model):
                         check._update_component_quantity()
         return res
 
+    def unlink(self):
+        self.check_ids.sudo().unlink()
+        return super().unlink()
+
     def action_back(self):
         self.ensure_one()
         if self._should_be_pending():
@@ -271,17 +275,18 @@ class MrpProductionWorkcenterLine(models.Model):
     def button_start(self, bypass=False):
         skip_employee_check = bypass or (not request and not self.env.user.employee_id)
         main_employee = False
-        if not self.env.context.get('mrp_display'):
-            main_employee = self.env.user.employee_id.id
-        elif not skip_employee_check:
-            connected_employees = self.env['hr.employee'].get_employees_connected()
-            if len(connected_employees) == 0:
-                raise UserError(_("You need to log in to process this work order."))
-            main_employee = self.env['hr.employee'].get_session_owner()
-            if not main_employee:
-                raise UserError(_("There is no session chief. Please log in."))
-            if any(main_employee not in [emp.id for emp in wo.allowed_employees] and not wo.all_employees_allowed for wo in self):
-                raise UserError(_("You are not allowed to work on the workorder"))
+        if not skip_employee_check:
+            if not self.env.context.get('mrp_display'):
+                main_employee = self.env.user.employee_id.id
+            else:
+                connected_employees = self.env['hr.employee'].get_employees_connected()
+                if len(connected_employees) == 0:
+                    raise UserError(_("You need to log in to process this work order."))
+                main_employee = self.env['hr.employee'].get_session_owner()
+                if not main_employee:
+                    raise UserError(_("There is no session chief. Please log in."))
+                if any(main_employee not in [emp.id for emp in wo.allowed_employees] and not wo.all_employees_allowed for wo in self):
+                    raise UserError(_("You are not allowed to work on the workorder"))
 
         res = super().button_start()
 
@@ -433,19 +438,21 @@ class MrpProductionWorkcenterLine(models.Model):
         moves = super(MrpProductionWorkcenterLine, self)._get_byproduct_move_to_update()
         return moves.filtered(lambda m: m.product_id.tracking == 'none')
 
-    def record_production(self):
-        if not self:
-            return True
-
+    def pre_record_production(self):
         self.ensure_one()
         self._check_company()
         if any(x.quality_state == 'none' for x in self.check_ids if x.test_type != 'instructions'):
             raise UserError(_('You still need to do the quality checks!'))
         if float_compare(self.qty_producing, 0, precision_rounding=self.product_uom_id.rounding) <= 0:
             raise UserError(_('Please set the quantity you are currently producing. It should be different from zero.'))
-
         if self.production_id.product_id.tracking != 'none' and not self.finished_lot_id and self.move_raw_ids:
             raise UserError(_('You should provide a lot/serial number for the final product'))
+
+    def record_production(self):
+        if not self:
+            return True
+
+        self.pre_record_production()
 
         backorder = False
         # Trigger the backorder process if we produce less than expected
@@ -528,7 +535,8 @@ class MrpProductionWorkcenterLine(models.Model):
         return action
 
     def action_open_manufacturing_order(self):
-        action = self.with_context(no_start_next=True).do_finish()
+        no_start_next = self.env.context.get("no_start_next", True)
+        action = self.with_context(no_start_next=no_start_next).do_finish()
         try:
             with self.env.cr.savepoint():
                 res = self.production_id.button_mark_done()
@@ -552,11 +560,15 @@ class MrpProductionWorkcenterLine(models.Model):
         return action
 
     def do_finish(self):
-        action = True
+        self.end_all()
         if self.state != 'done':
+            loss_id = self.env['mrp.workcenter.productivity.loss'].search([('loss_type', '=', 'productive')], limit=1)
+            if len(loss_id) < 1:
+                raise UserError(_("You need to define at least one productivity loss in the category 'Productive'. Create one from the Manufacturing app, menu: Configuration / Productivity Losses."))
             action = self.record_production()
-        if action is not True:
-            return action
+            self._set_default_time_log(loss_id)
+            if action is not True:
+                return action
         # workorder tree view action should redirect to the same view instead of workorder kanban view when WO mark as done.
         return self.action_back()
 
@@ -828,6 +840,16 @@ class MrpProductionWorkcenterLine(models.Model):
             raise UserError(_("You need to define at least one productivity loss in the category 'Productive'. Create one from the Manufacturing app, menu: Configuration / Productivity Losses."))
 
         wo.state = 'done'
+        self._set_default_time_log(loss_id)
+
+    def _set_default_time_log(self, loss_id):
+        if self.env.context.get('mrp_display'):
+            if (self.env.context.get('employee_id')):
+                main_employee_connected = self.env.context.get('employee_id')
+            else:
+                main_employee_connected = self.env['hr.employee'].get_session_owner()
+        else:
+            main_employee_connected = self.env.user.employee_id.id
         productivity = []
         for wo in self:
             if not wo.time_ids:

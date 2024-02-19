@@ -162,6 +162,12 @@ class TestPushNotification(SMSCommon):
             'DirectMessage',
             'The type of Android channel must be DirectMessage'
         )
+        # FIXME: mobile apps use old "mail.channel" and cannot be changed on iOS
+        self.assertEqual(
+            jsonrpc.call_args[1]['params']['data']['model'],
+            'mail.channel',
+            'The model must be mail.channel (for Mobile App)'
+        )
 
         # Reset the mock counter
         jsonrpc.reset_mock()

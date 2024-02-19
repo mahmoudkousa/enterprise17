@@ -54,7 +54,7 @@ class L10nInGSTReturnPeriod(models.Model):
 
     name = fields.Char(compute="_compute_name", string="Period")
     return_period_month_year = fields.Char(compute="_compute_rtn_period_month_year", string="Return Period", store=True)
-    tax_unit_id = fields.Many2one("account.tax.unit", string="VAT Units")
+    tax_unit_id = fields.Many2one("account.tax.unit", string="GST Units")
     company_id = fields.Many2one("res.company", string="Company", default=lambda self: self.env.company, required=True)
     company_ids = fields.Many2many(related="tax_unit_id.company_ids", string="Companies")
     start_date = fields.Date("Start Date", compute="_compute_period_dates", store=True)
@@ -152,7 +152,13 @@ class L10nInGSTReturnPeriod(models.Model):
     def _check_tax_unit(self):
         for record in self:
             if record.tax_unit_id and record.tax_unit_id.main_company_id != record.company_id:
-                raise ValidationError(_('Vat Unit main company is different than this period company.'))
+                raise ValidationError(_('GST Unit main company is different than this period company.'))
+
+    @api.constrains('month', 'quarter', 'year')
+    def _check_gstr_status(self):
+        for record in self:
+            if record.gstr1_status != 'to_send' or record.gstr2b_status != 'not_recived':
+                raise UserError("You cannot change GST filing period after sending/receiving GSTR data")
 
     @api.onchange('year')
     def _check_isyear(self):
@@ -289,6 +295,12 @@ class L10nInGSTReturnPeriod(models.Model):
             msg = _("The NIC portal connection has expired. To re-initiate the connection, you can send an OTP request From configuration.")
         if msg:
             raise RedirectWarning(msg, action.id, _('Go to the configuration panel'))
+
+    @api.ondelete(at_uninstall=False)
+    def _restrict_delete_on_gstr_status(self):
+        for record in self:
+            if record.gstr1_status != 'to_send' or record.gstr2b_status != 'not_recived':
+                raise UserError("You cannot delete GST Return Period after sending/receiving GSTR data")
 
     def open_invoice_action(self):
         domain = [
@@ -1204,7 +1216,7 @@ class L10nInGSTReturnPeriod(models.Model):
                 domain
                 + [
                     ("move_id.move_type", "in", ["out_invoice", "out_receipt"]),
-                    ("move_id.l10n_in_gst_treatment", "in", ("regular", "special_economic_zone", "deemed_export", "uin_holders")),
+                    ("move_id.l10n_in_gst_treatment", "in", ("regular", "special_economic_zone", "deemed_export", "uin_holders", "composition")),
                     ("tax_tag_ids", "in", gst_tags),
                 ]
             )
@@ -1213,7 +1225,7 @@ class L10nInGSTReturnPeriod(models.Model):
                 domain
                 + [
                     ("move_id.move_type", "in", ["out_invoice", "out_receipt"]),
-                    ("move_id.l10n_in_gst_treatment", "in", ("unregistered", "consumer", "composition")),
+                    ("move_id.l10n_in_gst_treatment", "in", ("unregistered", "consumer")),
                     ("move_id.l10n_in_state_id", "!=", self.company_id.state_id.id),
                     ("move_id.amount_total", ">", 250000),
                     ("tax_tag_ids", "in", gst_tags),
@@ -1224,7 +1236,7 @@ class L10nInGSTReturnPeriod(models.Model):
                 domain
                 + [
                     ("move_id.move_type", "in", ["out_invoice", "out_refund", "out_receipt"]),
-                    ("move_id.l10n_in_gst_treatment", "in", ("unregistered", "consumer", "composition")),
+                    ("move_id.l10n_in_gst_treatment", "in", ("unregistered", "consumer")),
                     ("tax_tag_ids", "in", gst_tags),
                     "|",
                     ("move_id.l10n_in_transaction_type", "=", "intra_state"),
@@ -1238,7 +1250,7 @@ class L10nInGSTReturnPeriod(models.Model):
                 domain
                 + [
                     ("move_id.move_type", "=", "out_refund"),
-                    ("move_id.l10n_in_gst_treatment", "in", ("regular", "special_economic_zone", "deemed_export", "deemed_export")),
+                    ("move_id.l10n_in_gst_treatment", "in", ("regular", "special_economic_zone", "deemed_export", "uin_holders", "composition")),
                     ("tax_tag_ids", "in", gst_tags),
                 ]
             )
@@ -1252,7 +1264,7 @@ class L10nInGSTReturnPeriod(models.Model):
                     ("tax_tag_ids", "in", export_tags),
                     "&", "&", "&",
                     ("tax_tag_ids", "in", gst_tags),
-                    ("move_id.l10n_in_gst_treatment", "in", ["unregistered", "consumer", "composition"]),
+                    ("move_id.l10n_in_gst_treatment", "in", ["unregistered", "consumer"]),
                     ("move_id.l10n_in_transaction_type", "=", "inter_state"),
                     ("move_id.amount_total", ">", 250000),
                 ]
@@ -1647,7 +1659,7 @@ class L10nInGSTReturnPeriod(models.Model):
             process_json(json_payload_list)
         else:
             self.sudo().write({
-                "gstr2b_status": "error",
+                "gstr2b_blocking_level": "error",
                 "gstr2b_error": "Shomehow this GSTR2B attachment is not json",
             })
 

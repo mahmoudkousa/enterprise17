@@ -38,16 +38,11 @@ export const homeMenuService = {
                 const { breadcrumbs } = this.env.config;
                 hasHomeMenu = true;
                 hasBackgroundAction = breadcrumbs.length > 0;
-                this.router.pushState({ menu_id: undefined }, { lock: false, replace: true });
                 this.env.bus.trigger("HOME-MENU:TOGGLED");
             }
             onWillUnmount() {
                 hasHomeMenu = false;
                 hasBackgroundAction = false;
-                const currentMenuId = this.menus.getCurrentApp();
-                if (currentMenuId) {
-                    this.router.pushState({ menu_id: currentMenuId.id }, { lock: true });
-                }
                 this.env.bus.trigger("HOME-MENU:TOGGLED");
             }
         }

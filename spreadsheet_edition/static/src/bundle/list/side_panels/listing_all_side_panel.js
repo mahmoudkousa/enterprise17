@@ -3,12 +3,16 @@
 import { _t } from "@web/core/l10n/translation";
 import { ListingDetailsSidePanel } from "./listing_details_side_panel";
 
-import { Component } from "@odoo/owl";
+import { Component, onWillUpdateProps } from "@odoo/owl";
 
 export class ListingAllSidePanel extends Component {
-    constructor() {
-        super(...arguments);
+    setup() {
         this.getters = this.env.model.getters;
+        onWillUpdateProps(() => {
+            if (!this.env.model.getters.getListIds().length) {
+                this.props.onCloseSidePanel();
+            }
+        });
     }
 
     selectListing(listId) {

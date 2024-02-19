@@ -13,6 +13,8 @@ import { makeView, setupViewRegistries } from "@web/../tests/views/helpers";
 import { COLORS } from "@web_gantt/gantt_connector";
 import { GanttRenderer } from "@web_gantt/gantt_renderer";
 import { CLASSES, SELECTORS, getPill, getPillWrapper } from "./helpers";
+import { registry } from "@web/core/registry";
+import { browser } from "@web/core/browser/browser";
 
 /** @typedef {import("@web_gantt/gantt_renderer").ConnectorProps} ConnectorProps */
 /** @typedef {import("@web_gantt/gantt_renderer").PillId} PillId */
@@ -926,9 +928,7 @@ QUnit.module("Views > GanttView", (hooks) => {
         rightWrapper.classList.add("d-block");
 
         // Creating a connector and hover another pill while dragging it
-        const { moveTo } = await drag(
-            rightWrapper.querySelector(SELECTORS.connectorCreatorBullet),
-        );
+        const { moveTo } = await drag(rightWrapper.querySelector(SELECTORS.connectorCreatorBullet));
         await moveTo(getPill("Task 2"));
         assert.containsNone(target, SELECTORS.resizeHandle);
     });
@@ -947,39 +947,87 @@ QUnit.module("Views > GanttView", (hooks) => {
         assert.hasClass(target.querySelector(SELECTORS.renderer), "o_connect");
     });
 
-    QUnit.test("Connector creators of initial pill are highlighted when creating a connector", async (assert) => {
-        await makeView(ganttViewParams);
+    QUnit.test(
+        "Connector creators of initial pill are highlighted when creating a connector",
+        async (assert) => {
+            await makeView(ganttViewParams);
 
-        // Explicitly shows the connector creator wrapper since its "display: none"
-        // disappears on native CSS hover, which cannot be programatically emulated.
-        const sourceWrapper = target.querySelector(SELECTORS.pillWrapper)
-        const rightWrapper = sourceWrapper.querySelector(SELECTORS.connectorCreatorWrapper);
-        rightWrapper.classList.add("d-block");
+            // Explicitly shows the connector creator wrapper since its "display: none"
+            // disappears on native CSS hover, which cannot be programatically emulated.
+            const sourceWrapper = target.querySelector(SELECTORS.pillWrapper);
+            const rightWrapper = sourceWrapper.querySelector(SELECTORS.connectorCreatorWrapper);
+            rightWrapper.classList.add("d-block");
 
-        // Creating a connector and hover another pill while dragging it
-        const { moveTo } = await drag(rightWrapper.querySelector(SELECTORS.connectorCreatorBullet));
-        await moveTo(getPill("Task 2"));
-        assert.hasClass(sourceWrapper, CLASSES.lockedConnectorCreator);
-    });
+            // Creating a connector and hover another pill while dragging it
+            const { moveTo } = await drag(
+                rightWrapper.querySelector(SELECTORS.connectorCreatorBullet)
+            );
+            await moveTo(getPill("Task 2"));
+            assert.hasClass(sourceWrapper, CLASSES.lockedConnectorCreator);
+        }
+    );
 
-    QUnit.test("Connector creators of hovered pill are highlighted when creating a connector", async (assert) => {
-        await makeView(ganttViewParams);
+    QUnit.test(
+        "Connector creators of hovered pill are highlighted when creating a connector",
+        async (assert) => {
+            await makeView(ganttViewParams);
 
-        // Explicitly shows the connector creator wrapper since its "display: none"
-        // disappears on native CSS hover, which cannot be programatically emulated.
-        const rightWrapper = target.querySelector(SELECTORS.connectorCreatorWrapper);
-        rightWrapper.classList.add("d-block");
+            // Explicitly shows the connector creator wrapper since its "display: none"
+            // disappears on native CSS hover, which cannot be programatically emulated.
+            const rightWrapper = target.querySelector(SELECTORS.connectorCreatorWrapper);
+            rightWrapper.classList.add("d-block");
 
-        // Creating a connector and hover another pill while dragging it
-        const { moveTo } = await drag(rightWrapper.querySelector(SELECTORS.connectorCreatorBullet));
+            // Creating a connector and hover another pill while dragging it
+            const { moveTo } = await drag(
+                rightWrapper.querySelector(SELECTORS.connectorCreatorBullet)
+            );
 
-        const destinationWrapper = getPillWrapper("Task 2");
-        const destinationPill = destinationWrapper.querySelector(SELECTORS.pill);        
-        await moveTo(destinationPill);
+            const destinationWrapper = getPillWrapper("Task 2");
+            const destinationPill = destinationWrapper.querySelector(SELECTORS.pill);
+            await moveTo(destinationPill);
 
-        // moveTo only triggers a pointerenter event on destination pill,
-        // a pointermove event is still needed to highlight it
-        await triggerEvent(destinationPill, null, "pointermove");
-        assert.hasClass(destinationWrapper, CLASSES.highlightedConnectorCreator);
-    });
+            // moveTo only triggers a pointerenter event on destination pill,
+            // a pointermove event is still needed to highlight it
+            await triggerEvent(destinationPill, null, "pointermove");
+            assert.hasClass(destinationWrapper, CLASSES.highlightedConnectorCreator);
+        }
+    );
+
+    QUnit.test(
+        "Switch to full-size browser: the connections between pills should be diplayed",
+        async (assert) => {
+            const ui = { isSmall: true };
+            patchWithCleanup(browser, { setTimeout: (fn) => fn() });
+            const fakeUIService = {
+                start(env) {
+                    Object.defineProperty(env, "isSmall", {
+                        get() {
+                            return ui.isSmall;
+                        },
+                    });
+                    return ui;
+                },
+            };
+            registry.category("services").add("ui", fakeUIService);
+            await makeView(ganttViewParams);
+
+            // Mobile view
+            assert.containsNone(
+                target,
+                "svg.o_gantt_connector",
+                "Gantt connectors should not be visible in small/mobile view"
+            );
+
+            // Resizing browser to leave mobile view
+            ui.isSmall = false;
+            patchWithCleanup(browser, { innerWidth: 1200 });
+            await triggerEvent(window, null, "resize");
+            assert.containsN(
+                target,
+                "svg.o_gantt_connector",
+                22,
+                "Gantt connectors should be visible when switching to desktop view"
+            );
+        }
+    );
 });

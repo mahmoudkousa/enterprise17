@@ -7,7 +7,7 @@ from urllib.parse import quote
 from datetime import datetime
 from werkzeug.urls import url_join
 
-from odoo import models, fields
+from odoo import _, models, fields
 
 
 class SocialStreamPostLinkedIn(models.Model):
@@ -64,39 +64,42 @@ class SocialStreamPostLinkedIn(models.Model):
         data = {
             'actor': self.account_id.linkedin_account_urn,
             'message': {
-                'attributes': [],
                 'text': message,
             },
+            'object': self.linkedin_post_urn,
         }
 
         if comment_urn:
             # we reply yo an existing comment
             data['parentComment'] = comment_urn
 
-        response = requests.post(
-            url_join(self.env['social.media']._LINKEDIN_ENDPOINT,
-                     'socialActions/%s/comments' % quote(self.linkedin_post_urn)),
-            params={'projection': '(%s)' % self.env['social.media']._LINKEDIN_COMMENT_PROJECTION},
+        response = self.account_id._linkedin_request(
+            'socialActions/%s/comments' % quote(self.linkedin_post_urn),
+            method="POST",
             json=data,
-            headers=self.account_id._linkedin_bearer_headers(),
-            timeout=5).json()
+        ).json()
 
         if 'created' not in response:
             self.sudo().account_id._action_disconnect_accounts(response)
             return {}
 
+        response['from'] = {  # fill with our own information to save an API call
+            'id': self.account_id.linkedin_account_urn,
+            'name': self.account_id.name,
+            'authorUrn': self.account_id.linkedin_account_urn,
+            'picture': f"/web/image?model=social.account&id={self.account_id.id}&field=image",
+            'isOrganization': True,
+        }
         return self._linkedin_format_comment(response)
 
     def _linkedin_comment_delete(self, comment_urn):
         comment_id = re.search(r'urn:li:comment:\(urn:li:activity:\w+,(\w+)\)', comment_urn).group(1)
-        endpoint = url_join(
-            self.env['social.media']._LINKEDIN_ENDPOINT,
-            'socialActions/%s/comments/%s' % (quote(self.linkedin_post_urn), quote(comment_id)))
 
-        response = requests.request(
-            'DELETE', endpoint, params={'actor': self.account_id.linkedin_account_urn},
-            headers=self.account_id._linkedin_bearer_headers(),
-            timeout=5)
+        response = self.account_id._linkedin_request(
+            'socialActions/%s/comments/%s' % (quote(self.linkedin_post_urn), quote(comment_id)),
+            method='DELETE',
+            params={'actor': self.account_id.linkedin_account_urn},
+        )
 
         if response.status_code != 204:
             self.sudo().account_id._action_disconnect_accounts(response.json())
@@ -111,20 +114,78 @@ class SocialStreamPostLinkedIn(models.Model):
         """
         element_urn = comment_urn or self.linkedin_post_urn
 
-        response = requests.get(
-            url_join(self.env['social.media']._LINKEDIN_ENDPOINT, 'socialActions/%s/comments' % quote(element_urn)),
+        response = self.account_id._linkedin_request(
+            'socialActions/%s/comments' % quote(element_urn),
             params={
                 'start': offset,
                 'count': count,
-                'projection': '(paging,elements*(%s))' % self.env['social.media']._LINKEDIN_COMMENT_PROJECTION
             },
-            headers=self.account_id._linkedin_bearer_headers(),
-            timeout=5).json()
-
+        ).json()
         if 'elements' not in response:
             self.sudo().account_id._action_disconnect_accounts(response)
 
-        comments = [self._linkedin_format_comment(comment) for comment in response.get('elements', [])]
+        comments = response.get('elements', [])
+
+        persons_ids = {comment.get('actor') for comment in comments if comment.get('actor')}
+        organizations_ids = {author.split(":")[-1] for author in persons_ids if author.startswith("urn:li:organization:")}
+        persons = {author.split(":")[-1] for author in persons_ids if author.startswith("urn:li:person:")}
+        images_ids = []
+
+        formatted_authors = {}
+
+        # get the author information if it's an organization
+        if organizations_ids:
+            response = self.account_id._linkedin_request(
+                'organizations',
+                object_ids=organizations_ids,
+                fields=('id', 'name', 'localizedName', 'vanityName', 'logoV2:(original)'),
+            ).json()
+            for organization_id, organization in response.get('results', {}).items():
+                organization_urn = f"urn:li:organization:{organization_id}"
+                image_id = organization.get('logoV2', {}).get('original', '').split(':')[-1]
+                images_ids.append(image_id)
+                formatted_authors[organization_urn] = {
+                    'id': organization_urn,
+                    'name': organization.get('localizedName'),
+                    'authorUrn': organization_urn,
+                    'picture': image_id,
+                    'vanityName': organization.get('vanityName'),
+                    'isOrganization': True,
+                }
+
+        # get the author information if it's normal user
+        if persons:
+            # On the 3 December 2023, /people is still not in the rest API...
+            # As the LinkedIn support suggested, we need to use the old endpoint...
+            response = requests.get(
+                "https://api.linkedin.com/v2/people?ids=List(%s)" % ",".join("(id:%s)" % p for p in persons),
+                headers=self.account_id._linkedin_bearer_headers(),
+                timeout=5).json()
+
+            for person_id, person_values in response.get('results', {}).items():
+                person_id = person_id.split(':')[-1][:-1]  # LinkedIn return weird format
+                person_urn = f"urn:li:person:{person_id}"
+                image_id = person_values.get('profilePicture', {}).get('displayImage', '').split(':')[-1]
+                images_ids.append(image_id)
+                formatted_authors[person_urn] = {
+                    'id': person_urn,
+                    'name': self.stream_id._format_linkedin_name(person_values),
+                    'authorUrn': person_urn,
+                    'picture': image_id,
+                    'vanityName': person_values.get('vanityName'),
+                    'isOrganization': False,
+                }
+
+        if images_ids:
+            image_ids_to_url = self.account_id._linkedin_request_images(images_ids)
+            for author in formatted_authors.values():
+                author['picture'] = image_ids_to_url.get(author['picture'])
+
+        default_author = {'id': '', 'authorUrn': '', 'name': _('Unknown')}
+        for comment in comments:
+            comment['from'] = formatted_authors.get(comment.get('actor'), default_author)
+
+        comments = [self._linkedin_format_comment(comment) for comment in comments]
         if 'comment' in element_urn:
             # replies on comments should be sorted chronologically
             comments = comments[::-1]
@@ -144,28 +205,26 @@ class SocialStreamPostLinkedIn(models.Model):
 
     def _linkedin_format_comment(self, json_data):
         """Formats a comment returned by the LinkedIn API to a dict that will be interpreted by our frontend."""
-        author_image_url = self.account_id._extract_linkedin_picture_url(json_data.get('created', {}).get('actor~'))
-        author_image_url = self.env['social.stream']._enforce_url_scheme(author_image_url)
+        created_time = json_data.get('created', {}).get('time', 0)
         data = {
-            'id': json_data.get('$URN'),
-            'from': {
-                'id': json_data.get('created', {}).get('actor'),
-                'name': self.stream_id._format_linkedin_name(json_data.get('created', {}).get('actor~')),
-                'authorUrn': json_data.get('created', {}).get('actor'),
-                'picture': author_image_url,
-                'vanityName': json_data.get('created', {}).get('actor~').get('vanityName'),
-                'isOrganization': 'organization' in json_data.get('created', {}).get('actor', ''),
-            },
+            'id': json_data.get('commentUrn'),
+            'from': json_data.get('from'),
             'message': json_data.get('message', {}).get('text', ''),
-            'created_time': json_data.get('created', {}).get('time', 0),
+            'created_time': created_time,
             'formatted_created_time': self.env['social.stream.post']._format_published_date(
-                datetime.fromtimestamp(json_data.get('created', {}).get('time', 0) / 1000)),
+                datetime.fromtimestamp(created_time / 1000)),
             'likes': {
                 'summary': {
                     'total_count': json_data.get('likesSummary', {}).get('totalLikes', 0),
                     'can_like': False,
                     'has_liked': json_data.get('likesSummary', {}).get('likedByCurrentUser', 0),
                 }
+            },
+            'comments': {
+                'data': {
+                    'length': json_data.get('commentsSummary', {}).get('totalFirstLevelComments', 0),
+                    'parentUrn': json_data.get('commentUrn'),
+                },
             },
         }
 
@@ -181,14 +240,6 @@ class SocialStreamPostLinkedIn(models.Model):
                 'type': 'photo',
                 'media': {'image': {'src': image_content.get('url', '/web/static/img/placeholder.png')}},
             }
-
-        sub_comments_count = json_data.get('commentsSummary', {}).get('totalFirstLevelComments', 0)
-        data['comments'] = {
-            'data': {
-                'length': sub_comments_count,
-                'parentUrn': json_data.get('$URN'),
-            } if sub_comments_count else []
-        }
 
         return data
 

@@ -14,11 +14,10 @@ import {
     patchDate,
     editInput,
 } from "@web/../tests/helpers/utils";
-import { toggleActionMenu } from "@web/../tests/search/helpers";
 import { makeView, setupViewRegistries } from "@web/../tests/views/helpers";
 import { registry } from "@web/core/registry";
 import { ListRenderer } from "@web/views/list/list_renderer";
-import { createSpreadsheetFromListView, toggleCogMenuSpreadsheet } from "../utils/list_helpers";
+import { createSpreadsheetFromListView, invokeInsertListInSpreadsheetDialog } from "../utils/list_helpers";
 import { createSpreadsheet } from "../spreadsheet_test_utils.js";
 import { doMenuAction } from "@spreadsheet/../tests/utils/ui";
 import { session } from "@web/session";
@@ -28,7 +27,7 @@ import { insertListInSpreadsheet } from "@spreadsheet/../tests/utils/list";
 const { topbarMenuRegistry, cellMenuRegistry } = spreadsheet.registries;
 const { toZone } = spreadsheet.helpers;
 
-QUnit.module("document_spreadsheet > list view", {}, () => {
+QUnit.module("documents_spreadsheet > list view", {}, () => {
     QUnit.test("List export with a invisible field", async (assert) => {
         const { model } = await createSpreadsheetFromListView({
             serverData: {
@@ -159,6 +158,43 @@ QUnit.module("document_spreadsheet > list view", {}, () => {
         assert.containsOnce(target, ".o_side_panel_select");
     });
 
+    QUnit.test("Deleting the list closes the side panel", async function (assert) {
+        const { model, env } = await createSpreadsheetFromListView();
+        const [listId] = model.getters.getListIds();
+        model.dispatch("SELECT_ODOO_LIST", { listId });
+        env.openSidePanel("LIST_PROPERTIES_PANEL", {
+            listId,
+        });
+        await nextTick();
+        const fixture = getFixture();
+        const titleSelector = ".o-sidePanelTitle";
+        assert.equal(fixture.querySelector(titleSelector).innerText, "List properties");
+
+        model.dispatch("REMOVE_ODOO_LIST", { listId });
+        await nextTick();
+        assert.equal(fixture.querySelector(titleSelector), null);
+        assert.equal(model.getters.getSelectedListId(), undefined);
+    });
+
+    QUnit.test("Undo a list insertion closes the side panel", async function (assert) {
+        const { model, env } = await createSpreadsheetFromListView();
+        const [listId] = model.getters.getListIds();
+        model.dispatch("SELECT_ODOO_LIST", { listId });
+        env.openSidePanel("LIST_PROPERTIES_PANEL", {
+            listId,
+        });
+        await nextTick();
+        const fixture = getFixture();
+        const titleSelector = ".o-sidePanelTitle";
+        assert.equal(fixture.querySelector(titleSelector).innerText, "List properties");
+
+        model.dispatch("REQUEST_UNDO");
+        model.dispatch("REQUEST_UNDO");
+        await nextTick();
+        assert.equal(fixture.querySelector(titleSelector), null);
+        assert.equal(model.getters.getSelectedListId(), undefined);
+    });
+
     QUnit.test("Add list in an existing spreadsheet", async (assert) => {
         const { model } = await createSpreadsheetFromListView();
         const list = model.getters.getListDefinition("1");
@@ -177,10 +213,19 @@ QUnit.module("document_spreadsheet > list view", {}, () => {
         assert.deepEqual(model.getters.getSheetIds()[1], "42");
     });
 
-    QUnit.test("Verify absence of pivot properties on non-pivot cell", async function (assert) {
+    QUnit.test("Verify absence of list properties on non-list cell", async function (assert) {
         const { model, env } = await createSpreadsheetFromListView();
         selectCell(model, "Z26");
         const root = cellMenuRegistry.getAll().find((item) => item.id === "listing_properties");
+        assert.notOk(root.isVisible(env));
+    });
+
+    QUnit.test("Verify absence of list properties on formula with invalid list Id", async function (assert) {
+        const { model, env } = await createSpreadsheetFromListView();
+        setCellContent(model, "A1", `=ODOO.LIST.HEADER("fakeId", "foo")`);
+        const root = cellMenuRegistry.getAll().find((item) => item.id === "listing_properties");
+        assert.notOk(root.isVisible(env));
+        setCellContent(model, "A1", `=ODOO.LIST("fakeId", "2", "bar")`);
         assert.notOk(root.isVisible(env));
     });
 
@@ -208,7 +253,6 @@ QUnit.module("document_spreadsheet > list view", {}, () => {
     });
 
     QUnit.test("user related context is not saved in the spreadsheet", async function (assert) {
-        assert.expect(1);
         setupViewRegistries();
 
         registry.category("favoriteMenu").add(
@@ -256,7 +300,7 @@ QUnit.module("document_spreadsheet > list view", {}, () => {
             default_stage_id: 5,
         };
         const serverData = { models: getBasicData() };
-        await makeView({
+        const { env } = await makeView({
             serverData,
             type: "list",
             resModel: "partner",
@@ -274,9 +318,7 @@ QUnit.module("document_spreadsheet > list view", {}, () => {
             },
         });
         const target = getFixture();
-        await toggleActionMenu(target);
-        await toggleCogMenuSpreadsheet(target);
-        await click(target, ".o_insert_list_spreadsheet_menu");
+        await invokeInsertListInSpreadsheetDialog(env);
         await click(target, ".modal button.btn-primary");
     });
 
@@ -375,8 +417,6 @@ QUnit.module("document_spreadsheet > list view", {}, () => {
     });
 
     QUnit.test("Update the list title from the side panel", async function (assert) {
-        assert.expect(1);
-
         const { model, env } = await createSpreadsheetFromListView();
         // opening from a pivot cell
         const sheetId = model.getters.getActiveSheetId();
@@ -393,7 +433,10 @@ QUnit.module("document_spreadsheet > list view", {}, () => {
     });
 
     QUnit.test("list with a contextual domain", async (assert) => {
-        patchDate(2016, 4, 14, 0, 0, 0);
+        // TODO: the date is coded at 12PM so the test won't fail if the timezone is not UTC. It will still fail on some
+        // timezones (GMT +13). The good way to do the test would be to patch the time zone and the date correctly.
+        // But PyDate uses new Date() instead of luxon, which cannot be correctly patched.
+        patchDate(2016, 4, 14, 12, 0, 0);
         const serverData = getBasicServerData();
         serverData.models.partner.records = [
             {
@@ -419,7 +462,7 @@ QUnit.module("document_spreadsheet > list view", {}, () => {
                 if (args.method === "search_read") {
                     assert.deepEqual(
                         args.kwargs.domain,
-                        [["date", "=", "2016-05-13"]],
+                        [["date", "=", "2016-05-14"]],
                         "data should be fetched with the evaluated the domain"
                     );
                     assert.step("search_read");

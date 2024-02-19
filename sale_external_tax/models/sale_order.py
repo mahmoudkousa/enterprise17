@@ -72,7 +72,7 @@ class SaleOrder(models.Model):
 
     def _get_and_set_external_taxes_on_eligible_records(self):
         """ account.external.tax.mixin override. """
-        eligible_orders = self.filtered(lambda order: order.is_tax_computed_externally and order.state in ('draft', 'sent'))
+        eligible_orders = self.filtered(lambda order: order.is_tax_computed_externally and order.state in ('draft', 'sent', 'sale'))
         eligible_orders._set_external_taxes(*eligible_orders._get_external_taxes())
         return super()._get_and_set_external_taxes_on_eligible_records()
 

@@ -44,25 +44,27 @@ class DutchECSalesReportCustomHandler(models.AbstractModel):
             'IntraCommunitySupplies': [],
             'IntraCommunityServices': [],
             'IntraCommunityABCSupplies': [],
+            'VATIdentificationNumberNLFiscalEntityDivision': self.env.company.vat[2:] if self.env.company.vat.startswith('NL') else self.env.company.vat,
         })
 
         for line in lines:
+            vat = line['vat'][2:] if line['vat'].startswith(line['country_code']) else line['vat']
             if line['amount_product'] > 0:
                 codes_values['IntraCommunitySupplies'].append({
                     'CountryCodeISO': line['country_code'],
-                    'SuppliesAmount': str(line['amount_product']),
-                    'VATIdentificationNumberNational': line['vat'],
+                    'SuppliesAmount': str(int(line['amount_product'])),
+                    'VATIdentificationNumberNational': vat,
                 })
             if line['amount_service'] > 0:
                 codes_values['IntraCommunityServices'].append({
                     'CountryCodeISO': line['country_code'],
-                    'ServicesAmount': str(line['amount_service']),
-                    'VATIdentificationNumberNational': line['vat'],
+                    'ServicesAmount': str(int(line['amount_service'])),
+                    'VATIdentificationNumberNational': vat,
                 })
             if line['amount_triangular'] > 0:
                 codes_values['IntraCommunityABCSupplies'].append({
                     'CountryCodeISO': line['country_code'],
-                    'SuppliesAmount': str(line['amount_triangular']),
-                    'VATIdentificationNumberNational': line['vat'],
+                    'SuppliesAmount': str(int(line['amount_triangular'])),
+                    'VATIdentificationNumberNational': vat,
                 })
         return codes_values

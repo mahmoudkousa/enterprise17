@@ -22,6 +22,7 @@ class AccountMove(models.Model):
             ("l10n_latam_document_type_id_code", "in", ("50", "52")),
             ("state", "=", "posted"),
         ],
+        index='btree_not_null',
         copy=False,
         help="DUA invoice that accredits the tax credit on the importation of goods.",
     )

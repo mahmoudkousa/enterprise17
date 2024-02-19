@@ -203,7 +203,7 @@ class TestSynchStatementCreation(AccountOnlineSynchronizationCommon):
                 'message': 'Shit Happened',
                 'data': {
                     'exception_type': 'random',
-                    'message': 'This kind of things can happen',
+                    'message': 'This kind of things can happen.',
                     'error_reference': 'abc123',
                     'provider_type': 'theonlyone',
                 }
@@ -211,13 +211,13 @@ class TestSynchStatementCreation(AccountOnlineSynchronizationCommon):
         }
         patched_request.post.return_value = mock_response
 
-        generated_url = 'https://www.odoo.com/help?stage=bank_sync&summary=Bank+sync+error+ref%3A+abc123+-+Provider%3A+theonlyone+-+Client+ID%3A+client_id_1&description=ClientID%3A+client_id_1%0AInstitution%3A+Test+Bank%0AError+Reference%3A+abc123%0AError+Message%3A+This+kind+of+things+can+happen%0A'
+        generated_url = 'https://www.odoo.com/help?stage=bank_sync&summary=Bank+sync+error+ref%3A+abc123+-+Provider%3A+theonlyone+-+Client+ID%3A+client_id_1&description=ClientID%3A+client_id_1%0AInstitution%3A+Test+Bank%0AError+Reference%3A+abc123%0AError+Message%3A+This+kind+of+things+can+happen.%0A'
         return_act_url = {
             'type': 'ir.actions.act_url',
             'url': generated_url
         }
         body_generated_url = generated_url.replace('&', '&amp;') #in post_message, & has been escaped to &amp;
-        message_body = f'<p>This kind of things can happen<br>You can contact Odoo support <a href="{body_generated_url}">Here</a></p>'
+        message_body = f"<p>This kind of things can happen. If you've already opened this issue don't report it again.<br>You can contact Odoo support <a href=\"{body_generated_url}\">Here</a></p>"
 
         # flush and clear everything for the new "transaction"
         self.env.invalidate_all()
@@ -233,7 +233,7 @@ class TestSynchStatementCreation(AccountOnlineSynchronizationCommon):
                 try:
                     test_link_account._fetch_odoo_fin('/testthisurl')
                 except RedirectWarning as exception:
-                    self.assertEqual(exception.args[0], 'This kind of things can happen')
+                    self.assertEqual(exception.args[0], "This kind of things can happen. If you've already opened this issue don't report it again.")
                     self.assertEqual(exception.args[1], return_act_url)
                     self.assertEqual(exception.args[2], 'Report issue')
                 else:

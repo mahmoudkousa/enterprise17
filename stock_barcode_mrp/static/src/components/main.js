@@ -38,25 +38,6 @@ patch(MainComponent.prototype, {
         };
     },
 
-    get scrapViewProps() {
-        const context = this.env.model._getNewLineDefaultContext({ scrapProduct: true });
-        if (this.env.model.record.state != 'done') {
-            context['product_ids'] = this.env.model.pageLines.map(line => line.product_id.id);
-        } else {
-            context['product_ids'] = [this.env.model.record.product_id.id, ...this.env.model.byProductLines.map(line => line.product_id.id)];
-        }
-        return {
-            resModel: 'stock.scrap',
-            context: context,
-            viewId: this.env.model.scrapViewId,
-            display: { controlPanel: false },
-            mode: "edit",
-            type: "form",
-            onSave: () => this.toggleBarcodeLines(),
-            onDiscard: () => this.toggleBarcodeLines(),
-        };
-    },
-
     get lineFormViewProps() {
         const res = super.lineFormViewProps;
         const params = { newByProduct: this.state.displayByProduct };
@@ -65,9 +46,6 @@ patch(MainComponent.prototype, {
     },
 
     get lines() {
-        if (this.state.displayByProduct) {
-            return this.env.model.byProductLines;
-        }
         return this.env.model.groupedLines;
     },
 
@@ -81,6 +59,7 @@ patch(MainComponent.prototype, {
     exit(ev) {
         if (this.state.view === "barcodeLines" && this.state.displayByProduct) {
             this.state.displayByProduct = false;
+            this.env.model.displayByProduct = false;
         } else {
             super.exit(...arguments);
         }
@@ -88,11 +67,11 @@ patch(MainComponent.prototype, {
 
     async cancel() {
         if (this.resModel == 'mrp.production') {
-            await new Promise((resolve, reject) => {
+            await new Promise((resolve) => {
                 this.dialog.add(ConfirmationDialog, {
                     body: _t("Are you sure you want to cancel this manufacturing order?"),
                     title: _t("Cancel manufacturing order?"),
-                    cancel: reject,
+                    cancel: () => {},
                     confirm: async () => {
                         await this.orm.call(
                             this.resModel,
@@ -101,7 +80,6 @@ patch(MainComponent.prototype, {
                         );
                         resolve();
                     },
-                    close: reject,
                 });
             });
             this.env.model._cancelNotification();
@@ -119,11 +97,12 @@ patch(MainComponent.prototype, {
     openByProductLines() {
         this._editedLineParams = undefined;
         this.state.displayByProduct = true;
+        this.env.model.displayByProduct = true;
     },
 
     async newScrapProduct() {
         await this.env.model.save();
-        this.state.view = 'scrapProductPage';
+        await this.env.model._scrap();
     },
 
     onOpenProductPage(line) {
@@ -137,11 +116,17 @@ patch(MainComponent.prototype, {
     async saveFormView(lineRecord) {
         if (lineRecord.resModel === 'mrp.production') {
             const recordId = lineRecord.resId;
+            let update = Boolean(this.resId);
             if (!this.resId) {
                 this.resId = recordId;
                 await this.env.model.confirmAndSetData(recordId);
                 this.toggleBarcodeLines();
-            } else {
+            }
+            if (lineRecord.context.set_qty_producing === true && lineRecord.data.lot_producing_id != this.env.model.record.lot_producing_id){
+                await this.orm.call('mrp.production', 'set_qty_producing', [[recordId]]);
+                update = true;
+            }
+            if (update) {
                 if (lineRecord.data.product_qty != this.env.model.record.product_qty) {
                     // need to reassign moves to update the quants on screen
                     await this.orm.call(
@@ -166,6 +151,7 @@ patch(MainComponent.prototype, {
 
     onValidateByProduct() {
         this.state.displayByProduct = false;
+        this.env.model.displayByProduct = false;
         this.toggleBarcodeLines();
     },
 

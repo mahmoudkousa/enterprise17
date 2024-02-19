@@ -3,13 +3,37 @@ import { registry } from "@web/core/registry";
 import { download } from "@web/core/network/download";
 import { patch } from "@web/core/utils/patch";
 import { parseXML, serializeXML } from "@web/core/utils/xml";
-import { assertEqual, stepNotInStudio } from "@web_studio/../tests/tours/tour_helpers";
+import { assertEqual, stepNotInStudio, nextTick } from "@web_studio/../tests/tours/tour_helpers";
 
 const getBoundingClientRect = Element.prototype.getBoundingClientRect;
 
 function normalizeXML(str) {
     const doc = parseXML(str);
-    return serializeXML(doc.firstElementChild);
+    /* Recursively trim text nodes conditionally
+     * if they start or end with a newline (\n).
+     * In that case we make the assumption that all whitespaces
+     * are materializing indentation.
+     * If there are only spaces (\s), we make the assumption that they
+     * are actual spaces that are visible to the naked eye of the user.
+     */
+    const nodes = [...doc.childNodes];
+    for (const node of nodes) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            let nodeValue = node.nodeValue;
+            if (nodeValue.startsWith("\n")) {
+                nodeValue = nodeValue.trimStart();
+            }
+            if (nodeValue.endsWith("\n")) {
+                nodeValue = nodeValue.trimEnd();
+            }
+            node.nodeValue = nodeValue;
+        }
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            nodes.push(...node.childNodes);
+        }
+    }
+
+    return serializeXML(doc);
 }
 
 function insertText(element, text, offset = 0) {
@@ -558,7 +582,7 @@ registry.category("web_tour.tours").add("web_studio.test_add_field_blank_report"
             trigger: '.o_web_studio_report_layout_dialog div[data-layout="web.basic_layout"]',
         },
         {
-            trigger: "iframe .page",
+            trigger: "iframe .page div",
             async run(helpers) {
                 const el = this.$anchor[0];
                 openEditorPowerBox(el);
@@ -611,10 +635,10 @@ registry.category("web_tour.tours").add("web_studio.test_add_field_blank_report"
         },
         {
             // check that field was added successfully
-            trigger: "iframe .page > span:contains(some default value)",
+            trigger: "iframe .page div > span:contains(some default value)",
         },
         {
-            trigger: "iframe .page",
+            trigger: "iframe .page div",
             run() {
                 insertText(this.$anchor[0], "Custo");
             },
@@ -642,26 +666,26 @@ registry.category("web_tour.tours").add("web_studio.test_toolbar_appearance", {
                 range.selectNode(anchor);
                 selection.removeAllRanges();
                 selection.addRange(range);
-            }
+            },
         },
         {
             trigger: "#toolbar.oe-floating[style*=visible]",
-            isCheck: true
+            isCheck: true,
         },
         {
-            trigger: "#bold.btn"
+            trigger: "#bold.btn",
         },
         {
-            trigger: "#italic.btn"
+            trigger: "#italic.btn",
         },
         {
-            trigger: ".o-web-studio-discard-report"
+            trigger: ".o-web-studio-discard-report",
         },
         {
             trigger: "#toolbar.oe-floating[style*=hidden]",
             in_modal: false,
-            isCheck: true
-        }
+            isCheck: true,
+        },
     ],
 });
 
@@ -683,6 +707,13 @@ registry.category("web_tour.tours").add("web_studio.test_edition_without_lang", 
         },
         {
             trigger: ".o_web_studio_sidebar button[name='report_edit_sources']",
+        },
+        {
+            trigger: ".o_web_studio_xml_resource_select_menu button.o_select_menu_toggler",
+        },
+        {
+            trigger:
+                ".o_web_studio_xml_resource_select_menu .o_select_menu_item_label:contains(report_editor_customization_full)",
         },
         {
             trigger: ".o_web_studio_code_editor_info .o_field_translate",
@@ -781,6 +812,51 @@ registry.category("web_tour.tours").add("web_studio.test_render_multicompany", {
                 const cids = new URLSearchParams(currentUrl.hash.slice(1)).get("cids").split("-");
                 assertEqual(this.$anchor[0].getAttribute("src"), `/logo.png?company=${cids[0]}`);
             },
+        },
+    ],
+});
+
+registry.category("web_tour.tours").add("web_studio.test_add_non_searchable_field", {
+    test: true,
+    sequence: 260,
+    steps: () => [
+        {
+            trigger: ".o-web-studio-report-editor-wysiwyg iframe p:eq(2)",
+            async run(helpers) {
+                const el = this.$anchor[0];
+                openEditorPowerBox(el);
+            },
+        },
+        {
+            trigger:
+                ".oe-powerbox-wrapper .oe-powerbox-commandDescription:contains(Insert a field)",
+        },
+        {
+            trigger: ".o-web-studio-field-dynamic-placeholder .o_model_field_selector_popover_search input",
+            run: "text New",
+        },
+        {
+            trigger: "[data-name=avatar_1024] > button.o_model_field_selector_popover_item_name",
+        },
+        {
+            trigger:
+                ".o-web-studio-field-dynamic-placeholder .o_model_field_selector_default_value_input input",
+            run: "text file default value",
+        },
+        {
+            trigger: ".o-web-studio-field-dynamic-placeholder .o_model_field_selector_popover",
+            run() {
+                this.$anchor[0].dispatchEvent(
+                    new KeyboardEvent("keydown", { key: "Enter", bubbles: true })
+                );
+            },
+        },
+        {
+            trigger: ".o-web-studio-save-report.btn-primary",
+        },
+        {
+            trigger: ".o-web-studio-save-report:not(.btn-primary)",
+            isCheck: true,
         },
     ],
 });
@@ -1060,6 +1136,24 @@ registry.category("web_tour.tours").add("web_studio.test_xml_and_form_diff", {
             trigger: "button[name='report_edit_sources']",
         },
         {
+            trigger:
+                ".o_web_studio_xml_resource_select_menu button.o_select_menu_toggler .o_select_menu_toggler_slot",
+            run() {
+                const currentViewKey = this.$anchor[0].textContent.split(" (")[0];
+                assertEqual(
+                    currentViewKey,
+                    "web_studio.report_editor_customization_full.view._web_studio.test_report_document"
+                );
+            },
+        },
+        {
+            trigger: ".o_web_studio_xml_resource_select_menu button.o_select_menu_toggler",
+        },
+        {
+            trigger:
+                ".o_web_studio_xml_resource_select_menu .o_select_menu_item_label:contains(web_studio.test_report_document)",
+        },
+        {
             trigger: "button[name='view_diff']",
         },
         {
@@ -1132,4 +1226,142 @@ registry.category("web_tour.tours").add("web_studio.test_record_model_differs_fr
             },
         ];
     },
+});
+
+registry.category("web_tour.tours").add("web_studio.test_remove_branding_on_copy", {
+    test: true,
+    steps: () => [
+        {
+            trigger: "body iframe #wrapwrap",
+            async run() {
+                const originNode = this.$anchor[0].querySelector(`[ws-view-id]`);
+                const copy = originNode.cloneNode(true);
+                originNode.insertAdjacentElement("afterend", copy);
+                // Wait for a full macrotask tick and a frame to let the mutation observer
+                // of the ReportEditorWysiwyg to catch up on the change and finish its operations
+                await nextTick();
+                const attributeCopy = {};
+                for (const attr of copy.attributes) {
+                    attributeCopy[attr.name] = attr.value;
+                }
+                assertEqual(JSON.stringify(attributeCopy), "{}");
+            },
+        },
+    ],
+});
+
+registry.category("web_tour.tours").add("web_studio.test_different_view_document_name", {
+    test: true,
+    steps: () => [
+        {
+            trigger: ".o_web_studio_sidebar button[name='report_edit_sources']",
+        },
+        {
+            trigger: ".o_web_studio_xml_resource_selector .o_select_menu_toggler",
+        },
+        {
+            trigger: ".o_web_studio_xml_resource_selector .o-dropdown--menu",
+            run() {
+                const sources = Array.from(
+                    this.$anchor[0].querySelectorAll(".o_select_menu_item")
+                ).map((e) => e.textContent);
+                assertEqual(
+                    sources.includes(
+                        "Uses: web_studio.test_report_document (web_studio.test_report_document_1)"
+                    ),
+                    true
+                );
+            },
+        },
+    ],
+});
+
+registry.category("web_tour.tours").add("web_studio.test_edit_main_arch", {
+    test: true,
+    steps: () => [
+        {
+            trigger: "iframe .outside-t-call",
+            async run() {
+                const newNode = document.createElement("div");
+                newNode.classList.add("added");
+                const target = this.$anchor[0];
+                target.insertAdjacentElement("beforebegin", newNode);
+                await nextTick();
+            },
+        },
+        {
+            trigger: ".o-web-studio-save-report.btn-primary",
+        },
+        {
+            trigger: ".o-web-studio-save-report:not(.btn-primary)",
+            isCheck: true,
+        },
+    ],
+});
+
+registry.category("web_tour.tours").add("web_studio.test_edit_in_t_call", {
+    test: true,
+    steps: () => [
+        {
+            trigger: "iframe .in-t-call",
+            async run() {
+                const newNode = document.createElement("div");
+                newNode.classList.add("added");
+                const target = this.$anchor[0];
+                target.insertAdjacentElement("beforebegin", newNode);
+                await nextTick();
+            },
+        },
+        {
+            trigger: ".o-web-studio-save-report.btn-primary",
+        },
+        {
+            trigger: ".o-web-studio-save-report:not(.btn-primary)",
+            isCheck: true,
+        },
+    ],
+});
+
+registry.category("web_tour.tours").add("web_studio.test_edit_main_and_in_t_call", {
+    test: true,
+    steps: () => [
+        {
+            trigger: "iframe #wrapwrap",
+            async run() {
+                const newNode0 = document.createElement("div");
+                newNode0.classList.add("added0");
+                const target0 = this.$anchor[0].querySelector(".outside-t-call");
+                target0.insertAdjacentElement("beforebegin", newNode0);
+                await nextTick();
+                const newNode1 = document.createElement("div");
+                newNode1.classList.add("added1");
+                const target1 = this.$anchor[0].querySelector(".in-t-call");
+                target1.insertAdjacentElement("beforebegin", newNode1);
+                await nextTick();
+            },
+        },
+        {
+            trigger: ".o-web-studio-save-report.btn-primary",
+        },
+        {
+            trigger: ".o-web-studio-save-report:not(.btn-primary)",
+            isCheck: true,
+        },
+    ],
+});
+
+registry.category("web_tour.tours").add("web_studio.test_image_crop", {
+    test: true,
+    steps: () => [
+        {
+            trigger: "body iframe .myimg",
+        },
+        {
+            trigger: "body .oe-toolbar #image-crop",
+        },
+        {
+            trigger: "body .o-overlay-container .o_we_crop_widget",
+            isCheck: true,
+        },
+    ],
 });

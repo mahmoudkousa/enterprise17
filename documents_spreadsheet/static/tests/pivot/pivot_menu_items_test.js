@@ -274,10 +274,26 @@ QUnit.module(
             );
         });
 
+        QUnit.test("Verify presence of pivot properties on pivot cell", async function (assert) {
+            const { model, env } = await createSpreadsheetWithPivot();
+            selectCell(model, "B2");
+            const root = cellMenuRegistry.getAll().find((item) => item.id === "pivot_properties");
+            assert.ok(root.isVisible(env));
+        });
+
         QUnit.test("Verify absence of pivot properties on non-pivot cell", async function (assert) {
             const { model, env } = await createSpreadsheetWithPivot();
             selectCell(model, "Z26");
             const root = cellMenuRegistry.getAll().find((item) => item.id === "pivot_properties");
+            assert.notOk(root.isVisible(env));
+        });
+
+        QUnit.test("Verify absence of pivot properties on formula with invalid pivot Id", async function (assert) {
+            const { model, env } = await createSpreadsheetWithPivot();
+            setCellContent(model, "A1", `=ODOO.PIVOT.HEADER("fakeId")`);
+            const root = cellMenuRegistry.getAll().find((item) => item.id === "pivot_properties");
+            assert.notOk(root.isVisible(env));
+            setCellContent(model, "A1", `=ODOO.PIVOT("fakeId", "probability", "foo", 2)`);
             assert.notOk(root.isVisible(env));
         });
 

@@ -26,9 +26,9 @@ patch(PosStore.prototype, {
             }
         }
 
-        partnerInfos.totalDue = partner.total_due;
-        partnerInfos.totalWithCart += partner.total_due;
-        partnerInfos.creditLimit = partner.credit_limit;
+        partnerInfos.totalDue = partner.total_due || 0;
+        partnerInfos.totalWithCart += partner.total_due || 0;
+        partnerInfos.creditLimit = partner.credit_limit || 0;
         partnerInfos.overDue = partnerInfos.totalWithCart > partnerInfos.creditLimit;
         partnerInfos.useLimit =
             this.company.account_use_credit_limit &&

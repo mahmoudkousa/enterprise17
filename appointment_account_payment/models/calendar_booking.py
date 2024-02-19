@@ -3,10 +3,10 @@
 
 import uuid
 from collections import defaultdict
+from datetime import datetime
 from markupsafe import escape, Markup
 
 from odoo import api, Command, fields, models, _
-from odoo.addons.appointment.utils import interval_from_events
 from odoo.tools import format_date, format_time
 
 
@@ -67,30 +67,28 @@ class CalendarBooking(models.Model):
         if not user_bookings and not resource_bookings:
             return self
 
-        available_user_bookings = user_bookings
+        available_user_bookings = self.env['calendar.booking']
+        for staff_user, staff_user_bookings in user_bookings.grouped("staff_user_id").items():
+            last_booking_end = datetime.min
+            for booking in staff_user_bookings.sorted('stop'):  # sorting by end allows maximum coverage
+                if (booking.start >= last_booking_end and
+                    staff_user.partner_id.calendar_verify_availability(booking.start, booking.stop)):
+                    available_user_bookings += booking
+                    last_booking_end = booking.stop
+
         available_resource_bookings = resource_bookings
-
-        for start, stop, bookings in interval_from_events(user_bookings):
-            for staff_user, staff_user_bookings in bookings.grouped("staff_user_id").items():
-                if not staff_user.partner_id.calendar_verify_availability(start, stop):
-                    available_user_bookings -= staff_user_bookings
-                else:
-                    user_bookings &= available_user_bookings
-                    if len(user_bookings) > 1:
-                        available_user_bookings -= staff_user_bookings[1:]
-
-        for start, stop, bookings in interval_from_events(resource_bookings):
-            resources = bookings.booking_line_ids.appointment_resource_id
-            total_availability_per_resource = defaultdict(int)
-            for resource in resources:
-                total_availability_per_resource[resource] = resource.appointment_type_ids[0]._get_resources_remaining_capacity(
-                    resource, start, stop, with_linked_resources=False
-                )['total_remaining_capacity']
-            for resource, booking_lines in bookings.booking_line_ids.grouped("appointment_resource_id").items():
+        boundaries = sorted(set(resource_bookings.mapped('start') + resource_bookings.mapped('stop')))
+        for index, start in enumerate(boundaries[:-1]):
+            stop = boundaries[index + 1]
+            interval_bookings = available_resource_bookings.filtered(lambda booking: booking.start < stop and booking.stop > start)
+            for resource, booking_lines in interval_bookings.booking_line_ids.grouped("appointment_resource_id").items():
                 booking_lines &= available_resource_bookings.booking_line_ids
+                total_resource_availability = resource.appointment_type_ids[0]._get_resources_remaining_capacity(
+                    resource, start, stop, with_linked_resources=False
+                )['total_remaining_capacity'] if booking_lines and resource.appointment_type_ids else 0
                 for booking_line in booking_lines:
-                    if total_availability_per_resource[resource] >= booking_line.capacity_used:
-                        total_availability_per_resource[resource] -= booking_line.capacity_used
+                    if total_resource_availability >= booking_line.capacity_used:
+                        total_resource_availability -= booking_line.capacity_used
                     else:
                         available_resource_bookings -= booking_lines.calendar_booking_id
 

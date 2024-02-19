@@ -46,6 +46,9 @@
             'bus/static/src/multi_tab_service.js',
             'bus/static/src/workers/*',
 
+            'point_of_sale/static/src/sounds/notification.wav',
+            'point_of_sale/static/src/app/sound/sound_service.js',
+
             'pos_preparation_display/static/src/app/**/*',
         ],
         'point_of_sale._assets_pos': [

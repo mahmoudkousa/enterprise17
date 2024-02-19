@@ -3,17 +3,17 @@
 # 	* sale_timesheet_enterprise
 # 
 # Translators:
-# Sarah Park, 2023
 # Daye Jeong, 2023
 # Wil Odoo, 2023
+# Sarah Park, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:21+0000\n"
+"POT-Creation-Date: 2024-01-26 16:12+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Wil Odoo, 2023\n"
+"Last-Translator: Sarah Park, 2024\n"
 "Language-Team: Korean (https://app.transifex.com/odoo/teams/41243/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -41,6 +41,13 @@ msgstr "시간"
 #, python-format
 msgid "%(billableTime)s / %(billable_time_target)s (%(billingRate)s%)"
 msgstr "%(billableTime)s / %(billable_time_target)s (%(billingRate)s%)"
+
+#. module: sale_timesheet_enterprise
+#. odoo-javascript
+#: code:addons/sale_timesheet_enterprise/static/src/components/timesheet_leaderboard/timesheet_leaderboard.js:0
+#, python-format
+msgid "%(percentage)s%"
+msgstr "%(percentage)s%"
 
 #. module: sale_timesheet_enterprise
 #. odoo-javascript
@@ -86,42 +93,42 @@ msgstr "아바타"
 #: model:ir.model.fields,field_description:sale_timesheet_enterprise.field_res_config_settings__group_use_timesheet_leaderboard
 #, python-format
 msgid "Billing Rate Leaderboard"
-msgstr ""
+msgstr "청구 금액 순위표"
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,field_description:sale_timesheet_enterprise.field_res_company__billing_rate_target
 #: model:ir.model.fields,field_description:sale_timesheet_enterprise.field_res_config_settings__group_timesheet_leaderboard_show_rates
 msgid "Billing Rate Target"
-msgstr ""
+msgstr "청구 금액 목표"
 
 #. module: sale_timesheet_enterprise
 #: model:res.groups,name:sale_timesheet_enterprise.group_timesheet_leaderboard_show_rates
 msgid "Billing Rate/Total Time indicators"
-msgstr ""
+msgstr "청구 금액/총 시간 표시"
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,field_description:sale_timesheet_enterprise.field_hr_employee__billable_time_target
 msgid "Billing Time Target"
-msgstr ""
+msgstr "청구서 발행 시간 목표"
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,help:sale_timesheet_enterprise.field_res_config_settings__billing_rate_target
 msgid "Billing rate target for the employees"
-msgstr ""
+msgstr "직원 청구 금액 목표"
 
 #. module: sale_timesheet_enterprise
 #. odoo-javascript
 #: code:addons/sale_timesheet_enterprise/static/src/components/timesheet_leaderboard/timesheet_leaderboard.js:0
 #, python-format
 msgid "Billing: %(currentBillableTimeText)s / %(currentTargetTotalTimeText)s "
-msgstr ""
+msgstr "청구: %(currentBillableTimeText)s / %(currentTargetTotalTimeText)s "
 
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.ui.view,arch_db:sale_timesheet_enterprise.res_config_settings_view_form
 msgid ""
 "Boost productivity and competitiveness by displaying a leaderboard based on "
 "the billing rates."
-msgstr ""
+msgstr "청구 금액 순위표를 표시하여 생산성과 경쟁력을 끌어 올립니다. "
 
 #. module: sale_timesheet_enterprise
 #. odoo-javascript
@@ -182,7 +189,7 @@ msgstr "현재 작업의 진행 상황을 표시합니다."
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,help:sale_timesheet_enterprise.field_res_config_settings__group_timesheet_leaderboard_show_rates
 msgid "Display the Billing Rate on My Timesheets view"
-msgstr ""
+msgstr "내 작업시간표 화면에 청구 금액을 표시합니다."
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model,name:sale_timesheet_enterprise.model_hr_employee
@@ -194,7 +201,7 @@ msgstr "직원"
 msgid ""
 "Even small tasks like answering an email should be recorded and rounded up "
 "to a quarter of an hour."
-msgstr ""
+msgstr "이메일 회신과 같은 사소한 업무라도 15분으로 반올림하여 기록해야 합니다."
 
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.ui.view,arch_db:sale_timesheet_enterprise.project_sharing_inherit_project_task_view_form
@@ -217,7 +224,7 @@ msgstr "ID"
 msgid ""
 "If you help a colleague on a project, your time should be recorded on this "
 "project's timesheet as well."
-msgstr ""
+msgstr "프로젝트와 관련하여 동료를 도와주는 경우에도, 해당 시간을 프로젝트 작업시간표에 기록해야 합니다."
 
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.ui.view,arch_db:sale_timesheet_enterprise.res_config_settings_view_form
@@ -235,6 +242,8 @@ msgid ""
 "It's part of the job to search for information. A customer can't expect you "
 "to know everything on the spot. These hours should also be billable."
 msgstr ""
+"정보 검색도 업무의 일부입니다. 고객이 바라는 정보를 그 자리에서 모두 다 알고 있을 수는 없습니다. 이러한 시간도 청구를 할 수 있어야"
+" 합니다."
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model,name:sale_timesheet_enterprise.model_account_move_line
@@ -262,7 +271,7 @@ msgstr "점수획득판"
 #: model:hr.timesheet.tip,name:sale_timesheet_enterprise.timesheet_tip_4
 #, python-format
 msgid "Make it a habit to record timesheets every day."
-msgstr ""
+msgstr "매일 습관처럼 작업시간표를 기록하세요."
 
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.ui.view,arch_db:sale_timesheet_enterprise.timesheet_view_grid_by_invoice_type
@@ -272,12 +281,12 @@ msgstr "월"
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.actions.act_window,help:sale_timesheet_enterprise.hr_timesheet_tip_action
 msgid "Motivate employees to fill timesheets with these tips."
-msgstr ""
+msgstr "이러한 팁을 통해 직원들이 작업시간표를 기록하도록 동기를 부여해 주세요."
 
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.actions.act_window,help:sale_timesheet_enterprise.hr_timesheet_tip_action
 msgid "No tips found. Let's create one!"
-msgstr ""
+msgstr "팁을 찾을 수 없습니다. 새로 생성해 주세요."
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,field_description:sale_timesheet_enterprise.field_project_task__portal_effective_hours
@@ -320,14 +329,14 @@ msgstr "프로젝트"
 #: code:addons/sale_timesheet_enterprise/static/src/components/timesheet_leaderboard/timesheet_leaderboard.xml:0
 #, python-format
 msgid "Record timesheets to determine your billing rate!"
-msgstr ""
+msgstr "청구 금액을 결정하려면 작업시간표를 기록하세요!"
 
 #. module: sale_timesheet_enterprise
 #. odoo-javascript
 #: code:addons/sale_timesheet_enterprise/static/src/components/timesheet_leaderboard/timesheet_leaderboard.xml:0
 #, python-format
 msgid "Record timesheets to earn your rank!"
-msgstr ""
+msgstr "순위에 오를 수 있도록 작업시간표를 기록해 보세요!"
 
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.ui.view,arch_db:sale_timesheet_enterprise.project_sharing_inherit_project_task_view_form
@@ -345,12 +354,12 @@ msgstr "판매 주문 내역"
 msgid ""
 "Set a target billing rate for your employees. If their current rate falls "
 "below the target, it will be highlighted in red."
-msgstr ""
+msgstr "직원의 청구 금액 목표를 설정하세요. 목표보다 현재 금액이 하락할 경우, 빨간색으로 강조하여 표시됩니다."
 
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.ui.view,arch_db:sale_timesheet_enterprise.res_config_settings_view_form
 msgid "Set employee billing time targets"
-msgstr ""
+msgstr "직원 청구 시간 목표를 설정하세요."
 
 #. module: sale_timesheet_enterprise
 #. odoo-javascript
@@ -369,7 +378,7 @@ msgstr "자세히 보기"
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,help:sale_timesheet_enterprise.field_res_config_settings__group_use_timesheet_leaderboard
 msgid "Show the leaderboard on My Timesheets view"
-msgstr ""
+msgstr "내 작업시간표 화면에 순위표를 표시합니다."
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,field_description:sale_timesheet_enterprise.field_res_config_settings__billing_rate_target
@@ -384,12 +393,12 @@ msgstr "작업"
 #. module: sale_timesheet_enterprise
 #: model:ir.model.constraint,message:sale_timesheet_enterprise.constraint_hr_employee_check_billable_time_target
 msgid "The billable time target cannot be negative."
-msgstr ""
+msgstr "청구할 목표 시간은 음수가 될 수 없습니다."
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model.constraint,message:sale_timesheet_enterprise.constraint_res_company_check_billing_rate
 msgid "The billing rate target percentage must be between 0 and 100."
-msgstr ""
+msgstr "청구 금액 목표율은 반드시 0에서 100 사이여야 합니다."
 
 #. module: sale_timesheet_enterprise
 #. odoo-python
@@ -435,14 +444,14 @@ msgstr "작업 기록 청구"
 #. module: sale_timesheet_enterprise
 #: model:ir.model,name:sale_timesheet_enterprise.model_hr_timesheet_tip
 msgid "Timesheets Leaderboard Tip"
-msgstr ""
+msgstr "작업시간표 순위표 팁"
 
 #. module: sale_timesheet_enterprise
 #: model:hr.timesheet.tip,name:sale_timesheet_enterprise.timesheet_tip_1
 msgid ""
 "Timesheets are the lifeblood of our company; they have a direct impact on "
 "revenues."
-msgstr ""
+msgstr "작업시간표는 회사에 둘도 없이 귀중한 자원입니다. 수익에 직접적인 영향을 미치게 됩니다."
 
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.ui.view,arch_db:sale_timesheet_enterprise.res_config_settings_view_form
@@ -452,14 +461,14 @@ msgstr "시간을 청구할 때 고려되는 작업기록"
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,field_description:sale_timesheet_enterprise.field_hr_timesheet_tip__name
 msgid "Tip Name"
-msgstr ""
+msgstr "팁 이름"
 
 #. module: sale_timesheet_enterprise
 #. odoo-javascript
 #: code:addons/sale_timesheet_enterprise/static/src/views/timesheet_leaderboard_dialog/timesheet_leaderboard_dialog.xml:0
 #, python-format
 msgid "Tip of the day"
-msgstr ""
+msgstr "오늘의 팁"
 
 #. module: sale_timesheet_enterprise
 #: model:ir.actions.act_window,name:sale_timesheet_enterprise.hr_timesheet_tip_action
@@ -479,7 +488,7 @@ msgstr "총 시간"
 #: code:addons/sale_timesheet_enterprise/static/src/views/timesheet_leaderboard_dialog/timesheet_leaderboard_dialog.js:0
 #, python-format
 msgid "Total Time Leaderboard"
-msgstr ""
+msgstr "총 시간 순위표"
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,help:sale_timesheet_enterprise.field_project_task__portal_remaining_hours
@@ -524,7 +533,7 @@ msgstr ""
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.ui.view,arch_db:sale_timesheet_enterprise.hr_timesheet_tip_view_tree
 msgid "e.g. Make it a habit to record timesheets every day."
-msgstr ""
+msgstr "예: 매일 습관처럼 작업시간표를 기록하세요."
 
 #. module: sale_timesheet_enterprise
 #. odoo-javascript

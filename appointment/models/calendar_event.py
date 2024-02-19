@@ -3,9 +3,11 @@
 
 import uuid
 import logging
+from datetime import datetime, timedelta
 
 from odoo import _, api, Command, fields, models, SUPERUSER_ID
 from odoo.tools import html2plaintext, email_normalize, email_split_tuples
+from odoo.addons.resource.models.utils import Intervals, timezone_datetime
 from ..utils import interval_from_events, intervals_overlap
 
 _logger = logging.getLogger(__name__)
@@ -16,8 +18,14 @@ class CalendarEvent(models.Model):
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
+        # If the event has an apt type, set the event stop datetime to match the apt type duration
+        if res.get('appointment_type_id') and res.get('duration') and res.get('start') and 'stop' in fields_list:
+            res['stop'] = res['start'] + timedelta(hours=res['duration'])
         if not self.env.context.get('booking_gantt_create_record', False):
             return res
+        # Round the stop datetime to the nearest minute when coming from the gantt view
+        if res.get('stop') and isinstance(res['stop'], datetime) and res['stop'].second != 0:
+            res['stop'] = datetime.min + round((res['stop'] - datetime.min) / timedelta(minutes=1)) * timedelta(minutes=1)
         user_id = res.get('user_id')
         resource_id = res.get('appointment_resource_id') or self.env.context.get('default_appointment_resource_id')
         # get a relevant appointment type for ease of use when coming from a view that groups by resource
@@ -29,16 +37,10 @@ class CalendarEvent(models.Model):
                 appointment_types = self.env['appointment.type'].search([('staff_user_ids', 'in', user_id)])
             if appointment_types:
                 res['appointment_type_id'] = appointment_types[0].id
-        if 'name' in fields_list and 'name' not in res:
-            if resource_id:
-                res.setdefault('name', _('Booking for %(resource_name)s', resource_name=self.env['appointment.resource'].browse(resource_id).name))
-            elif res.get('appointment_type_id'):
-                appointment_type = self.env['appointment.type'].browse(res['appointment_type_id'])
-                res.setdefault('name', appointment_type.display_name)
         if self.env.context.get('appointment_default_add_organizer_to_attendees') and 'partner_ids' in fields_list:
             organizer_partner = self.env['res.users'].browse(res.get('user_id', [])).partner_id
             if organizer_partner:
-                res['partner_ids'] = organizer_partner.ids
+                res['partner_ids'] = [Command.set(organizer_partner.ids)]
         return res
 
     def _default_access_token(self):
@@ -57,6 +59,7 @@ class CalendarEvent(models.Model):
                                               store=True, group_expand="_read_group_appointment_resource_id")
     appointment_resource_ids = fields.Many2many('appointment.resource', string="Appointment Resources", compute="_compute_resource_ids")
     booking_line_ids = fields.One2many('appointment.booking.line', 'calendar_event_id', string="Booking Lines")
+    partner_ids = fields.Many2many('res.partner', group_expand="_read_group_partner_ids")
     resource_total_capacity_reserved = fields.Integer('Total Capacity Reserved', compute="_compute_resource_total_capacity", inverse="_inverse_appointment_resource_id_or_capacity")
     resource_total_capacity_used = fields.Integer('Total Capacity Used', compute="_compute_resource_total_capacity")
     user_id = fields.Many2one('res.users', group_expand="_read_group_user_id")
@@ -191,6 +194,16 @@ class CalendarEvent(models.Model):
             return self.env['appointment.type'].browse(default_appointment_type).resource_ids.filtered_domain(filter_shared_resources)
         return self.env['appointment.resource'].search(filter_shared_resources)
 
+    def _read_group_partner_ids(self, partners, domain, order):
+        """Show the partners associated with relevant staff users in appointment gantt context."""
+        if not self.env.context.get('appointment_booking_gantt_show_all_resources'):
+            return partners
+        appointment_type_id = self.env.context.get('default_appointment_type_id', False)
+        appointment_types = self.env['appointment.type'].browse(appointment_type_id)
+        if appointment_types:
+            return appointment_types.staff_user_ids.partner_id
+        return self.env['appointment.type'].search([('schedule_based_on', '=', 'users')]).staff_user_ids.partner_id
+
     def _read_group_user_id(self, users, domain, order):
         if not self.env.context.get('appointment_booking_gantt_show_all_resources'):
             return users
@@ -201,7 +214,7 @@ class CalendarEvent(models.Model):
 
     def _track_filter_for_display(self, tracking_values):
         if self.appointment_type_id:
-            return tracking_values.filtered(lambda t: t.field.name != 'active')
+            return tracking_values.filtered(lambda t: t.field_id.name != 'active')
         return super()._track_filter_for_display(tracking_values)
 
     def _track_get_default_log_message(self, tracked_fields):
@@ -226,12 +239,15 @@ class CalendarEvent(models.Model):
         if attendees:
             cancelling_attendees = ", ".join([attendee.display_name for attendee in attendees])
             message_body = _("Appointment canceled by: %(partners)s", partners=cancelling_attendees)
-            self.partner_ids -= attendees.partner_id
             if self.appointment_booker_id.id == partner_ids[0]:
                 self._track_set_log_message(message_body)
-                self.with_user(SUPERUSER_ID).action_archive()
+                # Use the organizer if set or fallback on SUPERUSER to notify attendees that the event is archived
+                self.with_user(self.user_id or SUPERUSER_ID).sudo().action_archive()
             else:
-                self.message_post(body=message_body, message_type='notification', author_id=partner_ids[0])
+                # Use the organizer as the author if set or fallback on the first attendee cancelling
+                author_id = self.user_id.partner_id.id or partner_ids[0]
+                self.message_post(body=message_body, message_type='notification', author_id=author_id)
+                self.partner_ids -= attendees.partner_id
 
     def _find_or_create_partners(self, guest_emails_str):
         """Used to find the partners from the emails strings and creates partners if not found.
@@ -284,8 +300,8 @@ class CalendarEvent(models.Model):
             return res
 
         appointment_type_sudo = self.appointment_type_id.sudo()
-        # Replace Public User with OdooBot
-        author = {'author_id': self.env.ref('base.partner_root').id} if self.env.user._is_public() else {}
+        # set 'author_id' and 'email_from' based on the organizer
+        vals = {'author_id': self.user_id.partner_id.id, 'email_from': self.user_id.email_formatted} if self.user_id else {}
 
         if 'appointment_type_id' in changes:
             try:
@@ -294,7 +310,7 @@ class CalendarEvent(models.Model):
                 _logger.warning("Mail could not be sent, as mail template is not found : %s", e)
             else:
                 res['appointment_type_id'] = (booked_template.sudo(), {
-                    **author,
+                    **vals,
                     'auto_delete_keep_log': False,
                     'subtype_id': self.env['ir.model.data']._xmlid_to_res_id('appointment.mt_calendar_event_booked'),
                     'email_layout_xmlid': 'mail.mail_notification_light'
@@ -304,7 +320,7 @@ class CalendarEvent(models.Model):
             and appointment_type_sudo.canceled_mail_template_id
         ):
             res['active'] = (appointment_type_sudo.canceled_mail_template_id, {
-                **author,
+                **vals,
                 'auto_delete_keep_log': False,
                 'subtype_id': self.env['ir.model.data']._xmlid_to_res_id('appointment.mt_calendar_event_canceled'),
                 'email_layout_xmlid': 'mail.mail_notification_light'
@@ -331,21 +347,21 @@ class CalendarEvent(models.Model):
                      partner_name=self.partner_id.name or _('somebody'))
         return super()._get_customer_summary()
 
-    def booking_gantt_set_partner_id(self, user_id):
-        """Remove the current user's partner and add the new user to attendees."""
-        new_partner_id = self.env['res.users'].browse(user_id).partner_id
-        for event in self:
-            event.write({'partner_ids': [Command.unlink(event.partner_id.id), Command.link(new_partner_id.id)]})
-
     @api.model
     def gantt_unavailability(self, start_date, end_date, scale, group_bys=None, rows=None):
         # skip if not dealing with appointments
         resource_ids = [row['resId'] for row in rows if row.get('resId')]  # remove empty rows
-        if not group_bys or group_bys[0] != 'appointment_resource_id' or not resource_ids:
+        if not group_bys or group_bys[0] not in ('appointment_resource_id', 'partner_ids') or not resource_ids:
             return super().gantt_unavailability(start_date, end_date, scale, group_bys=group_bys, rows=rows)
 
         start_datetime = fields.Datetime.from_string(start_date)
         end_datetime = fields.Datetime.from_string(end_date)
+
+        if group_bys[0] == 'partner_ids':
+            unavailabilities = self._gantt_unavailabilities_events(start_datetime, end_datetime, self.env['res.partner'].browse(resource_ids))
+            for row in rows:
+                row['unavailabilities'] = [{'start': start, 'stop': stop} for start, stop, _ in unavailabilities.get(row['resId'], [])]
+            return rows
 
         appointment_resource_ids = self.env['appointment.resource'].browse(resource_ids)
         resource_unavailabilities = appointment_resource_ids.resource_id._get_unavailable_intervals(start_datetime, end_datetime)
@@ -354,3 +370,24 @@ class CalendarEvent(models.Model):
             row['unavailabilities'] = [{'start': start, 'stop': stop}
                                        for start, stop in resource_unavailabilities.get(appointment_resource_id.resource_id.id, [])]
         return rows
+
+    def _gantt_unavailabilities_events(self, start_datetime, end_datetime, partners):
+        """Get a mapping from partner id to unavailabilities based on existing events.
+
+        :return dict[int, Intervals[<res.partner>]]: {5: Intervals([(monday_morning, monday_noon, <res.partner>(5))])}
+        """
+        return {
+            attendee.id: Intervals([
+                (timezone_datetime(event.start), timezone_datetime(event.stop), attendee)
+                for event in partners._get_calendar_events(start_datetime, end_datetime).get(attendee.id, [])
+            ]) for attendee in partners
+        }
+
+    @api.model
+    def get_gantt_data(self, domain, groupby, read_specification, limit=None, offset=0):
+        """Filter out rows where the partner isn't linked to an staff user."""
+        gantt_data = super().get_gantt_data(domain, groupby, read_specification, limit=limit, offset=offset)
+        if self.env.context.get('appointment_booking_gantt_show_all_resources') and groupby and groupby[0] == 'partner_ids':
+            staff_partner_ids = self.env['appointment.type'].search([('schedule_based_on', '=', 'users')]).staff_user_ids.partner_id.ids
+            gantt_data['groups'] = [group for group in gantt_data['groups'] if group['partner_ids'][0] in staff_partner_ids]
+        return gantt_data

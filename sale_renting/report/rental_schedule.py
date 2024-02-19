@@ -14,7 +14,7 @@ class RentalSchedule(models.Model):
 
     @api.model
     def _read_group_report_line_status(self, report_line_status, domain, order):
-        return [key for key, val in type(self).report_line_status.selection]
+        return [key for key, val in self._fields['report_line_status'].selection]
 
     @api.model
     def _read_group_product_ids(self, products, domain, order):

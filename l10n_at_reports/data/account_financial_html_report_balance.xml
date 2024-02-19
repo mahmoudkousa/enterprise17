@@ -7,6 +7,7 @@
         <field name="filter_analytic_groupby" eval="True"/>
         <field name="country_id" ref="base.at"/>
         <field name="filter_multi_company">selector</field>
+        <field name="custom_handler_model_id" ref="l10n_at_reports.model_account_report_l10n_at_balance_custom_handler"/>
         <field name="column_ids">
             <record id="account_financial_report_l10n_at_paragraph_224_ugb_column" model="account.report.column">
                 <field name="name">Balance</field>
@@ -22,13 +23,15 @@
                     <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_activa" model="account.report.line">
                         <field name="name">Assets</field>
                         <field name="code">A</field>
+                        <field name="hierarchy_level">1</field>
                         <field name="aggregation_formula">AA.balance + AB.balance + AC.balance + AD.balance</field>
                         <field name="children_ids">
                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_activa_1" model="account.report.line">
                                 <field name="name">A. Fixed assets</field>
                                 <field name="code">AA</field>
+                                <field name="hierarchy_level">2</field>
                                 <field name="foldable" eval="True"/>
-                                <field name="aggregation_formula">AAI.balance + AAII.balance</field>
+                                <field name="aggregation_formula">AAI.balance + AAII.balance + AAIII.balance</field>
                                 <field name="children_ids">
                                     <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_activa_11" model="account.report.line">
                                         <field name="name">I. Intangible assets</field>
@@ -99,7 +102,7 @@
                                         <field name="name">III. Financial assets</field>
                                         <field name="code">AAIII</field>
                                         <field name="foldable" eval="True"/>
-                                        <field name="domain_formula">sum([('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_AAIII')])])</field>
+                                        <field name="aggregation_formula">AAIII1.balance + AAIII2.balance + AAIII3.balance + AAIII4.balance + AAIII5.balance + AAIII6.balance</field>
                                         <field name="children_ids">
                                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_activa_131" model="account.report.line">
                                                 <field name="name">1. Shares in affiliated companies</field>
@@ -150,6 +153,7 @@
                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_activa_2" model="account.report.line">
                                 <field name="name">B. Current assets</field>
                                 <field name="code">AB</field>
+                                <field name="hierarchy_level">2</field>
                                 <field name="foldable" eval="True"/>
                                 <field name="aggregation_formula">ABI.balance + ABII.balance + ABIII.balance + ABIV.balance</field>
                                 <field name="children_ids">
@@ -228,7 +232,15 @@
                                                 <field name="code">ABII4</field>
                                                 <field name="groupby">account_id</field>
                                                 <field name="foldable" eval="True"/>
-                                                <field name="domain_formula">sum([('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_ABII4')])])</field>
+                                                <field name="domain_formula" eval="False"/>
+                                                <field name="expression_ids">
+                                                    <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_activa_224_balance" model="account.report.expression">
+                                                        <field name="label">balance</field>
+                                                        <!-- sum_if_pos_groupby -->
+                                                        <field name="engine">account_codes</field>
+                                                        <field name="formula">tag(l10n_at.account_tag_l10n_at_ABII4)D + tag(l10n_at.account_tag_l10n_at_PCVII)D + tag(l10n_at.account_tag_l10n_at_PCVIII1)D + tag(l10n_at.account_tag_l10n_at_PCVIII2)D + tag(l10n_at.account_tag_l10n_at_PCVIII3)D + tag(l10n_at.account_tag_l10n_at_PCVIII4)D</field>
+                                                    </record>
+                                                </field>
                                             </record>
                                         </field>
                                     </record>
@@ -259,13 +271,23 @@
                                         <field name="code">ABIV</field>
                                         <field name="groupby">account_id</field>
                                         <field name="foldable" eval="True"/>
-                                        <field name="domain_formula">sum([('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_ABIV')])])</field>
+                                        <field name="domain_formula" eval="False"/>
+                                        <field name="expression_ids">
+                                            <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_activa_24_balance" model="account.report.expression">
+                                                <field name="label">balance</field>
+                                                <!-- sum_if_pos_groupby -->
+                                                <field name="engine">account_codes</field>
+                                                <field name="formula">tag(l10n_at.account_tag_l10n_at_ABIV)D + tag(l10n_at.account_tag_l10n_at_PCII)D</field>
+                                                <field name="green_on_positive" eval="True"/>
+                                            </record>
+                                        </field>
                                     </record>
                                 </field>
                             </record>
                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_activa_3" model="account.report.line">
                                 <field name="name">C. Prepaid expenses</field>
                                 <field name="code">AC</field>
+                                <field name="hierarchy_level">2</field>
                                 <field name="groupby">account_id</field>
                                 <field name="foldable" eval="True"/>
                                 <field name="domain_formula">sum([('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_AC')])])</field>
@@ -273,6 +295,7 @@
                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_activa_4" model="account.report.line">
                                 <field name="name">D. Deferred tax assets</field>
                                 <field name="code">AD</field>
+                                <field name="hierarchy_level">2</field>
                                 <field name="groupby">account_id</field>
                                 <field name="foldable" eval="True"/>
                                 <field name="domain_formula">sum([('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_AD')])])</field>
@@ -282,16 +305,18 @@
                     <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva" model="account.report.line">
                         <field name="name">Equity and liabilities</field>
                         <field name="code">P</field>
+                        <field name="hierarchy_level">1</field>
                         <field name="aggregation_formula">PA.balance + PB.balance + PC.balance + PD.balance</field>
                         <field name="children_ids">
                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_1" model="account.report.line">
                                 <field name="name">A. Equity capital</field>
                                 <field name="code">PA</field>
+                                <field name="hierarchy_level">2</field>
                                 <field name="foldable" eval="True"/>
                                 <field name="aggregation_formula">PAI.balance + PAII.balance + PAIII.balance + PAIV.balance</field>
                                 <field name="children_ids">
                                     <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_11" model="account.report.line">
-                                        <field name="name">I. Nominal Capital (share capital)</field>
+                                        <field name="name">I. Called-up nominal capital</field>
                                         <field name="code">PAI</field>
                                         <field name="groupby">account_id</field>
                                         <field name="foldable" eval="True"/>
@@ -301,7 +326,7 @@
                                         <field name="name">II. Capital reserves</field>
                                         <field name="code">PAII</field>
                                         <field name="foldable" eval="True"/>
-                                        <field name="domain_formula">-sum([('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_PAII')])])</field>
+                                        <field name="aggregation_formula">PAII1.balance + PAII2.balance</field>
                                         <field name="children_ids">
                                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_121" model="account.report.line">
                                                 <field name="name">1. Tied investments</field>
@@ -323,7 +348,7 @@
                                         <field name="name">III. Retained earnings</field>
                                         <field name="code">PAIII</field>
                                         <field name="foldable" eval="True"/>
-                                        <field name="domain_formula">-sum([('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_PAIII')])])</field>
+                                        <field name="aggregation_formula">PAIII1.balance + PAIII2.balance + PAIII3.balance</field>
                                         <field name="children_ids">
                                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_131" model="account.report.line">
                                                 <field name="name">1. Legal reserve</field>
@@ -360,6 +385,7 @@
                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_2" model="account.report.line">
                                 <field name="name">B. Provisions</field>
                                 <field name="code">PB</field>
+                                <field name="hierarchy_level">2</field>
                                 <field name="foldable" eval="True"/>
                                 <field name="expression_ids">
                                     <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_2_balance" model="account.report.expression">
@@ -378,9 +404,9 @@
                                         <field name="expression_ids">
                                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_21_balance" model="account.report.expression">
                                                 <field name="label">balance</field>
-                                                <field name="engine">domain</field>
-                                                <field name="formula" eval="[('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_PBI')])]"/>
-                                                <field name="subformula">-sum</field>
+                                                <field name="engine">account_codes</field>
+                                                <field name="formula">tag(l10n_at.account_tag_l10n_at_PBI)</field>
+                                                <field name="subformula">-result</field>
                                                 <field name="green_on_positive" eval="False"/>
                                             </record>
                                         </field>
@@ -393,9 +419,9 @@
                                         <field name="expression_ids">
                                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_22_balance" model="account.report.expression">
                                                 <field name="label">balance</field>
-                                                <field name="engine">domain</field>
-                                                <field name="formula" eval="[('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_PBII')])]"/>
-                                                <field name="subformula">-sum</field>
+                                                <field name="engine">account_codes</field>
+                                                <field name="formula">tag(l10n_at.account_tag_l10n_at_PBII)</field>
+                                                <field name="subformula">-result</field>
                                                 <field name="green_on_positive" eval="False"/>
                                             </record>
                                         </field>
@@ -408,9 +434,9 @@
                                         <field name="expression_ids">
                                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_23_balance" model="account.report.expression">
                                                 <field name="label">balance</field>
-                                                <field name="engine">domain</field>
-                                                <field name="formula" eval="[('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_PBIII')])]"/>
-                                                <field name="subformula">-sum</field>
+                                                <field name="engine">account_codes</field>
+                                                <field name="formula">tag(l10n_at.account_tag_l10n_at_PBIII)</field>
+                                                <field name="subformula">-result</field>
                                                 <field name="green_on_positive" eval="False"/>
                                             </record>
                                         </field>
@@ -423,9 +449,9 @@
                                         <field name="expression_ids">
                                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_24_balance" model="account.report.expression">
                                                 <field name="label">balance</field>
-                                                <field name="engine">domain</field>
-                                                <field name="formula" eval="[('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_PBIV')])]"/>
-                                                <field name="subformula">-sum</field>
+                                                <field name="engine">account_codes</field>
+                                                <field name="formula">tag(l10n_at.account_tag_l10n_at_PBIV)</field>
+                                                <field name="subformula">-result</field>
                                                 <field name="green_on_positive" eval="False"/>
                                             </record>
                                         </field>
@@ -435,6 +461,7 @@
                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_3" model="account.report.line">
                                 <field name="name">C. Liabilities</field>
                                 <field name="code">PC</field>
+                                <field name="hierarchy_level">2</field>
                                 <field name="foldable" eval="True"/>
                                 <field name="expression_ids">
                                     <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_3_balance" model="account.report.expression">
@@ -453,9 +480,9 @@
                                         <field name="expression_ids">
                                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_31_balance" model="account.report.expression">
                                                 <field name="label">balance</field>
-                                                <field name="engine">domain</field>
-                                                <field name="formula" eval="[('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_PCI')])]"/>
-                                                <field name="subformula">-sum</field>
+                                                <field name="engine">account_codes</field>
+                                                <field name="formula">tag(l10n_at.account_tag_l10n_at_PCI)</field>
+                                                <field name="subformula">-result</field>
                                                 <field name="green_on_positive" eval="False"/>
                                             </record>
                                         </field>
@@ -468,9 +495,10 @@
                                         <field name="expression_ids">
                                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_32_balance" model="account.report.expression">
                                                 <field name="label">balance</field>
-                                                <field name="engine">domain</field>
-                                                <field name="formula" eval="[('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_PCII')])]"/>
-                                                <field name="subformula">-sum</field>
+                                                <!-- sum_if_neg_groupby -->
+                                                <field name="engine">account_codes</field>
+                                                <field name="formula">tag(l10n_at.account_tag_l10n_at_PCII)C + tag(l10n_at.account_tag_l10n_at_ABIV)C</field>
+                                                <field name="subformula">-result</field>
                                                 <field name="green_on_positive" eval="False"/>
                                             </record>
                                         </field>
@@ -483,9 +511,9 @@
                                         <field name="expression_ids">
                                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_33_balance" model="account.report.expression">
                                                 <field name="label">balance</field>
-                                                <field name="engine">domain</field>
-                                                <field name="formula" eval="[('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_PCIII')])]"/>
-                                                <field name="subformula">-sum</field>
+                                                <field name="engine">account_codes</field>
+                                                <field name="formula">tag(l10n_at.account_tag_l10n_at_PCIII)</field>
+                                                <field name="subformula">-result</field>
                                                 <field name="green_on_positive" eval="False"/>
                                             </record>
                                         </field>
@@ -498,9 +526,9 @@
                                         <field name="expression_ids">
                                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_34_balance" model="account.report.expression">
                                                 <field name="label">balance</field>
-                                                <field name="engine">domain</field>
-                                                <field name="formula" eval="[('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_PCIV')])]"/>
-                                                <field name="subformula">-sum</field>
+                                                <field name="engine">account_codes</field>
+                                                <field name="formula">tag(l10n_at.account_tag_l10n_at_PCIV)</field>
+                                                <field name="subformula">-result</field>
                                                 <field name="green_on_positive" eval="False"/>
                                             </record>
                                         </field>
@@ -513,9 +541,9 @@
                                         <field name="expression_ids">
                                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_35_balance" model="account.report.expression">
                                                 <field name="label">balance</field>
-                                                <field name="engine">domain</field>
-                                                <field name="formula" eval="[('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_PCV')])]"/>
-                                                <field name="subformula">-sum</field>
+                                                <field name="engine">account_codes</field>
+                                                <field name="formula">tag(l10n_at.account_tag_l10n_at_PCV)</field>
+                                                <field name="subformula">-result</field>
                                                 <field name="green_on_positive" eval="False"/>
                                             </record>
                                         </field>
@@ -528,9 +556,9 @@
                                         <field name="expression_ids">
                                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_36_balance" model="account.report.expression">
                                                 <field name="label">balance</field>
-                                                <field name="engine">domain</field>
-                                                <field name="formula" eval="[('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_PCVI')])]"/>
-                                                <field name="subformula">-sum</field>
+                                                <field name="engine">account_codes</field>
+                                                <field name="formula">tag(l10n_at.account_tag_l10n_at_PCVI)</field>
+                                                <field name="subformula">-result</field>
                                                 <field name="green_on_positive" eval="False"/>
                                             </record>
                                         </field>
@@ -543,9 +571,10 @@
                                         <field name="expression_ids">
                                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_37_balance" model="account.report.expression">
                                                 <field name="label">balance</field>
-                                                <field name="engine">domain</field>
-                                                <field name="formula" eval="[('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_PCVII')])]"/>
-                                                <field name="subformula">-sum</field>
+                                                <!-- sum_if_neg_groupby -->
+                                                <field name="engine">account_codes</field>
+                                                <field name="formula">tag(l10n_at.account_tag_l10n_at_PCVII)C</field>
+                                                <field name="subformula">-result</field>
                                                 <field name="green_on_positive" eval="False"/>
                                             </record>
                                         </field>
@@ -571,31 +600,65 @@
                                         </field>
                                         <field name="children_ids">
                                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_381" model="account.report.line">
+                                                <field name="name">of which from taxes</field>
                                                 <field name="code">PCVIII1</field>
-                                                <field name="name">1. of which from taxes</field>
                                                 <field name="groupby">account_id</field>
                                                 <field name="foldable" eval="True"/>
                                                 <field name="expression_ids">
                                                     <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_381_balance" model="account.report.expression">
                                                         <field name="label">balance</field>
-                                                        <field name="engine">domain</field>
-                                                        <field name="formula" eval="[('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_PCVIII1')])]"/>
-                                                        <field name="subformula">-sum</field>
+                                                        <!-- sum_if_neg_groupby -->
+                                                        <field name="engine">account_codes</field>
+                                                        <field name="formula">tag(l10n_at.account_tag_l10n_at_ABII4)C + tag(l10n_at.account_tag_l10n_at_PCVIII1)C</field>
+                                                        <field name="subformula">-result</field>
                                                         <field name="green_on_positive" eval="False"/>
                                                     </record>
                                                 </field>
                                             </record>
                                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_382" model="account.report.line">
+                                                <field name="name">of which in the context of social security</field>
                                                 <field name="code">PCVIII2</field>
-                                                <field name="name">2. of which in the context of social security</field>
                                                 <field name="groupby">account_id</field>
                                                 <field name="foldable" eval="True"/>
                                                 <field name="expression_ids">
                                                     <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_382_balance" model="account.report.expression">
                                                         <field name="label">balance</field>
-                                                        <field name="engine">domain</field>
-                                                        <field name="formula" eval="[('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_PCVIII2')])]"/>
-                                                        <field name="subformula">-sum</field>
+                                                        <!-- sum_if_neg_groupby -->
+                                                        <field name="engine">account_codes</field>
+                                                        <field name="formula">tag(l10n_at.account_tag_l10n_at_PCVIII2)C</field>
+                                                        <field name="subformula">-result</field>
+                                                        <field name="green_on_positive" eval="False"/>
+                                                    </record>
+                                                </field>
+                                            </record>
+                                            <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_383" model="account.report.line">
+                                                <field name="name">of which with a remaining term of up to one year</field>
+                                                <field name="code">PCVIII3</field>
+                                                <field name="groupby">account_id</field>
+                                                <field name="foldable" eval="True"/>
+                                                <field name="expression_ids">
+                                                    <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_383_balance" model="account.report.expression">
+                                                        <field name="label">balance</field>
+                                                        <!-- sum_if_neg_groupby -->
+                                                        <field name="engine">account_codes</field>
+                                                        <field name="formula">tag(l10n_at.account_tag_l10n_at_PCVIII3)C</field>
+                                                        <field name="subformula">-result</field>
+                                                        <field name="green_on_positive" eval="False"/>
+                                                    </record>
+                                                </field>
+                                            </record>
+                                            <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_384" model="account.report.line">
+                                                <field name="name">of which with a remaining term of more than one year</field>
+                                                <field name="code">PCVIII4</field>
+                                                <field name="groupby">account_id</field>
+                                                <field name="foldable" eval="True"/>
+                                                <field name="expression_ids">
+                                                    <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_384_balance" model="account.report.expression">
+                                                        <field name="label">balance</field>
+                                                        <!-- sum_if_neg_groupby -->
+                                                        <field name="engine">account_codes</field>
+                                                        <field name="formula">tag(l10n_at.account_tag_l10n_at_PCVIII4)C</field>
+                                                        <field name="subformula">-result</field>
                                                         <field name="green_on_positive" eval="False"/>
                                                     </record>
                                                 </field>
@@ -607,14 +670,15 @@
                             <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_4" model="account.report.line">
                                 <field name="name">D. Deferred Income</field>
                                 <field name="code">PD</field>
+                                <field name="hierarchy_level">2</field>
                                 <field name="groupby">account_id</field>
                                 <field name="foldable" eval="True"/>
                                 <field name="expression_ids">
                                     <record id="account_financial_report_l10n_at_paragraph_224_ugb_line_passiva_4_balance" model="account.report.expression">
                                         <field name="label">balance</field>
-                                        <field name="engine">domain</field>
-                                        <field name="formula" eval="[('account_id.tag_ids', 'in', [ref('l10n_at.account_tag_l10n_at_PD')])]"/>
-                                        <field name="subformula">-sum</field>
+                                        <field name="engine">account_codes</field>
+                                        <field name="formula">tag(l10n_at.account_tag_l10n_at_PD)</field>
+                                        <field name="subformula">-result</field>
                                         <field name="green_on_positive" eval="False"/>
                                     </record>
                                 </field>

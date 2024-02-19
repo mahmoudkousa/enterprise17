@@ -5,6 +5,7 @@ import ast
 
 from odoo import api, fields, models, _
 from odoo.tools import ormcache
+from odoo.tools.misc import format_date
 from odoo.exceptions import UserError
 
 
@@ -23,6 +24,14 @@ class HrSalaryRuleParameterValue(models.Model):
     _sql_constraints = [
         ('_unique', 'unique (rule_parameter_id, date_from)', "Two rules with the same code cannot start the same day"),
     ]
+
+    @api.constrains('parameter_value')
+    def _check_parameter_value(self):
+        for value in self:
+            try:
+                ast.literal_eval(value.parameter_value)
+            except Exception as e:
+                raise UserError(_('Wrong rule parameter value for %s at date %s.\n%s', value.rule_parameter_name, format_date(self.env, value.date_from), str(e)))
 
 
 class HrSalaryRuleParameter(models.Model):

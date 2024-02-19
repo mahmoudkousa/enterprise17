@@ -1,12 +1,24 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+
 from odoo.addons.event.tests.common import EventCase
 from odoo.exceptions import UserError, ValidationError
 from odoo.tests import Form, users
 
 
 class EventSocialCase(EventCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.test_event = cls.env['event.event'].create({
+            'name': 'TestEvent',
+            'date_begin': datetime.now() + relativedelta(days=-1),
+            'date_end': datetime.now() + relativedelta(days=1),
+        })
 
     @users('user_eventmanager')
     def test_event_mail_after_sub(self):
@@ -27,7 +39,7 @@ class EventSocialCase(EventCase):
                 'notification_type': 'social_post',
                 'template_ref': 'social.post.template,%i' % social_template.id,
                 'interval_type': 'after_sub',
-                'event_id': self.env['event.event'].search([])[0].id,
+                'event_id': self.test_event.id,
             })
 
     @users('user_eventmanager')
@@ -59,7 +71,7 @@ class EventSocialCase(EventCase):
 
         with self.assertRaises(ValidationError):
             self.env['event.mail'].create({
-                'event_id': self.env['event.event'].search([])[0].id,
+                'event_id': self.test_event.id,
                 'notification_type': 'social_post',
                 'interval_unit': 'now',
                 'interval_type': 'before_event',
@@ -68,7 +80,7 @@ class EventSocialCase(EventCase):
 
         with self.assertRaises(ValidationError):
             self.env['event.mail'].create({
-                'event_id': self.env['event.event'].search([])[0].id,
+                'event_id': self.test_event.id,
                 'notification_type': 'mail',
                 'interval_unit': 'now',
                 'interval_type': 'before_event',

@@ -118,7 +118,7 @@
                                         <a t-attf-href="/appointment/#{appointment_type.id}?#{keep_query('*', resource_selected_id=resource.id)}"
                                             class="text-reset text-decoration-none h-100">
                                             <header class="o_appointment_avatar_container bg-secondary ratio ratio-4x3">
-                                                <div t-attf-style="background-image: url('/web/image/appointment.resource/#{resource.id}/avatar_512');"
+                                                <div t-attf-style="background-image: url('/appointment/#{appointment_type.id}/resource_avatar?resource_id=#{resource.id}');"
                                                     class="o_appointment_avatar_background"/>
                                             </header>
                                             <div class="card-body">
@@ -130,13 +130,12 @@
                                         </a>
                                     </div>
                                 </div>
+                                <!-- Prevent using 'resource' from the loop above as the selected one in other templates -->
+                                <t t-set="resource" t-value="False"/>
                             </div>
                             <div class="oe_structure"/>
                         </div>
-                        <t t-call="appointment.appointment_details_column">
-                            <!-- Used to check if we are on "Operator" step -->
-                            <t t-set="isOperator" t-value="True"/>
-                        </t>
+                        <t t-call="appointment.appointment_details_column"/>
                     </div>
                 </div>
             </div>

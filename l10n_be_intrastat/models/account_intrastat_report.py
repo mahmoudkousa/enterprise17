@@ -6,6 +6,7 @@ from odoo.exceptions import UserError, RedirectWarning
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT
 
 from datetime import datetime, timedelta
+from lxml import etree
 
 
 class IntrastatReportCustomHandler(models.AbstractModel):
@@ -25,6 +26,11 @@ class IntrastatReportCustomHandler(models.AbstractModel):
             'file_export_type': _('XML'),
         }
         options['buttons'].append(xml_button)
+
+    def _show_region_code(self):
+        if self.env.company.account_fiscal_country_id.code == 'BE' and not self.env.company.intrastat_region_id:
+            return False
+        return super()._show_region_code()
 
     @api.model
     def be_intrastat_export_to_xml(self, options):
@@ -51,8 +57,8 @@ class IntrastatReportCustomHandler(models.AbstractModel):
             raise RedirectWarning(error_msg, action_error, _('Add company registry'))
 
         self.env.cr.flush()
-        query, params = self._prepare_query(options)
-        self._cr.execute(query, params)
+        query, params = self._build_query_group(options)
+        self._cr.execute(query, params)  # pylint: disable=sql-injection
         query_res = self._cr.dictfetchall()
         query_res = self._fill_missing_values(query_res)
 
@@ -78,7 +84,7 @@ class IntrastatReportCustomHandler(models.AbstractModel):
 
         return {
             'file_name': self.env['account.report'].browse(options['report_id']).get_default_report_filename(options, 'xml'),
-            'file_content': file_content,
+            'file_content': etree.tostring(etree.fromstring(file_content), xml_declaration=True, encoding='utf-8', pretty_print=True),
             'file_type': 'xml',
         }
 

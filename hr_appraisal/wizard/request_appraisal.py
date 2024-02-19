@@ -3,7 +3,7 @@
 
 import logging
 
-from odoo import api, fields, models, tools, _
+from odoo import api, Command, fields, models, tools
 from odoo.exceptions import UserError
 from odoo.tools import html_sanitize, is_html_empty
 
@@ -36,7 +36,7 @@ class RequestAppraisal(models.TransientModel):
 
             result.update({
                 'template_id': template.id,
-                'recipient_ids': recipients.ids,
+                'recipient_ids': [Command.set(recipients.ids)],
                 'employee_id': employee.id,
                 'appraisal_id': appraisal.id,
             })
@@ -122,6 +122,7 @@ class RequestAppraisal(models.TransientModel):
         }
         context_self = self.with_context(ctx)
         subject = context_self._render_field('subject', appraisal.ids)[appraisal.id]
+        context_self.body = context_self.body.replace('href', 't-att-href')
         body = context_self._render_field('body', appraisal.ids)[appraisal.id]
 
         appraisal.with_context(mail_post_autofollow=True).message_post(

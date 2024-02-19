@@ -10,10 +10,11 @@ export class AddInfoPopup extends AbstractAwaitablePopup {
     setup() {
         super.setup();
         this.pos = usePos();
+        const order = this.props.order;
         // when opening the popup for the first time, both variables are undefined !
         this.state = useState({
-            l10n_mx_edi_usage: this.pos.selectedOrder.l10n_mx_edi_usage === undefined ? 'G01' : this.pos.selectedOrder.l10n_mx_edi_usage,
-            l10n_mx_edi_cfdi_to_public: !!this.pos.selectedOrder.l10n_mx_edi_cfdi_to_public,
+            l10n_mx_edi_usage: order.l10n_mx_edi_usage === undefined ? 'G01' : order.l10n_mx_edi_usage,
+            l10n_mx_edi_cfdi_to_public: !!order.l10n_mx_edi_cfdi_to_public,
         });
     }
 

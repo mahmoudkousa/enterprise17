@@ -1,6 +1,7 @@
 /** @odoo-module */
 
 import { ThreadService } from "@mail/core/common/thread_service";
+import { compareDatetime } from "@mail/utils/common/misc";
 import { patch } from "@web/core/utils/patch";
 
 patch(ThreadService.prototype, {
@@ -47,15 +48,16 @@ patch(ThreadService.prototype, {
         } else if (!thread.is_pinned) {
             this.pin(thread);
         }
-        this.sortChannels();
         this.open(thread);
     },
 
+    /** @deprecated */
     sortChannels() {
         super.sortChannels();
         // WhatsApp Channels are sorted by most recent interest date time in the sidebar.
         this.store.discuss.whatsapp.threads.sort(
-            (t1, t2) => t2.lastInterestDateTime.ts - t1.lastInterestDateTime.ts
+            (t1, t2) =>
+                compareDatetime(t2.lastInterestDateTime, t1.lastInterestDateTime) || t2.id - t1.id
         );
     },
 });

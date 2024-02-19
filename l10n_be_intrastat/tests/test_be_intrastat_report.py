@@ -75,7 +75,6 @@ class TestBEIntrastatReport(TestAccountReportsCommon):
             <Report action="replace" code="EX19E" date="2022-05">
                 <Data close="true" form="EXF19E">
                     <Item>
-                        <Dim prop="EXSEQCODE">___ignore___</Dim>
                         <Dim prop="EXTRF">19</Dim>
                         <Dim prop="EXCNT">IT</Dim>
                         <Dim prop="EXTTA">11</Dim>
@@ -90,7 +89,6 @@ class TestBEIntrastatReport(TestAccountReportsCommon):
             <Report action="replace" code="INTRASTAT_X_E" date="2022-05">
                 <Data close="true" form="INTRASTAT_X_EF">
                     <Item>
-                        <Dim prop="EXSEQCODE">___ignore___</Dim>
                         <Dim prop="EXTRF">29</Dim>
                         <Dim prop="EXCNT">IT</Dim>
                         <Dim prop="EXTTA">11</Dim>

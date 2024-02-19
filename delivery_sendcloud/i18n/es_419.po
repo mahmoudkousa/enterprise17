@@ -4,7 +4,9 @@
 # 
 # Translators:
 # Wil Odoo, 2023
-# Iran Villalobos López, 2023
+# Fernanda Alvarez, 2024
+# Iran Villalobos López, 2024
+# Patricia Gutiérrez Capetillo <pagc@odoo.com>, 2024
 # 
 msgid ""
 msgstr ""
@@ -12,7 +14,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-10-26 22:20+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Iran Villalobos López, 2023\n"
+"Last-Translator: Patricia Gutiérrez Capetillo <pagc@odoo.com>, 2024\n"
 "Language-Team: Spanish (Latin America) (https://app.transifex.com/odoo/teams/41243/es_419/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -48,7 +50,7 @@ msgstr ""
 "%s\n"
 "Además, algunos productos individuales se pasan del peso más alto permitido en el método de entrega.\n"
 "                             \n"
-"Divide la cantidad de los siguientes productos entre los paquetes si es posible o elija otro transportista:\n"
+"Divida la cantidad de los siguientes productos entre los paquetes si es posible o elija otro transportista:\n"
 "\t%s"
 
 #. module: delivery_sendcloud
@@ -60,7 +62,7 @@ msgid ""
 "                         \n"
 "Try to distributes your products in packages weighting less than %s %s or choose another carrier."
 msgstr ""
-"%s su recolección se pasa del peso más alto permitido en el método de envío.\n"
+"%s su recolección pasa del peso más alto permitido en el método de envío.\n"
 "                         \n"
 "Intente distribuir sus productos en paquetes que pesen menos de %s %s o elija otro transportista.  "
 
@@ -80,9 +82,9 @@ msgid ""
 "charges, your shippings are automatically <b>cancelled</b> after the label "
 "creation."
 msgstr ""
-"<i class=\"fa fa-exclamation-triangle\"/> En los entornos de prueba, para "
-"evitar cobros, sus envíos se <b>cancelan</b> de forma automática después de "
-"la creación de la etiqueta."
+"<i class=\"fa fa-exclamation-triangle\"/> Para evitar cobros en el entorno "
+"de pruebas, sus envíos se <b>cancelan</b> de forma automática después de la "
+"creación de la etiqueta."
 
 #. module: delivery_sendcloud
 #: model_terms:ir.ui.view,arch_db:delivery_sendcloud.view_shipping_method_sendcloud
@@ -101,7 +103,7 @@ msgstr "Código de productos activos"
 #. module: delivery_sendcloud
 #: model:ir.model.fields,field_description:delivery_sendcloud.field_sendcloud_shipping_product__functionalities
 msgid "Available Functionalities"
-msgstr "Funcionabilidades disponibles"
+msgstr "Funcionalidades disponibles"
 
 #. module: delivery_sendcloud
 #: model:ir.model.fields,field_description:delivery_sendcloud.field_delivery_carrier__sendcloud_has_custom_functionalities
@@ -196,7 +198,7 @@ msgid ""
 "Depending your Sendcloud account type, through rules you can define the shipping method to use depending on different conditions like destination, weight, value, etc.\n"
 "Rules can override shipping product selected in Odoo"
 msgstr ""
-"Dependiendo de su tipo de cuenta de SendCloud, puede definir el método de envío mediante reglas dependiendo de distintas condiciones, como el destino, peso, valor, etc. \n"
+"Dependiendo de su tipo de cuenta de SendCloud, puede definir el método de envío mediante reglas según distintas condiciones, como el destino, peso, valor, etc. \n"
 "Las reglas pueden anular el producto de envío seleccionado en Odoo"
 
 #. module: delivery_sendcloud
@@ -204,6 +206,18 @@ msgstr ""
 #: model:ir.model.fields,field_description:delivery_sendcloud.field_sendcloud_shipping_wizard__display_name
 msgid "Display Name"
 msgstr "Nombre en pantalla"
+
+#. module: delivery_sendcloud
+#. odoo-python
+#: code:addons/delivery_sendcloud/models/sendcloud_service.py:0
+#, python-format
+msgid ""
+"Each address line can only contain a maximum of 75 characters. You can split"
+" the address into multiple lines to try to avoid this limitation."
+msgstr ""
+"Cada línea de dirección solo puede contener un máximo de 75 caracteres. "
+"Puede dividir la dirección en varias líneas para intentar evitar este "
+"límite."
 
 #. module: delivery_sendcloud
 #. odoo-python
@@ -221,14 +235,14 @@ msgstr ""
 #: code:addons/delivery_sendcloud/models/delivery_carrier.py:0
 #, python-format
 msgid "Failed to create the return label!"
-msgstr "¡Ocurrió un error al crear la etiqueta de devolución!"
+msgstr "Ocurrió un error al crear la etiqueta de devolución."
 
 #. module: delivery_sendcloud
 #. odoo-python
 #: code:addons/delivery_sendcloud/models/delivery_carrier.py:0
 #, python-format
 msgid "Failed to get the actual price!"
-msgstr "¡Ocurrió un error al obtener el precio real!"
+msgstr "Ocurrió un error al obtener el precio real."
 
 #. module: delivery_sendcloud
 #: model:ir.model.fields,field_description:delivery_sendcloud.field_delivery_carrier__sendcloud_product_functionalities
@@ -279,7 +293,7 @@ msgstr "Última actualización el"
 #. module: delivery_sendcloud
 #: model_terms:ir.ui.view,arch_db:delivery_sendcloud.view_delivery_carrier_form
 msgid "Load your products"
-msgstr "Cargue sus prodcutos"
+msgstr "Suba sus productos"
 
 #. module: delivery_sendcloud
 #. odoo-python
@@ -353,7 +367,7 @@ msgid ""
 "Note that a unit of the product '%s' is heavier than the maximum weight "
 "allowed by the shipping method."
 msgstr ""
-"Tenga en cuenta que la unidad de prodcuto '%s' es más pesado que el peso "
+"Tenga en cuenta que la unidad de producto '%s' es más pesado que el peso "
 "máximo permitido en el método de envío."
 
 #. module: delivery_sendcloud
@@ -637,7 +651,7 @@ msgid ""
 msgstr ""
 "No existe un método con rango de peso correspondiente para los paquetes:\n"
 "%s\n"
-"Puede escoger otro transportista, cambair sus filtros o redefinir el contenido de sus paquetes."
+"Puede escoger otro transportista, cambiar sus filtros o redefinir el contenido de sus paquetes."
 
 #. module: delivery_sendcloud
 #. odoo-python
@@ -685,7 +699,7 @@ msgid ""
 "When sending multiple parcels, combine them in one shipment. Not supported "
 "for international shipping requiring customs' documentation"
 msgstr ""
-"Al enviar diferentes paquetes, combínelas en un solo envío. No es compatible"
+"Al enviar diferentes paquetes, combínelos en un solo envío. No es compatible"
 " con envíos internacionales que requieran documentación aduanera."
 
 #. module: delivery_sendcloud
@@ -694,8 +708,8 @@ msgstr ""
 #, python-format
 msgid "You must add your public and secret key for sendcloud delivery type!"
 msgstr ""
-"¡Debe agregar sus claves pública y secreta para el tipo de entrega de "
-"SendCloud!"
+"Debe agregar sus claves pública y secreta para el tipo de entrega de "
+"SendCloud."
 
 #. module: delivery_sendcloud
 #. odoo-python
@@ -706,14 +720,14 @@ msgid ""
 "available products"
 msgstr ""
 "Debe asignar el campo requerido de 'Envío desde' para buscar los productos "
-"disponibles"
+"disponibles."
 
 #. module: delivery_sendcloud
 #. odoo-python
 #: code:addons/delivery_sendcloud/models/delivery_carrier.py:0
 #, python-format
 msgid "You must have a shipping product configured!"
-msgstr "¡Debe tener un producto de envío configurado!"
+msgstr "Debe tener un producto de envío configurado."
 
 #. module: delivery_sendcloud
 #. odoo-javascript

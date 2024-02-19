@@ -49,6 +49,10 @@ class ProductTemplate(models.Model):
         for template in rentable:
             template.qty_in_rent = sum(template.mapped('product_variant_ids.qty_in_rent'))
 
+    @api.model
+    def _get_incompatible_types(self):
+        return ['rent_ok'] + super()._get_incompatible_types()
+
     def action_view_rentals(self):
         """Access Gantt view of rentals (sale.rental.schedule), filtered on variants of the current template."""
         return {

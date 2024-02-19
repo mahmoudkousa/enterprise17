@@ -24,7 +24,7 @@ class StudioMixin(models.AbstractModel):
         return res
 
     def write(self, vals):
-        if 'display_name' in vals and len(vals) == 1 and not type(self).display_name.base_field.store:
+        if 'display_name' in vals and len(vals) == 1 and not self.env.registry[self._name].display_name.base_field.store:
             # the call _compute_display_name() above performs an unexpected call
             # to write with 'display_name', which triggers a costly registry
             # setup when applied on ir.model or ir.model.fields.

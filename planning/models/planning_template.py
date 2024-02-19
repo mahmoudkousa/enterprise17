@@ -76,7 +76,6 @@ class PlanningTemplate(models.Model):
                 _('(%s days span)', shift_template.duration_days) if shift_template.duration_days > 1 else ''
             )
 
-    @api.model
     def _get_company_work_duration_data(self, calendar, start_datetime, duration):
         """"
             Taking company's working calendar into account get the `hours` and

@@ -8,7 +8,7 @@ from . import common
 
 
 @odoo.tests.tagged('-at_install', 'post_install', 'salary')
-class TestUi(common.TestPayrollAccountCommon):
+class Testl10nBeHrPayrollAccountUi(common.TestPayrollAccountCommon):
     def test_ui(self):
         with freeze_time("2022-01-01"):
             self.start_tour("/", 'hr_contract_salary_tour', login='admin', timeout=350)
@@ -31,7 +31,6 @@ class TestUi(common.TestPayrollAccountCommon):
         self.assertFalse(vehicle, 'A vehicle has not been created')
 
         self.start_tour("/", 'hr_contract_salary_tour_hr_sign', login='admin', timeout=350)
-
         # Contract is signed by new employee and HR, the new car must be created
         vehicle = self.env['fleet.vehicle'].search([('company_id', '=', self.company_id.id), ('model_id', '=', model_corsa.id)])
         self.assertTrue(vehicle, 'A vehicle has been created')

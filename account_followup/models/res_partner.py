@@ -307,9 +307,11 @@ class ResPartner(models.Model):
             self.message_post(body=msg)
 
         today = fields.Date.context_today(self)
-        for aml in self._get_included_unreconciled_aml_ids():
-            aml.followup_line_id = followup_line
-            aml.last_followup_date = today
+        previous_levels = self.env['account_followup.followup.line'].search([('delay', '<=', followup_line.delay), ('company_id', '=', self.env.company.id)])
+        for aml in self._get_included_unreconciled_aml_ids().filtered('date_maturity'):
+            eligible_levels = previous_levels.filtered(lambda level: (today - aml.date_maturity).days >= level.delay)
+            if eligible_levels:
+                aml.followup_line_id = max(eligible_levels, key=lambda level: level.delay)
 
     def open_action_followup(self):
         self.ensure_one()
@@ -407,6 +409,7 @@ class ResPartner(models.Model):
         return result
 
     def _get_followup_data_query(self, partner_ids=None):
+        self.env['ir.property'].flush_model()
         return f"""
             SELECT partner.id as partner_id,
                    ful.id as followup_line_id,
@@ -562,6 +565,19 @@ class ResPartner(models.Model):
             'context': {'default_partner_ids': self.ids},
         }
 
+    def _has_missing_followup_info(self):
+        self.ensure_one()
+
+        followup_contacts = self._get_all_followup_contacts() or self
+
+        if self.followup_line_id.send_email and not any(followup_contacts.mapped('email')):
+            return True
+
+        if self.followup_line_id.send_sms and not (any(followup_contacts.mapped('mobile'))
+                                            or any(followup_contacts.mapped('phone'))):
+            return True
+        return False
+
     def action_manually_process_automatic_followups(self):
         partners_with_missing_info = self.env['res.partner']
 
@@ -569,21 +585,8 @@ class ResPartner(models.Model):
             if partner.followup_status != 'in_need_of_action':
                 continue
 
-            followup_line = partner.followup_line_id
-            followup_contacts = partner._get_all_followup_contacts() or partner
-
             # Skip partner with missing info.
-            if followup_line.send_email and not any(followup_contacts.mapped('email')):
-                partners_with_missing_info |= partner
-                continue
-
-            if followup_line.send_sms and not (any(followup_contacts.mapped('mobile'))
-                                               or any(followup_contacts.mapped('phone'))):
-                partners_with_missing_info |= partner
-                continue
-
-            if followup_line.send_letter and not any(self.env['snailmail.letter']._is_valid_address(to_send_partner)
-                                                     for to_send_partner in followup_contacts):
+            if partner._has_missing_followup_info():
                 partners_with_missing_info |= partner
                 continue
 

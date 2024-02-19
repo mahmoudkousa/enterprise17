@@ -14,5 +14,13 @@
         'views/res_config_settings_views.xml',
         'wizard/carrier_type_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'delivery_easypost/static/src/components/**/*',
+        ],
+        'web.assets_tests': [
+            'delivery_easypost/static/tests/tours/**/*',
+        ],
+    },
     'license': 'OEEL-1',
 }

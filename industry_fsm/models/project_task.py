@@ -2,6 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from datetime import timedelta, datetime
+from typing import Dict, List
 import pytz
 
 from odoo import Command, fields, models, api, _
@@ -16,7 +17,7 @@ class Task(models.Model):
     def default_get(self, fields_list):
         result = super(Task, self).default_get(fields_list)
         is_fsm_mode = self._context.get('fsm_mode')
-        if 'project_id' in fields_list and not result.get('project_id') and is_fsm_mode:
+        if 'project_id' in fields_list and not result.get('project_id') and is_fsm_mode and not (result.get('parent_id') or self._context.get('default_parent_id')):
             company_id = self.env.context.get('default_company_id') or self.env.company.id
             fsm_project = self.env['project.project'].search([('is_fsm', '=', True), ('company_id', '=', company_id)], order='sequence', limit=1)
             if fsm_project:
@@ -114,10 +115,14 @@ class Task(models.Model):
         operator_new = operator == "=" and "inselect" or "not inselect"
         return [('project_id', operator_new, (query, ()))]
 
-    @api.onchange('planned_date_begin', 'date_deadline')
+    # TODO: remove in master
     def _onchange_planned_date(self):
-        if self.is_fsm and self.date_deadline and not self.planned_date_begin:
-            self.date_deadline = False
+        return
+
+    @api.onchange('date_deadline', 'planned_date_begin')
+    def _onchange_planned_dates(self):
+        if not self.is_fsm:
+            return super()._onchange_planned_dates()
 
     def write(self, vals):
         self_fsm = self.filtered('is_fsm')
@@ -278,6 +283,11 @@ class Task(models.Model):
                 'target': 'new',
             }
         return self.partner_id.action_partner_navigate()
+
+    def web_read(self, specification: Dict[str, Dict]) -> List[Dict]:
+        if len(self) == 1 and 'partner_id' in specification and 'show_address_if_fsm' in specification['partner_id'].get('context', {}):
+            specification['partner_id']['context']['show_address'] = self.is_fsm
+        return super().web_read(specification)
 
     # ---------------------------------------------------------
     # Business Methods

@@ -14,6 +14,10 @@ class TestWorkOrder(TestMrpWorkorderCommon):
     @classmethod
     def setUpClass(cls):
         super(TestWorkOrder, cls).setUpClass()
+        cls.env.ref('base.group_user').write({'implied_ids': [
+            (4, cls.env.ref('mrp.group_mrp_routings').id),
+            (4, cls.env.ref('stock.group_production_lot').id)
+        ]})
         # Products and lots
         cls.submarine_pod = cls.env['product.product'].create({
             'name': 'Submarine pod',
@@ -529,8 +533,10 @@ class TestShopFloor(HttpCase, TestMrpWorkorderCommon):
         """
         company1 = self.env['res.company'].create({'name': 'Test Company'})
         user_admin = self.env.ref('base.user_admin')
-        user_admin.write(
-            {'company_ids': [(4, company1.id)]})
+        user_admin.write({
+            'company_ids': [(4, company1.id)],
+            'groups_id': [(4, self.env.ref('mrp.group_mrp_routings').id)],
+        })
         submarine_pod = self.env['product.product'].with_company(company1).with_user(user_admin).create({
             'name': 'Submarine pod',
             'type': 'product',

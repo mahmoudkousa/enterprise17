@@ -267,7 +267,8 @@ class GeneralLedgerCustomHandler(models.AbstractModel):
         partners_results = handler._query_partners(new_options)
         partner_vals_list = []
         rslts_array = tuple((partner, res_col_gr[options['single_column_group']]) for partner, res_col_gr in partners_results)
-        init_bal_res = handler._get_initial_balance_values(tuple(partner.id for partner, results in rslts_array), options)
+        init_bal_res = handler._get_initial_balance_values(tuple(partner.id for partner, results in rslts_array if partner), options)
+
         initial_balances_map = {}
         initial_balance_gen = ((partner_id, init_bal_dict.get(options['single_column_group'])) for partner_id, init_bal_dict in init_bal_res.items())
 

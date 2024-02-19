@@ -11,33 +11,93 @@ class TestDeliveryDHL(TransactionCase):
     def setUp(self):
         super(TestDeliveryDHL, self).setUp()
 
-        self.iPadMini = self.env.ref('product.product_product_6')
-        self.large_desk = self.env.ref('product.product_product_8')
+        self.iPadMini = self.env['product.product'].create({
+            'name': 'Ipad Mini',
+            'weight': 0.01,
+        })
+        self.large_desk = self.env['product.product'].create({
+            'name': 'Large Desk',
+            'weight': 0.01,
+        })
         self.uom_unit = self.env.ref('uom.product_uom_unit')
 
         self.your_company = self.env.ref('base.main_partner')
-        self.your_company.write({'street': "Rue du Laid Burniat 5",
-                                 'street2': "",
-                                 'city': "Ottignies-Louvain-la-Neuve",
-                                 'zip': 1348,
-                                 'state_id': False,
-                                 'country_id': self.env.ref('base.be').id})
-        self.agrolait = self.env.ref('base.res_partner_2')
-        self.agrolait.write({'street': "rue des Bourlottes, 9",
-                             'street2': "",
-                             'city': "Ramillies",
-                             'zip': 1367,
-                             'state_id': False,
-                             'country_id': self.env.ref('base.be').id})
-        self.delta_pc = self.env.ref('base.res_partner_4')
-        self.delta_pc.write({'street': "51 Federal Street",
-                             'street2': "Suite 401",
-                             'city': "San Francisco",
-                             'zip': 94107,
-                             'state_id': self.env.ref('base.state_us_5').id,
-                             'country_id': self.env.ref('base.us').id})
+        self.your_company.write({
+            'street': "Rue du Laid Burniat 5",
+            'street2': "",
+            'city': "Ottignies-Louvain-la-Neuve",
+            'zip': 1348,
+            'state_id': False,
+            'country_id': self.env.ref('base.be').id,
+            'phone': '+1 555-555-5555',
+        })
+        self.agrolait = self.env['res.partner'].create({
+            'name': 'Agrolait',
+            'phone': '(603)-996-3829',
+            'street': "rue des Bourlottes, 9",
+            'street2': "",
+            'city': "Ramillies",
+            'zip': 1367,
+            'state_id': False,
+            'country_id': self.env.ref('base.be').id,
+        })
+        self.delta_pc = self.env['res.partner'].create({
+            'name': 'Delta PC',
+            'phone': '(803)-873-6126',
+            'street': "1515 Main Street",
+            'street2': "",
+            'city': "Columbia",
+            'zip': 29201,
+            'state_id': self.env.ref('base.state_us_41').id,
+            'country_id': self.env.ref('base.us').id,
+        })
         self.stock_location = self.env.ref('stock.stock_location_stock')
         self.customer_location = self.env.ref('stock.stock_location_customers')
+
+        self.delivery_carrier_dhl_eu_dom = self.env.ref('delivery_dhl.delivery_carrier_dhl_eu_dom', raise_if_not_found=False)
+        if not self.delivery_carrier_dhl_eu_dom:
+            product_dhl = self.env['product.product'].create({
+                "name": 'DHL EU',
+                "default_code": 'Delivery_014',
+                "type": 'service',
+                "categ_id": self.env.ref('delivery.product_category_deliveries').id,
+                "sale_ok": False,
+                "purchase_ok": False,
+                "list_price": 0.0,
+                "invoice_policy": 'order',
+            })
+            self.delivery_carrier_dhl_eu_dom = self.env['delivery.carrier'].create({
+                "name": 'DHL EU',
+                "product_id": product_dhl.id,
+                "delivery_type": 'dhl',
+                "dhl_product_code": 'N',
+                "dhl_SiteID": 'v62_X4e7G4Ww0y',
+                "dhl_password": '7UvboGP0tD',
+                "dhl_account_number": '272699353',
+                "dhl_default_package_type_id": self.env.ref('delivery_dhl.dhl_packaging_BOX').id,
+            })
+        self.delivery_carrier_dhl_eu_intl = self.env.ref('delivery_dhl.delivery_carrier_dhl_eu_intl', raise_if_not_found=False)
+        if not self.delivery_carrier_dhl_eu_intl:
+            product_dhl = self.env['product.product'].create({
+                "name": 'DHL EU International',
+                "default_code": 'Delivery_015',
+                "type": 'service',
+                "categ_id": self.env.ref('delivery.product_category_deliveries').id,
+                "sale_ok": False,
+                "purchase_ok": False,
+                "list_price": 0.0,
+                "invoice_policy": 'order',
+            })
+            self.delivery_carrier_dhl_eu_intl = self.env['delivery.carrier'].create({
+                "name": 'DHL EU International',
+                "product_id": product_dhl.id,
+                "delivery_type": 'dhl',
+                "dhl_product_code": 'D',
+                "dhl_SiteID": 'v62_X4e7G4Ww0y',
+                "dhl_password": '7UvboGP0tD',
+                "dhl_account_number": '272699353',
+                "dhl_default_package_type_id": self.env.ref('delivery_dhl.dhl_packaging_BOX').id,
+            })
 
     def wiz_put_in_pack(self, picking):
         """ Helper to use the 'choose.delivery.package' wizard
@@ -67,7 +127,7 @@ class TestDeliveryDHL(TransactionCase):
         # I add free delivery cost in Sales order
         delivery_wizard = Form(self.env['choose.delivery.carrier'].with_context({
             'default_order_id': sale_order.id,
-            'default_carrier_id': self.env.ref('delivery_dhl.delivery_carrier_dhl_eu_dom').id
+            'default_carrier_id': self.delivery_carrier_dhl_eu_dom.id
         }))
         choose_delivery_carrier = delivery_wizard.save()
         choose_delivery_carrier.update_price()
@@ -103,14 +163,14 @@ class TestDeliveryDHL(TransactionCase):
                     'price_unit': self.iPadMini.lst_price}
 
         so_vals = {'partner_id': self.delta_pc.id,
-                   'carrier_id': self.env.ref('delivery_dhl.delivery_carrier_dhl_eu_intl').id,
+                   'carrier_id': self.delivery_carrier_dhl_eu_intl.id,
                    'order_line': [(0, None, sol_vals)]}
 
         sale_order = SaleOrder.create(so_vals)
         # I add free delivery cost in Sales order
         delivery_wizard = Form(self.env['choose.delivery.carrier'].with_context({
             'default_order_id': sale_order.id,
-            'default_carrier_id': self.env.ref('delivery_dhl.delivery_carrier_dhl_eu_intl').id
+            'default_carrier_id': self.delivery_carrier_dhl_eu_intl.id
         }))
         choose_delivery_carrier = delivery_wizard.save()
         choose_delivery_carrier.update_price()
@@ -151,14 +211,14 @@ class TestDeliveryDHL(TransactionCase):
                       'price_unit': self.large_desk.lst_price}
 
         so_vals = {'partner_id': self.delta_pc.id,
-                   'carrier_id': self.env.ref('delivery_dhl.delivery_carrier_dhl_eu_intl').id,
+                   'carrier_id': self.delivery_carrier_dhl_eu_intl.id,
                    'order_line': [(0, None, sol_1_vals), (0, None, sol_2_vals)]}
 
         sale_order = SaleOrder.create(so_vals)
         # I add free delivery cost in Sales order
         delivery_wizard = Form(self.env['choose.delivery.carrier'].with_context({
             'default_order_id': sale_order.id,
-            'default_carrier_id': self.env.ref('delivery_dhl.delivery_carrier_dhl_eu_intl').id
+            'default_carrier_id': self.delivery_carrier_dhl_eu_intl.id
         }))
         choose_delivery_carrier = delivery_wizard.save()
         choose_delivery_carrier.update_price()
@@ -204,7 +264,7 @@ class TestDeliveryDHL(TransactionCase):
                     'location_dest_id': self.customer_location.id}
 
         do_vals = {'partner_id': self.delta_pc.id,
-                   'carrier_id': self.env.ref('delivery_dhl.delivery_carrier_dhl_eu_intl').id,
+                   'carrier_id': self.delivery_carrier_dhl_eu_intl.id,
                    'location_id': self.stock_location.id,
                    'location_dest_id': self.customer_location.id,
                    'picking_type_id': self.env.ref('stock.picking_type_out').id,

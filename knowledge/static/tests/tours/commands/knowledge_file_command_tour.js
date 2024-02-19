@@ -32,7 +32,7 @@ registry.category("web_tour.tours").add('knowledge_file_command_tour', {
     extra_trigger: 'iframe.o-FileViewer-view body:contains(Content)',
     run: 'click',
 }, {
-    trigger: '.o_knowledge_file_name:contains(Onboarding)',
+    trigger: '.o_knowledge_file_name_container:contains(Onboarding)',
     run: function() {
         this.$anchor[0].dispatchEvent(new Event('focus'));
     }
@@ -43,7 +43,14 @@ registry.category("web_tour.tours").add('knowledge_file_command_tour', {
         this.$anchor[0].dispatchEvent(new Event('blur'));
     }
 }, {
-    trigger: '.o_knowledge_file_name > div:contains(Renamed)',
-    run: () => {},
+    trigger: 'span.o_knowledge_file_name',
+    run: function() {
+        // specifically test that there is no zeroWidthSpace character in the
+        // name that would be added by the editor
+        const currentName = this.$anchor[0].textContent;
+        if (currentName !== "Renamed") {
+            throw new Error(`The new file name was expected to be: "Renamed", but the actual value is: "${currentName}"`);
+        }
+    },
 }, ...endKnowledgeTour()
 ]});

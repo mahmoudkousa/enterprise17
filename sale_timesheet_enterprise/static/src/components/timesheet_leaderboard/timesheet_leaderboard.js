@@ -63,7 +63,7 @@ export class TimesheetLeaderboard extends Component {
 
     get currentBillingRateText() {
         const percentage = Math.round(this.props.leaderboard.current_employee.billing_rate);
-        return _t(this.isMobile ? "%(percentage)s%" : "(%(percentage)s%)", {percentage});
+        return this.isMobile ? _t("%(percentage)s%", {percentage}) : _t("(%(percentage)s%)", {percentage});
     }
 
     get currentBillableTimeText() {

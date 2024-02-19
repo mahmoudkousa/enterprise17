@@ -303,7 +303,6 @@ export default class BarcodePickingBatchModel extends BarcodePickingModel {
      */
     async _setUser() {
         if (this._shouldAssignUser()) {
-            await this.orm.write(this.resModel, [this.record.id], { user_id: session.uid });
             this.record.user_id = session.uid;
             const pickings = [];
             for (const pickingId of this.record.picking_ids) {
@@ -312,6 +311,7 @@ export default class BarcodePickingBatchModel extends BarcodePickingModel {
                 pickings.push(picking);
             }
             this.cache.setCache({'stock.picking': pickings});
+            await this.orm.write(this.resModel, [this.record.id], { user_id: session.uid });
         }
     }
 

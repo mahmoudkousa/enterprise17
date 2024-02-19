@@ -7,6 +7,7 @@
     'depends': ['spreadsheet_dashboard', 'sale_subscription'],
     'data': [
         "data/dashboards.xml",
+        "views/sale_subscription_report_views.xml",
     ],
     'installable': True,
     'auto_install': ['sale_subscription'],

@@ -198,7 +198,6 @@ class TestAccountFollowupReports(AccountTestInvoicingCommon):
         # Test the behavior of multiple invoices when the first one is paid
         followup_10 = self.create_followup(delay=10)
         followup_15 = self.create_followup(delay=15)
-        followup_30 = self.create_followup(delay=30)
 
         invoice_01 = self.create_invoice('2022-01-01')
         self.create_invoice('2022-01-02')
@@ -210,6 +209,7 @@ class TestAccountFollowupReports(AccountTestInvoicingCommon):
         # 10 days passed, current delay is 10-0=10, need to take action
         with freeze_time('2022-01-11'):
             self.assertPartnerFollowup(self.partner_a, 'in_need_of_action', followup_10)
+            # followup level for the second invoice shouldn't change since it's only 9 days overdue
             self.partner_a._execute_followup_partner(options={'snailmail': False})
             self.assertPartnerFollowup(self.partner_a, 'with_overdue_invoices', followup_15)
 
@@ -217,17 +217,18 @@ class TestAccountFollowupReports(AccountTestInvoicingCommon):
                 'line_ids': invoice_01.line_ids.filtered(lambda l: l.display_type == 'payment_term'),
             })._create_payments()
 
-            self.assertPartnerFollowup(self.partner_a, 'with_overdue_invoices', followup_15)
+            # partner followup level goes back to 10 days after paying the first invoice
+            self.assertPartnerFollowup(self.partner_a, 'with_overdue_invoices', followup_10)
 
         # action taken 4 days ago, current delay is 15-10=5, nothing needed
         with freeze_time('2022-01-15'):
-            self.assertPartnerFollowup(self.partner_a, 'with_overdue_invoices', followup_15)
+            self.assertPartnerFollowup(self.partner_a, 'with_overdue_invoices', followup_10)
 
         # action taken 5 days ago, current delay is 15-10=5, need to take action
         with freeze_time('2022-01-16'):
-            self.assertPartnerFollowup(self.partner_a, 'in_need_of_action', followup_15)
+            self.assertPartnerFollowup(self.partner_a, 'in_need_of_action', followup_10)
             self.partner_a._execute_followup_partner(options={'snailmail': False})
-            self.assertPartnerFollowup(self.partner_a, 'with_overdue_invoices', followup_30)
+            self.assertPartnerFollowup(self.partner_a, 'with_overdue_invoices', followup_15)
 
     def test_followup_multiple_invoices_with_last_payment(self):
         # Test the behavior of multiple invoices when the last one is paid
@@ -339,3 +340,19 @@ class TestAccountFollowupReports(AccountTestInvoicingCommon):
             {'amount_residual_currency': 500.0},
             {'amount_residual_currency': 400.0},
         ])
+
+    def test_send_followup_no_due_date(self):
+        """
+        test sending a followup report with an empty due date field
+        """
+        self.create_followup(delay=0)
+        self.create_invoice('2022-01-01')
+        self.partner_a.unreconciled_aml_ids.write({
+            'date_maturity': False,
+        })
+
+        self.partner_a._execute_followup_partner(options={
+            'partner_id': self.partner_a.id,
+            'manual_followup': True,
+            'snailmail': False,
+        })

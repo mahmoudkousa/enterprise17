@@ -2,7 +2,6 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
-from odoo.exceptions import UserError
 from odoo.tests import tagged
 from odoo.tools import file_open
 
@@ -41,6 +40,7 @@ class TestSodaFile(AccountTestInvoicingCommon):
                 {'debit': 15655.10, 'credit': 0, 'name': 'Remuneration'},
             ])
             self.assertRecordValues(result_move.line_ids.account_id, [{'code': '453000'}, {'code': '455000'}, {'code': '618000'}])
+            self.assertEqual(result_move.date.strftime("%Y-%m-%d"), '2021-10-23')
 
     def test_soda_file_import_map_accounts(self):
         with file_open(self.soda_file_path, 'rb') as soda_file:
@@ -58,8 +58,6 @@ class TestSodaFile(AccountTestInvoicingCommon):
             }
             for mapping in wizard.soda_account_mapping_ids:
                 mapping.account_id = account_mapping[mapping.code]
-            with self.assertRaisesRegex(UserError, 'Could not create the account 618000. An account with this number already exists.'):
-                wizard.action_save_and_import()
 
             account_618000 = self.env['account.chart.template'].ref('a618')
             mapping_618000 = wizard.soda_account_mapping_ids.search([('code', '=', '618000'), ('company_id', '=', wizard.company_id.id)])

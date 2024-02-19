@@ -65,11 +65,11 @@ class HrApplicant(models.Model):
             phone_ocr = self._get_ocr_selected_value(ocr_results, 'phone', "")
             mobile_ocr = self._get_ocr_selected_value(ocr_results, 'mobile', "")
 
-            self.name = _("%s's Application", name_ocr)
-            self.partner_name = name_ocr
-            self.email_from = email_from_ocr
-            self.partner_phone = phone_ocr
-            self.partner_mobile = mobile_ocr
+            self.name = self.name or _("%s's Application", name_ocr)
+            self.partner_name = self.partner_name or name_ocr
+            self.email_from = self.email_from or email_from_ocr
+            self.partner_phone = self.partner_phone or phone_ocr
+            self.partner_mobile = self.partner_mobile or mobile_ocr
 
             # If the 'hr_recruitment_skills' module is installed, extract skills from OCR results
             if self.env['ir.module.module']._get('hr_recruitment_skills').state == 'installed':
@@ -103,7 +103,7 @@ class HrApplicant(models.Model):
 
     def _contact_iap_extract(self, pathinfo, params):
         params['version'] = OCR_VERSION
-        params['account_token'] = self.env['iap.account'].get('invoice_ocr').account_token
+        params['account_token'] = self._get_iap_account().account_token
         endpoint = self.env['ir.config_parameter'].sudo().get_param('iap_extract_endpoint', 'https://extract.api.odoo.com')
         return iap_tools.iap_jsonrpc(endpoint + '/api/extract/applicant/2/' + pathinfo, params=params)
 

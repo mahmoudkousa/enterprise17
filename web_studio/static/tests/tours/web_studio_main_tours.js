@@ -766,22 +766,22 @@ registry.category("web_tour.tours").add("web_studio_new_report_tour", {
             run() {},
         },
         {
-            trigger: ".o-web-studio-report-editor-wysiwyg iframe .odoo-editor-editable div.page",
+            trigger: ".o-web-studio-report-editor-wysiwyg iframe .odoo-editor-editable div.page div",
             run($anchor) {
                 const element = this.$anchor[0];
                 element.ownerDocument.getSelection().setPosition(element);
-                assertEqual(element.innerHTML, "<br>");
+                assertEqual(element.outerHTML, `<div class="oe_structure"></div>`);
             },
         },
         {
-            trigger: ".o-web-studio-report-editor-wysiwyg iframe .odoo-editor-editable div.page",
+            trigger: ".o-web-studio-report-editor-wysiwyg iframe .odoo-editor-editable div.page div",
             run() {
                 const element = this.$anchor[0];
                 assertEqual(element.classList.contains("oe-command-temporary-hint"), true);
             },
         },
         {
-            trigger: ".o-web-studio-report-editor-wysiwyg iframe .odoo-editor-editable div.page",
+            trigger: ".o-web-studio-report-editor-wysiwyg iframe .odoo-editor-editable div.page div",
             run: "text some new text",
         },
         {
@@ -827,7 +827,7 @@ registry.category("web_tour.tours").add("web_studio_new_report_tour", {
             },
         },
         {
-            trigger: ".o-web-studio-report-editor-wysiwyg iframe div.page",
+            trigger: ".o-web-studio-report-editor-wysiwyg iframe div.page div",
             run() {
                 assertEqual(this.$anchor[0].textContent, "some new text");
             },
@@ -1364,6 +1364,46 @@ const addActionButtonModalSteps = (
     },
 ];
 
+const addMethodButtonModalSteps = (
+    ) => [
+        {
+            trigger: ".o-web-studio-editor--add-button-action",
+        },
+        {
+            trigger: ".o-web-studio-editor--modal-add-action input#set_label",
+            run: `text test`,
+        },
+        {
+            trigger: ".o-web-studio-editor--modal-add-action input#set_button_type_to_object",
+        },
+        {
+            trigger: ".o-web-studio-editor--modal-add-action  input#set_method",
+            run: `text demo`,
+        },
+
+    ];
+
+registry.category("web_tour.tours").add("web_studio_check_method_in_model", {
+    test: true,
+    steps: () => [
+        {
+            trigger: "a[data-menu-xmlid='web_studio.studio_test_partner_menu']",
+        },
+            {
+            trigger: ".o_form_view .o_form_editable",
+        },
+        buttonToogleStudio,
+        ...addMethodButtonModalSteps(),
+        {
+            trigger: "div.text-danger",
+            run() {
+                const div_error = document.querySelector("div.text-danger");
+                assertEqual(div_error.innerHTML, "The method demo does not exist on the model res.partner().")
+                },
+        },
+    ],
+});
+
 registry.category("web_tour.tours").add("web_studio_test_create_action_button_in_form_view", {
     test: true,
     steps: () => [
@@ -1563,6 +1603,65 @@ registry.category("web_tour.tours").add("web_studio_monetary_change_currency_nam
             run() {
                 assertEqual(this.$anchor[0].textContent, "NewCurrency (x_studio_currency_test)");
             },
+        },
+    ],
+});
+
+registry.category("web_tour.tours").add("web_studio_related_monetary_creation", {
+    url: "/web?debug=1",
+    test: true,
+    steps: () => [
+        {
+            // open studio
+            trigger: ".o_main_navbar .o_web_studio_navbar_item",
+            extra_trigger: ".o_home_menu_background",
+        },
+        {
+            trigger: ".o_web_studio_new_app",
+            run: () => {},
+        },
+        {
+            trigger: ".o_app[data-menu-xmlid='web_studio.studio_app_menu']",
+        },
+        {
+            // add a new related field
+            trigger: ".o_web_studio_sidebar .o_web_studio_field_related",
+            run: "drag_and_drop_native .o_web_studio_form_view_editor .o_inner_group",
+        },
+        {
+            trigger: '.o_model_field_selector_value',
+        },
+        {
+            in_modal: false,
+            trigger:
+                ".o_model_field_selector_popover_search input",
+            run: "text X Test",
+        },
+        {
+            in_modal: false,
+            trigger: ".o_model_field_selector_popover_item[data-name='x_test'] .o_model_field_selector_popover_item_relation",
+        },
+        {
+            in_modal: false,
+            trigger:
+                ".o_model_field_selector_popover_search input",
+            run: "text X Studio Monetary Test",
+        },
+        {
+            in_modal: false,
+            trigger: ".o_model_field_selector_popover_item[data-name='x_studio_monetary_test'] button",
+        },
+        {
+            trigger:".modal-footer button.btn-primary",
+        },
+        {
+            // The related monetary is created
+            trigger: ".o_web_studio_view_renderer .o_form_label:contains('New Related Field')",
+        },
+        {
+            // The currency is created
+            trigger: ".o_web_studio_view_renderer [data-field-name='x_studio_currency_id']",
+            isCheck: true,
         },
     ],
 });

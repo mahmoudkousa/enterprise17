@@ -164,7 +164,7 @@ result = min(contract.l10n_ma_meal_allowance, 0.2 * result_rules['BASIC']['total
 gross_salary = result_rules['GROSS']['total']
 cnss_coef = payslip._rule_parameter('l10n_ma_cnss') / 100
 cnss_ceil = payslip._rule_parameter('l10n_ma_cnss_max')
-result = min(cnss_ceil, gross_salary * cnss_coef)
+result = min(cnss_ceil, gross_salary) * cnss_coef
             </field>
             <field name="partner_id" ref="hr_CNSS_register"/>
             <field name="struct_id" ref="hr_payroll_salary_ma_structure_base"/>

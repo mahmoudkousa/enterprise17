@@ -7,6 +7,7 @@
     'version': '1.0.0',
     'depends': ['website'],
     'data': [
+        'data/generate_primary_template.xml',
         'data/ir_asset.xml',
         'views/images_library.xml',
 
@@ -47,6 +48,8 @@
     ],
     'configurator_snippets': {
         'homepage': ['s_banner', 's_text_image', 's_three_columns', 's_image_text', 's_numbers', 's_call_to_action'],
+        # TODO In master, remove unused templates instead.
+        '_': ['s_title'],
     },
     'new_page_templates': {
         'about': {

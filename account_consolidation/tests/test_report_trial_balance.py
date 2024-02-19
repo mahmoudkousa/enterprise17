@@ -71,7 +71,7 @@ class TestTrialBalanceReport(AccountConsolidationTestCase):
                 self.assertIsNone(line.get('parent_id', None), 'Account line "alone in the dark" should not have a parent_id but does (%s)' % line)
 
         levels = [row['level'] for row in lines]
-        expected_levels = [3, 3, 3, 3, 1]
+        expected_levels = [3, 3, 3, 3, 0]
         self.assertListEqual(expected_levels, levels, 'Levels are not all corrects')
 
     def test_hierarchy_all_journals(self):
@@ -91,7 +91,7 @@ class TestTrialBalanceReport(AccountConsolidationTestCase):
         self.assertEqual(int(report._parse_line_id(lines[0]['id'])[-1][0]), self.consolidation_accounts['alone in the dark'].id)
         # second line is the root section
         self.assertEqual(report._parse_line_id(lines[1]['id'])[-1][0], 'section_%s' % self.sections[0].id)
-        self.assertEqual(lines[1]['level'], 1)
+        self.assertEqual(lines[1]['level'], 0)
         self.assertTrue(lines[1]['unfoldable'])
         self.assertTrue(lines[1]['unfolded'])
         self.assertEqual(len(lines[1]['columns']), 3)
@@ -131,7 +131,7 @@ class TestTrialBalanceReport(AccountConsolidationTestCase):
                     self.assertIsNone(line.get('parent_id', None), 'Account line "alone in the dark" should not have a parent_id but does (%s)' % line)
 
         levels = [row['level'] for row in lines if report._parse_line_id(row['id'])[-1][0] != 'total']
-        expected_levels = [1, 1, 1, 2, 3, 2, 3, 3, 1]
+        expected_levels = [0, 0, 0, 3, 5, 3, 5, 5, 0]
         self.assertListEqual(expected_levels, levels, 'Levels are not all corrects')
 
     def test_hierarchy_one_journal_selected(self):
@@ -152,7 +152,7 @@ class TestTrialBalanceReport(AccountConsolidationTestCase):
         lines = report._get_lines(options)
         self.assertEqual(int(report._parse_line_id(lines[0]['id'])[-1][0]), self.consolidation_accounts['alone in the dark'].id)
         self.assertEqual(report._parse_line_id(lines[1]['id'])[-1][0], 'section_%s' % self.sections[0].id)
-        self.assertEqual(lines[1]['level'], 1)
+        self.assertEqual(lines[1]['level'], 0)
         self.assertTrue(lines[1]['unfoldable'])
         self.assertTrue(lines[1]['unfolded'])
         self.assertEqual(len(lines[1]['columns']), 2)
@@ -192,7 +192,7 @@ class TestTrialBalanceReport(AccountConsolidationTestCase):
                     self.assertIsNone(line.get('parent_id', None), 'Account line "alone in the dark" should not have a parent_id but does (%s)' % line)
 
         levels = [row['level'] for row in lines if report._parse_line_id(row['id'])[-1][0] != 'total']
-        expected_levels = [1, 1, 1, 2, 3, 2, 3, 3, 1]
+        expected_levels = [0, 0, 0, 3, 5, 3, 5, 5, 0]
         self.assertListEqual(expected_levels, levels, 'Levels are not all corrects')
 
     # HELPERS

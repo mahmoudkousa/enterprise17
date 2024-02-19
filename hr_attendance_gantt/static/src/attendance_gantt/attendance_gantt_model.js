@@ -2,7 +2,6 @@
 
 import { serializeDateTime } from "@web/core/l10n/dates";
 import { GanttModel, parseServerValues } from "@web_gantt/gantt_model";
-import {_t} from "@web/core/l10n/translation";
 import { Domain } from "@web/core/domain";
 
 export class AttendanceGanttModel extends GanttModel {
@@ -33,20 +32,6 @@ export class AttendanceGanttModel extends GanttModel {
         }
         else {
             return super._getDomain(...arguments);
-        }
-    }
-
-    _addProgressBarInfo(_, rows) {
-        super._addProgressBarInfo(...arguments);
-        for (const row of rows) {
-            if (row.progressBar) {
-                if (row.progressBar.value_formatted) {
-                    row.progressBar.value_formatted += _t(" h");
-                }
-                if (row.progressBar.max_value_formatted) {
-                    row.progressBar.max_value_formatted += _t(" h");
-                }
-            }
         }
     }
 

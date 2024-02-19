@@ -16,8 +16,9 @@ from odoo import api, Command, fields, models, _
 from odoo.addons.web_editor.tools import handle_history_divergence
 from odoo.exceptions import AccessError, ValidationError, UserError
 from odoo.osv import expression
-from odoo.tools import get_lang
+from odoo.tools import get_lang, is_html_empty
 from odoo.tools.translate import html_translate
+from odoo.tools.sql import SQL
 
 ARTICLE_PERMISSION_LEVEL = {'none': 0, 'read': 1, 'write': 2}
 
@@ -37,7 +38,7 @@ class Article(models.Model):
 
     active = fields.Boolean(default=True)
     name = fields.Char(string="Title", tracking=20, default_export_compatible=True)
-    body = fields.Html(string="Body")
+    body = fields.Html(string="Body", prefetch=False)
     icon = fields.Char(string='Emoji')
     cover_image_id = fields.Many2one("knowledge.cover", string='Article cover')
     cover_image_url = fields.Char(related="cover_image_id.attachment_url", string="Cover url")
@@ -580,10 +581,20 @@ class Article(models.Model):
         if self.env.user._is_public():
             self.is_user_favorite = False
             return
-        for article in self:
-            favorite = article.favorite_ids.filtered(lambda f: f.user_id == self.env.user)
-            article.is_user_favorite = bool(favorite)
-            article.user_favorite_sequence = favorite.sequence if favorite else -1
+        favorites = self.env['knowledge.article.favorite'].search([
+            ("article_id", "in", self.ids),
+            ("user_id", "=", self.env.user.id),
+        ])
+        not_fav_articles = self - favorites.article_id
+        fav_articles = self - not_fav_articles
+        fav_sequence_by_article = {f.article_id.id: f.sequence for f in favorites}
+        if not_fav_articles:
+            not_fav_articles.is_user_favorite = False
+            not_fav_articles.user_favorite_sequence = -1
+        if fav_articles:
+            fav_articles.is_user_favorite = True
+        for fav_article in fav_articles:
+            fav_article.user_favorite_sequence = fav_sequence_by_article[fav_article.id]
 
     def _search_is_user_favorite(self, operator, value):
         if operator not in ('=', '!='):
@@ -1096,6 +1107,7 @@ class Article(models.Model):
 
     def _get_common_copied_data(self):
         return {
+            "article_properties_definition": self.article_properties_definition,
             "body": self.body,
             "cover_image_id": self.cover_image_id.id,
             "cover_image_position": self.cover_image_position,
@@ -1106,6 +1118,35 @@ class Article(models.Model):
             "name": _("%(article_name)s (copy)", article_name=self.name) if self.name else False,
         }
 
+    def _update_article_references(self, original_article):
+        """
+        Updates the IDs stored in the body of the current articles.
+        After calling that method, the embedded views listing the article items
+        of the original article will now list the article items of the current record.
+        :param <knowledge.article> original_article: original article
+        """
+        for article in self:
+            if is_html_empty(article.body):
+                continue
+            needs_embed_view_update = False
+            fragment = html.fragment_fromstring(article.body, create_parent=True)
+            for element in fragment.findall(".//*[@data-behavior-props]"):
+                if "o_knowledge_behavior_type_embedded_view" in element.get("class"):
+                    behavior_props = json.loads(parse.unquote(element.get("data-behavior-props")))
+                    context = behavior_props.get("context", {})
+                    if context.get("default_is_article_item") and context.get("active_id") == original_article.id:
+                        context.update({
+                            "active_id": article.id,
+                            "default_parent_id": article.id
+                        })
+                        element.set("data-behavior-props", parse.quote(json.dumps(behavior_props), safe="()*!'"))
+                        needs_embed_view_update = True
+
+            if needs_embed_view_update:
+                article.write({
+                    "body": html.tostring(fragment, encoding="unicode")
+                })
+
     # ------------------------------------------------------------
     # ACTIONS
     # ------------------------------------------------------------
@@ -1115,6 +1156,7 @@ class Article(models.Model):
         """ Creates a copy of an article. != duplicate article (see `copy`).
         Creates a new private article with the same body, icon and cover,
         but drops other fields such as members, childs, permissions etc.
+        Note: Article references will be update, see `_update_article_references`
         """
         self.ensure_one()
         article_vals = self._get_common_copied_data()
@@ -1126,13 +1168,21 @@ class Article(models.Model):
             "internal_permission": "none",
             "parent_id": False,
         })
-        return self.create(article_vals)
+        article = self.create(article_vals)
+        article._update_article_references(self)
+        # Copy the related stages for the /kanban command:
+        for stage in self.env["knowledge.article.stage"].search([("parent_id", "=", self.id)]):
+            stage.copy({
+                "parent_id": article.id
+            })
+        return article
 
     @api.returns('self', lambda value: value.id)
     def action_clone(self):
         """Creates a duplicate of an article in the same context as the original.
         This means that this methods create a copy with the same parent,
         permission and properties as the original
+        Note: Article references will be update, see `_update_article_references`
         """
         self.ensure_one()
         if not self.user_can_write or not (self.parent_id and self.parent_id.user_can_write):
@@ -1143,10 +1193,15 @@ class Article(models.Model):
             "parent_id": self.parent_id.id,
             "article_properties": self.article_properties,
             "is_article_item": self.is_article_item,
-            "article_properties_definition": self.article_properties_definition,
         })
-        return self.create(article_vals)
-
+        article = self.create(article_vals)
+        article._update_article_references(self)
+        # Copy the related stages for the /kanban command:
+        for stage in self.env["knowledge.article.stage"].search([("parent_id", "=", self.id)]):
+            stage.copy({
+                "parent_id": article.id
+            })
+        return article
 
     def action_home_page(self):
         """ Redirect to the home page of knowledge, which displays an article.
@@ -1218,7 +1273,7 @@ class Article(models.Model):
         # _detach_unwritable_descendants calls _filter_access_rules_python which returns
         # a sudo-ed recordset
         writable_descendants = self._detach_unwritable_descendants().with_env(self.env)
-        (self + writable_descendants).toggle_active()
+        (self + writable_descendants).filtered('active').toggle_active()
         if send_to_trash:
             (self + writable_descendants).to_delete = True
             (self + writable_descendants)._send_trash_notifications()
@@ -1249,15 +1304,14 @@ class Article(models.Model):
         # Trash management: unarchive removes the article from the trash
         articles_to_restore = (self + writable_descendants).filtered(lambda article: article.to_delete)
         articles_to_restore.write({'to_delete': False})
-        for article in self.filtered(lambda article: article.parent_id.to_delete):
-            write_values = article._desync_access_from_parents_values()
+        for article_sudo in self.sudo().filtered(lambda article: article.parent_id.to_delete):
+            write_values = article_sudo._desync_access_from_parents_values()
             # Make it root
             write_values.update({
                 'parent_id': False,
                 'is_desynchronized': False
             })
-            # sudo to write on members
-            article.sudo().write(write_values)
+            article_sudo.write(write_values)
         return res
 
     def action_join(self):
@@ -1298,11 +1352,18 @@ class Article(models.Model):
         category = category or parent.category or before_article.category
         if not category:
             raise ValidationError(
-                _("Move to target of %(article_name)s is ambiguous, you should specify the category.")
+                _("The destination placement of %(article_name)s is ambiguous, you should specify the category.",
+                  article_name=self.display_name)
             )
         if category == 'shared' and not parent and (self.parent_id or self.category != 'shared'):
             raise ValidationError(
-                _("Cannot move %(article_name)s as a root of the 'shared' section since access rights can not be inferred without a parent.")
+                _("Cannot move %(article_name)s as a root of the 'shared' section since access rights can not be inferred without a parent.",
+                  article_name=self.display_name)
+            )
+        if parent.is_article_item:
+            raise ValidationError(
+                _("You can't move %(article_name)s under %(item_name)s, as %(item_name)s is an Article Item. "
+                  "Convert %(item_name)s into an Article first.", article_name=self.display_name, item_name=parent.display_name)
             )
 
         if category == 'private':
@@ -1463,30 +1524,75 @@ class Article(models.Model):
         This means that we need to add in the search_domain the leaf ('is_article_visible', '!=', hidden_mode)
         since the value of is_article_visible is the opposite of hidden_mode.
         """
-        search_query = search_query.casefold()
         search_domain = [
-            "&", "&",
-                ("is_template", "=", False),
-                ("is_article_visible", "!=", hidden_mode),
-                "&",
-                    ("user_has_access", "=", True), # Admins won't see other's private articles.
-                    "|", ("name", "ilike", search_query), ("root_article_id.name", "ilike", search_query),
+            ("is_template", "=", False),
+            ("is_article_visible", "!=", hidden_mode),
+            ("user_has_access", "=", True),  # Admins won't see other's private articles.
         ]
+        if search_query:
+            search_domain = expression.AND([search_domain, [
+                "|",
+                    ("name", "ilike", search_query),
+                    ("root_article_id.name", "ilike", search_query),
+            ]])
 
-        matching_articles = self.search(search_domain)
-        sorted_articles = matching_articles.sorted(
-            key=lambda a: (search_query in a.name.casefold() if a.name else False,
-                           not a.parent_id if hidden_mode else False,
-                           a.is_user_favorite,
-                           -1 * a.user_favorite_sequence,
-                           a.favorite_count,
-                           a.write_date,
-                           a.id),
-            reverse=True
-        )[:limit]
-
-        return sorted_articles.read(['id', 'name', 'is_user_favorite',
-                                     'favorite_count', 'root_article_id', 'icon'])
+        articles_query = self._search(search_domain)
+        self.env.cr.execute(SQL('''
+       SELECT knowledge_article.id,
+              knowledge_article.name,
+              COALESCE(CAST(fav.id AS BOOLEAN), FALSE) AS is_user_favorite,
+              knowledge_article.favorite_count,
+              knowledge_article.root_article_id,
+              root_article.icon AS root_article_icon,
+              root_article.name AS root_article_name,
+              knowledge_article.icon
+         FROM knowledge_article
+    LEFT JOIN knowledge_article_favorite AS fav
+           ON knowledge_article.id = fav.article_id AND fav.user_id = %s
+    LEFT JOIN knowledge_article AS root_article
+           ON knowledge_article.root_article_id = root_article.id
+        WHERE %s
+     ORDER BY CASE
+                  WHEN knowledge_article.name IS NOT NULL THEN
+                      POSITION(LOWER(%s) IN LOWER(knowledge_article.name)) > 0
+                  ELSE
+                      FALSE
+              END DESC,
+              CASE
+                  WHEN %s THEN
+                      NOT COALESCE(CAST(knowledge_article.parent_id AS BOOLEAN), FALSE)
+                  ELSE
+                      FALSE
+              END DESC,
+              is_user_favorite DESC,
+              COALESCE(fav.sequence, -1),
+              knowledge_article.favorite_count DESC,
+              knowledge_article.write_date DESC,
+              knowledge_article.id DESC
+           %s
+            ''',
+            self.env.user.id,
+            articles_query.where_clause,
+            search_query,
+            hidden_mode,
+            SQL("LIMIT %s", limit) if limit else SQL()
+        ))
+        sorted_articles = self.env.cr.dictfetchall()
+        # Create a tuple with the id and name_get for root_article_id to
+        # mimic the result of a read.
+        for sorted_article in sorted_articles:
+            # Get the display name of the root article using the same logic as
+            # in name_get.
+            sorted_article['root_article_id'] = (
+                sorted_article['root_article_id'],
+                "%s %s" % (
+                    sorted_article['root_article_icon'] or self._get_no_icon_placeholder(),
+                    sorted_article['root_article_name']
+                )
+            )
+            del sorted_article['root_article_icon']
+            del sorted_article['root_article_name']
+        return sorted_articles
 
     # ------------------------------------------------------------
     # PERMISSIONS / MEMBERS MANAGEMENT
@@ -2622,12 +2728,13 @@ class Article(models.Model):
         current article (to avoid recursions) """
         return self.search_read(
             domain=[
-                '&', '&', '&', '&',
+                '&', '&', '&', '&', '&',
                     ('is_template', '=', False),
                     ('name', 'ilike', search_term),
                     ('id', 'not in', self.ids),
                     '!', ('parent_id', 'child_of', self.ids),
                     ('user_has_access', '=', True),
+                    ('is_article_item', '=', False),
             ],
             fields=['id', 'display_name', 'root_article_id'],
             limit=15,

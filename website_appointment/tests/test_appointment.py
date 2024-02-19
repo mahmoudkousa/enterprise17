@@ -13,8 +13,7 @@ from odoo.tests import users, tagged
 from unittest.mock import patch
 
 
-@tagged('appointment')
-class WAppointmentTest(AppointmentCommon, MockVisitor):
+class WebsiteAppointmentTest(AppointmentCommon, MockVisitor):
 
     def test_apt_type_create_from_website(self):
         """ Test that when creating an appointment type from the website, we use
@@ -135,6 +134,7 @@ class WAppointmentTest(AppointmentCommon, MockVisitor):
         self.assertFalse(appointment.is_published, "Modifying an appointment type category to punctual unpublished it")
 
     def test_find_customer_country_from_visitor(self):
+        self.env.user.tz = "Europe/Brussels"
         belgium = self.env.ref('base.be')
         usa = self.env.ref('base.us')
         current_website = self.env['website'].get_current_website()

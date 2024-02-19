@@ -109,7 +109,7 @@
                     <tree>
                         <field name="state" />
                         <field name="bom_line_id"  />
-                        <field name="product_id"  readonly="state == 'done'"/>
+                        <field name="product_id" readonly="state == 'done'" domain="[('id', '!=', parent.product_id)]"/>
                         <field name="product_uom_qty"  readonly="state == 'done'"/>
                         <field name="move_line_ids" >
                             <tree>
@@ -122,7 +122,7 @@
                 <field name="move_byproduct_ids" invisible="1">
                     <tree>
                         <field name="state" />
-                        <field name="product_id"  readonly="state == 'done'"/>
+                        <field name="product_id" readonly="state == 'done'" domain="[('id', '!=', parent.product_id)]"/>
                         <field name="product_uom_qty"  readonly="state == 'done'"/>
                         <field name="move_line_ids" >
                             <tree>
@@ -179,8 +179,6 @@
                 <div class="row" groups="stock.group_production_lot">
                     <div class="col-12 col-md-6 my-2 d-flex align-items-baseline">
                         <i class="fa fa-fw fa-lg fa-barcode me-3" title="Serial/Lot Number" invisible="product_tracking not in ['serial', 'lot']"/>
-                        <!-- <field name="lot_name" placeholder="Serial/Lot Number"
-                               invisible="product_tracking == 'none' or not use_create_components_lots or use_auto_consume_components_lots and not lot_name"/> -->
                         <field name="lot_producing_id" placeholder="Serial/Lot Number" options="{'no_open': True}"
                                context="{'default_product_id': product_id, 'default_company_id': company_id}"
                                invisible="product_tracking == 'none'"/>
@@ -204,6 +202,7 @@
         <field name="view_id" ref="stock_barcode_mrp.mrp_barcode_kanban"/>
         <field name="context">{
             'search_default_filter_confirmed': 1,
+            'search_default_filter_to_close': 1,
             'search_default_filter_ready': 1,
             'search_default_filter_in_progress': 1,
             'search_default_todo': 1,

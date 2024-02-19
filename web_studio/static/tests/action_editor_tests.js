@@ -107,6 +107,44 @@ QUnit.module("ActionEditor", (hooks) => {
         );
     });
 
+    QUnit.test("create unavailable view", async function (assert) {
+        assert.expect(2);
+
+        const mockRPC = (route, args) => {
+            if (route === "/web_studio/activity_allowed") {
+                assert.strictEqual(args.model, "kikou", "should verify allowed view on the correct model")
+                return false;
+            }
+        };
+
+        const webClient = await createEnterpriseWebClient({ serverData, mockRPC });
+        await doAction(
+            webClient,
+            {
+                xml_id: "some.xml_id",
+                type: "ir.actions.act_window",
+                res_model: "kikou",
+                view_mode: "list",
+                views: [
+                    [1, "list"],
+                    [2, "form"],
+                ],
+            },
+            { clearBreadcrumbs: true }
+        );
+        await openStudio(target, { noEdit: true });
+
+        await click(
+            target.querySelector(
+                '.o_web_studio_view_type[data-type="activity"] .o_web_studio_thumbnail'
+            )
+        );
+        assert.strictEqual(
+            target.querySelector(".o_notification_content").innerHTML,
+            "Activity view unavailable on this model"
+        );
+    });
+
     QUnit.test("disable the view from studio", async function (assert) {
         assert.expect(3);
 

@@ -3,16 +3,16 @@
 # 	* sale_timesheet_enterprise
 # 
 # Translators:
-# Junko Augias, 2023
 # Wil Odoo, 2023
+# Junko Augias, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:21+0000\n"
+"POT-Creation-Date: 2024-01-26 16:12+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Wil Odoo, 2023\n"
+"Last-Translator: Junko Augias, 2024\n"
 "Language-Team: Japanese (https://app.transifex.com/odoo/teams/41243/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -39,21 +39,28 @@ msgstr "時間"
 #: code:addons/sale_timesheet_enterprise/static/src/views/timesheet_leaderboard_dialog/timesheet_leaderboard_dialog.js:0
 #, python-format
 msgid "%(billableTime)s / %(billable_time_target)s (%(billingRate)s%)"
-msgstr ""
+msgstr "%(billableTime)s / %(billable_time_target)s (%(billingRate)s%)"
+
+#. module: sale_timesheet_enterprise
+#. odoo-javascript
+#: code:addons/sale_timesheet_enterprise/static/src/components/timesheet_leaderboard/timesheet_leaderboard.js:0
+#, python-format
+msgid "%(percentage)s%"
+msgstr "%(percentage)s%"
 
 #. module: sale_timesheet_enterprise
 #. odoo-javascript
 #: code:addons/sale_timesheet_enterprise/static/src/components/timesheet_leaderboard/timesheet_leaderboard.js:0
 #, python-format
 msgid "%(totalTime)s "
-msgstr ""
+msgstr "%(totalTime)s "
 
 #. module: sale_timesheet_enterprise
 #. odoo-javascript
 #: code:addons/sale_timesheet_enterprise/static/src/components/timesheet_leaderboard/timesheet_leaderboard.js:0
 #, python-format
 msgid "(%(percentage)s%)"
-msgstr ""
+msgstr "(%(percentage)s%)"
 
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.ui.view,arch_db:sale_timesheet_enterprise.res_config_settings_view_form
@@ -85,42 +92,42 @@ msgstr "アバター"
 #: model:ir.model.fields,field_description:sale_timesheet_enterprise.field_res_config_settings__group_use_timesheet_leaderboard
 #, python-format
 msgid "Billing Rate Leaderboard"
-msgstr ""
+msgstr "請求レートリーダーボード"
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,field_description:sale_timesheet_enterprise.field_res_company__billing_rate_target
 #: model:ir.model.fields,field_description:sale_timesheet_enterprise.field_res_config_settings__group_timesheet_leaderboard_show_rates
 msgid "Billing Rate Target"
-msgstr ""
+msgstr "請求レートターゲット"
 
 #. module: sale_timesheet_enterprise
 #: model:res.groups,name:sale_timesheet_enterprise.group_timesheet_leaderboard_show_rates
 msgid "Billing Rate/Total Time indicators"
-msgstr ""
+msgstr "請求率/合計時間の指標"
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,field_description:sale_timesheet_enterprise.field_hr_employee__billable_time_target
 msgid "Billing Time Target"
-msgstr ""
+msgstr "請求時間ターゲット"
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,help:sale_timesheet_enterprise.field_res_config_settings__billing_rate_target
 msgid "Billing rate target for the employees"
-msgstr ""
+msgstr "従業員の請求率目標"
 
 #. module: sale_timesheet_enterprise
 #. odoo-javascript
 #: code:addons/sale_timesheet_enterprise/static/src/components/timesheet_leaderboard/timesheet_leaderboard.js:0
 #, python-format
 msgid "Billing: %(currentBillableTimeText)s / %(currentTargetTotalTimeText)s "
-msgstr ""
+msgstr "請求: %(currentBillableTimeText)s / %(currentTargetTotalTimeText)s "
 
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.ui.view,arch_db:sale_timesheet_enterprise.res_config_settings_view_form
 msgid ""
 "Boost productivity and competitiveness by displaying a leaderboard based on "
 "the billing rates."
-msgstr ""
+msgstr "請求率に基づいたリーダーボードを表示することで、生産性と競争力を高めます。"
 
 #. module: sale_timesheet_enterprise
 #. odoo-javascript
@@ -181,7 +188,7 @@ msgstr "現在のタスクの進捗を表示する"
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,help:sale_timesheet_enterprise.field_res_config_settings__group_timesheet_leaderboard_show_rates
 msgid "Display the Billing Rate on My Timesheets view"
-msgstr ""
+msgstr "マイタイムシートビューに請求レートを表示します"
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model,name:sale_timesheet_enterprise.model_hr_employee
@@ -193,7 +200,7 @@ msgstr "従業員"
 msgid ""
 "Even small tasks like answering an email should be recorded and rounded up "
 "to a quarter of an hour."
-msgstr ""
+msgstr "Eメールに返信するような小さな仕事も記録し、15分単位で切上げます。"
 
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.ui.view,arch_db:sale_timesheet_enterprise.project_sharing_inherit_project_task_view_form
@@ -216,7 +223,7 @@ msgstr "ID"
 msgid ""
 "If you help a colleague on a project, your time should be recorded on this "
 "project's timesheet as well."
-msgstr ""
+msgstr "プロジェクトで同僚を手伝った場合、その時間もそのプロジェクトのタイムシートに記録しなければなりません。"
 
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.ui.view,arch_db:sale_timesheet_enterprise.res_config_settings_view_form
@@ -234,6 +241,7 @@ msgid ""
 "It's part of the job to search for information. A customer can't expect you "
 "to know everything on the spot. These hours should also be billable."
 msgstr ""
+"情報を探すのも仕事のうちです。顧客は、あなたがその場で全てを分かっていることを期待しているわけではありません。これらの時間も請求可能であるべきです。"
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model,name:sale_timesheet_enterprise.model_account_move_line
@@ -261,7 +269,7 @@ msgstr "リーダーボード"
 #: model:hr.timesheet.tip,name:sale_timesheet_enterprise.timesheet_tip_4
 #, python-format
 msgid "Make it a habit to record timesheets every day."
-msgstr ""
+msgstr "毎日タイムシートを記録する習慣をつけましょう。"
 
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.ui.view,arch_db:sale_timesheet_enterprise.timesheet_view_grid_by_invoice_type
@@ -271,12 +279,12 @@ msgstr "月"
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.actions.act_window,help:sale_timesheet_enterprise.hr_timesheet_tip_action
 msgid "Motivate employees to fill timesheets with these tips."
-msgstr ""
+msgstr "これらのヒントで、タイムシートに記入するよう、従業員のモチベーションを高めましょう。"
 
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.actions.act_window,help:sale_timesheet_enterprise.hr_timesheet_tip_action
 msgid "No tips found. Let's create one!"
-msgstr ""
+msgstr "ヒントが見つかりません。作成しましょう！"
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,field_description:sale_timesheet_enterprise.field_project_task__portal_effective_hours
@@ -319,14 +327,14 @@ msgstr "プロジェクト"
 #: code:addons/sale_timesheet_enterprise/static/src/components/timesheet_leaderboard/timesheet_leaderboard.xml:0
 #, python-format
 msgid "Record timesheets to determine your billing rate!"
-msgstr ""
+msgstr "請求率を決定するためにタイムシートを記録しましょう！"
 
 #. module: sale_timesheet_enterprise
 #. odoo-javascript
 #: code:addons/sale_timesheet_enterprise/static/src/components/timesheet_leaderboard/timesheet_leaderboard.xml:0
 #, python-format
 msgid "Record timesheets to earn your rank!"
-msgstr ""
+msgstr "タイムシートを記録してランクを獲得しましょう！"
 
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.ui.view,arch_db:sale_timesheet_enterprise.project_sharing_inherit_project_task_view_form
@@ -344,12 +352,12 @@ msgstr "販売オーダ明細"
 msgid ""
 "Set a target billing rate for your employees. If their current rate falls "
 "below the target, it will be highlighted in red."
-msgstr ""
+msgstr "従業員の目標請求率を設定します。現在のレートが目標レートを下回ると、赤くハイライトされます。"
 
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.ui.view,arch_db:sale_timesheet_enterprise.res_config_settings_view_form
 msgid "Set employee billing time targets"
-msgstr ""
+msgstr "従業員の請求時間目標を設定します"
 
 #. module: sale_timesheet_enterprise
 #. odoo-javascript
@@ -368,7 +376,7 @@ msgstr "もっと見せる"
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,help:sale_timesheet_enterprise.field_res_config_settings__group_use_timesheet_leaderboard
 msgid "Show the leaderboard on My Timesheets view"
-msgstr ""
+msgstr "マイタイムシートビューにリーダーボードを表示します"
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,field_description:sale_timesheet_enterprise.field_res_config_settings__billing_rate_target
@@ -383,12 +391,12 @@ msgstr "タスク"
 #. module: sale_timesheet_enterprise
 #: model:ir.model.constraint,message:sale_timesheet_enterprise.constraint_hr_employee_check_billable_time_target
 msgid "The billable time target cannot be negative."
-msgstr ""
+msgstr "請求可能時間ターゲットは負の値にできません。"
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model.constraint,message:sale_timesheet_enterprise.constraint_res_company_check_billing_rate
 msgid "The billing rate target percentage must be between 0 and 100."
-msgstr ""
+msgstr "課金率の目標パーセンテージは0から100の間にして下さい。"
 
 #. module: sale_timesheet_enterprise
 #. odoo-python
@@ -434,14 +442,14 @@ msgstr "タイムシートによる請求"
 #. module: sale_timesheet_enterprise
 #: model:ir.model,name:sale_timesheet_enterprise.model_hr_timesheet_tip
 msgid "Timesheets Leaderboard Tip"
-msgstr ""
+msgstr "タイムシートリーダーボードヒント"
 
 #. module: sale_timesheet_enterprise
 #: model:hr.timesheet.tip,name:sale_timesheet_enterprise.timesheet_tip_1
 msgid ""
 "Timesheets are the lifeblood of our company; they have a direct impact on "
 "revenues."
-msgstr ""
+msgstr "タイムシートは会社の生命線であり、収益に直接影響します。"
 
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.ui.view,arch_db:sale_timesheet_enterprise.res_config_settings_view_form
@@ -451,14 +459,14 @@ msgstr "時間を請求するときに考慮されるタイムシート"
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,field_description:sale_timesheet_enterprise.field_hr_timesheet_tip__name
 msgid "Tip Name"
-msgstr ""
+msgstr "ヒント名"
 
 #. module: sale_timesheet_enterprise
 #. odoo-javascript
 #: code:addons/sale_timesheet_enterprise/static/src/views/timesheet_leaderboard_dialog/timesheet_leaderboard_dialog.xml:0
 #, python-format
 msgid "Tip of the day"
-msgstr ""
+msgstr "今日のヒント"
 
 #. module: sale_timesheet_enterprise
 #: model:ir.actions.act_window,name:sale_timesheet_enterprise.hr_timesheet_tip_action
@@ -478,7 +486,7 @@ msgstr "合計時間"
 #: code:addons/sale_timesheet_enterprise/static/src/views/timesheet_leaderboard_dialog/timesheet_leaderboard_dialog.js:0
 #, python-format
 msgid "Total Time Leaderboard"
-msgstr ""
+msgstr "合計タイムリーダーボード"
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields,help:sale_timesheet_enterprise.field_project_task__portal_remaining_hours
@@ -499,7 +507,7 @@ msgstr "合計:"
 #: code:addons/sale_timesheet_enterprise/static/src/views/timesheet_leaderboard_dialog/timesheet_leaderboard_dialog.js:0
 #, python-format
 msgid "Total: %(totalTime)s"
-msgstr ""
+msgstr "合計: %(totalTime)s"
 
 #. module: sale_timesheet_enterprise
 #: model:ir.model.fields.selection,name:sale_timesheet_enterprise.selection__res_config_settings__invoiced_timesheet__approved
@@ -523,11 +531,11 @@ msgstr ""
 #. module: sale_timesheet_enterprise
 #: model_terms:ir.ui.view,arch_db:sale_timesheet_enterprise.hr_timesheet_tip_view_tree
 msgid "e.g. Make it a habit to record timesheets every day."
-msgstr ""
+msgstr "例: 毎日タイムシートを記録する習慣をつけましょう。"
 
 #. module: sale_timesheet_enterprise
 #. odoo-javascript
 #: code:addons/sale_timesheet_enterprise/static/src/components/timesheet_leaderboard/timesheet_leaderboard.xml:0
 #, python-format
 msgid "o_timesheet_leaderboard_confetti"
-msgstr ""
+msgstr "o_timesheet_leaderboard_confetti"

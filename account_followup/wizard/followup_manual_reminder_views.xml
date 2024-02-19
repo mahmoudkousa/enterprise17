@@ -48,7 +48,9 @@
                         <group colspan="5">
                             <field name="email_recipient_ids" string="Email Recipients" widget="many2many_tags_email"
                                    placeholder="Add contacts to notify..." nolabel="1"
-                                   context="{'force_email':True, 'show_email':True, 'no_create_edit': True}" colspan="2"/>
+                                   options="{'no_quick_create': True}"
+                                   context="{'show_email': True, 'form_view_ref': 'base.view_partner_simple_form'}"
+                                   colspan="2"/>
                         </group>
                     </group>
                     <group colspan="2" col="6">

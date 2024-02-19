@@ -61,4 +61,9 @@ class AccountMoveLine(models.Model):
             # override back to the default after all moves are created
             _sequence_override(journal_ids)
 
+            if 'matching_number' in fields:
+                matching_index = fields.index('matching_number')
+                for row in data:
+                    row[matching_index] = row[matching_index] and f"I{row[matching_index]}"
+
         return super().load(fields, data)

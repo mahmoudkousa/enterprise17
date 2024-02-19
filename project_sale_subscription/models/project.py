@@ -137,7 +137,7 @@ class Project(models.Model):
                 amount_to_invoice += recurring_per_currency_per_template[subcription_template_id][currency_id] * nb_period * rate
         amount_invoiced = 0.0
         for currency, amount in aal_read_group:
-            rate = project_currency_rate / rates_per_currency_id[currency_id]
+            rate = project_currency_rate / rates_per_currency_id[currency.id]
             amount_invoiced += amount * rate
         revenues = profitability_items['revenues']
         section_id = 'subscriptions'

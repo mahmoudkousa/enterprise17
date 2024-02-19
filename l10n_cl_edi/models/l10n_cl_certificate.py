@@ -50,7 +50,7 @@ class Certificate(models.Model):
         """ Return the signature_key_file (b64 encoded) and the certificate decrypted """
         self.ensure_one()
         try:
-            p12 = crypto.load_pkcs12(base64.b64decode(self.signature_key_file), self.signature_pass_phrase.encode())
+            p12 = crypto.load_pkcs12(base64.b64decode(self.with_context(bin_size=False).signature_key_file), self.signature_pass_phrase.encode())
         except Exception as error:
             raise UserError(error)
         certificate = p12.get_certificate()

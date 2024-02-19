@@ -131,3 +131,56 @@ class TestRequest(common.TransactionCase):
         })
         self.assertEqual(approval.product_line_ids.description, 'foo')
         self.assertEqual(approval.product_line_ids.product_uom_id, uom)
+
+    def test_unlink_approval(self):
+        """
+        There is no error when unlinking a draft request with a document attached
+        or a binary field filled.
+        """
+        approval = self.env['approval.request'].create({
+            'name': 'test request',
+            'category_id': self.env.ref('approvals.approval_category_data_business_trip').id,
+            'date_start': fields.Datetime.now(),
+            'date_end': fields.Datetime.now(),
+            'location': 'testland'
+        })
+        self.env['ir.attachment'].create({
+            'name': 'test.file',
+            'res_id': approval.id,
+            'res_model': 'approval.request',
+        })
+
+        self.env['ir.model.fields'].create({
+            'name': 'x_test_field',
+            'model_id': self.env.ref('approvals.model_approval_request').id,
+            'ttype': 'binary',
+        })
+        approval.x_test_field = 'test'
+        approval.unlink()
+
+    def test_unlink_multiple_approvals_with_product_line(self):
+        """
+        There is no error when unlinking a multiple approval requests with a
+        product line.
+        """
+        approvals = self.env['approval.request'].create([{
+            'name': 'Approval Request 1',
+            'category_id': self.env.ref('approvals.approval_category_data_borrow_items').id,
+            'date_start': fields.Datetime.now(),
+            'date_end': fields.Datetime.now(),
+            'location': 'testland',
+        }, {
+            'name': 'Approval Request 1',
+            'category_id': self.env.ref('approvals.approval_category_data_borrow_items').id,
+            'date_start': fields.Datetime.now(),
+            'date_end': fields.Datetime.now(),
+            'location': 'testitems',
+        }])
+        product_line = self.env['approval.product.line'].create({
+            'approval_request_id': approvals[0].id,
+            'description': "Description",
+        })
+
+        approvals.unlink()
+        self.assertFalse(product_line.exists())
+        self.assertFalse(approvals.exists())

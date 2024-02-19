@@ -39,7 +39,7 @@ class HrAttendance(models.Model):
                 # Fetch overlapping work entries, grouped by employees
                 start = min((datetime.combine(a.check_in, time.min) for a in self if a.check_in), default=False)
                 stop = max((datetime.combine(a.check_out, time.max) for a in self if a.check_out), default=False)
-                work_entry_groups = self.env['hr.work.entry']._read_group([
+                work_entry_groups = self.env['hr.work.entry'].sudo()._read_group([
                     ('date_start', '<', stop),
                     ('date_stop', '>', start),
                     ('employee_id', 'in', self.employee_id.ids),
@@ -67,8 +67,8 @@ class HrAttendance(models.Model):
 
                     overlappping |= self.env['hr.work.entry']._from_intervals(outside_intervals)
                     included |= previous_employee_work_entries - overlappping
-                overlappping.write({'attendance_id': False})
-                included.write({'active': False})
+                overlappping.sudo().write({'attendance_id': False})
+                included.sudo().write({'active': False})
 
     @api.model_create_multi
     def create(self, vals_list):

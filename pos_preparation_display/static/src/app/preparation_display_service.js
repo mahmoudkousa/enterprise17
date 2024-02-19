@@ -5,8 +5,8 @@ import { PreparationDisplay } from "@pos_preparation_display/app/models/preparat
 import { useService } from "@web/core/utils/hooks";
 
 const preparationDisplayService = {
-    dependencies: ["orm", "bus_service"],
-    async start(env, { orm, bus_service }) {
+    dependencies: ["orm", "bus_service", "sound"],
+    async start(env, { orm, bus_service, sound }) {
         const datas = await orm.call(
             "pos_preparation_display.display",
             "get_preparation_display_data",
@@ -21,6 +21,10 @@ const preparationDisplayService = {
         ).ready;
 
         bus_service.addChannel(`preparation_display-${odoo.preparation_display.access_token}`);
+        bus_service.addEventListener("reconnect", () => {
+            sound.play("notification");
+            return preparationDisplayService.getOrders();
+        });
         bus_service.addEventListener("notification", async (message) => {
             const proms = message.detail.map((detail) => {
                 const datas = detail.payload;
@@ -29,9 +33,9 @@ const preparationDisplayService = {
                 if (datas.preparation_display_id !== odoo.preparation_display.id) {
                     return false;
                 }
-
                 switch (detail.type) {
                     case "load_orders":
+                        sound.play("notification");
                         return preparationDisplayService.getOrders();
                     case "change_order_stage":
                         return preparationDisplayService.wsMoveToNextStage(

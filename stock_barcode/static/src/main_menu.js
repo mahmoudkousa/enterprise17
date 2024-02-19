@@ -53,8 +53,8 @@ export class MainMenu extends Component {
         this.state.displayDemoMessage = false;
         const params = {
             title: _t("Don't show this message again"),
-            body: _t("Do you want to permanently remove this message?\
-                    It won't appear anymore, so make sure you don't need the barcodes sheet or you have a copy."),
+            body: _t("Do you want to permanently remove this message ? " +
+                    "It won't appear anymore, so make sure you don't need the barcodes sheet or you have a copy."),
             confirm: () => {
                 this.rpc('/stock_barcode/rid_of_message_demo_barcodes');
                 location.reload();

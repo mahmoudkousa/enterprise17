@@ -1,5 +1,6 @@
 /** @odoo-module */
 
+import * as ErrorPopup from "@point_of_sale/../tests/tours/helpers/ErrorPopupTourMethods";
 import * as ProductScreen from "@point_of_sale/../tests/tours/helpers/ProductScreenTourMethods";
 import * as PaymentScreen from "@point_of_sale/../tests/tours/helpers/PaymentScreenTourMethods";
 import * as ReceiptScreen from "@point_of_sale/../tests/tours/helpers/ReceiptScreenTourMethods";
@@ -42,5 +43,19 @@ registry.category("web_tour.tours").add("PreparationDisplayTour", {
             PaymentScreen.clickValidate(),
 
             ReceiptScreen.clickNextOrder(),
+        ].flat(),
+});
+
+registry.category("web_tour.tours").add("PreparationDisplayPrinterTour", {
+    test: true,
+    steps: () =>
+        [
+            ProductScreen.confirmOpeningPopup(),
+            ProductScreen.addOrderline("Letter Tray"),
+            ProductScreen.clickPayButton(),
+            PaymentScreen.clickPaymentMethod("Bank"),
+            PaymentScreen.clickValidate(),
+            //This steps is making sure that we atleast tried to call the printer
+            ErrorPopup.clickConfirm(),
         ].flat(),
 });

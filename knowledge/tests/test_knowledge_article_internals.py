@@ -196,6 +196,15 @@ class TestKnowledgeArticleInternals(KnowledgeCommonWData):
 class TestKnowledgeArticleUtilities(KnowledgeCommonWData):
     """ Test data oriented utilities and tools for articles. """
 
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.env['knowledge.article'].create({
+            'name': 'Child Workspace Item',
+            'is_article_item': True,
+            'parent_id': cls.article_workspace.id
+        })
+
     @users('employee')
     def test_article_get_valid_parent_options(self):
         child_writable_article = self.workspace_children[1].with_env(self.env)
@@ -226,6 +235,12 @@ class TestKnowledgeArticleUtilities(KnowledgeCommonWData):
                 (self.shared_children).ids
             ),
             'Should contain: none of descendants, so only other accessible articles (shared section), filtered by search term'
+        )
+
+        self.assertEqual(
+            child_writable_article.get_valid_parent_options(search_term='Item'),
+            [],
+            'Should contain: nothing as the searched article is an Article Item'
         )
 
     @users('employee')

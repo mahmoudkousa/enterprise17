@@ -3,6 +3,7 @@
 from odoo import tools
 from odoo.addons.mail.tests.common import MailCommon
 from odoo.addons.test_mail.data.test_mail_data import MAIL_EML_ATTACHMENT
+from odoo.tools import mute_logger
 
 
 class TestMailGateway(MailCommon):
@@ -53,20 +54,23 @@ class TestMailGateway(MailCommon):
         self.assertFalse(self.env['res.partner'].search([('email', '=', self.email_with_no_partner)]))
         self.assertFalse(self.env['documents.document'].search([('name', 'in', self.email_filenames)]))
 
+    @mute_logger('odoo.addons.mail.models.mail_thread')
     def test_set_contact_non_existing_partner(self):
         for document in self.send_test_mail_with_attachment(self.email_with_no_partner):
-            self.assertTrue(document.partner_id)
-            self.assertEqual(document.partner_id.email, self.email_with_no_partner)
+            self.assertFalse(document.partner_id)
 
+    @mute_logger('odoo.addons.mail.models.mail_thread')
     def test_set_contact_existing_partner(self):
         for document in self.send_test_mail_with_attachment(self.pre_existing_partner.email):
-            self.assertEqual(document.partner_id, self.pre_existing_partner)
+            self.assertFalse(document.partner_id)
 
+    @mute_logger('odoo.addons.mail.models.mail_thread')
     def test_set_contact_default_partner_non_existing_partner(self):
         self.share_link.partner_id = self.default_partner
         for document in self.send_test_mail_with_attachment(self.email_with_no_partner):
             self.assertEqual(document.partner_id, self.default_partner)
 
+    @mute_logger('odoo.addons.mail.models.mail_thread')
     def test_set_contact_default_partner_existing_partner(self):
         self.share_link.partner_id = self.default_partner
         for document in self.send_test_mail_with_attachment(self.pre_existing_partner.email):

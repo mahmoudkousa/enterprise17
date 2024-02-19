@@ -7,16 +7,8 @@ import { Component, onWillStart } from "@odoo/owl";
 
 class MainComponent extends Component {
 	setup() {
-		let report_list = []
-		for (let i = 0; i < browser.localStorage.length; i++)
-		{
-			if (browser.localStorage.key(i).startsWith("print_report_number_")) {
-				const report_id = parseInt(browser.localStorage.key(i).substring("print_report_number_".length));
-				if (!isNaN(report_id)) {
-					report_list.push(report_id);
-				}
-			}
-		}
+        const links = JSON.parse(browser.localStorage.getItem("odoo-iot-linked_reports"));
+		const report_list = links ? Object.keys(links) : [];
 		this.orm = useService("orm");
 		onWillStart(async () => {
 			let report_ids = await this.orm
@@ -28,7 +20,14 @@ class MainComponent extends Component {
 		});
 	}
 	removeFromLocal(id) {
-		browser.localStorage.removeItem(`print_report_number_${id}`);
+        const links = JSON.parse(browser.localStorage.getItem("odoo-iot-linked_reports"));
+        delete links[id]
+        if (Object.keys(links).length == 0)
+            // If the list is empty, remove the entry
+            browser.localStorage.removeItem("odoo-iot-linked_reports");
+        else
+            // Replace the entry in LocalStorage by the same object with the key 'id' removed
+            browser.localStorage.setItem("odoo-iot-linked_reports", JSON.stringify(links))
         window.location.reload();
 	}
 }

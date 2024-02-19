@@ -1,11 +1,12 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 from unittest.mock import patch
 
-from odoo.tests import tagged, HttpCase
+from odoo.tests import tagged
+from odoo.addons.base.tests.common import HttpCaseWithUserPortal
 
 
 @tagged('post_install', '-at_install')
-class TestSaleExternalTaxesSalePortal(HttpCase):
+class TestSaleExternalTaxesSalePortal(HttpCaseWithUserPortal):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -50,6 +51,11 @@ class TestSaleExternalTaxesSalePortal(HttpCase):
             self.skipTest("sale_management module is not installed")
 
         portal_partner = self.env['res.users'].sudo().search([('login', '=', 'portal')]).partner_id
+        portal_partner.write({
+            'state_id': self.env.ref('base.state_us_25').id,
+            'zip': '07002',
+            'country_id': self.env.ref('base.us').id,
+        })
         order = self._create_sale_order(portal_partner)
 
         # Moving the portal user to order.company_id still results in

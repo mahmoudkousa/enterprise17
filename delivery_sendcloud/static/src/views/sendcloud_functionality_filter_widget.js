@@ -36,7 +36,7 @@ export class SendcloudFunctionalitiesField extends Component {
 
     async _onWillUpdateProps(nextProps){
         const { data } = nextProps.record;
-        if (typeof data.sendcloud_shipping_id === undefined){
+        if (typeof data.sendcloud_shipping_id === "undefined"){
             return false;
         }
         const newProductId = data.sendcloud_shipping_id[0];

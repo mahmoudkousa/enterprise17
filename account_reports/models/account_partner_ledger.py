@@ -639,6 +639,8 @@ class PartnerLedgerCustomHandler(models.AbstractModel):
             if col_value is None:
                 columns.append(report._build_column_dict(None, None))
             else:
+                currency = False
+
                 if col_expr_label == 'balance':
                     col_value += init_bal_by_col_group[column['column_group_key']]
 
@@ -648,7 +650,7 @@ class PartnerLedgerCustomHandler(models.AbstractModel):
                     if currency == self.env.company.currency_id:
                         col_value = ''
 
-                columns.append(report._build_column_dict(col_value, column, options=options))
+                columns.append(report._build_column_dict(col_value, column, options=options, currency=currency))
 
         return {
             'id': report._get_generic_line_id('account.move.line', aml_query_result['id'], parent_line_id=partner_line_id),

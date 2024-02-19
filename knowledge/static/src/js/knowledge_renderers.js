@@ -94,7 +94,7 @@ export class KnowledgeArticleFormRenderer extends FormRenderer {
     }
 
     async _saveIfDirty() {
-        if (this.props.record.isDirty) {
+        if (await this.props.record.isDirty()) {
             await this.props.record.save();
         }
     }

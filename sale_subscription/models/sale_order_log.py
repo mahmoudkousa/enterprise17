@@ -106,8 +106,8 @@ class SaleOrderLog(models.Model):
     def _create_reopen_log(self, values):
         # We reopened a churned contract. We delete the churn log to keep the formal MRR.
         sub = self.env['sale.order'].browse(values['order_id'])
-        churn_logs = sub.order_log_ids.filtered(lambda log: log.event_type == '2_churn')
-        churn_log = churn_logs and churn_logs[-1]
+        churn_logs = sub.order_log_ids.filtered(lambda log: log.event_type == '2_churn').sorted('event_date', reverse=True)
+        churn_log = churn_logs[:1]
         previous_mrr = 0
         if churn_log:
             previous_mrr = - churn_log.amount_signed
@@ -129,7 +129,7 @@ class SaleOrderLog(models.Model):
         if sub.origin_order_id: # Is a confirmed renewal ( origin_order_id and category in progress)
             existing_transfer_log = sub.order_log_ids.filtered(lambda ev: ev.event_type == '3_transfer')
             if not existing_transfer_log:
-                return sub._create_starting_transfer_log(sub, values.copy())
+                return self._create_starting_transfer_log(values.copy())
 
         if not float_is_zero(mrr_difference, precision_rounding=sub.currency_id.rounding):
             values.update({'amount_signed': mrr_difference,

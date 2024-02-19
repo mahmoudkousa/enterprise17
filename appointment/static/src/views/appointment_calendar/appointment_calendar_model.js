@@ -14,6 +14,21 @@ patch(AttendeeCalendarModel.prototype, {
         this.slotId = 1;
     },
 
+    /**
+     * @override
+     * Properly take into account the duration from the context.
+     * Only when the user makes a click on the calendar (when there's no end) or when the end is invalid.
+     */
+    buildRawRecord(partialRecord, options) {
+        if ('default_duration' in this.meta.context) {
+            const defaultDuration = this.meta.context.default_duration;
+            if (partialRecord.start && (!partialRecord.end || !partialRecord.end.isValid) && !partialRecord.isAllDay) {
+                partialRecord.end = partialRecord.start.plus({ hours: defaultDuration });
+            }
+        }
+        return super.buildRawRecord(...arguments);
+    },
+
     processPartialSlotRecord(record) {
         if (!record.end || !record.end.isValid) {
             if (record.isAllDay) {

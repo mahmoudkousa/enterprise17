@@ -1,5 +1,6 @@
 /** @odoo-module */
 
+import { _t } from "@web/core/l10n/translation";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { useService } from "@web/core/utils/hooks";
 import { onWillStart, useState } from "@odoo/owl";
@@ -13,19 +14,17 @@ export class MrpWorkcenterDialog extends ConfirmationDialog {
         disabled: { type: Array, optional: true },
         active: { type: Array, optional: true },
         radioMode: { type: Boolean, default: false, optional: true },
+        showWarning: { type: Boolean, default: false, optional: true },
     };
 
     setup() {
         super.setup();
         this.ormService = useService("orm");
-        this.workcenters = [];
-        this.state = useState({ activeWorkcenters: this.props.active ? [...this.props.active] : [] });
-        for (const workcenter of this.props.workcenters || []) {
-            this.workcenters.push({
-                id: parseInt(workcenter[0]),
-                display_name: workcenter[1],
-            });
-        }
+        this.notification = useService("notification");
+        this.workcenters = this.props.workcenters || [];
+        this.state = useState({
+            activeWorkcenters: this.props.active ? [...this.props.active] : [],
+        });
 
         onWillStart(async () => {
             if (!this.workcenters.length) {
@@ -59,12 +58,26 @@ export class MrpWorkcenterDialog extends ConfirmationDialog {
 
     confirm() {
         this.props.confirm(
-            this.state.activeWorkcenters.map((id) => this.workcenters.find((wc) => wc.id === id))
+            this.state.activeWorkcenters.reduce((acc, id) => {
+                const res = this.workcenters.find((wc) => wc.id === id);
+                return res ? [...acc, res] : acc;
+            }, [])
         );
         this.props.close();
     }
 
     async _loadWorkcenters() {
         this.workcenters = await this.ormService.searchRead("mrp.workcenter", [], ["display_name"]);
+        if (!this.workcenters.length) {
+            if (this.props.showWarning) {
+                this.notification.add(
+                    _t(
+                        "No workcenters are available, please create one first to add it to the shop floor view"
+                    ),
+                    { type: "warning" }
+                );
+            }
+            this.props.close();
+        }
     }
 }

@@ -13,6 +13,52 @@ export class TimesheetGridDataPoint extends GridDataPoint {
         }
     }
 
+    _sortGridRows(data) {
+        const orderFieldArray = this.rowFields.map((rowField) => this.fieldsInfo[rowField.name]);
+        if (this.sectionField) {
+            orderFieldArray.unshift(this.fieldsInfo[this.sectionField.name]);
+        }
+        data.groups = data.groups.sort((firstRow, secondRow) => {
+            for (const orderField of orderFieldArray) {
+                const fieldName = orderField.name;
+                let firstRowFieldData = firstRow[fieldName];
+                let secondRowFieldData = secondRow[fieldName];
+                if (orderField.type === "many2one") {
+                    firstRowFieldData = firstRowFieldData[1];
+                    secondRowFieldData = secondRowFieldData[1];
+                } else if (orderField.type === "selection") {
+                    firstRowFieldData =
+                        firstRowFieldData in orderField.selection
+                            ? orderField.selection[firstRowFieldData]
+                            : firstRowFieldData;
+                    secondRowFieldData =
+                        secondRowFieldData in orderField.selection
+                            ? orderField.selection[secondRowFieldData]
+                            : secondRowFieldData;
+                 }
+                if (firstRowFieldData === secondRowFieldData) {
+                    continue;
+                }
+                if (!firstRowFieldData) {
+                    return -1;
+                }
+                if (!secondRowFieldData) {
+                    return 1;
+                }
+                return firstRowFieldData
+                    .toLowerCase()
+                    .localeCompare(secondRowFieldData.toLowerCase());
+                }
+            return 0;
+        });
+    }
+
+    async fetchData() {
+        const data = await super.fetchData();
+        this._sortGridRows(data);
+        return data;
+    }
+
     get timesheetWorkingHoursPromises() {
         return [
             this._fetchWorkingHoursData("task_id"),
@@ -38,10 +84,6 @@ export class TimesheetGridDataPoint extends GridDataPoint {
 
     _getPreviousWeekTimesheetDomain() {
         return [
-            ["project_id.allow_timesheets", "=", true],
-            "|",
-                ["task_id.active", "=", true],
-                ["task_id", "=", false],
             [
                 this.columnFieldName,
                 ">=",
@@ -72,6 +114,7 @@ export class TimesheetGridDataPoint extends GridDataPoint {
             )
             .then((readGroupResults) => {
                 const additionalData = {};
+                this._sortGridRows(readGroupResults);
                 for (const readGroupResult of readGroupResults.groups) {
                     let sectionKey = false;
                     let sectionValue = null;

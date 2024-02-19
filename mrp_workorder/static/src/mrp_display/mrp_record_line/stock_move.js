@@ -96,10 +96,10 @@ export class StockMove extends Component {
         } else if (!this.toConsumeQuantity) {
             return this.clicked();
         }
-        const quantity = this.isComplete ? 0 : this.toConsumeQuantity;
+        const quantity = this.quantityDone ? this.quantityDone : this.toConsumeQuantity;
         this.props.record.update({
             quantity: quantity,
-            picked: true,
+            picked: !this.isComplete,
         });
         this.props.record.save({ reload: false });
     }

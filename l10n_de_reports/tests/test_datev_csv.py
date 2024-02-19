@@ -49,18 +49,22 @@ class TestDatevCSV(AccountTestInvoicingCommon):
             'partner_id': self.env['res.partner'].create({'name': 'Res Partner 12'}).id,
             'invoice_date': fields.Date.to_date('2020-12-01'),
             'date': fields.Date.to_date('2020-12-01'),
+            'ref': 'Brocken123',
             'invoice_line_ids': [
                 (0, None, {
+                    'name': 'Line Number 1',
                     'price_unit': 100,
                     'account_id': self.account_3400.id,
                     'tax_ids': [(6, 0, self.tax_19.ids)],
                 }),
                 (0, None, {
+                    'name': 'Line Number 2',
                     'price_unit': 100,
                     'account_id': self.account_3400.id,
                     'tax_ids': [(6, 0, self.tax_19.ids)],
                 }),
                 (0, None, {
+                    'name': 'Line Number 3',
                     'price_unit': 100,
                     'account_id': self.account_4980.id,
                     'tax_ids': [(6, 0, self.tax_19.ids)],
@@ -75,11 +79,13 @@ class TestDatevCSV(AccountTestInvoicingCommon):
         reader = pycompat.csv_reader(csv, delimiter=';', quotechar='"', quoting=2)
         data = [[x[0], x[1], x[2], x[6], x[7], x[8], x[9], x[10], x[13]] for x in reader][2:]
         self.addCleanup(zf.close)
-        self.assertEqual(2, len(data), "csv should have 2 lines")
-        self.assertIn(['238,00', 's', 'EUR', '34000000', str(move.partner_id.id + 700000000),
-                       self.tax_19.l10n_de_datev_code, '112', move.name, move.name], data)
+        self.assertEqual(3, len(data), "csv should have 3 lines")
+        self.assertIn(['119,00', 's', 'EUR', '34000000', str(move.partner_id.id + 700000000),
+                       self.tax_19.l10n_de_datev_code, '112', move.name, move.invoice_line_ids[0].name], data)
+        self.assertIn(['119,00', 's', 'EUR', '34000000', str(move.partner_id.id + 700000000),
+                       self.tax_19.l10n_de_datev_code, '112', move.name, move.invoice_line_ids[1].name], data)
         self.assertIn(['119,00', 's', 'EUR', '49800000', str(move.partner_id.id + 700000000),
-                       self.tax_19.l10n_de_datev_code, '112', move.name, move.name], data)
+                       self.tax_19.l10n_de_datev_code, '112', move.name, move.invoice_line_ids[2].name], data)
 
     def test_datev_out_invoice(self):
         report = self.env.ref('account_reports.general_ledger_report')
@@ -191,7 +197,7 @@ class TestDatevCSV(AccountTestInvoicingCommon):
         self.assertIn(['119,00', 'h', 'EUR', '49800000', str(move.partner_id.id + 100000000),
                        self.tax_19.l10n_de_datev_code, '112', move.name, move.name], data)
         self.assertIn(['119,00', 'h', 'EUR', str(move.partner_id.id + 100000000), debit_account_code, '', '312',
-                       pay.name, pay.name], data)
+                       pay.name, pay.line_ids[0].name], data)
 
     def test_datev_out_invoice_payment_same_account_counteraccount(self):
         report = self.env.ref('account_reports.general_ledger_report')
@@ -234,7 +240,7 @@ class TestDatevCSV(AccountTestInvoicingCommon):
         self.assertIn(['119,00', 'h', 'EUR', '49800000', str(move.partner_id.id + 100000000),
                        self.tax_19.l10n_de_datev_code, '112', move.name, move.name], data)
         self.assertIn(['119,00', 'h', 'EUR', str(move.partner_id.id + 100000000), debit_account_code, '', '312',
-                       pay.name, pay.name], data)
+                       pay.name, pay.line_ids[0].name], data)
 
     def test_datev_in_invoice_payment(self):
         report = self.env.ref('account_reports.general_ledger_report')
@@ -275,7 +281,7 @@ class TestDatevCSV(AccountTestInvoicingCommon):
         self.assertIn(['119,00', 's', 'EUR', '49800000', str(move.partner_id.id + 700000000),
                        self.tax_19.l10n_de_datev_code, '112', move.name, move.name], data)
         self.assertIn(['119,00', 's', 'EUR', str(move.partner_id.id + 700000000), credit_account_code, '', '312',
-                       pay.name, pay.name], data)
+                       pay.name, pay.line_ids[0].name], data)
 
     def test_datev_bank_statement(self):
         report = self.env.ref('account_reports.general_ledger_report')
@@ -307,7 +313,7 @@ class TestDatevCSV(AccountTestInvoicingCommon):
         data = [[x[0], x[1], x[2], x[6], x[7], x[9], x[10], x[13]] for x in reader][2:]
         self.addCleanup(zf.close)
         self.assertIn(['100,00', 'h', 'EUR', suspense_account_code, bank_account_code, '101',
-                       statement.line_ids[0].name, statement.line_ids[0].name], data)
+                       statement.line_ids[0].name, statement.line_ids[0].payment_ref], data)
 
     def test_datev_out_invoice_paid(self):
         report = self.env.ref('account_reports.general_ledger_report')
@@ -361,7 +367,8 @@ class TestDatevCSV(AccountTestInvoicingCommon):
         self.assertIn(['100,00', 'h', 'EUR', str(self.company_data['default_account_revenue'].code).ljust(8, '0'),
                        str(100000000 + move.partner_id.id), '112', move.name, move.name], data)
         self.assertIn(['100,00', 'h', 'EUR', str(100000000 + move.partner_id.id), bank_account_code, '101',
-                       statement.line_ids[0].name, statement.line_ids[0].name], data)
+                       statement.line_ids[0].name, statement.line_ids[0].line_ids[1].name], data)
+        # 2nd line of the statement because it's the line without the bank account
 
     def test_datev_out_invoice_with_negative_amounts(self):
         report = self.env.ref('account_reports.general_ledger_report')
@@ -377,16 +384,19 @@ class TestDatevCSV(AccountTestInvoicingCommon):
             'invoice_date': fields.Date.to_date('2020-12-01'),
             'invoice_line_ids': [
                 (0, None, {
+                    'name': 'Line Number 1',
                     'price_unit': 1000,
                     'account_id': self.account_4980.id,
                     'tax_ids': [(6, 0, self.tax_19.ids)],
                 }),
                 (0, None, {
+                    'name': 'Line Number 2',
                     'price_unit': -1000,
                     'account_id': self.account_4980.id,
                     'tax_ids': [(6, 0, self.tax_19.ids)],
                 }),
                 (0, None, {
+                    'name': 'Line Number 3',
                     'price_unit': 1000,
                     'quantity': -1,
                     'account_id': self.account_4980.id,
@@ -412,9 +422,13 @@ class TestDatevCSV(AccountTestInvoicingCommon):
         reader = pycompat.csv_reader(csv, delimiter=';', quotechar='"', quoting=2)
         data = [[x[0], x[1], x[2], x[6], x[7], x[8], x[9], x[10], x[13]] for x in reader][2:]
         self.addCleanup(zf.close)
-        self.assertEqual(3, len(data), "csv should have 3 line")
+        self.assertEqual(5, len(data), "csv should have 5 line")
+        self.assertIn(['1190,00', 'h', 'EUR', '49800000', str(move.partner_id.id + 100000000),
+                       self.tax_19.l10n_de_datev_code, '112', move.name, move.invoice_line_ids[0].name], data)
         self.assertIn(['1190,00', 's', 'EUR', '49800000', str(move.partner_id.id + 100000000),
-                       self.tax_19.l10n_de_datev_code, '112', move.name, move.name], data)
+                       self.tax_19.l10n_de_datev_code, '112', move.name, move.invoice_line_ids[1].name], data)
+        self.assertIn(['1190,00', 's', 'EUR', '49800000', str(move.partner_id.id + 100000000),
+                       self.tax_19.l10n_de_datev_code, '112', move.name, move.invoice_line_ids[2].name], data)
         self.assertIn(['2140,00', 'h', 'EUR', '15000000', str(move.partner_id.id + 100000000),
                        self.tax_7.l10n_de_datev_code, '112', move.name, move.name], data)
         self.assertIn(['3570,00', 'h', 'EUR', '34000000', str(move.partner_id.id + 100000000),

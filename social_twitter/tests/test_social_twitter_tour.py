@@ -51,6 +51,7 @@ class TestSocialTwitter(HttpCase):
             })
 
         self.env['ir.config_parameter'].sudo().set_param('social.twitter_consumer_secret_key', 'test_secret_key')
+        self.env['ir.config_parameter'].sudo().set_param('social_twitter.enable_reply_limit', True)
 
         with self.mock_twitter_call():
             self.start_tour("/web", 'social_twitter/static/tests/tours/tour_social_twitter_spam.js', login='social_manager')

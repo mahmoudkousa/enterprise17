@@ -9,6 +9,7 @@ import {
     nextTick,
 } from "@web/../tests/helpers/utils";
 import {
+    createMockViewResult,
     createViewEditor,
     registerViewEditorDependencies,
     selectorContains,
@@ -927,7 +928,14 @@ QUnit.module(
                         </t>
                     </templates>
                 </kanban>`,
+                mockRPC(route, args) {
+                    if (args.method == "web_read_group") {
+                        assert.step("web_read_group");
+                        assert.strictEqual(args.kwargs.limit, 1);
+                    }
+                }
             });
+            assert.verifySteps(["web_read_group"]);
 
             assert.hasClass(
                 target.querySelector(".o_web_studio_kanban_view_editor "),
@@ -1843,6 +1851,52 @@ QUnit.module(
                 ["1 record", "A very good product"]
             );
             assert.verifySteps(["web_search_read"]);
+        });
+
+        QUnit.test("editing 'quick_create' attribute updates the UI", async function (assert) {
+            assert.expect(5);
+
+            await createViewEditor({
+                type: "kanban",
+                serverData,
+                resModel: "coucou",
+                arch: `
+                <kanban>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="o_kanban_record">
+                                <field name="display_name"/>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>`,
+                mockRPC: {
+                    "/web_studio/edit_view": (route, { operations }) => {
+                        assert.step("edit_view");
+                        assert.deepEqual(operations[0].new_attrs, {
+                            quick_create: false,
+                        });
+                        const newArch = `
+                        <kanban quick_create='false'>
+                            <templates>
+                                <t t-name="kanban-box">
+                                    <div class="o_kanban_record">
+                                        <field name="display_name"/>
+                                    </div>
+                                </t>
+                            </templates>
+                        </kanban>`;
+                        return createMockViewResult(serverData, "kanban", newArch, "coucou");
+                    },
+                },
+            });
+
+            const checkbox = target.querySelector(".o_web_studio_property #quick_create");
+            assert.strictEqual(checkbox.checked, true);
+
+            await click(checkbox);
+            assert.verifySteps(["edit_view"]);
+            assert.strictEqual(checkbox.checked, false);
         });
     }
 );

@@ -10,15 +10,15 @@
             t-on-click.prevent="props.onClick"
         >
             <t t-if="_timerIsRunning">
-                <div class="d-md-flex flex-grow-1">
-                    <div class="d-flex align-items-center w-md-25">
-                        <button class="btn btn-primary btn_stop_timer" name="stop_timer" t-on-click.stop="_onClickStopTimer" data-hotkey="x" t-ref="stopButton">
+                <div class="d-md-flex flex-grow-1 flex-wrap flex-lg-nowrap">
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-primary btn_stop_timer text-nowrap" name="stop_timer" t-on-click.stop="_onClickStopTimer" data-hotkey="x" t-ref="stopButton">
                             <i class="fa fa-stop me-2"></i> Stop
                         </button>
                         <div class="o_timer_discard">
                             <button class="btn btn-muted stop-timer" t-on-click.stop="_onClickUnlinkTimer" title="Press Esc to discard">Discard</button>
                         </div>
-                        <div name="display_timer" class="ms-auto mx-md-auto fs-4 fw-bold">
+                        <div name="display_timer" class="ms-auto ms-lg-0 fs-4 fw-bold">
                             <TimesheetDisplayTimer
                                 t-if="props.timesheet"
                                 record="props.timesheet"
@@ -36,7 +36,7 @@
                         </span>
                     </div>
                     <div t-elif="props.timesheet"
-                         class="input_m2o align-items-center w-100 d-grid pt-1 px-2 pt-md-0"
+                         class="input_m2o d-grid align-items-center ms-lg-3 mt-3 mt-lg-0 w-100 w-lg-75"
                          t-on-keydown="_onKeyDown"
                          t-attf-style="
                             grid-template-rows: {{ env.isSmall ? 'repeat(3, 1fr)' : '1fr' }};
@@ -46,7 +46,7 @@
                     >
                         <Field
                             name="'project_id'"
-                            class="!props.timesheet.isInEdition and 'd-inline align-middle pt-1'"
+                            class="!props.timesheet.isInEdition ? 'd-inline align-middle pt-1 o_required_modifier' : 'o_required_modifier'"
                             record="props.timesheet"
                             attrs="props.fields['project_id'].attrs"
                             placeholder="props.fields['project_id'].placeholder"
@@ -58,8 +58,10 @@
                             record="props.timesheet"
                             attrs="props.fields['task_id'].attrs"
                             placeholder="props.fields['task_id'].placeholder"
+                            context="props.fields['task_id'].context"
                             canCreateEdit="false"
                             domain="getDomain('task_id')"
+                            type="'task_with_hours'"
                         />
                         <Field
                             name="'name'"

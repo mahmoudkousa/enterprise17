@@ -307,10 +307,7 @@
             <div t-if="!props.options.hideLineTotal"
                 t-att-data-grid-row="rowPosition"
                 t-att-data-grid-column="props.columns.length + 1 + columnsGap"
-                class="o_grid_highlightable position-md-sticky end-0 d-flex align-items-center justify-content-center bg-400 text-black fw-bold"
-                t-att-class="{
-                    'bg-danger text-bg-danger': grandTotal lt 0,
-                }"
+                t-attf-class="o_grid_highlightable position-md-sticky end-0 d-flex align-items-center justify-content-center text-black fw-bold {{ getFooterTotalCellClasses(grandTotal) }}"
                 t-attf-style="grid-row: {{rowPosition}}; grid-column: {{props.columns.length + 1 + columnsGap}};"
             >
                 <span>

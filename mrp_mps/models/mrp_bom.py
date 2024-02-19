@@ -29,3 +29,12 @@ class MrpBom(models.Model):
             for product_id in bom.bom_line_ids.product_id.ids + ids:
                 schedule_count += product_schedule_counts.get(product_id, 0)
             bom.schedule_count = schedule_count
+
+    def action_open_mps_view(self):
+        self.ensure_one()
+        action = self.env["ir.actions.actions"]._for_xml_id("mrp_mps.action_mrp_mps")
+        action['domain'] = ["|", ('product_id.bom_line_ids.bom_id', '=', self.id),
+                            "|", ('product_id.variant_bom_ids', '=', self.id),
+                            "&", ('product_tmpl_id.bom_ids.product_id', '=', False),
+                            ('product_tmpl_id.bom_ids', '=', self.id)]
+        return action

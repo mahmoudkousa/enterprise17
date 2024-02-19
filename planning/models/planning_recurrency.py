@@ -82,40 +82,50 @@ class PlanningRecurrency(models.Model):
                     recurrence_end_dt = recurrency._get_recurrence_last_datetime()
 
                 # find end of generation period (either the end of recurrence (if this one ends before the cron period), or the given `stop_datetime` (usually the cron period))
-                if not stop_datetime:
-                    stop_datetime = fields.Datetime.now() + get_timedelta(recurrency.company_id.planning_generation_interval, 'month')
-                range_limit = min([dt for dt in [recurrence_end_dt, stop_datetime] if dt])
+                recurrency_stop_datetime = stop_datetime or PlanningSlot._add_delta_with_dst(
+                    fields.Datetime.now(),
+                    get_timedelta(recurrency.company_id.planning_generation_interval, 'month')
+                )
+                range_limit = min([dt for dt in [recurrence_end_dt, recurrency_stop_datetime] if dt])
+                slot_duration = slot.end_datetime - slot.start_datetime
+
+                def get_all_next_starts():
+                    for i in range(1, 365 * 5): # 5 years if every day
+                        next_start = PlanningSlot._add_delta_with_dst(
+                            slot.start_datetime,
+                            get_timedelta(recurrency.repeat_interval * i, recurrency.repeat_unit)
+                        )
+                        if next_start >= range_limit:
+                            return
+                        yield next_start
 
                 # generate recurring slots
                 resource = recurrency.slot_ids.resource_id[-1:]
-                recurrency_delta = get_timedelta(recurrency.repeat_interval, recurrency.repeat_unit)
-                next_start = PlanningSlot._add_delta_with_dst(slot.start_datetime, recurrency_delta)
                 occurring_slots = PlanningSlot.search_read([
                     ('resource_id', '=', resource.id),
                     ('company_id', '=', resource.company_id.id),
-                    ('start_datetime', '>=', next_start),
-                    ('end_datetime', '<=', range_limit)
+                    ('end_datetime', '>=', slot.start_datetime),
+                    ('start_datetime', '<=', range_limit)
                 ], ['start_datetime', 'end_datetime'])
 
                 slot_values_list = []
-                while next_start < range_limit:
+                for next_start in get_all_next_starts():
+                    next_end = next_start + slot_duration
                     slot_values = slot.copy_data({
                         'start_datetime': next_start,
-                        'end_datetime': next_start + (slot.end_datetime - slot.start_datetime),
+                        'end_datetime': next_end,
                         'recurrency_id': recurrency.id,
                         'company_id': recurrency.company_id.id,
                         'repeat': True,
                         'state': 'draft'
                     })[0]
                     if any(
-                        slot_values['start_datetime'] <= occurring_slot['end_datetime'] and
-                        slot_values['end_datetime'] >= occurring_slot['start_datetime']
+                        next_start <= occurring_slot['end_datetime'] and
+                        next_end >= occurring_slot['start_datetime']
                         for occurring_slot in occurring_slots
                     ):
                         slot_values['resource_id'] = False
                     slot_values_list.append(slot_values)
-                    next_start = PlanningSlot._add_delta_with_dst(next_start, recurrency_delta)
-
                 if slot_values_list:
                     PlanningSlot.create(slot_values_list)
                     recurrency.write({'last_generated_end_datetime': slot_values_list[-1]['start_datetime']})

@@ -124,6 +124,12 @@ $map-marker-color: #2c8397;
             color: #666666;
         }
     }
+
+    .leaflet-top,
+    .leaflet-bottom {
+        // used to not overlap dropdown menu.
+        z-index: $zindex-dropdown - 1;
+    }
 }
 .o-sm-pin-list-container {
     @include media-breakpoint-down(md) {

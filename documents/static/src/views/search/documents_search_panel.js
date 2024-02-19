@@ -245,6 +245,7 @@ export class DocumentsSearchPanel extends SearchPanel {
     }
 
     async editSectionValue(resModel, resId) {
+        const formViewRef = resModel === "documents.folder" ? "documents.folder_view_form" : "";
         this.action.doAction(
             {
                 res_model: resModel,
@@ -255,7 +256,7 @@ export class DocumentsSearchPanel extends SearchPanel {
                 views: [[false, "form"]],
                 context: {
                     create: false,
-                    form_view_ref: "documents.folder_view_form",
+                    form_view_ref: formViewRef,
                 },
             },
             {

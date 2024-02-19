@@ -338,7 +338,7 @@ class TestPeEdiCommon(AccountEdiTestCommon):
                         </ClassifiedTaxCategory>
                     </Item>
                     <Price>
-                        <PriceAmount currencyID="USD">1600.00</PriceAmount>
+                        <PriceAmount currencyID="USD">1600.0</PriceAmount>
                     </Price>
                 </InvoiceLine>
             </Invoice>
@@ -551,7 +551,7 @@ class TestPeEdiCommon(AccountEdiTestCommon):
                         </ClassifiedTaxCategory>
                     </Item>
                     <Price>
-                        <PriceAmount currencyID="USD">1600.00</PriceAmount>
+                        <PriceAmount currencyID="USD">1600.0</PriceAmount>
                     </Price>
                 </CreditNoteLine>
             </CreditNote>
@@ -767,7 +767,7 @@ class TestPeEdiCommon(AccountEdiTestCommon):
                         </ClassifiedTaxCategory>
                     </Item>
                     <Price>
-                        <PriceAmount currencyID="USD">1600.00</PriceAmount>
+                        <PriceAmount currencyID="USD">1600.0</PriceAmount>
                     </Price>
                 </DebitNoteLine>
             </DebitNote>

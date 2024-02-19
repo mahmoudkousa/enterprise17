@@ -47,6 +47,7 @@ Let your customers follow the signature process easily.
             'web/static/src/libs/fontawesome/css/font-awesome.css',
             'web/static/lib/select2/select2.css',
             'web/static/lib/bootstrap/scss/_functions.scss',
+            'web/static/src/scss/functions.scss',
             'web/static/src/scss/pre_variables.scss',
             'web/static/lib/bootstrap/scss/_variables.scss',
             'web/static/lib/bootstrap/scss/vendor/_rfs.scss',

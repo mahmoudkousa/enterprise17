@@ -84,7 +84,7 @@ export class FormEditorCompiler extends formView.Compiler {
 
         // the button box is included in the control panel, which is not visible in Studio
         // re-add it to the form view
-        const buttonBoxXml = xml.querySelector("div[name='button_box']");
+        const buttonBoxXml = xml.querySelector("div[name='button_box']:not(field div)");
         let buttonBox;
         const buttonBoxContainer = createElement("div", {
             class: "d-flex justify-content-end my-2",
@@ -198,7 +198,11 @@ export class FormEditorCompiler extends formView.Compiler {
             }
 
             if (node.tagName === "notebook") {
-                const originalChildren = Array.from(node.children);
+                // Since empty pages are not compiled, this compiler has not applied the studioXpath attribute.
+                // We must need to add one as well as the other pages, to make sure we can edit its content properly.
+                const originalChildren = Array.from(node.children).filter(
+                    (e) => e.tagName === "page"
+                );
                 Array.from(compiled.children).forEach((elem, index) => {
                     if (!elem.hasAttribute("studioXpath")) {
                         const studioXpath = originalChildren[index].getAttribute("studioXpath");

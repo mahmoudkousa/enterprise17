@@ -46,6 +46,14 @@ class TestSpreadsheetDashboard(DashboardTestCommon, SpreadsheetTestCase):
         self.assertEqual(locale_revision["commands"][0]["type"], "UPDATE_LOCALE")
         self.assertEqual(locale_revision["commands"][0]["locale"]["code"], "fr_FR")
 
+    def test_load_with_company_currency(self):
+        dashboard = self.create_dashboard().with_user(self.user)
+        data = dashboard.get_readonly_dashboard()
+        self.assertEqual(
+            data["default_currency"],
+            self.env["res.currency"].get_company_currency_for_spreadsheet()
+        )
+
     def test_load_with_user_locale_existing_revisions(self):
         dashboard = self.create_dashboard()
         dashboard.dispatch_spreadsheet_message(self.new_revision_data(dashboard))

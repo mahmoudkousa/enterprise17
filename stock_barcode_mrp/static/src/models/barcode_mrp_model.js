@@ -13,8 +13,21 @@ export default class BarcodeMRPModel extends BarcodePickingModel {
         this.validateContext = {};
         this.backorderModel = 'mrp.production';
         this.actionName = 'stock_barcode_mrp.stock_barcode_mo_client_action';
-        this.needSourceConfirmation = false;
         this.componentLoaded = false;
+        this.displayByProduct = false;
+    }
+
+    get cancelLabel() {
+        return _t("Cancel Manufacturing Order");
+    }
+
+    get canScrap() {
+        const { state } = this.record;
+        return state != 'cancel' && state != 'draft';
+    }
+
+    _cancelNotification() {
+        this.notification(_t("The Manufacturing Order has been cancelled"));
     }
 
     get printButtons() {
@@ -90,16 +103,19 @@ export default class BarcodeMRPModel extends BarcodePickingModel {
         return this.canBeValidate && this.isComplete;
     }
 
-    get byProductLines() {
-        return this.currentState.lines.filter( line => line.byProduct);
-    }
-
     get pageLines() {
+        if (this.displayByProduct) {
+            return this.currentState.lines.filter( line => line.byProduct);
+        }
         return this.currentState.lines.filter( line => !line.byProduct);
     }
 
     get displaySourceLocation() {
         return this.groups.group_stock_multi_locations && this.config.restrict_scan_source_location;
+    }
+
+    get canBeValidate() {
+        return ['confirmed', 'progress', 'to_close'].includes(this.record.state);
     }
 
     get canCreateNewLot() {
@@ -216,6 +232,17 @@ export default class BarcodeMRPModel extends BarcodePickingModel {
 
     /** Line Operations */
 
+    _checkBarcode(barcodeData) {
+        if (this.displayByProduct && barcodeData?.product?.id == this.record.product_id.id){
+            return {
+                title: _t("Product not Allowed"),
+                message: _t("You can't add the final product of a MO as a byproduct."),
+                error: true,
+            };
+        }
+        return super._checkBarcode(...arguments);
+    }
+
     _getFinalProductLine() {
         if (!this.record.virtualId) {
             this.record.virtualId = this._uniqueVirtualId;
@@ -249,6 +276,9 @@ export default class BarcodeMRPModel extends BarcodePickingModel {
         const defaultValues = super._getNewLineDefaultValues(...arguments);
         delete defaultValues.picking_id;
         defaultValues.production_id = this.resId;
+        if (this.displayByProduct) {
+            defaultValues.byProduct = true;
+        }
         return defaultValues
     }
 
@@ -263,13 +293,13 @@ export default class BarcodeMRPModel extends BarcodePickingModel {
         return super._shouldCreateLineOnExceed(line);
     }
 
-    async _createNewLine(params) {
+    async createNewLine(params) {
         const { product_id } = params.fieldsParams;
         if (!this.record.product_id && product_id ) {
             this.record.product_id = product_id;
             return await this.save();
         }
-        return await super._createNewLine(...arguments);
+        return super.createNewLine(...arguments);
     }
 
     updateLine(line, args) {
@@ -334,6 +364,7 @@ export default class BarcodeMRPModel extends BarcodePickingModel {
             default_product_uom_id: this.record.product_uom_id.id,
             default_production_id: this.resId,
             default_qty_done: 0,
+            final_product_id: this.record.product_id.id,
             newByProduct: params.newByProduct,
         };
     }
@@ -494,6 +525,9 @@ export default class BarcodeMRPModel extends BarcodePickingModel {
         const values = super._createCommandVals(...arguments);
         values.production_id = this.resId;
         values.company_id = this.record.company_id;
+        if (line.byProduct){
+            values.byProduct = true;
+        }
         return values;
     }
 

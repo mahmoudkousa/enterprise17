@@ -3,7 +3,7 @@
 
     <t t-name="timesheet_grid.TimesheetTimerKanbanRenderer" t-inherit="web.KanbanRenderer" t-inherit-mode="primary">
         <xpath expr="//div[hasclass('o_kanban_renderer')]" position="before">
-            <div t-if="timesheetTimerRendererHook.showTimer" class="pinned_header position-sticky start-0 d-md-flex justify-content-end align-items-center bg-view border-bottom">
+            <div t-if="timesheetTimerRendererHook.showTimer" class="pinned_header position-sticky start-0 z-index-1 d-md-flex justify-content-end align-items-center bg-view border-bottom">
                 <div class="flex-grow-1" t-key="timesheetTimerRendererHook.timerState.timesheetId">
                     <TimesheetTimerHeader
                         timesheet="timesheetTimerRendererHook.timesheet"

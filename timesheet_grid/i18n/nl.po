@@ -4,7 +4,8 @@
 # 
 # Translators:
 # Wil Odoo, 2023
-# Jolien De Paepe, 2023
+# Erwin van der Ploeg <erwin@odooexperts.nl>, 2023
+# Jolien De Paepe, 2024
 # 
 msgid ""
 msgstr ""
@@ -12,7 +13,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-10-26 22:20+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Jolien De Paepe, 2023\n"
+"Last-Translator: Jolien De Paepe, 2024\n"
 "Language-Team: Dutch (https://app.transifex.com/odoo/teams/41243/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -37,7 +38,7 @@ msgstr "+ [A] om toe te voegen"
 #. module: timesheet_grid
 #: model_terms:ir.ui.view,arch_db:timesheet_grid.project_task_view_kanban
 msgid "<i class=\"fa fa-pause text-warning\" title=\"Timer is Paused\"/>"
-msgstr "<i class=\"fa fa-pause text-warning\" title=\"Timer is gepauseerd\"/>"
+msgstr "<i class=\"fa fa-pause text-warning\" title=\"Klok is gepauzeerd\"/>"
 
 #. module: timesheet_grid
 #: model_terms:ir.ui.view,arch_db:timesheet_grid.project_task_view_kanban
@@ -390,7 +391,7 @@ msgstr ""
 #. module: timesheet_grid
 #: model:ir.model,name:timesheet_grid.model_account_analytic_line
 msgid "Analytic Account"
-msgstr "Kostenplaats"
+msgstr "Analytische rekening"
 
 #. module: timesheet_grid
 #: model:ir.model.fields,field_description:timesheet_grid.field_res_company__timesheet_mail_allow
@@ -446,7 +447,7 @@ msgid ""
 "timesheets"
 msgstr ""
 "Configureer herinnering in de urenstaatinstellingen om goedkeurders eraan te"
-" herinneren urenstaten te valideren"
+" herinneren urenstaten te bevestigen"
 
 #. module: timesheet_grid
 #. odoo-python
@@ -683,7 +684,7 @@ msgstr "Werknemerfrequentie"
 #: model:ir.model.fields,field_description:timesheet_grid.field_res_company__timesheet_mail_employee_allow
 #: model:ir.model.fields,field_description:timesheet_grid.field_res_config_settings__reminder_user_allow
 msgid "Employee Reminder"
-msgstr "Werknemer herinnering"
+msgstr "Herinnering werknemer"
 
 #. module: timesheet_grid
 #: model:ir.model.fields,field_description:timesheet_grid.field_res_company__timesheet_mail_employee_delay
@@ -851,7 +852,7 @@ msgstr "Volgende geplande datum voor herinnering goedkeurder"
 #. module: timesheet_grid
 #: model:ir.model.fields,field_description:timesheet_grid.field_res_company__timesheet_mail_employee_nextdate
 msgid "Next scheduled date for employee reminder"
-msgstr "Volgende geplande datum voor werknemer herinnering"
+msgstr "Volgende geplande datum voor werknemerherinnering"
 
 #. module: timesheet_grid
 #: model_terms:ir.actions.act_window,help:timesheet_grid.action_timesheet_previous_month
@@ -862,7 +863,7 @@ msgstr "Geen activiteiten om goed te keuren."
 #. module: timesheet_grid
 #: model_terms:ir.actions.act_window,help:timesheet_grid.timesheet_grid_to_validate_action
 msgid "No timesheets to validate"
-msgstr "Geen urenstaten om te valideren"
+msgstr "Geen urenstaten om te bevestigen"
 
 #. module: timesheet_grid
 #: model:ir.model.fields,help:timesheet_grid.field_res_config_settings__reminder_delay
@@ -873,7 +874,7 @@ msgid ""
 msgstr ""
 "Aantal dagen na het einde van de week/maand waarna een automatische "
 "e-mailherinnering wordt verzonden naar de urenstaatmanagers die nog "
-"urenstaten moeten valideren."
+"urenstaten moeten bevestigen."
 
 #. module: timesheet_grid
 #: model:ir.model.fields,help:timesheet_grid.field_res_config_settings__reminder_user_delay
@@ -1052,7 +1053,7 @@ msgstr "Start"
 #: model_terms:ir.ui.view,arch_db:timesheet_grid.project_task_view_form
 #, python-format
 msgid "Stop"
-msgstr "Stoppen"
+msgstr "Stop"
 
 #. module: timesheet_grid
 #. odoo-javascript
@@ -1411,7 +1412,7 @@ msgstr ""
 #: code:addons/timesheet_grid/models/res_users.py:0
 #, python-format
 msgid "You are not allowed to see timesheets."
-msgstr ""
+msgstr "Je mag de urenstaten niet bekijken."
 
 #. module: timesheet_grid
 #. odoo-python
@@ -1502,6 +1503,17 @@ msgstr ""
 " goed te keuren. Mogelijk komt dit doordat ze in de toekomst zijn gedateerd."
 
 #. module: timesheet_grid
+#. odoo-python
+#: code:addons/timesheet_grid/models/analytic.py:0
+#, python-format
+msgid ""
+"Your timesheet entry is missing a project. Please either group the Grid view"
+" by project or enter your timesheets through another view."
+msgstr ""
+"Er ontbreekt een project in je urenstaten. Groepeer de rasterweergave op "
+"project of voer je urenstaten in via een andere weergave."
+
+#. module: timesheet_grid
 #: model:ir.model.fields.selection,name:timesheet_grid.selection__res_company__timesheet_mail_employee_interval__months
 #: model:ir.model.fields.selection,name:timesheet_grid.selection__res_company__timesheet_mail_interval__months
 msgid "after the end of the month"
@@ -1518,7 +1530,7 @@ msgstr "na het einde van de week"
 #: code:addons/timesheet_grid/static/src/components/timesheet_timer_header/timesheet_timer_header.xml:0
 #, python-format
 msgid "and click on"
-msgstr ""
+msgstr "et klik op"
 
 #. module: timesheet_grid
 #: model_terms:ir.ui.view,arch_db:timesheet_grid.res_config_settings_view_form
@@ -1551,7 +1563,7 @@ msgstr "aangepast"
 #: code:addons/timesheet_grid/static/src/components/timesheet_timer_header/timesheet_timer_header.xml:0
 #, python-format
 msgid "or [a] to launch the timer"
-msgstr "of [a] om de timer te lanceren"
+msgstr "of [a] om de timer te starten"
 
 #. module: timesheet_grid
 #. odoo-javascript
@@ -1565,11 +1577,11 @@ msgstr "of klik op"
 #: code:addons/timesheet_grid/static/src/components/timesheet_timer_header/timesheet_timer_header.xml:0
 #, python-format
 msgid "to add 15 min"
-msgstr ""
+msgstr "om 15 min toe te voegen"
 
 #. module: timesheet_grid
 #. odoo-javascript
 #: code:addons/timesheet_grid/static/src/components/timesheet_timer_header/timesheet_timer_header.xml:0
 #, python-format
 msgid "to launch the timer"
-msgstr ""
+msgstr "om de timer te starten"

@@ -27,7 +27,15 @@ export class DocumentsInspectorField extends Field {
             record.isDocumentsInspector = true;
             const recordUpdate = record.update.bind(record);
             record.update = async (value) => {
-                doLockAction(() => recordUpdate(value));
+                doLockAction(async () => {
+                    await recordUpdate(value);
+
+                    if (!record.selected) {
+                        // need to save manually after the update, otherwise if the record
+                        // is not selected, the change won't be applied
+                        await record.save();
+                    }
+                });
             };
         }
 

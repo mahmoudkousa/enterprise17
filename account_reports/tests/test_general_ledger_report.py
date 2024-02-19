@@ -606,3 +606,23 @@ class TestGeneralLedgerReport(TestAccountReportsCommon, odoo.tests.HttpCase):
         move_07_2017.action_post()
 
         self.start_tour("/web", 'account_reports_search', login=self.env.user.login)
+
+    def test_general_ledger_hierarchy_non_numerical_column_value(self):
+        """
+            This test will check the value of the different (non-numerical) columns of the general ledger in case the
+            hierarchy options is enabled
+        """
+        options = self._generate_options(self.report, '2017-01-01', '2017-12-31')
+        options['hierarchy'] = True
+
+        # String and Date figure type should be empty when using hierarchy.
+        self.assertLinesValues(
+            self.report._get_lines(options),
+            #   Name                     Date           Communication          Partner
+            [0,                             1,                     2,                3],
+            [
+                ('(No Group)',             '',                    '',               ''),
+                ('Total',                  '',                    '',               ''),
+            ],
+            options,
+        )

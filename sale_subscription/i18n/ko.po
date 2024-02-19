@@ -4,18 +4,18 @@
 # 
 # Translators:
 # Martin Trigaux, 2023
-# Sarah Park, 2023
 # JH CHOI <hwangtog@gmail.com>, 2023
 # Daye Jeong, 2023
-# Wil Odoo, 2023
+# Sarah Park, 2023
+# Wil Odoo, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-24 20:55+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Wil Odoo, 2023\n"
+"Last-Translator: Wil Odoo, 2024\n"
 "Language-Team: Korean (https://app.transifex.com/odoo/teams/41243/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -65,7 +65,7 @@ msgstr "%s 일"
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_content
 msgid "(Change Plan)"
-msgstr ""
+msgstr "(요금제 변경)"
 
 #. module: sale_subscription
 #: model:ir.model.fields.selection,name:sale_subscription.selection__sale_order_alert__mrr_change_period__1month
@@ -90,15 +90,6 @@ msgid ""
 "<b>Congratulations</b>, your first subscription quotation is ready to be "
 "sent!"
 msgstr "<b>축하합니다</b>, 첫 번째 구독 견적서를 보낼 준비가 완료되었습니다!"
-
-#. module: sale_subscription
-#: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_template
-msgid ""
-"<b>No suitable payment method could be found.</b><br/>\n"
-"                                    If you believe that is an error, please contact the website administrator."
-msgstr ""
-"<b>적절한 결제 수단을 찾을 수 없습니다.</b><br/>\n"
-"                                    오류가 계속 발생할 시 웹사이트 관리자에게 문의해 주시기 바랍니다."
 
 #. module: sale_subscription
 #: model:mail.template,body_html:sale_subscription.mail_template_subscription_alert
@@ -295,6 +286,9 @@ msgid ""
 "                                Action data can not be updated to avoid unexpected behaviors. Create a new action instead.\n"
 "                            </em>"
 msgstr ""
+"<em class=\"text-muted\" colspan=\"2\" invisible=\"not id\">\n"
+"                                예상치 못한 동작을 방지하기 위해, 활동 데이터를 업데이트할 수 없습니다. 대신 새 활동을 생성하세요.\n"
+"                            </em>"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_base_automation_form
@@ -303,6 +297,9 @@ msgid ""
 "                        Action data can not be updated to avoid unexpected behaviors. Create a new automation rule instead.\n"
 "                    </em>"
 msgstr ""
+"<em class=\"text-muted\" invisible=\"not is_sale_order_alert\">\n"
+"                       예상치 못한 동작을 방지하기 위해, 활동 데이터를 업데이트할 수 없습니다. 대신 새 자동 규칙을 생성하세요.\n"
+"                    </em>"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_sidebar
@@ -338,11 +335,6 @@ msgstr "<i class=\"fa fa-print\"/> 인쇄"
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_so_portal_template
 msgid "<i class=\"oi oi-arrow-right me-1\"/>Back to your subscription"
 msgstr "<i class=\"oi oi-arrow-right me-1\"/>내 구독으로 돌아가기"
-
-#. module: sale_subscription
-#: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_template
-msgid "<i class=\"oi oi-arrow-right\"/> Add payment providers"
-msgstr "<i class=\"oi oi-arrow-right\"/> 결제대행업체 추가하기"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_template
@@ -416,6 +408,8 @@ msgid ""
 "<span invisible=\"not plan_id or subscription_state == "
 "'7_upsell'\">until</span>"
 msgstr ""
+"<span invisible=\"not plan_id or subscription_state == '7_upsell'\">다음 "
+"기간까지</span>"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_content
@@ -424,6 +418,9 @@ msgid ""
 "                                There is already a pending payment for this subscription.\n"
 "                            </span>"
 msgstr ""
+"<span>\n"
+"                                이 구독에 대해 이미 보류 중인 결제가 있습니다.\n"
+"                            </span>"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_alert_view_form
@@ -438,7 +435,7 @@ msgstr "<strong> 및 </strong>"
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.report_saleorder_document
 msgid "<strong>Recurring Plan:</strong>"
-msgstr ""
+msgstr "<strong>정기 요금제:</strong>"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_close_reason_view_form
@@ -1012,14 +1009,14 @@ msgstr ""
 msgid ""
 "A canceled SO cannot be in progress. You should close %s before canceling "
 "it."
-msgstr ""
+msgstr "판매주문서가 취소된 경우에는 진행 중으로 설정할 수 없습니다. 취소하기 전에 %s 항목을 종료해야 합니다."
 
 #. module: sale_subscription
 #. odoo-python
 #: code:addons/sale_subscription/controllers/portal.py:0
 #, python-format
 msgid "A renewal has been created by the client."
-msgstr ""
+msgstr "고객이 계약을 갱신했습니다."
 
 #. module: sale_subscription
 #. odoo-python
@@ -1033,17 +1030,12 @@ msgstr "%s 갱신 견적서가 생성되었습니다"
 #: model_terms:ir.ui.view,arch_db:sale_subscription.view_sale_order_log_growth_graph
 #: model_terms:ir.ui.view,arch_db:sale_subscription.view_sale_order_log_growth_pivot
 msgid "ARR Change"
-msgstr ""
+msgstr "ARR 변경"
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_log_report__arr_change_normalized
 msgid "ARR Change (normalized)"
-msgstr ""
-
-#. module: sale_subscription
-#: model:ir.model.fields,field_description:sale_subscription.field_sale_subscription_report__is_abandoned_cart
-msgid "Abandoned Cart"
-msgstr "취소한 장바구니"
+msgstr "ARR 변경 (정규화)"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_alert_view_form
@@ -1079,7 +1071,7 @@ msgstr "활성화"
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_log_report__contract_number
 msgid "Active Subscriptions Change"
-msgstr ""
+msgstr "활성 중인 구독 변경"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_alert_view_form
@@ -1088,7 +1080,7 @@ msgstr "활동"
 
 #. module: sale_subscription
 #: model:ir.ui.menu,name:sale_subscription.mail_activity_plan_menu_config_subscription
-msgid "Activity Plan"
+msgid "Activity Plans"
 msgstr "활동 계획"
 
 #. module: sale_subscription
@@ -1140,13 +1132,15 @@ msgid ""
 " in their subscription.Only products that are listed as \"optional "
 "products\" can be modified."
 msgstr ""
+"고객이 상향 판매 견적서를 생성하여 구독에서 품목 수량을 조정할 수 있게 합니다. '선택 품목' 리스트에 있는 품목만 수정할 수 "
+"있습니다."
 
 #. module: sale_subscription
 #: model:ir.model.fields,help:sale_subscription.field_sale_subscription_plan__related_plan_id
 msgid ""
 "Allow your customers to switch from this plan to another on quotation (new "
 "subscription or renewal)"
-msgstr ""
+msgstr "고객이 견적서의 해당 요금제에서 다른 항목으로 전환할 수 있게 합니다 (신규 구독 또는 갱신 시)."
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_log__amount_signed
@@ -1158,7 +1152,7 @@ msgstr "서명 금액"
 #: code:addons/sale_subscription/controllers/portal.py:0
 #, python-format
 msgid "An upsell has been created by the client."
-msgstr ""
+msgstr "고객이 상향 판매를 생성했습니다."
 
 #. module: sale_subscription
 #. odoo-python
@@ -1181,7 +1175,7 @@ msgstr "연간 반복 수익"
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_content
 msgid "Anticipate payment"
-msgstr ""
+msgstr "예상 결제"
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_alert__filter_domain
@@ -1241,7 +1235,7 @@ msgstr "자동 마감"
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_subscription_plan__auto_close_limit_display
 msgid "Automatic Closing After"
-msgstr ""
+msgstr "다음 이후 자동으로 종료합니다."
 
 #. module: sale_subscription
 #. odoo-python
@@ -1362,12 +1356,12 @@ msgstr "구독을 종료하기 전에 계정 관리자인 Marc Demo 님과 통�
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_subscription_pricing__name
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_plan_view_form
 msgid "Billing Period"
-msgstr ""
+msgstr "청구 기간"
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_subscription_plan__billing_period_display_sentence
 msgid "Billing Period Display"
-msgstr ""
+msgstr "청구 기간 표시"
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_close_reason__retention_button_link
@@ -1429,17 +1423,25 @@ msgstr "고객 변경"
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_sidebar
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_so_portal_template
 msgid "Change Plan"
-msgstr ""
+msgstr "요금제 변경"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_so_portal_template
 msgid "Change Plan for"
-msgstr ""
+msgstr "다음 관련 요금제 변경"
 
 #. module: sale_subscription
 #: model:ir.actions.server,name:sale_subscription.model_sale_order_subscription_change_customer
 msgid "Change customer"
 msgstr "고객 변경"
+
+#. module: sale_subscription
+#. odoo-python
+#: code:addons/sale_subscription/models/sale_order.py:0
+#: code:addons/sale_subscription/models/sale_order.py:0
+#, python-format
+msgid "Check reopened subscription"
+msgstr "재개된 구독 확인하기"
 
 #. module: sale_subscription
 #. odoo-javascript
@@ -1478,11 +1480,10 @@ msgstr "견적서에 품목이나 서비스를 추가하려면 여기를 클릭�
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order__user_closable
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_subscription_plan__user_closable
 msgid "Closable"
-msgstr ""
+msgstr "종료 가능"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_order_view_form
-#: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_template
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_so_portal_template
 msgid "Close"
 msgstr "닫기"
@@ -1566,12 +1567,12 @@ msgstr "설정"
 msgid ""
 "Consolidate all of a customer's subscriptions that are due to be billed on "
 "the same day onto a single invoice."
-msgstr ""
+msgstr "청구 날짜가 같은 고객들의 구독 항목을 모두 단일 청구서로 통합합니다."
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_res_config_settings__invoice_consolidation
 msgid "Consolidate subscriptions billing"
-msgstr ""
+msgstr "구독 청구 항목 통합"
 
 #. module: sale_subscription
 #: model:ir.model,name:sale_subscription.model_res_partner
@@ -1626,7 +1627,7 @@ msgstr "청구서 발행"
 #. module: sale_subscription
 #: model_terms:ir.actions.act_window,help:sale_subscription.sale_subscription_plan_action
 msgid "Create a new plan"
-msgstr ""
+msgstr "새 요금제 생성"
 
 #. module: sale_subscription
 #: model_terms:ir.actions.act_window,help:sale_subscription.product_action_subscription
@@ -1647,7 +1648,7 @@ msgstr "새 구독 알림 만들기"
 #. module: sale_subscription
 #: model_terms:ir.actions.act_window,help:sale_subscription.sale_subscription_action_plan
 msgid "Create a new subscription plan"
-msgstr ""
+msgstr "새 구독 요금제 생성"
 
 #. module: sale_subscription
 #: model_terms:ir.actions.act_window,help:sale_subscription.sale_subscription_template_action
@@ -1667,7 +1668,7 @@ msgstr "다음 활동 만들기"
 #. module: sale_subscription
 #: model_terms:ir.actions.act_window,help:sale_subscription.sale_subscription_action_plan
 msgid "Create subscriptions plan"
-msgstr ""
+msgstr "구독 요금제 생성"
 
 #. module: sale_subscription
 #: model_terms:ir.actions.act_window,help:sale_subscription.sale_subscription_action
@@ -1728,7 +1729,7 @@ msgstr "통화"
 #: model:ir.model.fields,field_description:sale_subscription.field_product_product__product_subscription_pricing_ids
 #: model:ir.model.fields,field_description:sale_subscription.field_product_template__product_subscription_pricing_ids
 msgid "Custom Subscription Pricings"
-msgstr ""
+msgstr "사용자 지정 구독 가격제"
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_log_report__partner_id
@@ -1779,13 +1780,13 @@ msgstr "고객 우편번호"
 #: model:ir.model.fields,help:sale_subscription.field_sale_order__user_closable
 #: model:ir.model.fields,help:sale_subscription.field_sale_subscription_plan__user_closable
 msgid "Customer can close their subscriptions."
-msgstr ""
+msgstr "고객은 구독을 해지할 수 있습니다."
 
 #. module: sale_subscription
 #: model:ir.model.fields,help:sale_subscription.field_sale_order__user_extend
 #: model:ir.model.fields,help:sale_subscription.field_sale_subscription_plan__user_extend
 msgid "Customer can create a renewal quotation for their subscription."
-msgstr ""
+msgstr "고객은 구독한 항목에 대해 갱신 견적서를 생성할 수 있습니다."
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_alert__customer_ids
@@ -1802,6 +1803,11 @@ msgstr "날짜"
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order__next_invoice_date
 msgid "Date of Next Invoice"
 msgstr "다음 청구서 발행일"
+
+#. module: sale_subscription
+#: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_content
+msgid "Date:"
+msgstr "날짜:"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_plan_view_form
@@ -1836,6 +1842,8 @@ msgid ""
 "delay before the trigger date, like sending a reminder 15 minutes before a "
 "meeting."
 msgstr ""
+"동작되는 날짜 이후로 연기합니다. 동작일 이전으로 날짜를 연기해야 하는 경우에는 음수를 입력하면 되며, 예를 들어 회의 15분 전에 알림"
+" 을 전송할 때 사용할 수 있습니다."
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_alert__trg_date_range
@@ -1880,7 +1888,7 @@ msgstr "할인 금액"
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order__display_late
 msgid "Display Late"
-msgstr ""
+msgstr "늦게 표시하기"
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_alert__display_name
@@ -1923,7 +1931,7 @@ msgstr "소요시간"
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_template__duration_unit
 msgid "Duration Unit"
-msgstr ""
+msgstr "소요 기간 단위"
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_alert__template_id
@@ -1936,6 +1944,8 @@ msgid ""
 "Email template used to send invoicing email automatically.\n"
 "Leave it empty if you don't want to send email automatically."
 msgstr ""
+"자동으로 청구서 발행용 이메일을 발송할 때 사용하는 이메일 서식입니다.\n"
+"이메일 자동 발송을 하지 않으려면 비워두세요."
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_close_reason__empty_retention_message
@@ -1965,6 +1975,13 @@ msgstr "계약 종료"
 #. odoo-python
 #: code:addons/sale_subscription/models/sale_order.py:0
 #, python-format
+msgid "Error during renewal of contract %s %s %s"
+msgstr "계약 갱신 중 오류가 발생했습니다: %s %s %s"
+
+#. module: sale_subscription
+#. odoo-python
+#: code:addons/sale_subscription/models/sale_order.py:0
+#, python-format
 msgid "Error during renewal of contract %s (Payment not recorded)"
 msgstr "%s 계약 갱신 중 오류 발생 (결제가 기록되지 않음)"
 
@@ -1986,6 +2003,11 @@ msgstr "행사 유형"
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_order_log_report_search
 msgid "Expansion"
 msgstr "확장"
+
+#. module: sale_subscription
+#: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_content
+msgid "Expiration Date:"
+msgstr "만료일:"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_view_search
@@ -2178,7 +2200,7 @@ msgstr "미설정 시, 자동으로 결제되지 않습니다."
 msgid ""
 "If present, this condition must be satisfied before executing the automation"
 " rule."
-msgstr ""
+msgstr "조건이 있는 경우, 자동 규칙을 실행하기 전에 해당 조건을 충족해야 합니다."
 
 #. module: sale_subscription
 #: model:ir.model.fields,help:sale_subscription.field_sale_order_alert__filter_pre_domain
@@ -2249,7 +2271,7 @@ msgstr "내부 노트"
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order__internal_note_display
 msgid "Internal Note Display"
-msgstr ""
+msgstr "내부 메모 표시"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_order_view_form
@@ -2296,7 +2318,7 @@ msgstr "갱신됨"
 #: model:ir.model.fields,field_description:sale_subscription.field_base_automation__is_sale_order_alert
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_alert__is_sale_order_alert
 msgid "Is Sale Order Alert"
-msgstr ""
+msgstr "판매 주문 알림입니다."
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_template__is_subscription
@@ -2347,7 +2369,7 @@ msgstr "KPI 3개월 MRR 델타"
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_template__is_unlimited
 msgid "Last Forever"
-msgstr ""
+msgstr "영구적입니다."
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_alert__last_run
@@ -2430,12 +2452,12 @@ msgstr "카탈로그로 가서 첫 번째 구독 상품을 만들어 봅시다"
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_alert__log_webhook_calls
 msgid "Log Calls"
-msgstr ""
+msgstr "통화 기록"
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_log_report__log_currency_id
 msgid "Log Currency"
-msgstr ""
+msgstr "환율 기록"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_alert_view_form
@@ -2451,7 +2473,6 @@ msgstr "MRR"
 
 #. module: sale_subscription
 #: model:ir.actions.act_window,name:sale_subscription.sale_order_log_analysis_action
-#: model:ir.ui.menu,name:sale_subscription.menu_sale_order_log_analysis_report
 msgid "MRR Analysis"
 msgstr "MRR 분석"
 
@@ -2477,7 +2498,7 @@ msgstr "MRR 변경"
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_log_report__mrr_change_normalized
 msgid "MRR Change (normalized)"
-msgstr ""
+msgstr "MRR 변경 (정규화)"
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_alert__mrr_change_amount
@@ -2510,6 +2531,11 @@ msgid "MRR Range Min"
 msgstr "MRR 최소 범위"
 
 #. module: sale_subscription
+#: model:ir.ui.menu,name:sale_subscription.menu_sale_order_log_analysis_report
+msgid "MRR Timeline"
+msgstr "MRR 활동 기록"
+
+#. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.view_sale_order_log_growth_tree
 msgid "MRR change"
 msgstr "MRR 변경"
@@ -2533,14 +2559,13 @@ msgstr "MRR:"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_sidebar
-#: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_template
 msgid "Manage Payment Method"
 msgstr "결제 수단 관리"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.portal_my_home_subscription
 msgid "Manage your subscriptions"
-msgstr ""
+msgstr "구독 관리"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_sidebar
@@ -2590,13 +2615,6 @@ msgid "Messages"
 msgstr "메시지"
 
 #. module: sale_subscription
-#: model:ir.model.fields,help:sale_subscription.field_sale_subscription_plan__billing_period_value
-msgid ""
-"Minimum duration before this rule is applied. If set to 0, it represents a "
-"fixed temporal price."
-msgstr "이 규칙이 적용되기 전까지의 최소 기간입니다. 0으로 설정할 경우, 고정 임시 가격을 나타냅니다."
-
-#. module: sale_subscription
 #. odoo-python
 #: code:addons/sale_subscription/models/sale_order.py:0
 #, python-format
@@ -2618,7 +2636,7 @@ msgstr "모델명"
 #. module: sale_subscription
 #: model:ir.model.fields,help:sale_subscription.field_sale_order_alert__model_id
 msgid "Model on which the automation rule runs."
-msgstr ""
+msgstr "자동 규칙이 실행되는 모델입니다."
 
 #. module: sale_subscription
 #: model:ir.model.fields.selection,name:sale_subscription.selection__sale_order_alert__trigger_condition__on_create_or_write
@@ -2761,7 +2779,7 @@ msgstr "결제 수단 없음"
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_plan_view_form
 msgid "No automatic mail"
-msgstr ""
+msgstr "자동 메일이 없습니다."
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_template
@@ -2804,7 +2822,7 @@ msgstr "노트"
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order__note_order
 msgid "Note Order"
-msgstr ""
+msgstr "메모 순서"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_order_view_form
@@ -2869,7 +2887,7 @@ msgstr "지원되지 않는 작업"
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_subscription_plan__related_plan_id
 msgid "Optional Plans"
-msgstr ""
+msgstr "선택 요금제"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_view_search
@@ -2983,6 +3001,20 @@ msgid "Payment method:"
 msgstr "결제 방법:"
 
 #. module: sale_subscription
+#. odoo-python
+#: code:addons/sale_subscription/models/sale_order.py:0
+#, python-format
+msgid "Payment not recorded"
+msgstr "결제 내역 미기록"
+
+#. module: sale_subscription
+#. odoo-python
+#: code:addons/sale_subscription/models/sale_order.py:0
+#, python-format
+msgid "Payment recorded: %s"
+msgstr "결제 기록: %s"
+
+#. module: sale_subscription
 #: model:mail.template,subject:sale_subscription.email_payment_reminder
 msgid ""
 "Payment reminder for subscription {{ object.client_order_ref or object.name "
@@ -3016,11 +3048,6 @@ msgstr "KPI가 계산되는 기간"
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_report_search
 msgid "Plan"
 msgstr "계획"
-
-#. module: sale_subscription
-#: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_content
-msgid "Plan Details"
-msgstr "계획 세부 사항"
 
 #. module: sale_subscription
 #: model:ir.actions.act_window,name:sale_subscription.sale_subscription_action_plan
@@ -3252,7 +3279,7 @@ msgstr "사유"
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_alert__record_getter
 msgid "Record Getter"
-msgstr ""
+msgstr "레코드 게터"
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order__is_subscription
@@ -3285,7 +3312,7 @@ msgstr "반복판매 계획"
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_order_portal_content_inherit
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_content
 msgid "Recurring Plan:"
-msgstr ""
+msgstr "정기 요금제:"
 
 #. module: sale_subscription
 #: model:ir.actions.act_window,name:sale_subscription.sale_subscription_plan_action
@@ -3302,18 +3329,27 @@ msgstr "반복 가격"
 #: model_terms:ir.ui.view,arch_db:sale_subscription.product_pricelist_view
 #: model_terms:ir.ui.view,arch_db:sale_subscription.product_template_view_form_recurring
 msgid "Recurring Prices"
-msgstr ""
+msgstr "정기 요금"
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_product_pricelist__product_subscription_pricing_ids
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_subscription_plan__product_subscription_pricing_ids
 msgid "Recurring Pricing"
-msgstr ""
+msgstr "정기 가격제"
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_subscription_report__recurring_total
 msgid "Recurring Revenue"
 msgstr "반복 수익"
+
+#. module: sale_subscription
+#. odoo-python
+#: code:addons/sale_subscription/models/sale_order.py:0
+#, python-format
+msgid ""
+"Recurring period must be a positive number. Please ensure the input is a "
+"valid positive numeric value."
+msgstr "반복 기간은 반드시 양수여야 합니다. 입력값이 유효한 양수 값인지 확인하시기 바랍니다."
 
 #. module: sale_subscription
 #. odoo-python
@@ -3679,7 +3715,7 @@ msgstr "구독 단계 (예: 종료나 상향 판매)에서 설정하여 고객�
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.payment_form_inherit
 msgid "Set payment method for subscription"
-msgstr ""
+msgstr "구독 항목 결제 방법을 설정하세요."
 
 #. module: sale_subscription
 #: model:ir.ui.menu,name:sale_subscription.menu_sale_subscription_settings
@@ -3707,14 +3743,14 @@ msgstr "상태값 표시"
 msgid ""
 "Some triggers need a reference to a selection field. This field is used to "
 "store it."
-msgstr ""
+msgstr "일부 연결 항목에는 필드를 선택할 수 있도록 참조 항목이 있어야 합니다. 이를 저장하기 위해 이 필드를 사용합니다."
 
 #. module: sale_subscription
 #: model:ir.model.fields,help:sale_subscription.field_sale_order_alert__trg_field_ref
 msgid ""
 "Some triggers need a reference to another field. This field is used to store"
 " it."
-msgstr ""
+msgstr "일부 연결 항목에는 다른 필드에 대한 참조 항목이 있어야 합니다. 이를 저장하기 위해 이 필드를 사용합니다."
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_subscription_report__source_id
@@ -3797,6 +3833,28 @@ msgstr "제출"
 #, python-format
 msgid "Subscription"
 msgstr "구독"
+
+#. module: sale_subscription
+#. odoo-python
+#: code:addons/sale_subscription/models/sale_order.py:0
+#, python-format
+msgid ""
+"Subscription %s has been canceled. The parent order %s has been reopened.\n"
+"                                                You should close %s if the customer churned, or renew it if the customer continue the service.\n"
+"                                                Note: if you already created a new subscription instead of renewing it, please cancel your newly\n"
+"                                                created subscription and renew %s instead"
+msgstr ""
+"%s 구독이 취소되었습니다. 상위 주문인 %s 항목이 다시 진행되었습니다.\n"
+"                                                고객이 이탈한 경우라면 %s 항목을 종료하시기 바라며, 고객이 서비스를 계속 이용할 경우에는 갱신해야 합니다.\n"
+"                                                참고: 구독을 갱신하는 대신 이미 새 구독을 생성한 경우에는, 새로 생성된\n"
+"                                                구독을 취소하신 후 대신 %s 항목을 갱신하시기 바랍니다."
+
+#. module: sale_subscription
+#. odoo-python
+#: code:addons/sale_subscription/models/sale_order.py:0
+#, python-format
+msgid "Subscription %s has been reopened. The end date has been removed"
+msgstr "%s 구독이 재개되었습니다. 종료일 삭제가 완료되었습니다."
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_payment_transaction__subscription_action
@@ -3918,7 +3976,7 @@ msgstr "구독 가격이 높음"
 msgid ""
 "Subscription plans are used to configure the recurring, invoicing, and self-"
 "service behavior of subscriptions."
-msgstr ""
+msgstr "구독제를 통해 정기 구독, 청구서 발행 및 구독 셀프 서비스 작업을 진행합니다."
 
 #. module: sale_subscription
 #: model:sale.order.close.reason,name:sale_subscription.close_reason_3
@@ -4097,19 +4155,28 @@ msgstr ""
 msgid ""
 "The automation rule will be triggered if and only if one of these fields is "
 "updated.If empty, all fields are watched."
-msgstr ""
+msgstr "해당 필드 중에서 하나를 업데이트한 경우에만 자동화 규칙을 동작시킵니다. 비워둘 경우, 전체 필드를 확인합니다."
 
 #. module: sale_subscription
 #. odoo-python
 #: code:addons/sale_subscription/models/sale_subscription_pricing.py:0
 #, python-format
 msgid "The company of the plan is different from the company of the pricelist"
-msgstr ""
+msgstr "구독한 회사가 가격표에 있는 회사와 다릅니다."
+
+#. module: sale_subscription
+#. odoo-python
+#: code:addons/sale_subscription/models/sale_order.py:0
+#, python-format
+msgid ""
+"The deferred settings are not properly set. Please complete them to generate"
+" subscription deferred revenues"
+msgstr "연기 항목이 알맞게 설정되지 않았습니다. 구독 연기 수익을 생성하려면 설정을 완료하세요."
 
 #. module: sale_subscription
 #: model:ir.model.constraint,message:sale_subscription.constraint_sale_order_template_check_duration_value
 msgid "The duration can't be negative or 0."
-msgstr ""
+msgstr "기간은 음수 또는 0이 아니어야 합니다."
 
 #. module: sale_subscription
 #: model:ir.model.fields,help:sale_subscription.field_sale_order__first_contract_date
@@ -4224,21 +4291,21 @@ msgid "The upsell %s has been confirmed."
 msgstr "%s 상향 판매가 승인되었습니다."
 
 #. module: sale_subscription
+#. odoo-python
+#: code:addons/sale_subscription/models/sale_subscription_pricing.py:0
+#, python-format
+msgid "There are multiple pricings for an unique product, plan and pricelist."
+msgstr "고유한 품목 및 구독 상품, 가격표에 따라 다양한 가격제가 있습니다."
+
+#. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_template
 msgid "There is a"
-msgstr ""
+msgstr "다음 내역에는"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_template
 msgid "There is an"
-msgstr ""
-
-#. module: sale_subscription
-#. odoo-python
-#: code:addons/sale_subscription/models/sale_subscription_pricing.py:0
-#, python-format
-msgid "There is multiple pricings for an unique product, plan and pricelist."
-msgstr ""
+msgstr "다음 내역에는"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_view_kanban
@@ -4251,7 +4318,7 @@ msgstr "이 막대를 사용하면 예약된 활동을 기준으로 영업 기�
 msgid ""
 "This code will be run to find on which record the automation rule should be "
 "run."
-msgstr ""
+msgstr "자동화 규칙을 실행해야 하는 레코드를 검색하기 위해 해당 코드를 실행합니다."
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_close_reason_view_form
@@ -4270,13 +4337,8 @@ msgid ""
 "This payment method cannot be deleted, because it is currently linked to the\n"
 "                following active subscriptions:"
 msgstr ""
-
-#. module: sale_subscription
-#. odoo-python
-#: code:addons/sale_subscription/controllers/portal.py:0
-#, python-format
-msgid "This subscription has a pending payment transaction."
-msgstr "이 구독에는 보류 중인 결제가 있습니다."
+"결제 방법을 삭제할 수 없습니다. 다음 활성화 상태인 구독 항목에\n"
+"                현재 연결되어 있습니다:"
 
 #. module: sale_subscription
 #. odoo-python
@@ -4377,12 +4439,12 @@ msgstr "트리거된 날짜"
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_alert__trg_selection_field_id
 msgid "Trigger Field"
-msgstr ""
+msgstr "트리거 필드"
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_alert__trg_field_ref_model_name
 msgid "Trigger Field Model"
-msgstr ""
+msgstr "트리거 필드 모델"
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_alert__trigger_field_ids
@@ -4402,12 +4464,12 @@ msgstr "작동일"
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_alert__trg_field_ref
 msgid "Trigger Reference"
-msgstr ""
+msgstr "트리거 참조"
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_alert__trg_field_ref_display_name
 msgid "Trigger Reference Display Name"
-msgstr ""
+msgstr "트리거 참조 표시명ㅇ"
 
 #. module: sale_subscription
 #: model_terms:ir.actions.act_window,help:sale_subscription.sale_subscription_alert_action
@@ -4486,7 +4548,7 @@ msgstr "비과세 합계:"
 #. module: sale_subscription
 #: model:base.automation,name:sale_subscription.subscription_alert_bad_health_base_automation
 msgid "Update health value according to MRR"
-msgstr ""
+msgstr "MRR에 따라 상태값을 업데이트합니다."
 
 #. module: sale_subscription
 #. odoo-python
@@ -4603,12 +4665,7 @@ msgstr "고객님께서 중단하지 않으시기를 바랍니다."
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order_alert__webhook_uuid
 msgid "Webhook UUID"
-msgstr ""
-
-#. module: sale_subscription
-#: model:ir.model.fields,field_description:sale_subscription.field_sale_subscription_report__website_id
-msgid "Website"
-msgstr "웹사이트"
+msgstr "웹훅 UUID"
 
 #. module: sale_subscription
 #: model:ir.model.fields,field_description:sale_subscription.field_sale_order__website_message_ids
@@ -4630,7 +4687,7 @@ msgstr "주"
 msgid ""
 "When calculating a day-based timed condition, it is possibleto use a "
 "calendar to compute the date based on working days."
-msgstr ""
+msgstr "일 기준으로 시간을 지정한 조건을 계산할 때는 근무일을 기준으로 달력에서 날짜를 계산할 수 있습니다."
 
 #. module: sale_subscription
 #: model:ir.model.fields,help:sale_subscription.field_sale_order_alert__trg_date_id
@@ -4766,7 +4823,7 @@ msgstr "종료되지 않은 구독은 다시 시작할 수 없습니다."
 msgid ""
 "You cannot save a sale order with a subscription plan and no recurring "
 "product."
-msgstr ""
+msgstr "구독하면 정기 주문이 아닌 품목은 판매주문서에 저장할 수 없습니다."
 
 #. module: sale_subscription
 #. odoo-python
@@ -4775,7 +4832,7 @@ msgstr ""
 msgid ""
 "You cannot save a sale order with recurring product and no subscription "
 "plan."
-msgstr ""
+msgstr "정기 주문 품목은 구독 없이 판매주문서에 저장할 수 없습니다."
 
 #. module: sale_subscription
 #. odoo-python
@@ -4784,7 +4841,7 @@ msgstr ""
 msgid ""
 "You cannot send a sale order with a subscription plan and no recurring "
 "product."
-msgstr ""
+msgstr "구독하면 정기 주문이 아닌 품목은 판매주문서로 전송할 수 없습니다."
 
 #. module: sale_subscription
 #. odoo-python
@@ -4793,7 +4850,7 @@ msgstr ""
 msgid ""
 "You cannot send a sale order with recurring product and no subscription "
 "plan."
-msgstr ""
+msgstr "정기 주문 품목은 구독 없이 판매주문서로 전송할 수 없습니다."
 
 #. module: sale_subscription
 #. odoo-python
@@ -4876,16 +4933,11 @@ msgid "Your payment details will be saved for automatic renewals."
 msgstr "자동 갱신되도록 고객님의 결제 세부 정보를 저장합니다."
 
 #. module: sale_subscription
-#: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_content
-msgid "Your payment made on the"
-msgstr "결제한 금액은"
-
-#. module: sale_subscription
 #. odoo-python
 #: code:addons/sale_subscription/controllers/portal.py:0
 #, python-format
 msgid "Your payment method has been changed for this subscription."
-msgstr ""
+msgstr "해당 구독에 대한 결제 방법이 변경되었습니다."
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_content
@@ -4913,11 +4965,6 @@ msgid "button text"
 msgstr "버튼 텍스트"
 
 #. module: sale_subscription
-#: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_content
-msgid "contact us"
-msgstr "문의하기"
-
-#. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.sale_subscription_alert_view_form
 msgid "e.g. Closed Subscription"
 msgstr "예. 종료된 구독"
@@ -4931,19 +4978,6 @@ msgstr "예: 업무 협의 제안"
 #: model:ir.model.fields.selection,name:sale_subscription.selection__sale_order_alert__rating_operator__>
 msgid "greater than"
 msgstr "보다 큼"
-
-#. module: sale_subscription
-#: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_content
-msgid "if there is a problem or an emergency."
-msgstr "문제나 긴급 상황 발생 시"
-
-#. module: sale_subscription
-#: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_content
-msgid ""
-"is pending.\n"
-"                        Your subscription will be renewed as soon as it is confirmed.<br/>\n"
-"                        Don't hesitate to"
-msgstr ""
 
 #. module: sale_subscription
 #: model:ir.model.fields.selection,name:sale_subscription.selection__sale_order_alert__rating_operator__<
@@ -4975,21 +5009,21 @@ msgstr "이름"
 #: code:addons/sale_subscription/models/sale_subscription_plan.py:0
 #, python-format
 msgid "per %d months"
-msgstr ""
+msgstr "%d개월마다"
 
 #. module: sale_subscription
 #. odoo-python
 #: code:addons/sale_subscription/models/sale_subscription_plan.py:0
 #, python-format
 msgid "per %d weeks"
-msgstr ""
+msgstr "%d주마다"
 
 #. module: sale_subscription
 #. odoo-python
 #: code:addons/sale_subscription/models/sale_subscription_plan.py:0
 #, python-format
 msgid "per %d years"
-msgstr ""
+msgstr "%d년마다"
 
 #. module: sale_subscription
 #. odoo-python
@@ -5015,20 +5049,20 @@ msgstr "연간"
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_template
 msgid "quotation and"
-msgstr ""
+msgstr "견적 및"
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_template
 msgid ""
 "quotation existing for this subscription, please confirm it or reject it."
-msgstr ""
+msgstr "해당 구독에 대한 견적서가 있습니다. 승인 또는 거절하시기 바랍니다."
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_template
 msgid ""
 "quotation existing for this subscription, please confirm them or reject "
 "them."
-msgstr ""
+msgstr "해당 구독에 대한 견적서가 있습니다. 승인 또는 거절하시기 바랍니다."
 
 #. module: sale_subscription
 #: model_terms:ir.ui.view,arch_db:sale_subscription.subscription_portal_template

@@ -326,5 +326,42 @@ QUnit.module(
                 assert.equal(modelName.innerText, "Product (product)");
             }
         );
+
+        QUnit.test("Deleting the pivot closes the side panel", async function (assert) {
+            const { model, env } = await createSpreadsheetFromPivotView();
+            const [pivotId] = model.getters.getPivotIds();
+            model.dispatch("SELECT_PIVOT", { pivotId });
+            env.openSidePanel("PIVOT_PROPERTIES_PANEL", {
+                pivot: pivotId,
+            });
+            await nextTick();
+            const fixture = getFixture();
+            const titleSelector = ".o-sidePanelTitle";
+            assert.equal(fixture.querySelector(titleSelector).innerText, "Pivot properties");
+
+            model.dispatch("REMOVE_PIVOT", { pivotId });
+            await nextTick();
+            assert.equal(fixture.querySelector(titleSelector), null);
+            assert.equal(model.getters.getSelectedPivotId(), undefined);
+        });
+
+        QUnit.test("Undo a pivot insertion closes the side panel", async function (assert) {
+            const { model, env } = await createSpreadsheetFromPivotView();
+            const [pivotId] = model.getters.getPivotIds();
+            model.dispatch("SELECT_PIVOT", { pivotId });
+            env.openSidePanel("PIVOT_PROPERTIES_PANEL", {
+                pivot: pivotId,
+            });
+            await nextTick();
+            const fixture = getFixture();
+            const titleSelector = ".o-sidePanelTitle";
+            assert.equal(fixture.querySelector(titleSelector).innerText, "Pivot properties");
+
+            model.dispatch("REQUEST_UNDO");
+            model.dispatch("REQUEST_UNDO");
+            await nextTick();
+            assert.equal(fixture.querySelector(titleSelector), null);
+            assert.equal(model.getters.getSelectedPivotId(), undefined);
+        });
     }
 );

@@ -14,7 +14,7 @@ from collections import OrderedDict
 
 class MrpProductionSchedule(models.Model):
     _name = 'mrp.production.schedule'
-    _order = 'warehouse_id, sequence'
+    _order = 'warehouse_id, product_id'
     _description = 'Schedule the production of Product in a warehouse'
 
     @api.model
@@ -30,6 +30,7 @@ class MrpProductionSchedule(models.Model):
     product_category_id = fields.Many2one('product.category', related="product_id.product_tmpl_id.categ_id", readonly=True)
     product_uom_id = fields.Many2one('uom.uom', string='Product UoM',
         related='product_id.uom_id')
+    # TODO remove master: the `sequence` field was used for _order but not anymore.
     sequence = fields.Integer(related='product_id.sequence', store=True)
     warehouse_id = fields.Many2one('stock.warehouse', 'Production Warehouse',
         required=True, default=lambda self: self._default_warehouse_id())
@@ -465,7 +466,7 @@ class MrpProductionSchedule(models.Model):
                 # depends from another.
                 has_indirect_demand = any(forecast['indirect_demand_qty'] != 0 for forecast in production_schedule_state['forecast_ids'])
                 production_schedule_state['has_indirect_demand'] = has_indirect_demand
-        return [p for p in production_schedule_states if p['id'] in self.ids]
+        return [production_schedule_states_by_id[_id] for _id in self.ids if _id in production_schedule_states_by_id]
 
     def get_impacted_schedule(self, domain=False):
         """ When the user modify the demand forecast on a schedule. The new
@@ -505,11 +506,11 @@ class MrpProductionSchedule(models.Model):
             """
             if not products:
                 return related_products
-            boms = products.bom_ids | products.mapped('product_variant_ids.bom_ids')
-            products = boms.mapped('bom_line_ids.product_id')
-            products -= related_products
-            related_products |= products
-            return _use_boms(products, related_products)
+            components = products.mapped(lambda product: product.bom_ids.bom_line_ids.filtered(lambda line: not line._skip_bom_line(product)).mapped('product_id'))
+
+            components -= related_products
+            related_products |= components
+            return _use_boms(components, related_products)
 
         supplied_mps = self.env['mrp.production.schedule'].search(
             AND([domain, [
@@ -842,6 +843,8 @@ class MrpProductionSchedule(models.Model):
             if product not in bom_by_product and not product_bom:
                 product_bom = self.env['mrp.bom']._bom_find(product)[product]
             for line in product_bom.bom_line_ids:
+                if line._skip_bom_line(product):
+                    continue
                 line_qty = line.product_uom_id._compute_quantity(line.product_qty, line.product_id.uom_id)
                 bom_qty = line.bom_id.product_uom_id._compute_quantity(line.bom_id.product_qty, line.bom_id.product_tmpl_id.uom_id)
                 ratio = line_qty / bom_qty

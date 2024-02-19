@@ -147,6 +147,7 @@ class ManufacturingOrder(models.Model):
             'search_default_filter_confirmed': 1,
             'search_default_filter_ready': 1,
             'search_default_filter_in_progress': 1,
+            'search_default_filter_to_close': 1,
             'search_default_todo': 1,
             'active_id': active_id,
         }

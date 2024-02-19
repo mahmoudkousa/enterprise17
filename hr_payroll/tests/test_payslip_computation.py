@@ -109,8 +109,8 @@ class TestPayslipComputation(TestPayslipContractBase):
         self.assertAlmostEqual(attendance_line.amount, 4524.11, delta=0.01, msg="His attendance must be paid 4524.11")
 
     def test_worked_days_with_unpaid(self):
-        self.contract_cdi.resource_calendar_id = self.env.ref('resource.resource_calendar_std_38h')
-        self.richard_emp.resource_calendar_id = self.env.ref('resource.resource_calendar_std_38h')
+        self.contract_cdi.resource_calendar_id = self.calendar_38h
+        self.richard_emp.resource_calendar_id = self.calendar_38h
 
         # Create 2 hours upaid leave every day during 2 weeks
         for day in rrule(freq=DAILY, byweekday=[0, 1, 2, 3, 4], count=10, dtstart=datetime(2016, 2, 8)):
@@ -337,3 +337,43 @@ class TestPayslipComputation(TestPayslipContractBase):
         payslip.action_payslip_done()
         payslip.action_payslip_paid()
         self.assertEqual(car_accident.state, 'close', 'The salary attachment should be completed.')
+
+    def test_payslip_with_multiple_input_same_type(self):
+        payslip = self.env['hr.payslip'].create({
+            'name': 'Payslip of Richard',
+            'employee_id': self.richard_emp.id,
+            'contract_id': self.contract_cdi.id,
+            'date_from': date(2016, 1, 1),
+            'date_to': date(2016, 1, 31)
+        })
+        self.env['hr.payslip.input'].create([
+            {
+                'payslip_id': payslip.id,
+                'sequence': 1,
+                'input_type_id': self.env.ref("hr_payroll.BASIC").id,
+                'amount': 100,
+                'contract_id': self.contract_cdi.id
+            },
+            {
+                'payslip_id': payslip.id,
+                'sequence': 2,
+                'input_type_id': self.env.ref("hr_payroll.BASIC").id,
+                'amount': 200,
+                'contract_id': self.contract_cdi.id
+            },
+        ])
+        payslip.compute_sheet()
+        lines = payslip.line_ids
+        self.assertEqual(len(lines.filtered(lambda r: r.code == 'BASIC')), 1)
+
+    def test_defaultdict_get(self):
+        # defaultdict.get(key) returns None if the key doesn't exist instead of default factory value
+        # which could lead to a traceback
+        self.developer_pay_structure.rule_ids.filtered(lambda r: r.code == "NET").amount_python_compute = "result = categories['BASIC'] + categories['ALW'] + categories['DED'] + categories.get('TEST')"
+        payslip = self.env['hr.payslip'].create({
+            'name': 'Payslip of Richard',
+            'employee_id': self.richard_emp.id,
+            'date_from': date(2016, 1, 1),
+            'date_to': date(2016, 1, 31)
+        })
+        payslip.compute_sheet()

@@ -55,14 +55,13 @@ class HrContractSalaryOffer(models.Model):
                 name = offer.applicant_id.emp_id.name or offer.applicant_id.partner_id.name or offer.applicant_id.partner_name
             else:
                 name = offer.employee_contract_id.employee_id.name
-            offer.display_name = _("Offer [%s] for %s / Budget: %s", offer.offer_end_date or 'No end date', name, format_amount(offer.env, offer.final_yearly_costs, offer.currency_id))
+            offer.display_name = _("Offer [%s] for %s / Budget: %s", offer.create_date and offer.create_date.date() or 'No create date', name, format_amount(offer.env, offer.final_yearly_costs, offer.currency_id))
 
     def action_refuse_offer(self):
         self.write({'state': 'refused'})
         message = _("%s manually set the Offer to Refused", self.env.user.name)
         for offer in self:
             offer.message_post(body=message)
-
 
     def action_jump_to_offer(self):
         self.ensure_one()
@@ -118,6 +117,7 @@ class HrContractSalaryOffer(models.Model):
             'default_model': 'hr.contract.salary.offer',
             'default_res_ids': self.ids,
             'default_template_id': default_template_id,
+            'default_record_name': _("%s: Job Offer - %s", self.company_id.name, self.job_title),
             'offer_id': self.id,
             'access_token': self.access_token,
             'partner_to': partner_to and partner_to.id or False,

@@ -118,7 +118,7 @@ class StockBarcodeController(http.Controller):
         for model in model_names:
             domain = [
                 (barcode_field_by_model[model], operator, barcode),
-                ('company_id', 'in', [False, request.env.company.id])
+                ('company_id', 'in', [False, *self._get_allowed_company_ids()])
             ]
             domain_for_this_model = domains_by_model.get(model)
             if domain_for_this_model:

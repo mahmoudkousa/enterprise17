@@ -1,8 +1,12 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import logging
+
 from odoo import fields
-from odoo.tests import tagged
+from odoo.tests import tagged, loaded_demo_data
 from odoo.addons.stock_barcode.tests.test_barcode_client_action import TestBarcodeClientAction
+
+_logger = logging.getLogger(__name__)
 
 
 @tagged('post_install', '-at_install')
@@ -32,6 +36,39 @@ class TestInventoryAdjustmentBarcodeClientAction(TestBarcodeClientAction):
         self.assertEqual(quants.mapped('quantity'), [2.0, 2.0])
         self.assertEqual(quants.mapped('inventory_quantity'), [0, 0])
         self.assertEqual(quants.mapped('inventory_diff_quantity'), [0, 0])
+
+    def test_inventory_adjustment_multi_company(self):
+        """ When doing an Inventory Adjustment, ensures only products belonging
+        to current company or to no company can be scanned."""
+        self.clean_access_rights()
+        # Creates two companies and assign them to the user.
+        company_a = self.env['res.company'].create({'name': 'Comp A - F2 FTW'})
+        company_b = self.env['res.company'].create({'name': 'Comp B - F3 Wee-Wee Pool'})
+        self.env.user.write({
+            'company_ids': [(4, company_a.id), (4, company_b.id)],
+            'company_id': company_a.id,
+        })
+        # Changes the company of some products.
+        self.product1.company_id = company_a
+        self.product2.company_id = company_b
+        product_no_company = self.env['product.product'].create({
+            'name': 'Company-less Product',
+            'type': 'product',
+            'categ_id': self.env.ref('product.product_category_all').id,
+            'barcode': 'product_no_company',
+        })
+        self.start_tour("/web", 'test_inventory_adjustment_multi_company', login='admin', timeout=180)
+        # Checks an inventory adjustment was correctly validated for each company.
+        inventory_moves = self.env['stock.move'].search([
+            ('is_inventory', '=', True),
+            ('product_id', 'in', (self.product1 | self.product2 | product_no_company).ids),
+        ])
+        self.assertRecordValues(inventory_moves.sorted(lambda mv: (mv.product_id.id, mv.id)), [
+            {'product_id': self.product1.id, 'quantity': 1, 'company_id': company_a.id},
+            {'product_id': self.product2.id, 'quantity': 1, 'company_id': company_b.id},
+            {'product_id': product_no_company.id, 'quantity': 1, 'company_id': company_a.id},
+            {'product_id': product_no_company.id, 'quantity': 1, 'company_id': company_b.id},
+        ])
 
     def test_inventory_adjustment_multi_location(self):
         """ Simulate the following actions:
@@ -149,6 +186,9 @@ class TestInventoryAdjustmentBarcodeClientAction(TestBarcodeClientAction):
             - Set productlot1 quantity without lot to available
             - Validate
         """
+        if not loaded_demo_data(self.env):
+            _logger.warning("This test relies on demo data. To be rewritten independently of demo data for accurate and reliable results.")
+            return
         self.clean_access_rights()
         grp_lot = self.env.ref('stock.group_production_lot')
         self.env.user.write({'groups_id': [(4, grp_lot.id, 0)]})
@@ -403,6 +443,9 @@ class TestInventoryAdjustmentBarcodeClientAction(TestBarcodeClientAction):
         """ Checks tracking numbers and quantites are correctly got from GS1
         barcodes for tracked products.
         Also, this test is an opportunity to ensure custom GS1 separators are used clientside."""
+        if not loaded_demo_data(self.env):
+            _logger.warning("This test relies on demo data. To be rewritten independently of demo data for accurate and reliable results.")
+            return
         self.clean_access_rights()
         self.env.company.nomenclature_id = self.env.ref('barcodes_gs1_nomenclature.default_gs1_nomenclature')
         self.env.company.nomenclature_id.gs1_separator_fnc1 = r'(Alt029|#|\x1D|~)'

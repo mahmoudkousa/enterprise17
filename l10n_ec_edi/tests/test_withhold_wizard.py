@@ -4,7 +4,7 @@
 from freezegun import freeze_time
 from odoo import Command
 from odoo.exceptions import ValidationError
-from odoo.tests import tagged
+from odoo.tests import tagged, Form
 
 from .common import TestEcEdiCommon
 
@@ -138,6 +138,152 @@ class TestEcEdiWithholdWizard(TestEcEdiCommon):
         for invoice in (inv_1, inv_2):
             with self.subTest(invoice=invoice):
                 self.assertEqual(invoice.line_ids.filtered(lambda l: l.display_type == 'payment_term').matched_credit_ids.credit_move_id.move_id, withhold)
+
+    def test_computed_base_of_withhold_lines_1(self):
+        """Test that the base amount of the withhold lines is still correct after triggering its computed method."""
+        invoice = self.env['account.move'].create({
+            'move_type': 'in_invoice',
+            'partner_id': self.partner_a.id,
+            'name': 'BILL/01',
+            'invoice_date': self.frozen_today,
+            'date': self.frozen_today,
+            'l10n_ec_sri_payment_id': self.env['l10n_ec.sri.payment'].search([('code', '=', 20)], limit=1).id,  # Otros con utilización del sistema financiero (see l10n_ec.sri.payment.csv)
+            'l10n_latam_document_number': '001-001-000000001',
+            'invoice_line_ids': [
+                Command.create({
+                    'product_id': self.product_a.id,
+                    'quantity': 1,
+                    'price_unit': 100,
+                    'tax_ids': [Command.set(self._get_tax_by_xml_id('tax_vat_510_sup_01').ids)],
+                }),
+                Command.create({
+                    'name': 'No product line',
+                    'quantity': 1,
+                    'price_unit': 50,
+                    'tax_ids': [Command.set(self._get_tax_by_xml_id('tax_vat_510_sup_01').ids)],
+                }),
+            ],
+        })
+        invoice.action_post()
+        wizard = self.env['l10n_ec.wizard.account.withhold'].with_context(active_ids=invoice.id, active_model='account.move').create({})
+        default_base = wizard.withhold_line_ids.mapped('base')
+        wizard.withhold_line_ids._compute_base()
+        computed_base = wizard.withhold_line_ids.mapped('base')
+        self.assertEqual(computed_base, default_base)
+
+    def test_computed_base_of_withhold_lines_2(self):
+        """Test that the base amount of withholding lines correctly assigned"""
+        self.set_custom_taxpayer_type_on_partner_a()
+        l10n_ec_sri_payment_id = self.env['l10n_ec.sri.payment'].search([('code', '=', 20)], limit=1)
+        tax_vat_510_sup_01_id = self._get_tax_by_xml_id('tax_vat_510_sup_01')
+        tax_vat_510_sup_05_id = self._get_tax_by_xml_id('tax_vat_510_sup_05')
+        tax_withhold_vat_20 = self._get_tax_by_xml_id('tax_withhold_vat_20')
+        bill_1 = self.env['account.move'].create({
+            'move_type': 'in_invoice',
+            'partner_id': self.partner_a.id,
+            'name': 'BILL/01',
+            'invoice_date': self.frozen_today,
+            'date': self.frozen_today,
+            'l10n_ec_sri_payment_id': l10n_ec_sri_payment_id.id,
+            'l10n_latam_document_number': '001-001-000000001',
+            'invoice_line_ids': [
+                Command.create({
+                    'product_id': self.product_a.id,
+                    'quantity': 1,
+                    'price_unit': 100,
+                    'tax_ids': [Command.set(tax_vat_510_sup_01_id.ids)],
+                }),
+            ],
+        })
+        bill_1.action_post()
+        wizard = self.env['l10n_ec.wizard.account.withhold'].with_context(active_ids=bill_1.id, active_model='account.move').create({})
+        expected_values = [{
+            'taxsupport_code': '01',
+            'tax_id': bill_1.commercial_partner_id.l10n_ec_taxpayer_type_id.profit_withhold_tax_id.id,
+            'base': 100.0,
+            'amount': 10.0,
+        }, {
+            'taxsupport_code': '01',
+            'tax_id': bill_1.commercial_partner_id.l10n_ec_taxpayer_type_id.vat_goods_withhold_tax_id.id,
+            'base': 12.0,
+            'amount': 1.2,
+        }]
+        self.assertRecordValues(wizard.withhold_line_ids, expected_values)
+        with Form(wizard) as wizard_form:
+            wizard_form.document_number = '001-001-000000001'
+            with wizard_form.withhold_line_ids.edit(1) as wizard_line_form:
+                wizard_line_form.base = 10.00
+            with wizard_form.withhold_line_ids.new() as wizard_line_form:
+                wizard_line_form.taxsupport_code = '01'
+                wizard_line_form.tax_id = bill_1.commercial_partner_id.l10n_ec_taxpayer_type_id.vat_goods_withhold_tax_id
+            with wizard_form.withhold_line_ids.edit(2) as wizard_line_form:
+                wizard_line_form.tax_id = tax_withhold_vat_20
+
+        expected_values = [{
+            'taxsupport_code': '01',
+            'tax_id': bill_1.commercial_partner_id.l10n_ec_taxpayer_type_id.profit_withhold_tax_id.id,
+            'base': 100.0,
+            'amount': 10.0,
+        }, {
+            'taxsupport_code': '01',
+            'tax_id': bill_1.commercial_partner_id.l10n_ec_taxpayer_type_id.vat_goods_withhold_tax_id.id,
+            'base': 10.0,
+            'amount': 1.0,
+        }, {
+            'taxsupport_code': '01',
+            'tax_id': tax_withhold_vat_20.id,
+            'base': 2.0,
+            'amount': 0.4,
+        }]
+        self.assertRecordValues(wizard.withhold_line_ids, expected_values)
+
+        bill_2 = self.env['account.move'].create({
+            'move_type': 'in_invoice',
+            'partner_id': self.partner_a.id,
+            'name': 'BILL/01',
+            'invoice_date': self.frozen_today,
+            'date': self.frozen_today,
+            'l10n_ec_sri_payment_id': l10n_ec_sri_payment_id.id,
+            'l10n_latam_document_number': '001-001-000000002',
+            'invoice_line_ids': [
+                Command.create({
+                    'product_id': self.product_a.id,
+                    'quantity': 1,
+                    'price_unit': 100,
+                    'tax_ids': [Command.set(tax_vat_510_sup_01_id.ids)],
+                }),
+                Command.create({
+                    'product_id': self.product_a.id,
+                    'quantity': 1,
+                    'price_unit': 10,
+                    'tax_ids': [Command.set(tax_vat_510_sup_05_id.ids)],
+                }),
+            ],
+        })
+        bill_2.action_post()
+        wizard = self.env['l10n_ec.wizard.account.withhold'].with_context(active_ids=bill_2.id, active_model='account.move').create({})
+        expected_values = [{
+            'taxsupport_code': '01',
+            'tax_id': bill_2.commercial_partner_id.l10n_ec_taxpayer_type_id.profit_withhold_tax_id.id,
+            'base': 100.0,
+            'amount': 10.0,
+        }, {
+            'taxsupport_code': '05',
+            'tax_id': bill_2.commercial_partner_id.l10n_ec_taxpayer_type_id.profit_withhold_tax_id.id,
+            'base': 10.0,
+            'amount': 1.0,
+        }, {
+            'taxsupport_code': '01',
+            'tax_id': bill_2.commercial_partner_id.l10n_ec_taxpayer_type_id.vat_goods_withhold_tax_id.id,
+            'base': 12.0,
+            'amount': 1.2,
+        }, {
+            'taxsupport_code': '05',
+            'tax_id': bill_2.commercial_partner_id.l10n_ec_taxpayer_type_id.vat_goods_withhold_tax_id.id,
+            'base': 1.2,
+            'amount': 0.12,
+        }]
+        self.assertRecordValues(wizard.withhold_line_ids, expected_values)
 
     # ===== HELPER METHODS =====
 

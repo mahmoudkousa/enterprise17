@@ -10,6 +10,7 @@ class AppointmentHrRecruitmentTest(HttpCase):
     @users('admin')
     def test_tour_default_opportunity_propagation(self):
         """ Test that the applicant is correctly propagated to the appointment invitation created """
+        self.env.user.tz = "Europe/Brussels"
         dep_rd = self.env['hr.department'].create({
             'name': 'Research & Development',
         })

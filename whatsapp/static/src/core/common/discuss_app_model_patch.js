@@ -16,6 +16,7 @@ patch(DiscussApp, {
             isOpen: false,
             canView: false,
             canAdd: true,
+            addTitle: _t("Search WhatsApp Channel"),
             serverStateKey: "is_discuss_sidebar_category_whatsapp_open",
         };
         return res;

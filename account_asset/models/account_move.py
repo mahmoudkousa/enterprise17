@@ -18,7 +18,7 @@ class AccountMove(models.Model):
     # true when this move is the result of the changing of value of an asset
     asset_value_change = fields.Boolean()
     #  how many days of depreciation this entry corresponds to
-    asset_number_days = fields.Integer(string="Number of days", copy=False)
+    asset_number_days = fields.Integer(string="Number of days", copy=False) # deprecated
     asset_depreciation_beginning_date = fields.Date(string="Date of the beginning of the depreciation", copy=False) # technical field stating when the depreciation associated with this entry has begun
     depreciation_value = fields.Monetary(
         string="Depreciation",
@@ -42,7 +42,7 @@ class AccountMove(models.Model):
         # assignments invoke method write() on non-protected records, which may
         # cause an infinite recursion in case method write() needs to read one
         # of these fields (like in case of a base automation)
-        fields = [type(self).asset_remaining_value, type(self).asset_depreciated_value]
+        fields = [self._fields['asset_remaining_value'], self._fields['asset_depreciated_value']]
         with self.env.protecting(fields, self.asset_id.depreciation_move_ids):
             for asset in self.asset_id:
                 depreciated = 0
@@ -68,14 +68,11 @@ class AccountMove(models.Model):
                     and float_compare(-line.balance, asset.original_value, precision_rounding=asset.currency_id.rounding) == 0
                     for line in move.line_ids
                 ):
-                    account = asset.account_depreciation_id
                     asset_depreciation = (
                         asset.original_value
                         - asset.salvage_value
-                        - sum(
-                            move.line_ids.filtered(lambda l: l.account_id == account).mapped(
-                                'debit' if asset.original_value > 0 else 'credit'
-                            )
+                        - (
+                            move.line_ids[1].debit if asset.original_value > 0 else move.line_ids[1].credit
                         ) * (-1 if asset.original_value < 0 else 1)
                     )
             else:

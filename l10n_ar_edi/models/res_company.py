@@ -56,7 +56,7 @@ class ResCompany(models.Model):
         with_crt = self.filtered(lambda x: x.l10n_ar_afip_ws_crt)
         remaining = self - with_crt
         for rec in with_crt:
-            certificate = self._l10n_ar_get_certificate_object(rec.l10n_ar_afip_ws_crt)
+            certificate = self._l10n_ar_get_certificate_object(rec.with_context(bin_size=False).l10n_ar_afip_ws_crt)
             rec.l10n_ar_afip_ws_crt_fname = certificate.get_subject().CN
         remaining.l10n_ar_afip_ws_crt_fname = ''
 
@@ -157,7 +157,7 @@ class ResCompany(models.Model):
         """ Return the pkey and certificate string representations in order to be used. Also raise exception if any key or certificate is not defined """
         self.ensure_one()
         pkey = base64.decodebytes(self.with_context(bin_size=False).l10n_ar_afip_ws_key) if self.l10n_ar_afip_ws_key else ''
-        cert = base64.decodebytes(self.l10n_ar_afip_ws_crt) if self.l10n_ar_afip_ws_crt else ''
+        cert = base64.decodebytes(self.with_context(bin_size=False).l10n_ar_afip_ws_crt) if self.l10n_ar_afip_ws_crt else ''
         res = (pkey, cert)
         if not all(res):
             error = '\n * ' + _(' Missing private key.') if not pkey else ''

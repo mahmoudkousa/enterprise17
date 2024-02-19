@@ -4,6 +4,8 @@
 # 
 # Translators:
 # Wil Odoo, 2023
+# Erwin van der Ploeg <erwin@odooexperts.nl>, 2023
+# Jolien De Paepe, 2024
 # 
 msgid ""
 msgstr ""
@@ -11,7 +13,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-10-26 22:20+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Wil Odoo, 2023\n"
+"Last-Translator: Jolien De Paepe, 2024\n"
 "Language-Team: Dutch (https://app.transifex.com/odoo/teams/41243/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -104,6 +106,14 @@ msgstr "API gebruiker"
 
 #. module: delivery_shiprocket
 #. odoo-python
+#: code:addons/delivery_shiprocket/models/shiprocket_request.py:0
+#: code:addons/delivery_shiprocket/models/shiprocket_request.py:0
+#, python-format
+msgid "AWB assignment was unsuccessful: %s"
+msgstr "Toewijzing AWB was onsuccesvol: %s"
+
+#. module: delivery_shiprocket
+#. odoo-python
 #: code:addons/delivery_shiprocket/models/delivery_carrier.py:0
 #, python-format
 msgid "AWB number(s) not found to cancel the shipment!"
@@ -182,15 +192,15 @@ msgstr "Koeriercode"
 #. odoo-python
 #: code:addons/delivery_shiprocket/models/shiprocket_request.py:0
 #, python-format
-msgid "Courier is - %s"
-msgstr "Koerier is - %s"
+msgid "Courier: %s"
+msgstr "Koerier: %s"
 
 #. module: delivery_shiprocket
 #. odoo-python
 #: code:addons/delivery_shiprocket/models/shiprocket_request.py:0
 #, python-format
-msgid "Courier is - %s, recommended by %s!"
-msgstr "Koerier is %s, aanbevolen door %s!"
+msgid "Courier (%s): %s"
+msgstr "Koerier (%s): %s"
 
 #. module: delivery_shiprocket
 #. odoo-python
@@ -359,7 +369,7 @@ msgstr "Laatst bijgewerkt op"
 #: code:addons/delivery_shiprocket/models/stock_package_type.py:0
 #, python-format
 msgid "Length, Width and Height is necessary for Shiprocket Package."
-msgstr "Lengte, breedte en hoogte zijn nodig voor het Shiprocket pakket."
+msgstr "Lengte, breedte en hoogte zijn nodig voor het Shiprocket verpakking."
 
 #. module: delivery_shiprocket
 #. odoo-python
@@ -580,8 +590,9 @@ msgid ""
 "Shiprocket requires package dimensions for getting accurate rate, you can "
 "define these in a package type that you set as default"
 msgstr ""
-"Shiprocket heeft pakketafmetingen nodig om een nauwkeurig tarief te krijgen."
-" Je kan deze definiëren in een pakkettype dat je als standaard instelt"
+"Shiprocket heeft verpakkingtafmetingen nodig om een nauwkeurig tarief te "
+"krijgen. Je kunt deze definiëren in een verpakkingssoort dat je als "
+"standaard instelt"
 
 #. module: delivery_shiprocket
 #: model:ir.model.fields,help:delivery_shiprocket.field_delivery_carrier__shiprocket_token_valid_upto
@@ -600,7 +611,7 @@ msgstr "Aanmelden"
 #. module: delivery_shiprocket
 #: model:ir.model,name:delivery_shiprocket.model_stock_package_type
 msgid "Stock package type"
-msgstr "Verpakkingstype:"
+msgstr "Verpakkingssoort:"
 
 #. module: delivery_shiprocket
 #: model:ir.model.fields,help:delivery_shiprocket.field_stock_picking__shiprocket_orders

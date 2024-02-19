@@ -282,7 +282,6 @@ class TestComparisonBuilder(AccountConsolidationTestCase):
     def test__build_section_line_and_format_account_line(self, patched_account_totals, patched_account_added,
                                                          patched_section_added):
         patched_account_totals.return_value = [1000.0, -2000.0]
-        level = 1
         section = self.env['consolidation.group'].create({
             'name': 'BLUH',
             'chart_id': self.chart.id,
@@ -305,7 +304,7 @@ class TestComparisonBuilder(AccountConsolidationTestCase):
             {
                 'id': section_1_id,
                 'name': section.name,
-                'level': level,
+                'level': 0,
                 'unfoldable': True,
                 'unfolded': True,
                 'columns': [
@@ -313,18 +312,22 @@ class TestComparisonBuilder(AccountConsolidationTestCase):
                         'name': f'1,000.00{NON_BREAKING_SPACE}€',
                         'no_format': 1000.0,
                         'figure_type': 'monetary',
+                        'is_zero': False,
+                        'class': 'number',
                     },
                     {
                         'name': f'-2,000.00{NON_BREAKING_SPACE}€',
                         'no_format': -2000.0,
                         'figure_type': 'monetary',
+                        'is_zero': False,
+                        'class': 'number',
                     }
                 ]
             },
             {
                 'id': section_2_id,
                 'name': section.child_ids[0].name,
-                'level': level + 1,
+                'level': 3,
                 'unfoldable': True,
                 'unfolded': True,
                 'parent_id': section_1_id,
@@ -333,11 +336,15 @@ class TestComparisonBuilder(AccountConsolidationTestCase):
                         'name': f'1,000.00{NON_BREAKING_SPACE}€',
                         'no_format': 1000.0,
                         'figure_type': 'monetary',
+                        'is_zero': False,
+                        'class': 'number',
                     },
                     {
                         'name': f'-2,000.00{NON_BREAKING_SPACE}€',
                         'no_format': -2000.0,
                         'figure_type': 'monetary',
+                        'is_zero': False,
+                        'class': 'number',
                     }
                 ]
             },
@@ -351,25 +358,28 @@ class TestComparisonBuilder(AccountConsolidationTestCase):
                         'name': f'1,000.00{NON_BREAKING_SPACE}€',
                         'no_format': 1000.0,
                         'figure_type': 'monetary',
-                        'class': 'number'
+                        'class': 'number',
+                        'is_zero': False,
+                        'auditable': True,
                     },
                     {
                         'name': f'-2,000.00{NON_BREAKING_SPACE}€',
                         'no_format': -2000.0,
                         'figure_type': 'monetary',
-                        'class': 'number'
+                        'class': 'number',
+                        'is_zero': False,
+                        'auditable': False,
                     }
                 ],
-                'level': level + 2,
+                'level': 5,
                 'parent_id': section_2_id,
-                'unfolded': True
             }
         ]
-        section_totals, section_line = self.builder._build_section_line(section, level, options, include_percentage=False)
+        section_totals, section_line = self.builder._build_section_line(section, 0, options, include_percentage=False)
         self.assertListEqual(section_line, expected)
 
     def test__build_section_line_no_children_no_accounts(self):
-        level = 1
+        level = 0
         section = self.env['consolidation.group'].create({
             'name': 'BLUH',
             'chart_id': self.chart.id,
@@ -383,8 +393,8 @@ class TestComparisonBuilder(AccountConsolidationTestCase):
             'unfoldable': True,
             'unfolded': False,
             'columns': [
-                {'name': f'0.00{NON_BREAKING_SPACE}€', 'no_format': 0.0, 'figure_type': 'monetary'},
-                {'name': f'0.00{NON_BREAKING_SPACE}€', 'no_format': 0.0, 'figure_type': 'monetary'}
+                {'name': f'0.00{NON_BREAKING_SPACE}€', 'no_format': 0.0, 'figure_type': 'monetary', 'is_zero': True, 'class': 'number muted'},
+                {'name': f'0.00{NON_BREAKING_SPACE}€', 'no_format': 0.0, 'figure_type': 'monetary', 'is_zero': True, 'class': 'number muted'},
             ]
         }]
         self.assertListEqual(expected, section_line)
@@ -447,7 +457,7 @@ class TestComparisonBuilder(AccountConsolidationTestCase):
         # NO PERCENTAGE
         # €
         euro_exp = {'id': self.report._get_generic_line_id(None, None, 'grouped_accounts_total'),
-                    'name': 'Total', 'class': 'total', 'level': 1,
+                    'name': 'Total', 'class': 'total', 'level': 0,
                     'columns': [{'name': f'0.00{NON_BREAKING_SPACE}€', 'figure_type': 'monetary', 'no_format': 0.0, 'class': 'number'},
                                 {'name': f'1,500,000.00{NON_BREAKING_SPACE}€', 'figure_type': 'monetary', 'no_format': 1500000.0, 'class': 'number text-danger'},
                                 {'name': f'-2,000.00{NON_BREAKING_SPACE}€', 'figure_type': 'monetary', 'no_format': -2000.0, 'class': 'number text-danger'}]}
@@ -460,7 +470,7 @@ class TestComparisonBuilder(AccountConsolidationTestCase):
         usd_total_line = us_builder._build_total_line(totals, options, include_percentage=False)
 
         usd_exp = {'id': self.report._get_generic_line_id(None, None, 'grouped_accounts_total'),
-                   'name': 'Total', 'class': 'total', 'level': 1,
+                   'name': 'Total', 'class': 'total', 'level': 0,
                    'columns': [{'name': f'${NON_BREAKING_SPACE}0.00', 'figure_type': 'monetary', 'no_format': 0.0, 'class': 'number'},
                                {'name': f'${NON_BREAKING_SPACE}1,500,000.00', 'figure_type': 'monetary', 'no_format': 1500000.0, 'class': 'number text-danger'},
                                {'name': f'${NON_BREAKING_SPACE}-2,000.00', 'figure_type': 'monetary', 'no_format': -2000.0, 'class': 'number text-danger'}]}
@@ -470,7 +480,7 @@ class TestComparisonBuilder(AccountConsolidationTestCase):
         totals = [0.0, -2000.0]
         euro_prct_total_line = self.builder._build_total_line(totals, options, include_percentage=True)
         euro_exp_prct = {'id': self.report._get_generic_line_id(None, None, 'grouped_accounts_total'),
-                         'name': 'Total', 'class': 'total', 'level': 1,
+                         'name': 'Total', 'class': 'total', 'level': 0,
                          'columns': [{'name': f'0.00{NON_BREAKING_SPACE}€', 'figure_type': 'monetary', 'no_format': 0.0, 'class': 'number'},
                                      {'name': f'-2,000.00{NON_BREAKING_SPACE}€', 'figure_type': 'monetary', 'no_format': -2000.0, 'class': 'number text-danger'},
                                      patched_bpc.return_value]}
@@ -503,7 +513,7 @@ class TestDefaultBuilder(AccountConsolidationTestCase):
 
         Journal = self.env['consolidation.journal']
         self.ap = self._create_analysis_period(start_date="2019-02-01", end_date="2019-02-28")
-        self.consolidation_account = self._create_consolidation_account()
+        self.consolidation_account = self._create_consolidation_account(name='n' * 45)  # Using a long name
         journals = create_journal(42, 4200.40), create_journal(1989.0, 1912.0)
         self.journals = Journal.browse((j.id for j in journals))
         self.builder = DefaultBuilder(self.env, self.ap._format_value, self.journals)
@@ -531,18 +541,20 @@ class TestDefaultBuilder(AccountConsolidationTestCase):
         account_currency_name = self.consolidation_account.get_display_currency_mode()
         expected = {
             'id': self.report._get_generic_line_id(None, None, self.consolidation_account.id),
-            'level': level,
-            'name': account_name,
-            'unfolded': False,
+            'name': account_name[:40] + '...',  # Long names should be shortened
             'title_hover': "%s (%s Currency Conversion Method)" % (account_name, account_currency_name),
             'columns': [{
                 'name': self.builder.value_formatter(t),
                 'no_format': t,
                 'figure_type': 'monetary',
                 'class': 'number',
+                'is_zero': False,
+                'auditable': True,
                 'journal_id': False  # False as no company period id is set on journals
-            } for t in totals]
+            } for t in totals],
+            'level': 2,
         }
+        expected['columns'][-1]['auditable'] = False
 
         self.assertDictEqual(expected, line)
 

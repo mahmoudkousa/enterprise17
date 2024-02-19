@@ -108,8 +108,8 @@ class TestLuSaftReport(TestAccountReportsCommon):
                             </Address>
                             <Contact>
                                 <ContactPerson>
-                                    <FirstName>Mr Big CEO</FirstName>
-                                    <LastName/>
+                                    <FirstName>NotUsed</FirstName>
+                                    <LastName>Mr Big CEO</LastName>
                                 </ContactPerson>
                                 <Telephone>+352 24 11 12 34</Telephone>
                             </Contact>
@@ -182,8 +182,8 @@ class TestLuSaftReport(TestAccountReportsCommon):
                                 </Address>
                                 <Contact>
                                     <ContactPerson>
-                                        <FirstName>partner_a</FirstName>
-                                        <LastName/>
+                                        <FirstName>NotUsed</FirstName>
+                                        <LastName>partner_a</LastName>
                                     </ContactPerson>
                                     <Telephone>+352 24 11 11 11</Telephone>
                                 </Contact>
@@ -229,8 +229,8 @@ class TestLuSaftReport(TestAccountReportsCommon):
                                 </Address>
                                 <Contact>
                                     <ContactPerson>
-                                        <FirstName>Mr Big CEO</FirstName>
-                                        <LastName/>
+                                        <FirstName>NotUsed</FirstName>
+                                        <LastName>Mr Big CEO</LastName>
                                     </ContactPerson>
                                     <Telephone>+352 24 11 12 34</Telephone>
                                 </Contact>

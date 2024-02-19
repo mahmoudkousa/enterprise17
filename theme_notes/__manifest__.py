@@ -7,6 +7,7 @@
     'version': '2.1.0',
     'depends': ['theme_common'],
     'data': [
+        'data/generate_primary_template.xml',
         'data/ir_asset.xml',
         'views/images_library.xml',
 
@@ -46,6 +47,8 @@
     },
     'configurator_snippets': {
         'homepage': ['s_carousel', 's_masonry_block', 's_text_image', 's_product_catalog', 's_media_list', 's_company_team'],
+        # TODO In master, remove unused templates instead.
+        '_': ['s_cover'],
     },
     'new_page_templates': {
         'about': {

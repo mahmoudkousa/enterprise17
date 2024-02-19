@@ -40,7 +40,9 @@ class StockMove(models.Model):
             if not product.tracking == 'serial':
                 continue
             moves = self.filtered(lambda m: m.product_id == product)
-            sale_lines = moves._get_sale_order_lines()
+            sale_lines = self.env['sale.order.line']
+            for move in moves:
+                sale_lines |= move._get_sale_order_lines()
             if sale_lines.reserved_lot_ids:
                 free_reserved_lots = sale_lines.reserved_lot_ids.filtered(lambda s: s not in moves.move_line_ids.lot_id)
                 to_assign_move_lines = moves.move_line_ids.filtered(lambda l: l.lot_id not in sale_lines.reserved_lot_ids)

@@ -14,6 +14,10 @@ class TestFsmSaleWithMaterial(TestFsmFlowCommon):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.env.company.country_id = cls.env.ref('base.us')
+        cls.env['account.tax.group'].create(
+            {'name': 'Test Account Tax Group', 'company_id': cls.env.company.id}
+        )
         cls.account_revenue = cls.env['account.account'].create([{'code': '1014040', 'name': 'A', 'account_type': 'income'}])
         cls.account_expense = cls.env['account.account'].create([{'code': '101600', 'name': 'C', 'account_type': 'expense'}])
         cls.tax_sale_a = cls.env['account.tax'].create({

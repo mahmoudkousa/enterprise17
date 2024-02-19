@@ -8,7 +8,7 @@ export class AppointmentBookingListRenderer extends ListRenderer {
 
     async onClickAddLeave() {
         this.env.services.action.doAction({
-            name: _t("Add a Leave"),
+            name: _t("Add Closing Day(s)"),
             type: "ir.actions.act_window",
             res_model: "appointment.manage.leaves",
             view_mode: "form",

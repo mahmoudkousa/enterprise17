@@ -134,6 +134,22 @@ export class ReportEditorXml extends Component {
         this.state.xmlChanges = changes;
     }
 
+    getDefaultResource(resourcesOptions, mainKey) {
+        let mainResource;
+        if (mainKey) {
+            mainResource = resourcesOptions.find(opt => opt.resource.key === mainKey);
+        }
+        if (mainResource) {
+            const studioExtension = resourcesOptions.find(opt => {
+                const key = opt.resource.key;
+                const parentId = opt.resource.inherit_id && opt.resource.inherit_id[0];
+                return key.includes("web_studio.report_editor_customization") &&
+                    parentId === mainResource.resource.id;
+            })
+            return studioExtension || mainResource;
+        }
+    }
+
     async save({ urgent = false } = {}) {
         const changes = { ...toRaw(this.state.xmlChanges) };
         const result = await this.reportEditorModel.saveReport({

@@ -3,9 +3,9 @@
     <data>
         <!-- override of the template to align the address to the right -->
         <template id="contact_right" inherit_id="base.contact">
-            <xpath expr="//div[hasclass('flex-column')]" position="attributes">
+            <xpath expr="//div[hasclass('gap-2')]" position="attributes">
                 <attribute name="class"></attribute>
-                <attribute name="t-attf-class">d-flex flex-column gap-2 {{ 'justify-content-end' if options.get('align_right') else '' }}</attribute>
+                <attribute name="t-attf-class">gap-2 {{ 'text-end' if options.get('align_right') else '' }}</attribute>
             </xpath>
         </template>
 

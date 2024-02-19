@@ -67,6 +67,10 @@
             <t t-set="level" t-value="level or 0"/>
         </xpath>
 
+        <xpath expr="//DropdownItem//div" position="attributes">
+            <attribute name="t-att-class">choice.resource.active ? "" : "text-decoration-line-through"</attribute>
+        </xpath>
+
         <xpath expr="//DropdownItem//div" position="before">
             <div t-attf-style="margin-left: {{ (level*10) + 5 }}px;" class="me-2">
                 <span class="d-block fw-bold" style="font-size: 0.7em;">

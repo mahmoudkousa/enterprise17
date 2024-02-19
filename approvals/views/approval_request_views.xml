@@ -161,7 +161,8 @@
                         <page string="Products" name="products"
                             invisible="has_product == 'no'">
                             <field name="product_line_ids"
-                                context="{'tree_view_ref': 'approvals.approval_product_line_view_tree'}" readonly="request_status != 'new'"/>
+                                context="{'tree_view_ref': 'approvals.approval_product_line_view_tree', 'kanban_view_ref': 'approvals.approval_product_kanban_mobile_view'}"
+                                readonly="request_status != 'new'"/>
                         </page>
                         <page string="Description" name="description">
                             <field name="reason" readonly="request_status != 'new'"/>

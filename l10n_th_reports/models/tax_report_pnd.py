@@ -1,3 +1,5 @@
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
+
 from odoo import _, models
 
 
@@ -61,6 +63,7 @@ class TaxReportPND(models.AbstractModel):
         res = self._cr.fetchall()
 
         return res
+
 
 class TaxReportPND53(models.AbstractModel):
     _name = "l10n_th.pnd53.report.handler"

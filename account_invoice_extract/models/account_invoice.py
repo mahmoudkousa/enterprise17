@@ -4,7 +4,7 @@ from odoo import api, fields, models, _, _lt, Command
 from odoo.addons.iap.tools import iap_tools
 from odoo.exceptions import AccessError
 from odoo.tools import float_compare, mute_logger
-from odoo.tools.misc import clean_context
+from odoo.tools.misc import clean_context, formatLang
 from difflib import SequenceMatcher
 import logging
 import re
@@ -61,7 +61,7 @@ class AccountMove(models.Model):
             )
 
     extract_word_ids = fields.One2many("account.invoice_extract.words", inverse_name="invoice_id", copy=False)
-    extract_attachment_id = fields.Many2one('ir.attachment', readonly=True, ondelete='set null', copy=False)
+    extract_attachment_id = fields.Many2one('ir.attachment', readonly=True, ondelete='set null', copy=False, index='btree_not_null')
     extract_can_show_banners = fields.Boolean("Can show the ocr banners", compute=_compute_show_banners)
 
     extract_detected_layout = fields.Integer("Extract Detected Layout Id", readonly=True)
@@ -77,7 +77,7 @@ class AccountMove(models.Model):
     @api.model
     def _contact_iap_extract(self, pathinfo, params):
         params['version'] = OCR_VERSION
-        params['account_token'] = self.env['iap.account'].get('invoice_ocr').account_token
+        params['account_token'] = self._get_iap_account().account_token
         endpoint = self.env['ir.config_parameter'].sudo().get_param('iap_extract_endpoint', 'https://extract.api.odoo.com')
         return iap_tools.iap_jsonrpc(endpoint + '/api/extract/invoice/2/' + pathinfo, params=params)
 
@@ -95,17 +95,14 @@ class AccountMove(models.Model):
         """ Returns `True` if the document should be automatically sent to the extraction server"""
         self.ensure_one()
         if (
+            self._context.get('disable_ocr_auto_extraction') or
             self.extract_state != "no_extract_requested" or
-            not self._check_digitalization_mode(self.company_id, self.move_type, 'auto_send')
+            not self._check_digitalization_mode(self.company_id, self.move_type, 'auto_send') or
+            not self.is_in_extractable_state
         ):
             return False
 
-        # Auto extract if comes from email alias, unless attachment is not pdf and pdf filter is set on journal
-        if self._context.get('from_alias'):
-            return not self.journal_id.alias_auto_extract_pdfs_only \
-                or (self.message_main_attachment_id and self.message_main_attachment_id.mimetype.endswith('pdf'))
-
-        # If not from email alias, only auto extract for purchase moves
+        # Only auto extract for purchase moves
         return self.is_purchase_document()
 
     def _get_ocr_module_name(self):
@@ -132,6 +129,10 @@ class AccountMove(models.Model):
         super()._upload_to_extract_success_callback()
         self.extract_attachment_id = self.message_main_attachment_id
 
+    def is_indian_taxes(self):
+        l10n_in = self.env['ir.module.module'].search([('name', '=', 'l10n_in')])
+        return self.company_id.country_id.code == "IN" and l10n_in and l10n_in.state == 'installed'
+
     def _get_user_infos(self):
         user_infos = super()._get_user_infos()
         user_infos.update({
@@ -155,23 +156,6 @@ class AccountMove(models.Model):
         but if he entered the text of the field manually, we return only the text, as we
         don't know which box is the right one (if it exists)
         """
-        selected = self.env["account.invoice_extract.words"].search([
-            ("invoice_id", "=", self.id),
-            ("field", "=", field),
-            ("user_selected", "=", True),
-        ], limit=1)
-        if not selected:
-            selected = self.env["account.invoice_extract.words"].search([
-                ("invoice_id", "=", self.id),
-                ("field", "=", field),
-                ("ocr_selected", "=", True),
-            ], limit=1)
-        return_box = {}
-        if selected:
-            return_box["box"] = [selected.word_text, selected.word_page, selected.word_box_midX,
-                                 selected.word_box_midY, selected.word_box_width, selected.word_box_height, selected.word_box_angle]
-        # now we have the user or ocr selection, check if there was manual changes
-
         text_to_send = {}
         if field == "total":
             text_to_send["content"] = self.amount_total
@@ -219,11 +203,41 @@ class AccountMove(models.Model):
                     "total": il.price_total
                 }
                 text_to_send['lines'].append(line)
+            if self.is_indian_taxes():
+                lines = text_to_send['lines']
+                for index, line in enumerate(text_to_send['lines']):
+                    for tax in line['taxes']:
+                        taxes = []
+                        if tax['type'] == 'group':
+                            taxes.extend([{
+                                'amount': tax['amount'] / 2,
+                                'type': 'percent',
+                                'price_include': tax['price_include']
+                            } for _ in range(2)])
+                        else:
+                            taxes.append(tax)
+                        lines[index]['taxes'] = taxes
+                text_to_send['lines'] = lines
         else:
             return None
 
-        return_box.update(text_to_send)
-        return return_box
+        user_selected_box = self.env['account.invoice_extract.words'].search([
+            ('invoice_id', '=', self.id),
+            ('field', '=', field),
+            ('user_selected', '=', True),
+            ('ocr_selected', '=', False),
+        ])
+        if user_selected_box and user_selected_box.word_text == text_to_send['content']:
+            text_to_send['box'] = [
+                user_selected_box.word_text,
+                user_selected_box.word_page,
+                user_selected_box.word_box_midX,
+                user_selected_box.word_box_midY,
+                user_selected_box.word_box_width,
+                user_selected_box.word_box_height,
+                user_selected_box.word_box_angle,
+            ]
+        return text_to_send
 
     @api.model
     def _cron_validate(self):
@@ -459,6 +473,18 @@ class AccountMove(models.Model):
         """
         taxes_found = self.env['account.tax']
         type_tax_use = 'purchase' if self.is_purchase_document() else 'sale'
+        if self.is_indian_taxes() and len(taxes_ocr) > 1:
+            total_tax = sum(taxes_ocr)
+            grouped_taxes_records = self.env['account.tax'].search([
+                *self.env['account.tax']._check_company_domain(self.company_id),
+                ('amount', '=', total_tax),
+                ('amount_type', '=', 'group'),
+                ('type_tax_use', '=', type_tax_use),
+            ])
+            for grouped_tax in grouped_taxes_records:
+                children_taxes = grouped_tax.children_tax_ids.mapped('amount')
+                if set(taxes_ocr) == set(children_taxes):
+                    return grouped_tax
         for (taxes, taxes_type) in zip(taxes_ocr, taxes_type_ocr):
             if taxes != 0.0:
                 related_documents = self.env['account.move'].search([
@@ -482,16 +508,18 @@ class AccountMove(models.Model):
                 if len(taxes_by_document) != 0:
                     taxes_found |= max(taxes_by_document, key=lambda tax: len(tax[1]))[0]
                 else:
-                    purchase_tax = self.journal_id.default_account_id.tax_ids.filtered(lambda tax: tax.type_tax_use == 'purchase')
-                    if len(purchase_tax) == 1 and purchase_tax.amount == taxes and purchase_tax.amount_type == taxes_type:
-                        taxes_found |= purchase_tax
+                    tax_domain = [
+                        *self.env['account.tax']._check_company_domain(self.company_id),
+                        ('amount', '=', taxes),
+                        ('amount_type', '=', taxes_type),
+                        ('type_tax_use', '=', type_tax_use),
+                    ]
+                    default_taxes = self.journal_id.default_account_id.tax_ids
+                    matching_default_tax = default_taxes.filtered_domain(tax_domain)
+                    if matching_default_tax:
+                        taxes_found |= matching_default_tax
                     else:
-                        taxes_records = self.env['account.tax'].search([
-                            *self.env['account.tax']._check_company_domain(self.company_id),
-                            ('amount', '=', taxes),
-                            ('amount_type', '=', taxes_type),
-                            ('type_tax_use', '=', type_tax_use),
-                        ])
+                        taxes_records = self.env['account.tax'].search(tax_domain)
                         if taxes_records:
                             taxes_records_setting_based = taxes_records.filtered(lambda r: not r.price_include)
                             if taxes_records_setting_based:
@@ -517,7 +545,7 @@ class AccountMove(models.Model):
             return partner_last_invoice_currency
         if self.company_id.currency_id in possible_currencies:
             return self.company_id.currency_id
-        return possible_currencies[:1]
+        return possible_currencies if len(possible_currencies) == 1 else None
 
 
     def _get_invoice_lines(self, ocr_results):
@@ -597,8 +625,6 @@ class AccountMove(models.Model):
         if self.state != 'draft' or ocr_results is None:
             return
 
-        if 'full_text_annotation' in ocr_results:
-            self.message_main_attachment_id.index_content = ocr_results['full_text_annotation']
         if 'detected_layout_id' in ocr_results:
             self.extract_detected_layout = ocr_results['detected_layout_id']
 
@@ -651,6 +677,7 @@ class AccountMove(models.Model):
         qr_bill_ocr = self._get_ocr_selected_value(ocr_results, 'qr-bill')
         supplier_ocr = self._get_ocr_selected_value(ocr_results, 'supplier', "")
         client_ocr = self._get_ocr_selected_value(ocr_results, 'client', "")
+        total_tax_amount_ocr = self._get_ocr_selected_value(ocr_results, 'total_tax_amount', 0.0)
 
         self.extract_partner_name = client_ocr if self.is_sale_document() else supplier_ocr
 
@@ -798,6 +825,21 @@ class AccountMove(models.Model):
             # Check the tax roundings after the tax lines have been synced
             tax_amount_rounding_error = total_ocr - self.tax_totals['amount_total']
             threshold = len(vals_invoice_lines) * move_form.currency_id.rounding
+            # Check if tax amounts detected by the ocr are correct and
+            # replace the taxes that caused the rounding error in case of indian localization
+            if not move_form.currency_id.is_zero(tax_amount_rounding_error) and self.is_indian_taxes():
+                fixed_rounding_error = total_ocr - total_tax_amount_ocr - self.tax_totals['amount_untaxed']
+                tax_totals = self.tax_totals
+                tax_groups = tax_totals['groups_by_subtotal']['Untaxed Amount']
+                if move_form.currency_id.is_zero(fixed_rounding_error) and tax_groups:
+                    tax = total_tax_amount_ocr / len(tax_groups)
+                    for tax_total in tax_groups:
+                        tax_total.update({
+                            'tax_group_amount': tax,
+                            'formatted_tax_group_amount': formatLang(self.env, tax, currency_obj=self.currency_id),
+                        })
+                    self.tax_totals = tax_totals
+
             if (
                 not move_form.currency_id.is_zero(tax_amount_rounding_error) and
                 float_compare(abs(tax_amount_rounding_error), threshold, precision_digits=2) <= 0
@@ -817,12 +859,14 @@ class AccountMove(models.Model):
     def _get_edi_decoder(self, file_data, new=False):
         # EXTENDS 'account'
         self.ensure_one()
-        if file_data['type'] in ('pdf', 'binary'):
-            if new:
+
+        if file_data['type'] in ('pdf', 'binary') and not self._context.get('disable_ocr_auto_extraction'):
+            if self._context.get('from_alias'):
+                if not self.journal_id.alias_auto_extract_pdfs_only or (self.message_main_attachment_id.mimetype or '').endswith('pdf'):
+                    return self._import_invoice_ocr
+            elif self._needs_auto_extract():
+                return self._import_invoice_ocr
+            elif new:
                 if self._check_digitalization_mode(self.company_id, self.move_type, 'auto_send'):
                     return self._import_invoice_ocr
-            else:
-                if self._needs_auto_extract():
-                    return self._import_invoice_ocr
-
         return super()._get_edi_decoder(file_data, new=new)

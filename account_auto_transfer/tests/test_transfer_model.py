@@ -8,8 +8,8 @@ from freezegun import freeze_time
 from dateutil.relativedelta import relativedelta
 from odoo.addons.account_auto_transfer.tests.account_auto_transfer_test_classes import AccountAutoTransferTestCase
 
-from odoo import fields
-from odoo.models import ValidationError
+from odoo import Command, fields
+from odoo.models import UserError, ValidationError
 from odoo.tests import tagged
 
 # ############################################################################ #
@@ -417,3 +417,64 @@ class TransferModelTestCase(AccountAutoTransferTestCase):
                 'account_ids': [(6, 0, [ma.id for ma in self.origin_accounts])],
                 'line_ids': transfer_model_lines
             })
+
+    def test_unlink_of_transfer_with_no_moves(self):
+        """ Deletion of an automatic transfer that has no move should not raise an error. """
+
+        self.transfer_model.write({
+            'account_ids': [Command.link(self.origin_accounts[0].id)],
+            'line_ids': [
+                Command.create({
+                    'percent': 100,
+                    'account_id': self.destination_accounts[0].id
+                })
+            ]
+        })
+        self.transfer_model.action_activate()
+
+        self.assertEqual(self.transfer_model.move_ids_count, 0)
+        self.transfer_model.unlink()
+
+    def test_error_unlink_of_transfer_with_moves(self):
+        """ Deletion of an automatic transfer that has posted/draft moves should raise an error. """
+
+        self.transfer_model.write({
+            'date_start': datetime.today() - relativedelta(day=1),
+            'frequency': 'year',
+            'account_ids': [Command.link(self.company_data['default_account_revenue'].id)],
+            'line_ids': [
+                Command.create({
+                    'percent': 100,
+                    'account_id': self.destination_accounts[0].id
+                })
+            ]
+        })
+        self.transfer_model.action_activate()
+
+        # Add a transaction on the journal so that the move is not empty
+        self.env['account.move'].create({
+            'move_type': 'out_invoice',
+            'partner_id': self.partner_a.id,
+            'invoice_date': datetime.today(),
+            'invoice_line_ids': [
+                Command.create({
+                    'name': 'line1',
+                    'account_id': self.company_data['default_account_revenue'].id,
+                    'price_unit': 1000.0,
+                }),
+            ]
+        }).action_post()
+
+        # Generate draft moves
+        self.transfer_model.action_perform_auto_transfer()
+
+        error_message = "You cannot delete an automatic transfer that has draft moves*"
+        with self.assertRaisesRegex(UserError, error_message):
+            self.transfer_model.unlink()
+
+        # Post one of the moves
+        self.transfer_model.move_ids[0].action_post()
+
+        error_message = "You cannot delete an automatic transfer that has posted moves*"
+        with self.assertRaisesRegex(UserError, error_message):
+            self.transfer_model.unlink()

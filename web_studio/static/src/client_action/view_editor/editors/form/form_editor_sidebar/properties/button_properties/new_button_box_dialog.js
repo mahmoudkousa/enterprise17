@@ -19,6 +19,7 @@ export class NewButtonBoxDialog extends Component {
         close: { type: Function },
     };
     setup() {
+        this.orm = useService("orm");
         this.notification = useService("notification");
         this.state = useState({
             icon: "fa-diamond",
@@ -31,6 +32,15 @@ export class NewButtonBoxDialog extends Component {
     }
     get title() {
         return _t("Add a Button");
+    }
+    async update(selection) {
+        if (!selection[0].display_name) {
+            const resId = selection[0].id;
+            const fields = ["display_name"];
+            const record = await this.orm.read("ir.model.fields", [resId], fields);
+            selection[0].display_name = record[0].display_name;
+        }
+        this.state.field = selection[0];
     }
     getDomain() {
         return [

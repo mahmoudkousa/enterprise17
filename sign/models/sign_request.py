@@ -64,7 +64,7 @@ class SignRequest(models.Model):
         return str(uuid.uuid4())
 
     def _expand_states(self, states, domain, order):
-        return [key for key, val in type(self).state.selection]
+        return [key for key, val in self._fields['state'].selection]
 
     def _get_mail_link(self, email, subject):
         return "mailto:%s?subject=%s" % (url_quote(email), url_quote(subject))
@@ -402,7 +402,7 @@ class SignRequest(models.Model):
                 request.state = 'expired'
             else:
                 request_to_send += request
-        request_to_send.send_signature_accesses()
+        request_to_send.with_context(force_send=False).send_signature_accesses()
 
     def _sign(self):
         """ Sign a SignRequest. It can only be used in the SignRequestItem._sign """
@@ -926,7 +926,7 @@ class SignRequestItem(models.Model):
                  'email_to': formataddr((signer.partner_id.name, signer_email_normalized)),
                  'attachment_ids': attachment_ids,
                  'subject': signer.sign_request_id.subject},
-                force_send=True,
+                force_send=self.env.context.get('force_send', True),  # only force_send if not from cron
                 lang=signer_lang,
             )
             signer.is_mail_sent = True

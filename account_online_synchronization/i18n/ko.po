@@ -4,22 +4,30 @@
 # 
 # Translators:
 # JH CHOI <hwangtog@gmail.com>, 2023
+# Daye Jeong, 2023
 # Sarah Park, 2023
-# Wil Odoo, 2023
+# Wil Odoo, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-31 14:34+0000\n"
+"POT-Creation-Date: 2024-01-05 13:46+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Wil Odoo, 2023\n"
+"Last-Translator: Wil Odoo, 2024\n"
 "Language-Team: Korean (https://app.transifex.com/odoo/teams/41243/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Language: ko\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+
+#. module: account_online_synchronization
+#. odoo-python
+#: code:addons/account_online_synchronization/models/account_online.py:0
+#, python-format
+msgid " If you've already opened this issue don't report it again."
+msgstr "해당 문제를 이미 진행 중인 경우, 다시 보고하지 마세요."
 
 #. module: account_online_synchronization
 #. odoo-javascript
@@ -37,7 +45,7 @@ msgstr ""
 #: code:addons/account_online_synchronization/static/src/components/refresh_spin_journal_widget/refresh_spin_journal_widget.xml:0
 #, python-format
 msgid "0 transaction fetched"
-msgstr ""
+msgstr "0건의 거래를 가져왔습니다."
 
 #. module: account_online_synchronization
 #: model_terms:ir.ui.view,arch_db:account_online_synchronization.account_journal_form
@@ -206,7 +214,7 @@ msgstr "온라인 연결 계정"
 #. module: account_online_synchronization
 #: model:ir.actions.server,name:account_online_synchronization.online_sync_cron_waiting_synchronization_ir_actions_server
 msgid "Account: Journal online Waiting Synchronization"
-msgstr ""
+msgstr "계정: 온라인 전표 동기화 대기 중"
 
 #. module: account_online_synchronization
 #: model:ir.actions.server,name:account_online_synchronization.online_sync_cron_ir_actions_server
@@ -514,6 +522,7 @@ msgstr "거래 내역 가져오기"
 #. module: account_online_synchronization
 #. odoo-python
 #: code:addons/account_online_synchronization/models/account_online.py:0
+#: code:addons/account_online_synchronization/models/account_online.py:0
 #, python-format
 msgid "Fetched Transactions"
 msgstr "가져온 거래 내역"
@@ -532,8 +541,8 @@ msgid "Fetching..."
 msgstr "가져오는 중입니다."
 
 #. module: account_online_synchronization
-#. odoo-python
 #. odoo-javascript
+#. odoo-python
 #: code:addons/account_online_synchronization/models/account_journal.py:0
 #: code:addons/account_online_synchronization/static/src/components/bank_reconciliation/fetch_missing_transactions_cog_menu.xml:0
 #: model:ir.actions.server,name:account_online_synchronization.account_journal_action_fetch_missing_transactions
@@ -654,6 +663,13 @@ msgstr "내부 오류"
 #. odoo-python
 #: code:addons/account_online_synchronization/models/account_online.py:0
 #, python-format
+msgid "Invalid URL"
+msgstr "잘못된 URL"
+
+#. module: account_online_synchronization
+#. odoo-python
+#: code:addons/account_online_synchronization/models/account_online.py:0
+#, python-format
 msgid "Invalid value for proxy_mode config parameter."
 msgstr "proxy_mode 설정 매개변수 값이 잘못되었습니다."
 
@@ -768,6 +784,11 @@ msgid "Name"
 msgstr "이름"
 
 #. module: account_online_synchronization
+#: model:ir.model.fields,field_description:account_online_synchronization.field_account_online_link__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr "다음 활동 캘린더 행사"
+
+#. module: account_online_synchronization
 #: model:ir.model.fields,field_description:account_online_synchronization.field_account_online_link__activity_date_deadline
 msgid "Next Activity Deadline"
 msgstr "다음 활동 마감일"
@@ -880,6 +901,11 @@ msgid "Pending"
 msgstr "보류 중"
 
 #. module: account_online_synchronization
+#: model:ir.model.fields.selection,name:account_online_synchronization.selection__account_online_account__fetching_status__planned
+msgid "Planned"
+msgstr "계획됨"
+
+#. module: account_online_synchronization
 #. odoo-python
 #: code:addons/account_online_synchronization/wizard/account_journal_missing_transactions.py:0
 #, python-format
@@ -926,6 +952,11 @@ msgid "Provider Type"
 msgstr "공급업체 유형"
 
 #. module: account_online_synchronization
+#: model:ir.model.fields,field_description:account_online_synchronization.field_account_online_link__rating_ids
+msgid "Ratings"
+msgstr "평가"
+
+#. module: account_online_synchronization
 #: model_terms:ir.ui.view,arch_db:account_online_synchronization.account_online_link_view_form
 msgid "Reconnect"
 msgstr "재연결"
@@ -962,7 +993,7 @@ msgstr "새로 고침 토큰"
 #: code:addons/account_online_synchronization/models/account_journal.py:0
 #, python-format
 msgid "Report Issue"
-msgstr ""
+msgstr "문제점 보고"
 
 #. module: account_online_synchronization
 #. odoo-python
@@ -998,7 +1029,7 @@ msgstr "보안 관련 팁: 버튼을 클릭하기 전에 항상 이 페이지의
 #: code:addons/account_online_synchronization/static/src/components/refresh_spin_journal_widget/refresh_spin_journal_widget.xml:0
 #, python-format
 msgid "See error"
-msgstr ""
+msgstr "오류 보기"
 
 #. module: account_online_synchronization
 #. odoo-python
@@ -1172,7 +1203,7 @@ msgstr "Odoo 지원팀에 문의하세요."
 #: code:addons/account_online_synchronization/models/account_journal.py:0
 #, python-format
 msgid "You can only execute this action for bank-synchronized journals."
-msgstr ""
+msgstr "이 작업은 은행 동기화가 완료된 전표에 대해서만 실행할 수 있습니다."
 
 #. module: account_online_synchronization
 #. odoo-python
@@ -1244,7 +1275,7 @@ msgstr "온라인 은행 계좌 표시"
 #: code:addons/account_online_synchronization/static/src/components/refresh_spin_journal_widget/refresh_spin_journal_widget.xml:0
 #, python-format
 msgid "transactions fetched"
-msgstr ""
+msgstr "건의 거래를 가져왔습니다."
 
 #. module: account_online_synchronization
 #. odoo-javascript

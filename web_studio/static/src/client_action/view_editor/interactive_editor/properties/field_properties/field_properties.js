@@ -24,7 +24,7 @@ class TechnicalName extends Component {
             return this.env.viewEditorModel.renameField(
                 this.props.node.attrs.name,
                 `x_studio_${value}`,
-                false
+                { autoUnique: false }
             );
         };
     }
@@ -82,19 +82,20 @@ export class FieldProperties extends Component {
     }
 
     async onChangeFieldString(value) {
-        const operation = {
-            new_attrs: { string: value },
-            type: "attributes",
-            position: "attributes",
-            target: this.viewEditorModel.getFullTarget(this.viewEditorModel.activeNodeXpath),
-        };
-        // FIXME: the python API is messy: we need to send node, which is the same as target since
-        // we are editing the target's attributes, to be able to modify the python field's string
-        operation.node = operation.target;
         if (this.viewEditorModel.isFieldRenameable(this.props.node.field.name) && value) {
-            await this.viewEditorModel.doOperation(operation, false);
-            return this.viewEditorModel.renameField(this.props.node.attrs.name, value);
+            return this.viewEditorModel.renameField(this.props.node.attrs.name, value, {
+                label: value,
+            });
         } else {
+            const operation = {
+                new_attrs: { string: value },
+                type: "attributes",
+                position: "attributes",
+                target: this.viewEditorModel.getFullTarget(this.viewEditorModel.activeNodeXpath),
+            };
+            // FIXME: the python API is messy: we need to send node, which is the same as target since
+            // we are editing the target's attributes, to be able to modify the python field's string
+            operation.node = operation.target;
             return this.viewEditorModel.doOperation(operation);
         }
     }

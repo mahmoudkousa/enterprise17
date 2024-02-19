@@ -68,7 +68,7 @@ export class FolderFormController extends FormController {
                     await this.orm.call(
                         this.props.resModel,
                         "action_archive",
-                        this.model.root.resId
+                        [this.model.root.resId]
                     );
                     this.env.config.historyBack();
                 },

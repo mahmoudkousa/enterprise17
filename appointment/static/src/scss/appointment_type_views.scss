@@ -50,11 +50,12 @@
             width: 100%;
             margin: 0px;
             .appointment_type_action_toggler {
-                right: 7% !important;
-                top: 30%;
-
-                .appointment_type_action_toggler_text {
-                    display: inline-block !important;
+                @include media-breakpoint-up(sm) {
+                    right: 7% !important;
+                    top: 30%;
+                    .appointment_type_action_toggler_text {
+                        display: inline-block !important;
+                    }
                 }
                 .text-large {
                     line-height: 1.1em;
@@ -71,35 +72,21 @@
             width: 32px;
             height: 32px;
         }
-        .o_m2m_avatar_empty span {
-            margin-top: 8px;
+        .o_m2m_avatar_empty {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: var(--Tag-font-size, #{$font-size-sm});
         }
     }
     // Ungrouped specific
     .o_appointment_kanban_card_ungrouped {
-        margin-right: 8rem;
+        @include media-breakpoint-up(sm) {
+            margin-right: 8rem;
+        }
         min-height: 4rem;
         .ribbon {
             --Ribbon-wrapper-height: 100%;
-        }
-        .o_appointment_text_button, .o_appointment_text_button:focus, .o_appointment_text_button:hover {
-            // remove button "box" aspect
-            background: transparent;
-            border-width: 0;
-            outline: 0;
-            padding: 0;
-            font-weight: 300;
-            &:hover {
-                font-weight: normal;
-            }
-            &.o_appointment_text_big_nb {
-                text-align: left;
-                font-size: 300%;
-                @include media-breakpoint-up(sm) {
-                    min-width: 1.2em;
-                    text-align: right;
-                }
-            }
         }
         .text-large {
             line-height: 1.1em;

@@ -22,8 +22,12 @@ class MailThread(models.AbstractModel):
     _inherit = 'mail.thread'
 
     def _notify_thread(self, message, msg_vals=False, **kwargs):
+        scheduled_date = self._is_notification_scheduled(kwargs.get('scheduled_date'))
         recipients_data = super(MailThread, self)._notify_thread(message, msg_vals=msg_vals, **kwargs)
-        self._notify_thread_by_ocn(message, recipients_data, msg_vals, **kwargs)
+
+        # if scheduled for later: notification queue will call the notification method
+        if not scheduled_date:
+            self._notify_thread_by_ocn(message, recipients_data, msg_vals, **kwargs)
         return recipients_data
 
     def _notify_thread_by_ocn(self, message, recipients_data, msg_vals=False, **kwargs):

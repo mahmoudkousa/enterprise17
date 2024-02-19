@@ -68,7 +68,7 @@ class PlanningShift(models.Model):
     def _compute_template_autocomplete_ids(self):
         super(PlanningShift, self)._compute_template_autocomplete_ids()
 
-    @api.depends('role_id', 'employee_id', 'project_id', 'start_datetime', 'allocated_hours')
+    @api.depends('project_id')
     def _compute_template_id(self):
         super(PlanningShift, self)._compute_template_id()
 

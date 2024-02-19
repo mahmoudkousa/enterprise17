@@ -1,34 +1,35 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # 	* quality_mrp_workorder
-#
+# 
 # Translators:
-# Martin Trigaux, 2022
-# Сергей Шебанин <sergey@shebanin.ru>, 2022
-#
+# Martin Trigaux, 2023
+# Сергей Шебанин <sergey@shebanin.ru>, 2023
+# Wil Odoo, 2024
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 16.0+e\n"
+"Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-16 16:01+0000\n"
-"PO-Revision-Date: 2022-09-22 05:48+0000\n"
-"Last-Translator: Сергей Шебанин <sergey@shebanin.ru>, 2022\n"
+"POT-Creation-Date: 2024-01-26 16:10+0000\n"
+"PO-Revision-Date: 2023-10-26 23:10+0000\n"
+"Last-Translator: Wil Odoo, 2024\n"
 "Language-Team: Russian (https://app.transifex.com/odoo/teams/41243/ru/)\n"
-"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
+"Language: ru\n"
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
 
 #. module: quality_mrp_workorder
 #: model_terms:ir.ui.view,arch_db:quality_mrp_workorder.worksheet_page
 msgid "<strong>Lot/Serial Number: </strong>"
-msgstr ""
+msgstr "<strong>Лот/Серийный номер: </strong>"
 
 #. module: quality_mrp_workorder
 #: model_terms:ir.ui.view,arch_db:quality_mrp_workorder.worksheet_page
 msgid "<strong>Work Order: </strong>"
-msgstr ""
+msgstr "<strong>Заказ на работу: </strong>"
 
 #. module: quality_mrp_workorder
 #: model:ir.model.fields,field_description:quality_mrp_workorder.field_mrp_production__check_ids
@@ -38,7 +39,14 @@ msgstr "Проверки"
 #. module: quality_mrp_workorder
 #: model_terms:ir.ui.view,arch_db:quality_mrp_workorder.quality_check_view_form_inherit_mrp_workorder
 msgid "Component Lot/Serial"
-msgstr "Партия/серийный номер компонента"
+msgstr "Компонент Лот/Серия"
+
+#. module: quality_mrp_workorder
+#. odoo-javascript
+#: code:addons/quality_mrp_workorder/static/src/components/menuPopup.xml:0
+#, python-format
+msgid "Create a Quality Alert"
+msgstr "Создать предупреждение о качестве"
 
 #. module: quality_mrp_workorder
 #: model_terms:ir.ui.view,arch_db:quality_mrp_workorder.quality_alert_view_form_inherit_mrp
@@ -48,12 +56,12 @@ msgstr "Отменить"
 #. module: quality_mrp_workorder
 #: model_terms:ir.ui.view,arch_db:quality_mrp_workorder.mrp_production_workorder_tree_editable_view_inherit_quality
 msgid "Done"
-msgstr "Выполнено"
+msgstr "Готово"
 
 #. module: quality_mrp_workorder
 #: model_terms:ir.ui.view,arch_db:quality_mrp_workorder.quality_check_view_form_tablet_inherit_quality
 msgid "Fail"
-msgstr "Провал"
+msgstr "Неудача"
 
 #. module: quality_mrp_workorder
 #. odoo-python
@@ -65,13 +73,13 @@ msgstr "Неудача"
 #. module: quality_mrp_workorder
 #: model_terms:ir.ui.view,arch_db:quality_mrp_workorder.quality_check_view_search_inherit_quality_mrp_workorder
 msgid "Finished Lot/Serial"
-msgstr "Завершенные партии/серийные"
+msgstr "Законченный участок/серия"
 
 #. module: quality_mrp_workorder
 #: model_terms:ir.ui.view,arch_db:quality_mrp_workorder.quality_check_view_search_inherit_mrp_workorder
 #: model_terms:ir.ui.view,arch_db:quality_mrp_workorder.quality_point_view_search_inherit_mrp_workorder
 msgid "Manufacturing Steps"
-msgstr "Шаги производства"
+msgstr "Этапы производства"
 
 #. module: quality_mrp_workorder
 #: model_terms:ir.ui.view,arch_db:quality_mrp_workorder.quality_check_view_form_tablet_inherit_quality
@@ -86,17 +94,17 @@ msgstr "Операция"
 #. module: quality_mrp_workorder
 #: model_terms:ir.ui.view,arch_db:quality_mrp_workorder.quality_check_view_form_tablet_inherit_quality
 msgid "Pass"
-msgstr "Успех"
+msgstr "Зачёт"
 
 #. module: quality_mrp_workorder
 #: model:ir.model,name:quality_mrp_workorder.model_product_template
 msgid "Product"
-msgstr "Продукт"
+msgstr "Товар"
 
 #. module: quality_mrp_workorder
 #: model:ir.model,name:quality_mrp_workorder.model_stock_move_line
 msgid "Product Moves (Stock Move Line)"
-msgstr "Перемещение товара (позиция складского перемещения)"
+msgstr "Перемещение продукта (Позиции движения запасов)"
 
 #. module: quality_mrp_workorder
 #: model:ir.model,name:quality_mrp_workorder.model_product_product
@@ -106,14 +114,7 @@ msgstr "Вариант продукта"
 #. module: quality_mrp_workorder
 #: model:ir.model,name:quality_mrp_workorder.model_mrp_production
 msgid "Production Order"
-msgstr "Производственный заказ"
-
-#. module: quality_mrp_workorder
-#. odoo-javascript
-#: code:addons/quality_mrp_workorder/static/src/components/menuPopup.xml:0
-#, python-format
-msgid "Quality Alert"
-msgstr "Инцидент по качеству"
+msgstr "Заказ на производство"
 
 #. module: quality_mrp_workorder
 #: model:ir.model,name:quality_mrp_workorder.model_quality_check
@@ -125,28 +126,36 @@ msgstr "Проверка качества"
 #: code:addons/quality_mrp_workorder/models/quality.py:0
 #, python-format
 msgid "Quality Check Failed"
-msgstr "Проверка качества провалилась"
+msgstr "Проверка качества не удалась"
 
 #. module: quality_mrp_workorder
+#. odoo-javascript
+#: code:addons/quality_mrp_workorder/static/src/mrp_display/mrp_display_record.xml:0
 #: model:ir.actions.act_window,name:quality_mrp_workorder.quality_check_action_wo
 #: model_terms:ir.ui.view,arch_db:quality_mrp_workorder.quality_check_view_search_inherit_mrp_workorder
+#, python-format
 msgid "Quality Checks"
 msgstr "Проверки качества"
 
 #. module: quality_mrp_workorder
 #: model:ir.model,name:quality_mrp_workorder.model_quality_point
 msgid "Quality Control Point"
-msgstr "Точка контроля качества"
+msgstr "Пункт контроля качества"
 
 #. module: quality_mrp_workorder
 #: model_terms:ir.ui.view,arch_db:quality_mrp_workorder.quality_point_view_search_inherit_mrp_workorder
 msgid "Quality Points"
-msgstr "Точки контроля качества"
+msgstr "Баллы качества"
 
 #. module: quality_mrp_workorder
 #: model_terms:ir.ui.view,arch_db:quality_mrp_workorder.quality_alert_view_form_inherit_mrp
 msgid "Save"
 msgstr "Сохранить"
+
+#. module: quality_mrp_workorder
+#: model:ir.model.fields,field_description:quality_mrp_workorder.field_quality_check__operation_id
+msgid "Step"
+msgstr "Шаг"
 
 #. module: quality_mrp_workorder
 #. odoo-python
@@ -158,16 +167,15 @@ msgstr "Успех"
 #. module: quality_mrp_workorder
 #: model_terms:ir.ui.view,arch_db:quality_mrp_workorder.quality_check_view_form_tablet_inherit_quality
 msgid "Validate"
-msgstr "Подтвердить"
+msgstr "Проверка"
 
 #. module: quality_mrp_workorder
 #: model:ir.model,name:quality_mrp_workorder.model_mrp_workorder
 msgid "Work Order"
-msgstr "Производственное задание"
+msgstr "Заказ-наряд"
 
 #. module: quality_mrp_workorder
-#. odoo-python
-#: code:addons/quality_mrp_workorder/models/mrp_workorder.py:0
-#, python-format
-msgid "You first need to complete the Quality Check using the Tablet View before marking the Operation as Done."
-msgstr "Сначала нужно завершить проверку качества в полноэкранном виде, чтобы пометить операцию как выполненную."
+#: model_terms:ir.ui.view,arch_db:quality_mrp_workorder.quality_check_view_form_inherit_mrp_workorder
+#: model_terms:ir.ui.view,arch_db:quality_mrp_workorder.quality_check_view_tree_inherit_mrp_workorder
+msgid "Work Order Operation"
+msgstr "Операция по заказу на производство"

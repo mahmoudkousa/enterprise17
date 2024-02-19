@@ -1,7 +1,7 @@
 <templates>
 
 <t t-name="web_studio.ReportEditorXml">
-    <XmlResourceEditor mainResourceId="reportEditorModel.reportData.report_name" onClose.bind="onCloseXmlEditor" onCodeChange.bind="onXmlChanged" canSave="false" minWidth="minWidth" reloadSources="state.reloadSources" onResourceChange.bind="onResourceChanged" displayAlerts="false">
+    <XmlResourceEditor mainResourceId="reportEditorModel.reportData.report_name" onClose.bind="onCloseXmlEditor" onCodeChange.bind="onXmlChanged" canSave="false" minWidth="minWidth" reloadSources="state.reloadSources" onResourceChange.bind="onResourceChanged" displayAlerts="false" getDefaultResource.bind="getDefaultResource">
         <t t-set-slot="additionalControlButtons" t-slot-scope="xmlEditor">
             <div class="d-flex">
                 <TranslationButton resourceId="xmlEditor.currentResourceId" />

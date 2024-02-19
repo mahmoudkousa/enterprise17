@@ -6,10 +6,6 @@
                 <button t-if="model.canCreate" class="btn btn-primary" t-on-click="() => this.createRecord()">New</button>
             </t>
         </xpath>
-        <!-- Changes the order of the header's elements on embedded calendar views -->
-        <xpath expr="//div[hasclass('o_calendar_header')]//h5" position="attributes">
-            <attribute name="class" separator=" " add="order-lg-first me-auto"/>
-        </xpath>
         <xpath expr="//div[hasclass('o_calendar_header')]//button[hasclass('oi-panel-right')]" position="replace"/>
         <xpath expr="//div[hasclass('o_calendar_container')]" position="inside">
             <div t-if="state.missingConfiguration" class="o_view_nocontent o_knowledge_item_calendar_nocontent">

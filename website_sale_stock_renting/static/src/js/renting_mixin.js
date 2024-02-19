@@ -15,7 +15,7 @@ RentingMixin._getInvalidMessage = function (startDate, endDate, productId) {
     if (message || !startDate || !endDate || !this.rentingAvailabilities || this.preparationTime === undefined) {
         return message;
     }
-    if (this._isDurationWithHours() && startDate < luxon.DateTime.now().plus({hours: this.preparationTime})) {
+    if (startDate < luxon.DateTime.now().plus({hours: this.preparationTime})) {
         return _t("Your rental product cannot be prepared as fast, please rent later.");
     }
     if (!this.rentingAvailabilities[productId]) {

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo.addons.test_marketing_automation.tests.common import TestMACommon
-from dateutil.relativedelta import relativedelta
+from freezegun import freeze_time
 
+from odoo.addons.test_marketing_automation.tests.common import TestMACommon
 from odoo.tests import tagged, users
 from odoo.tools import mute_logger
 from odoo.fields import Datetime
@@ -12,7 +12,74 @@ from odoo.fields import Datetime
 @tagged('marketing_automation')
 class MarketingCampaignTest(TestMACommon):
 
-    @users('user_markauto')
+    @classmethod
+    def setUpClass(cls):
+        super(MarketingCampaignTest, cls).setUpClass()
+        cls.date_reference = Datetime.from_string('2023-11-08 08:00:00')
+        cls.test_records = cls._create_marketauto_records(model='marketing.test.sms', count=2)
+        cls.env['res.lang']._activate_lang('fr_FR')
+
+    @users('user_marketing_automation')
+    @mute_logger('odoo.addons.base.ir.ir_model', 'odoo.models')
+    def test_campaign_archive(self):
+        """ Ensures that campaigns are stopped when archived. """
+        campaign = self.env['marketing.campaign'].create({
+            'domain': [('id', 'in', self.test_records[0].ids)],
+            'model_id': self.env['ir.model']._get_id('marketing.test.sms'),
+            'name': 'Test Campaign',
+        })
+        self._create_activity_mail(campaign, act_values={'interval_number': 0})
+
+        campaign.action_start_campaign()
+        self.assertEqual(campaign.state, 'running')
+
+        campaign.active = False
+        self.assertEqual(campaign.state, 'stopped')
+
+    @users('user_marketing_automation')
+    @mute_logger('odoo.addons.base.models.ir_model', 'odoo.addons.mail.models.mail_mail')
+    def test_campaign_domain_with_translated_terms(self):
+        """ Test that a campaign with a domain containing translated terms in
+        the language of the responsible does correctly sync participant and
+        execute activities. """
+        # init test variables to ease code reading
+        test_records = self.test_records.with_env(self.env)
+        test_records_init = test_records.filtered(lambda r: r.name != 'Test_00')
+
+        test_records.write({'text_trans': 'Test EN'})
+        test_records.with_context(lang="fr_FR").write({'text_trans': 'Test FR'})
+
+        self.env.user.sudo().write({'lang': 'en_US'})
+        campaign = self.env['marketing.campaign'].create({
+            'domain': [('name', '!=', 'Test_00'), ('text_trans', '=', 'Test FR')],
+            'marketing_activity_ids': [
+                (0, 0, {
+                    'activity_type': 'email',
+                    'name': 'Test',
+                }),
+            ],
+            'model_id': self.env['ir.model']._get_id('marketing.test.sms'),
+            'name': 'Test Campaign',
+        })
+
+        with freeze_time(self.date_reference):
+            # launch campaign, with responsible language != language terms in campaign domain
+            campaign.action_start_campaign()
+            campaign.sync_participants()
+
+        self.assertEqual(campaign.running_participant_count, 0)
+        self.assertFalse(campaign.participant_ids)
+
+        # with responsible language == language terms in campaign domain
+        self.env.user.sudo().write({'lang': 'fr_FR'})
+        with freeze_time(self.date_reference):
+            campaign.sync_participants()
+
+        self.assertEqual(campaign.running_participant_count, len(test_records_init))
+        self.assertEqual(campaign.participant_ids.mapped('res_id'), test_records_init.ids)
+        self.assertEqual(set(campaign.participant_ids.mapped('state')), {'running'})
+
+    @users('user_marketing_automation')
     @mute_logger('odoo.addons.base.ir.ir_model', 'odoo.models')
     def test_campaign_duplicate(self):
         """ The copy/duplicate of a campaign :
@@ -22,15 +89,28 @@ class MarketingCampaignTest(TestMACommon):
             - Copy child of activity and keep coherence in parent_id
         """
         campaign = self.env['marketing.campaign'].create({
+            'domain': [('id', 'in', self.test_records.ids)],
+            'model_id': self.env['ir.model']._get_id('marketing.test.sms'),
             'name': 'My First Campaign',
-            'model_id': self.env['ir.model']._get('marketing.test.sms').id,
-            'domain': '%s' % [('id', 'in', self.test_records.ids)],
         })
-        mailing = self._create_mailing()
-        activity = self._create_activity(campaign, mailing=mailing, name="ShouldDuplicate")
-        activity2 = self._create_activity(campaign, mailing=mailing, name="ShouldDuplicate2", parent_id=activity.id, trigger_type="mail_open")
+        mailing = self._create_mailing('marketing.test.sms')
+        activity = self._create_activity(
+            campaign,
+            mailing=mailing,
+            name="ShouldDuplicate",
+        )
+        activity2 = self._create_activity(
+            campaign,
+            mailing=mailing,
+            name="ShouldDuplicate2",
+            parent_id=activity.id,
+            trigger_type="mail_open",
+        )
 
-        self.assertEqual(self.env['marketing.activity'].search([('name', '=', "ShouldDuplicate")]), activity)
+        self.assertEqual(
+            self.env['marketing.activity'].search([('name', '=', "ShouldDuplicate")]),
+            activity
+        )
 
         campaign.action_start_campaign()
         self.assertEqual(campaign.state, 'running')
@@ -64,9 +144,9 @@ class MarketingCampaignTest(TestMACommon):
         self.assertEqual(activity2.parent_id, activity)
         self.assertEqual(activity2_dup.parent_id, activity_dup)
 
-    @users('user_markauto')
+    @users('user_marketing_automation')
     @mute_logger('odoo.addons.base.ir.ir_model', 'odoo.models')
-    def test_internals_participants_compute(self):
+    def test_campaign_participants_compute(self):
         """Check that the participant count compute method works."""
         empty_campaign = self.env['marketing.campaign'].create({
             'name': 'My First Campaign',
@@ -104,27 +184,27 @@ class MarketingCampaignTest(TestMACommon):
         self.assertEqual(campaign2.total_participant_count, 2)
         self.assertEqual(campaign2.test_participant_count, 2)
 
-    @users('user_markauto')
+    @users('user_marketing_automation')
     @mute_logger('odoo.addons.base.ir.ir_model', 'odoo.models')
-    def test_internals_unique_field(self):
+    def test_campaign_unique_field(self):
         # initial data: 0-1-2 have unique partners, 3-4 are void, 4 will receive same partner as 0 to test uniqueness
         test_records = self.test_records[:5]
         self.assertEqual(len(test_records), 5)
         test_records[-1].write({'name': test_records[0].name})
 
         name_field = self.env['ir.model.fields'].sudo().search([
-            ('model_id', '=', self.env['ir.model']._get('marketing.test.sms').id),
+            ('model_id', '=', self.env['ir.model']._get_id('marketing.test.sms')),
             ('name', '=', 'name')
         ])
 
         campaign = self.env['marketing.campaign'].create({
+            'domain': [('id', 'in', test_records.ids)],
+            'model_id': self.env['ir.model']._get_id('marketing.test.sms'),
             'name': 'My First Campaign',
-            'model_id': self.env['ir.model']._get('marketing.test.sms').id,
-            'domain': '%s' % [('id', 'in', test_records.ids)],
             'unique_field_id': name_field.id,
         })
-        mailing = self._create_mailing()
-        activity = self._create_activity(campaign, mailing=mailing)
+        mailing = self._create_mailing('marketing.test.sms')
+        _activity = self._create_activity(campaign, mailing=mailing)
 
         campaign.action_start_campaign()
         campaign.sync_participants()
@@ -138,9 +218,9 @@ class MarketingCampaignTest(TestMACommon):
         self.assertEqual(campaign.running_participant_count, 5)
         self.assertEqual(campaign.participant_ids.mapped('res_id'), test_records.ids)
 
-    @users('user_markauto')
+    @users('user_marketing_automation')
     @mute_logger('odoo.addons.base.ir.ir_model', 'odoo.models')
-    def test_internals_unique_field_many2one(self):
+    def test_campaign_unique_field_many2one(self):
         # initial data: 0-1-2 have unique partners, 3-4 are void, 4 will receive same partner as 0 to test uniqueness
         test_records = self.test_records[:5]
         self.assertEqual(len(test_records), 5)
@@ -154,13 +234,13 @@ class MarketingCampaignTest(TestMACommon):
         ])
 
         campaign = self.env['marketing.campaign'].create({
-            'name': 'My First Campaign',
+            'domain': [('id', 'in', test_records.ids)],
             'model_id': self.env['ir.model']._get_id('marketing.test.sms'),
-            'domain': '%s' % [('id', 'in', test_records.ids)],
+            'name': 'My First Campaign',
             'unique_field_id': partner_field.id,
         })
-        mailing = self._create_mailing()
-        activity = self._create_activity(campaign, mailing=mailing)
+        mailing = self._create_mailing('marketing.test.sms')
+        _activity = self._create_activity(campaign, mailing=mailing)
 
         campaign.action_start_campaign()
         campaign.sync_participants()
@@ -174,62 +254,3 @@ class MarketingCampaignTest(TestMACommon):
 
         self.assertEqual(campaign.running_participant_count, 4)
         self.assertEqual(campaign.participant_ids.mapped('res_id'), (test_records[0:3] | test_records[-1]).ids)
-
-    @users('user_markauto')
-    @mute_logger('odoo.addons.base.ir.ir_model', 'odoo.models')
-    def test_archive_ma_campaign(self):
-        """
-        Ensures that campaigns are stopped when archived.
-        """
-        campaign = self.env['marketing.campaign'].create({
-            'name': 'Test Campaign',
-            'model_id': self.env['ir.model']._get('marketing.test.sms').id,
-            'domain': '%s' % [('id', 'in', self.test_records[0].ids)],
-        })
-
-        mailing = self._create_mailing()
-        self._create_activity(campaign, mailing=mailing, interval_number=0)
-
-        campaign.action_start_campaign()
-        self.assertEqual(campaign.state, 'running')
-
-        campaign.active = False
-        self.assertEqual(campaign.state, 'stopped')
-
-    @mute_logger('odoo.addons.base.ir.ir_model', 'odoo.models')
-    def test_update_child_in_running_campaign(self):
-        marketing_campaign = self.env['marketing.campaign'].create({
-            'name': 'My First Campaign',
-            'model_id': self.env['ir.model']._get('marketing.test.sms').id,
-            'domain': '%s' % [('id', 'in', self.test_records.ids)],
-        })
-        mailing = self._create_mailing()
-        mailing2 = self._create_mailing()
-        parent_activity = self._create_activity(
-            marketing_campaign,
-            mailing=mailing,
-            name="parent activity",
-        )
-        child_activity = self._create_activity(
-            marketing_campaign,
-            mailing=mailing2,
-            name="child activity",
-            parent_id=parent_activity.id,
-            trigger_type="mail_open",
-        )
-
-        marketing_campaign.action_start_campaign()
-        marketing_campaign.sync_participants()
-        [trace.action_execute() for trace in parent_activity.trace_ids]
-
-        child_activity.update({
-            'interval_type': 'days',
-            'interval_number': 5,
-        })
-        trace_offset = relativedelta(**{'days': 5})
-
-        expected_schedule_date = Datetime.from_string(child_activity.trace_ids.parent_id.mailing_trace_ids.mapped('write_date')[0]) + trace_offset
-        marketing_campaign.action_update_participants()
-
-        trace_schedule_date = child_activity.trace_ids.mapped('schedule_date')[0]
-        self.assertEqual(trace_schedule_date, expected_schedule_date)

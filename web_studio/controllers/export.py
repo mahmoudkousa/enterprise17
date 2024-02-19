@@ -66,7 +66,7 @@ FIELDS_TO_EXPORT = {
         'help', 'index', 'model', 'model_id', 'name', 'on_delete', 'readonly', 'related',
         'relation', 'relation_field', 'relation_table', 'required', 'selectable', 'selection',
         'size', 'state', 'store', 'tracking', 'translate',
-        'ttype'
+        'ttype', "currency_field",
     ],
     'ir.rule': [
         'active', 'domain_force', 'groups', 'model_id', 'name', 'perm_create', 'perm_read',
@@ -162,6 +162,8 @@ def generate_module(module, data):
                 # add a dependency on the currency field
                 if record.currency_field:
                     rel_record = record._get(record.model, record.currency_field)
+                else:
+                    rel_record = record._get(record.model, 'currency_id') or record._get(record.model, 'x_currency_id')
                 rel_xmlid = get_xmlid(rel_record, check=False)
                 if rel_xmlid and rel_xmlid.split('.')[0] != module.name:
                     # data depends on a record from another module

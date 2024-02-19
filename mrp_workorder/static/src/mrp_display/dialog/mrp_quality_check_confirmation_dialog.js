@@ -3,7 +3,7 @@
 import { _t } from "@web/core/l10n/translation";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import DocumentViewer from "@mrp_workorder/components/viewer";
-import { formatFloat } from "@web/core/utils/numbers";
+import { formatFloat } from "@web/views/fields/formatters";
 import { FloatField } from "@web/views/fields/float/float_field";
 import { Many2OneField } from "@web/views/fields/many2one/many2one_field";
 import { TabletImageField } from "@quality/tablet_image_field/tablet_image_field";
@@ -17,6 +17,7 @@ export class MrpQualityCheckConfirmationDialog extends ConfirmationDialog {
         qualityCheckDone: { type: Function, optional: true },
         worksheetData: { type: Object, optional: true },
         checkInstruction: { type: Object, optional: true },
+        openCheck: { type: Function, optional: true },
     };
     static template = "mrp_workorder.MrpQualityCheckConfirmationDialog";
     static components = {
@@ -99,6 +100,10 @@ export class MrpQualityCheckConfirmationDialog extends ConfirmationDialog {
         const res = await this.props.record.model.orm.call(this.props.record.resModel, action, [this.props.record.resId]);
         if (res) {
             this.action.doAction(res, {onClose: this.props.reload});
+            if (res.type === "ir.actions.act_window") {
+                this.props.close();
+                return;
+            }
         }
         if (!reloadChecks) {
             await this.props.record.load();
@@ -180,5 +185,15 @@ export class MrpQualityCheckConfirmationDialog extends ConfirmationDialog {
 
     get recordData() {
         return this.props.record.data;
+    }
+
+    back() {
+        this.props.openCheck(this.props.record.data.previous_check_id[0]);
+        this.props.close();
+    }
+
+    skip() {
+        this.props.openCheck(this.props.record.data.next_check_id[0]);
+        this.props.close();
     }
 }

@@ -3,12 +3,15 @@
 import base64
 
 from datetime import date
+from freezegun import freeze_time
 
 from odoo.exceptions import UserError
 from odoo.tests import tagged
 
 from .common import TestLuPayrollCommon
 
+
+@freeze_time('2022-12-31')
 @tagged('post_install_l10n', 'post_install', '-at_install')
 class TestLuMonthlyDeclaration(TestLuPayrollCommon):
     def setUp(self):

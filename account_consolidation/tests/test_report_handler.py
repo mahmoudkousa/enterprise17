@@ -152,7 +152,7 @@ class TestPeriodsHandler(AccountConsolidationTestCase):
         opt_dict = self.periods_handler._to_option_dict(ap, sel_period_ids)
         self.assertEqual(ap.id in patched_method.return_value, opt_dict['selected'])
         self.assertEqual(ap.id, opt_dict['id'])
-        self.assertEqual(ap.display_name, opt_dict['name'])
+        self.assertEqual(f'{ap.display_name} ({ap.display_dates})', opt_dict['name'])
 
     def test_handle(self):
         base_period = self._create_analysis_period(start_date="2019-02-01", end_date="2019-02-28")

@@ -13,7 +13,7 @@ class ResPartner(models.Model):
         It is commonly sent each month to every customer with purchases during the month.
         """
         def format_monetary(value):
-            return self.env['account.report'].format_value(
+            return self.env['account.report']._format_value(
                 options=options,
                 value=value,
                 currency=self.env.company.currency_id,
@@ -95,8 +95,8 @@ class ResPartner(models.Model):
         return self.env.ref('l10n_account_customer_statements.action_customer_statements_report').report_action(
             self,
             data={
-                'from_date': format_date(self.env, from_date, date_format='d MMMM Y').upper(),
-                'to_date': format_date(self.env, to_date, date_format='d MMMM Y').upper(),
+                'from_date': format_date(self.env, from_date, date_format='d MMMM yyyy').upper(),
+                'to_date': format_date(self.env, to_date, date_format='d MMMM yyyy').upper(),
                 'lines': partner_lines,
                 'balances_due': {
                     partner.id: format_monetary(partner_running_balances[partner.id]) for partner in self

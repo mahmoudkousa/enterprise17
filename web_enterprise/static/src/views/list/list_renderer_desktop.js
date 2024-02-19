@@ -5,8 +5,8 @@ import { useService } from "@web/core/utils/hooks";
 import { patch } from "@web/core/utils/patch";
 import { ListRenderer } from "@web/views/list/list_renderer";
 import { PromoteStudioDialog } from "@web_enterprise/webclient/promote_studio_dialog/promote_studio_dialog";
-import { useState, onWillUnmount } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
+import { onWillDestroy, useState } from "@odoo/owl";
 
 export const patchListRendererDesktop = () => ({
     setup() {
@@ -21,8 +21,11 @@ export const patchListRendererDesktop = () => ({
         // allow the edition of the arch by studio.
         // It needs to be a full list view, in an action
         // (not a X2Many list, and not an "embedded" list in another component)
+        // Also, there is not enough information when an action is in target new,
+        // and this use case is fairly outside of the feature's scope
         const isPotentiallyEditable =
             !isMobileOS() &&
+            !this.env.inDialog &&
             this.userService.isSystem &&
             list === list.model.root &&
             actionId &&
@@ -30,10 +33,9 @@ export const patchListRendererDesktop = () => ({
         this.studioEditable = useState({ value: isPotentiallyEditable });
 
         if (isPotentiallyEditable) {
-            const computeStudioEditable = () => {
+            const computeStudioEditable = (action) => {
                 // Finalize the computation when the actionService is ready.
                 // The following code is copied from studioService.
-                const action = this.actionService.currentController.action;
                 if (!action.xml_id) {
                     return false;
                 }
@@ -61,26 +63,26 @@ export const patchListRendererDesktop = () => ({
                 return Boolean(action.res_model);
             };
             const onUiUpdated = () => {
-                this.studioEditable.value = computeStudioEditable();
+                const action = this.actionService.currentController.action;
+                if (action.id === actionId) {
+                    this.studioEditable.value = computeStudioEditable(action);
+                }
+                stopListening();
             };
-            this.env.bus.addEventListener("ACTION_MANAGER:UI-UPDATED", onUiUpdated);
-            // Stop Listening to "ACTION_MANAGER:UI-UPDATED"
-            onWillUnmount(() => {
+            const stopListening = () =>
                 this.env.bus.removeEventListener("ACTION_MANAGER:UI-UPDATED", onUiUpdated);
-            });
+            this.env.bus.addEventListener("ACTION_MANAGER:UI-UPDATED", onUiUpdated);
+
+            onWillDestroy(stopListening);
         }
     },
 
-    get isStudioEditable() {
+    isStudioEditable() {
         return this.studioEditable.value;
     },
 
-    set isStudioEditable(value) {
-        this.studioEditable.value = value;
-    },
-
     get displayOptionalFields() {
-        return this.isStudioEditable || super.displayOptionalFields;
+        return this.isStudioEditable() || super.displayOptionalFields;
     },
 
     /**

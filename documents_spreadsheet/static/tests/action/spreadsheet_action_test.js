@@ -2,7 +2,13 @@
 
 import * as spreadsheet from "@odoo/o-spreadsheet";
 import { downloadFile } from "@web/core/network/download";
-import { getFixture, nextTick, click, patchWithCleanup } from "@web/../tests/helpers/utils";
+import {
+    getFixture,
+    nextTick,
+    click,
+    patchWithCleanup,
+    triggerEvent,
+} from "@web/../tests/helpers/utils";
 import { contains } from "@web/../tests/utils";
 import { createWebClient, doAction } from "@web/../tests/webclient/helpers";
 
@@ -12,7 +18,6 @@ import { createSpreadsheet } from "../spreadsheet_test_utils";
 import { setCellContent, selectCell, setSelection } from "@spreadsheet/../tests/utils/commands";
 import { doMenuAction } from "@spreadsheet/../tests/utils/ui";
 import { getCell, getCellContent, getCellValue } from "@spreadsheet/../tests/utils/getters";
-import { MockSpreadsheetCollaborativeChannel } from "@spreadsheet_edition/../tests/utils/mock_spreadsheet_collaborative_channel";
 
 const { topbarMenuRegistry } = spreadsheet.registries;
 const { toZone } = spreadsheet.helpers;
@@ -232,16 +237,13 @@ QUnit.module(
         });
 
         QUnit.test("Grid has still the focus after a dialog", async function (assert) {
-            assert.expect(2);
-
             const { model, env } = await createSpreadsheet();
             selectCell(model, "F4");
             env.raiseError("Notification");
             await nextTick();
             await click(document, ".modal-footer .btn-primary");
             await nextTick();
-            assert.strictEqual(document.activeElement.tagName, "INPUT");
-            assert.ok([...document.activeElement.parentElement.classList].includes("o-grid"));
+            assert.strictEqual(document.activeElement, document.querySelector(".o-grid div.o-composer"));
         });
 
         QUnit.test("convert data from template", async function (assert) {
@@ -275,28 +277,27 @@ QUnit.module(
                 name: "My template spreadsheet",
                 spreadsheet_data: JSON.stringify(data),
             });
-            patchWithCleanup(MockSpreadsheetCollaborativeChannel.prototype, {
-                sendMessage(message) {
-                    if (message.type === "SNAPSHOT") {
-                        assert.step("snapshot");
-                        assert.deepEqual(
-                            message.data.sheets[0].cells.A1.content,
-                            '=ODOO.PIVOT(1,"probability","foo","1")'
-                        );
-                    }
-                },
-            });
             const { model } = await createSpreadsheet({
                 spreadsheetId: 3000,
                 serverData,
                 convert_from_template: true,
+                mockRPC: function (route, { method, model, args }) {
+                    if (model === "documents.document" && method === "write") {
+                        assert.step("reset data");
+                        const data = JSON.parse(args[1].spreadsheet_data);
+                        assert.deepEqual(
+                            data.sheets[0].cells.A1.content,
+                            '=ODOO.PIVOT(1,"probability","foo","1")'
+                        );
+                    }
+                },
             });
             assert.strictEqual(
                 getCellContent(model, "A1"),
                 '=ODOO.PIVOT(1,"probability","foo","1")'
             );
             await nextTick();
-            assert.verifySteps(["snapshot"]);
+            assert.verifySteps(["reset data"]);
         });
 
         QUnit.test("menu > download as json", async function (assert) {
@@ -363,6 +364,25 @@ QUnit.module(
             }
 
             assert.deepEqual(loadedLocales, ["en_US", "fr_FR", "od_OO"]);
+        });
+
+        QUnit.test("sheetName should not be left empty", async function (assert) {
+            const fixture = getFixture();
+            await createSpreadsheet();
+
+            const sheetName = fixture.querySelector(".o-sheet-list .o-sheet-name");
+            await triggerEvent(fixture, ".o-sheet-list .o-sheet-name", "dblclick");
+            await nextTick();
+            assert.ok(fixture.querySelector(".o-sheet-name-editable"));
+
+            sheetName.innerText = "";
+            await triggerEvent(fixture, ".o-sheet-list .o-sheet-name", "keydown", { key: "Enter" });
+            await nextTick();
+            const dialog = document.querySelector(".o_dialog");
+            assert.ok(dialog, "dialog should be visible");
+
+            await click(document, ".o_dialog .btn-primary");
+            assert.ok(fixture.querySelector(".o-sheet-name-editable"));
         });
     }
 );

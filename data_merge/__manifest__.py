@@ -30,6 +30,9 @@
             'data_merge/static/src/views/*.js',
             'data_merge/static/src/views/*.xml',
         ],
+        'web.qunit_suite_tests': [
+            'data_merge/static/tests/**/*.js',
+        ],
     },
     'license': 'OEEL-1',
 }

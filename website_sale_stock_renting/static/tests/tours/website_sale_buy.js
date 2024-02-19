@@ -30,6 +30,11 @@ registry.category("web_tour.tours").add('shop_buy_rental_stock_product', {
             trigger: 'input[name=renting_start_date]',
             run: "click",
         },
+        { // ensures only one day is selected
+            content:  "Select Date field",
+            trigger:  ".o_date_picker .o_highlight_end",
+            run: "click",
+        },
         {
             content: "Pick start time",
             trigger: '.o_time_picker_select:nth(0)',

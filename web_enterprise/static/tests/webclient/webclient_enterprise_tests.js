@@ -81,6 +81,7 @@ QUnit.module("WebClient Enterprise", (hooks) => {
             await createEnterpriseWebClient({ fixture, serverData, mockRPC });
             assert.verifySteps(["/web/webclient/load_menus"]);
             await click(fixture.querySelector(".o_app.o_menuitem"));
+            await nextTick();
             assert.verifySteps([
                 "/web/action/load",
                 "/web/dataset/call_kw/partner/get_views",
@@ -88,9 +89,6 @@ QUnit.module("WebClient Enterprise", (hooks) => {
             ]);
             assert.notOk(document.body.classList.contains("o_home_menu_background"));
             assert.containsNone(fixture, ".o_home_menu");
-            // web client display empty action before kanban view is loaded
-            assert.containsNone(fixture, ".o_kanban_view");
-            await nextTick();
             assert.containsOnce(fixture, ".o_kanban_view");
             const menuToggle = fixture.querySelector(".o_menu_toggle");
             assert.isVisible(menuToggle);
@@ -101,13 +99,12 @@ QUnit.module("WebClient Enterprise", (hooks) => {
             await createEnterpriseWebClient({ fixture, serverData, mockRPC });
             assert.verifySteps(["/web/webclient/load_menus"]);
             await click(fixture.querySelector(".o_app.o_menuitem"));
+            await nextTick();
             assert.verifySteps([
                 "/web/action/load",
                 "/web/dataset/call_kw/partner/get_views",
                 "/web/dataset/call_kw/partner/web_search_read",
             ]);
-            assert.containsNone(fixture, ".o_kanban_view");
-            await nextTick();
             assert.containsOnce(fixture, ".o_kanban_view");
             await click(fixture.querySelector(".o_kanban_record"));
             await nextTick(); // there is another tick to update navbar and destroy HomeMenu
@@ -124,13 +121,12 @@ QUnit.module("WebClient Enterprise", (hooks) => {
             await createEnterpriseWebClient({ fixture, serverData, mockRPC });
             assert.verifySteps(["/web/webclient/load_menus"]);
             await click(fixture.querySelector(".o_app.o_menuitem"));
+            await nextTick();
             assert.verifySteps([
                 "/web/action/load",
                 "/web/dataset/call_kw/partner/get_views",
                 "/web/dataset/call_kw/partner/web_search_read",
             ]);
-            assert.containsNone(fixture, ".o_kanban_view");
-            await nextTick();
             assert.containsOnce(fixture, ".o_kanban_view");
             await click(fixture.querySelector(".o_kanban_record"));
             assert.verifySteps(["/web/dataset/call_kw/partner/web_read"]);
@@ -155,13 +151,12 @@ QUnit.module("WebClient Enterprise", (hooks) => {
                 await createEnterpriseWebClient({ fixture, serverData, mockRPC });
                 assert.verifySteps(["/web/webclient/load_menus"]);
                 await click(fixture.querySelector(".o_app.o_menuitem"));
+                await nextTick();
                 assert.verifySteps([
                     "/web/action/load",
                     "/web/dataset/call_kw/partner/get_views",
                     "/web/dataset/call_kw/partner/web_search_read",
                 ]);
-                assert.containsNone(fixture, ".o_kanban_view");
-                await nextTick();
                 assert.containsOnce(fixture, ".o_kanban_view");
                 await click(fixture.querySelector(".o_kanban_record"));
                 assert.verifySteps(["/web/dataset/call_kw/partner/web_read"]);
@@ -184,13 +179,12 @@ QUnit.module("WebClient Enterprise", (hooks) => {
             await createEnterpriseWebClient({ fixture, serverData, mockRPC });
             assert.verifySteps(["/web/webclient/load_menus"]);
             await click(fixture.querySelector(".o_app.o_menuitem"));
+            await nextTick();
             assert.verifySteps([
                 "/web/action/load",
                 "/web/dataset/call_kw/partner/get_views",
                 "/web/dataset/call_kw/partner/web_search_read",
             ]);
-            assert.containsNone(fixture, ".o_kanban_view");
-            await nextTick();
             assert.containsOnce(fixture, ".o_kanban_view");
             await click(fixture.querySelector(".o_kanban_record"));
             assert.verifySteps(["/web/dataset/call_kw/partner/web_read"]);
@@ -426,7 +420,10 @@ QUnit.module("WebClient Enterprise", (hooks) => {
 
             await click(fixture.querySelector(".o_menu_toggle"));
             await nextTick();
-            assert.deepEqual(webClient.env.services.router.current.hash, { action: "menu" });
+            assert.deepEqual(webClient.env.services.router.current.hash, {
+                action: "menu",
+                menu_id: 2,
+            });
 
             await click(fixture.querySelector(".o_menu_toggle"));
             await nextTick();
@@ -476,6 +473,10 @@ QUnit.module("WebClient Enterprise", (hooks) => {
         await click(fixture.querySelector(".o_apps > .o_draggable:nth-child(2) > .o_app"));
         await nextTick();
         assert.containsOnce(fixture, ".test_client_action");
+        assert.strictEqual(
+            fixture.querySelector(".test_client_action").textContent.trim(),
+            "ClientAction_Id 2"
+        );
         assert.containsNone(fixture, ".o_home_menu");
         const state = webClient.env.services.router.current.hash;
         assert.deepEqual(state, {
@@ -492,8 +493,30 @@ QUnit.module("WebClient Enterprise", (hooks) => {
 
         await loadState(webClient, state);
         assert.containsOnce(fixture, ".test_client_action");
+        assert.strictEqual(
+            fixture.querySelector(".test_client_action").textContent.trim(),
+            "ClientAction_Id 2"
+        );
         assert.containsNone(fixture, ".o_home_menu");
         assert.deepEqual(webClient.env.services.router.current.hash, state);
+
+        await loadState(webClient, {});
+        assert.containsNone(fixture, ".test_client_action");
+        assert.containsOnce(fixture, ".o_home_menu");
+        assert.deepEqual(webClient.env.services.router.current.hash, {
+            action: "menu",
+        });
+
+        // switch to  the first app
+        const app1State = { action: 1001, menu_id: 1 };
+        await loadState(webClient, app1State);
+        assert.containsOnce(fixture, ".test_client_action");
+        assert.strictEqual(
+            fixture.querySelector(".test_client_action").textContent.trim(),
+            "ClientAction_Id 1"
+        );
+        assert.containsNone(fixture, ".o_home_menu");
+        assert.deepEqual(webClient.env.services.router.current.hash, app1State);
     });
 
     QUnit.test(
@@ -627,6 +650,52 @@ QUnit.module("WebClient Enterprise", (hooks) => {
                 ".o_user_menu .dropdown-item",
                 "share button is not visible"
             );
+        }
+    );
+
+    QUnit.test(
+        "Navigate to an application from the HomeMenu should generate only one pushState",
+        async function (assert) {
+            const pushState = browser.history.pushState;
+            patchWithCleanup(browser, {
+                history: Object.assign({}, browser.history, {
+                    pushState(state, title, url) {
+                        pushState(...arguments);
+                        assert.step(url.split("#")[1]);
+                    },
+                }),
+            });
+            await createEnterpriseWebClient({ fixture, serverData });
+
+            await click(fixture.querySelector(".o_apps > .o_draggable:nth-child(2) > .o_app"));
+            await nextTick();
+            assert.containsOnce(fixture, ".test_client_action");
+            assert.strictEqual(
+                fixture.querySelector(".test_client_action").textContent.trim(),
+                "ClientAction_Id 2"
+            );
+
+            await click(fixture.querySelector(".o_menu_toggle"));
+            assert.containsOnce(fixture, ".o_home_menu");
+
+            await click(fixture.querySelector(".o_apps > .o_draggable:nth-child(1) > .o_app"));
+            await nextTick();
+            assert.containsOnce(fixture, ".test_client_action");
+            assert.strictEqual(
+                fixture.querySelector(".test_client_action").textContent.trim(),
+                "ClientAction_Id 1"
+            );
+
+            await click(fixture.querySelector(".o_menu_toggle"));
+            await nextTick();
+            assert.containsOnce(fixture, ".o_home_menu");
+            assert.verifySteps([
+                "action=menu",
+                "action=1002&menu_id=2",
+                "action=menu&menu_id=2",
+                "action=1001&menu_id=1",
+                "action=menu&menu_id=1",
+            ]);
         }
     );
 });

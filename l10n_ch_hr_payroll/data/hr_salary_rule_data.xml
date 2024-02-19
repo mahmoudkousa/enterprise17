@@ -1565,7 +1565,7 @@ result = inputs['LPPRED'].amount
         <field name="condition_select">none</field>
         <field name="amount_select">code</field>
         <field name="amount_python_compute">
-result = inputs['LPPCOMP'] if 'LPPCOMP' in inputs else 0
+result = inputs['LPPCOMP'].amount if 'LPPCOMP' in inputs else 0
         </field>
         <field name="appears_on_payslip" eval="False"/>
         <field name="note">
@@ -1689,7 +1689,7 @@ result_rate = - contract.l10n_ch_compensation_fund_id._get_caf_rates(payslip.dat
         <field name="condition_python">result = 'COMPCAR' in inputs</field>
         <field name="amount_select">code</field>
         <field name="amount_python_compute">
-result = -inputs.COMPCAR.amount
+result = -inputs['COMPCAR'].amount
         </field>
         <field name="l10n_ch_aanp_included" eval="False"/>
         <field name="l10n_ch_ac_included" eval="False"/>

@@ -8,7 +8,7 @@
     'description': """Add a payment step at the end of appointment and resource bookings, on website""",
     'license': 'OEEL-1',
     'auto_install': True,
-    'depends': ['appointment_account_payment', 'website_enterprise'],
+    'depends': ['appointment_account_payment', 'website_enterprise', 'website_appointment'],
     'demo': [
         'data/appointment_demo.xml',
     ],

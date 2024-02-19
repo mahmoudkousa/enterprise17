@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import base64
 import time
 
 import odoo.tests
@@ -29,7 +30,7 @@ class TestPayrollAccountCommon(odoo.tests.HttpCase):
             'raw': cls.pdf_content,
             'name': 'test_employee_contract.pdf',
         })
-        template = cls.env['sign.template'].create({
+        cls.template = cls.env['sign.template'].create({
             'attachment_id': attachment.id,
             'sign_item_ids': [(6, 0, [])],
         })
@@ -43,7 +44,7 @@ class TestPayrollAccountCommon(odoo.tests.HttpCase):
                 'page': 1,
                 'posX': 0.273,
                 'posY': 0.158,
-                'template_id': template.id,
+                'template_id': cls.template.id,
                 'width': 0.150,
                 'height': 0.015,
             }, {
@@ -54,7 +55,7 @@ class TestPayrollAccountCommon(odoo.tests.HttpCase):
                 'page': 1,
                 'posX': 0.707,
                 'posY': 0.158,
-                'template_id': template.id,
+                'template_id': cls.template.id,
                 'width': 0.150,
                 'height': 0.015,
             }, {
@@ -65,7 +66,7 @@ class TestPayrollAccountCommon(odoo.tests.HttpCase):
                 'page': 1,
                 'posX': 0.506,
                 'posY': 0.184,
-                'template_id': template.id,
+                'template_id': cls.template.id,
                 'width': 0.150,
                 'height': 0.015,
             }, {
@@ -76,7 +77,7 @@ class TestPayrollAccountCommon(odoo.tests.HttpCase):
                 'page': 1,
                 'posX': 0.663,
                 'posY': 0.184,
-                'template_id': template.id,
+                'template_id': cls.template.id,
                 'width': 0.150,
                 'height': 0.015,
             }, {
@@ -87,7 +88,7 @@ class TestPayrollAccountCommon(odoo.tests.HttpCase):
                 'page': 1,
                 'posX': 0.349,
                 'posY': 0.184,
-                'template_id': template.id,
+                'template_id': cls.template.id,
                 'width': 0.150,
                 'height': 0.015,
             }, {
@@ -98,7 +99,7 @@ class TestPayrollAccountCommon(odoo.tests.HttpCase):
                 'page': 2,
                 'posX': 0.333,
                 'posY': 0.575,
-                'template_id': template.id,
+                'template_id': cls.template.id,
                 'width': 0.200,
                 'height': 0.050,
             }, {
@@ -109,7 +110,7 @@ class TestPayrollAccountCommon(odoo.tests.HttpCase):
                 'page': 2,
                 'posX': 0.333,
                 'posY': 0.665,
-                'template_id': template.id,
+                'template_id': cls.template.id,
                 'width': 0.200,
                 'height': 0.050,
             }, {
@@ -120,7 +121,7 @@ class TestPayrollAccountCommon(odoo.tests.HttpCase):
                 'page': 2,
                 'posX': 0.665,
                 'posY': 0.694,
-                'template_id': template.id,
+                'template_id': cls.template.id,
                 'width': 0.150,
                 'height': 0.015,
             }, {
@@ -131,7 +132,7 @@ class TestPayrollAccountCommon(odoo.tests.HttpCase):
                 'page': 2,
                 'posX': 0.665,
                 'posY': 0.694,
-                'template_id': template.id,
+                'template_id': cls.template.id,
                 'width': 0.150,
                 'height': 0.015,
             }
@@ -198,6 +199,26 @@ class TestPayrollAccountCommon(odoo.tests.HttpCase):
             'user_id': vehicle.manager_id.id if vehicle.manager_id else cls.env.user.id
         })
 
+        cls.env.ref('fleet.model_corsa').write({
+            'can_be_requested': True,
+            'default_car_value': 18000,
+            'default_co2': 88,
+            'default_fuel_type': 'diesel',
+            'default_recurring_cost_amount_depreciated': '450.00',
+        })
+
+        if not cls.env.ref('fleet.fleet_vehicle_state_waiting_list', raise_if_not_found=False):
+            waiting_list_state = cls.env['fleet.vehicle.state'].create({
+                'name': 'Waiting List',
+                'sequence': 10,
+            })
+            cls.env['ir.model.data'].create({
+                'name': 'fleet_vehicle_state_waiting_list',
+                'module': 'fleet',
+                'model': 'fleet.vehicle.state',
+                'res_id': waiting_list_state.id,
+            })
+
         a_recv = cls.env['account.account'].create({
             'code': 'X1012',
             'name': 'Debtors - (test)',
@@ -223,17 +244,40 @@ class TestPayrollAccountCommon(odoo.tests.HttpCase):
             cls.company_id,
         )
 
-        cls.env.ref('base.user_admin').write({'company_ids': [(4, cls.company_id.id)], 'name': 'Mitchell Admin'})
-        cls.env.ref('base.user_admin').partner_id.write({'email': 'mitchell.stephen@example.com', 'name': 'Mitchell Admin'})
-        demo.write({'partner_id': partner_id, 'company_id': cls.company_id.id, 'company_ids': [(4, cls.company_id.id)]})
+        with file_open('sign/static/demo/signature.png', "rb") as f:
+            img_content = base64.b64encode(f.read())
+
+        cls.env.ref('base.user_admin').write({
+            'company_ids': [(4, cls.company_id.id)],
+            'name': 'Mitchell Admin',
+            'sign_signature': img_content,
+        })
+        cls.env.ref('base.user_admin').partner_id.write({
+            'email': 'mitchell.stephen@example.com',
+            'name': 'Mitchell Admin',
+            'street': '215 Vine St',
+            'city': 'Scranton',
+            'zip': '18503',
+            'country_id': cls.env.ref('base.us').id,
+            'state_id': cls.env.ref('base.state_us_39').id,
+            'phone': '+1 555-555-5555',
+            'tz': 'Europe/Brussels',
+            'company_id': cls.env.company.id,
+        })
+        demo.write({
+            'partner_id': partner_id,
+            'company_id': cls.company_id.id,
+            'company_ids': [(4, cls.company_id.id)]
+        })
+        cls.env.ref('base.main_partner').email = "info@yourcompany.example.com"
 
         cls.new_dev_contract = cls.env['hr.contract'].create({
             'name': 'New Developer Template Contract',
             'wage': 3000,
             'structure_type_id': cls.env.ref('hr_contract.structure_type_employee_cp200').id,
             'ip_wage_rate': 25,
-            'sign_template_id': template.id,
-            'contract_update_template_id': template.id,
+            'sign_template_id': cls.template.id,
+            'contract_update_template_id': cls.template.id,
             'hr_responsible_id': cls.env.ref('base.user_admin').id,
             'company_id': cls.company_id.id,
             'representation_fees': 150,
@@ -251,8 +295,8 @@ class TestPayrollAccountCommon(odoo.tests.HttpCase):
             'structure_type_id': cls.env.ref('hr_contract.structure_type_employee_cp200').id,
             'ip': True,
             'ip_wage_rate': 50,
-            'sign_template_id': template.id,
-            'contract_update_template_id': template.id,
+            'sign_template_id': cls.template.id,
+            'contract_update_template_id': cls.template.id,
             'hr_responsible_id': cls.env.ref('base.user_admin').id,
             'company_id': cls.company_id.id,
             'representation_fees': 300,

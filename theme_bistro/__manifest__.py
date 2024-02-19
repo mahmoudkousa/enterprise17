@@ -7,6 +7,7 @@
     'version': '2.0.0',
     'depends': ['theme_common'],
     'data': [
+        'data/generate_primary_template.xml',
         'data/ir_asset.xml',
         'views/images_library.xml',
 
@@ -40,6 +41,8 @@
     'configurator_snippets': {
         'homepage': ['s_cover', 's_features', 's_picture', 's_product_catalog', 's_text_block', 's_quotes_carousel'],
         'pricing': ["s_text_image", "s_product_catalog"],
+        # TODO In master, remove unused templates instead.
+        '_': ['s_banner'],
     },
     'license': 'LGPL-3',
     'live_test_url': 'https://theme-bistro.odoo.com',

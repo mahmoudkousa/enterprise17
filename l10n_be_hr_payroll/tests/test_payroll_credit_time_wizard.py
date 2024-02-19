@@ -25,7 +25,7 @@ class TestPayrollCreditTime(TestPayrollCommon):
         })
         cls.wizard.alloc_employee_ids = cls.wizard.alloc_employee_ids.filtered(lambda alloc_employee: alloc_employee.employee_id.id in [cls.employee_georges.id, cls.employee_john.id, cls.employee_a.id])
 
-        with freeze_time('2023-06-01'):
+        with freeze_time('2023-12-31'):
             view = cls.wizard.generate_allocation()
         cls.allocations = cls.env['hr.leave.allocation'].search(view['domain'])
         for allocation in cls.allocations:

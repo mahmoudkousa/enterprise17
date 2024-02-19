@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <templates>
     <t t-name="knowledge.KnowledgeTopbar">
-        <div class="o_knowledge_header d-flex gap-2 flex-column justify-content-end flex-sm-row align-items-sm-center border-bottom d-print-none bg-view px-0 py-2 ps-sm-3 pe-sm-2">
+        <div class="o_knowledge_header d-flex flex-wrap gap-1 flex-column justify-content-end flex-sm-row align-items-sm-center border-bottom d-print-none bg-view px-0 py-2 ps-sm-3 pe-sm-2">
             <div class="d-flex flex-grow-1 min-w-0 gap-1 px-2 px-sm-0 pt-2 pt-sm-0">
-                <a role="button" class="d-sm-none btn btn-light align-self-start px-2 py-1" t-on-click="() => this.env.toggleAsideMobile()">
+                <a role="button" class="d-md-none btn btn-light align-self-start px-2 py-1" t-on-click="() => this.env.toggleAsideMobile()">
                     <i class="fa fa-lg fa-bars" title="Toggle aside menu"/>
                 </a>
                 <!-- Breadcrumbs -->
@@ -31,7 +31,7 @@
                             t-on-click="ev => this._onNameClick(ev)"
                             class="o_breadcrumb_article_name_container position-relative text-truncate mx-1">
                             <!-- span forces the input to match the length of its value -->
-                            <span class="pe-2" t-esc="this.props.record.data.name" t-att-title="this.props.record.data.name" />
+                            <span class="pe-2" t-att-title="this.props.record.data.name" t-out="this.props.record.data.name"/>
                             <div class="o_field_widget o_required_modifier o_field_char o_breadcrumb_article_name mb-0">
                                 <input t-if="!(props.record.data.is_locked || !props.record.data.user_can_write || !props.record.data.active || !props.record.resId)" id="name" class="o_input" type="text" autocomplete="off"
                                     t-att-value="props.record.data.name" placeholder="Untitled"/>
@@ -42,10 +42,13 @@
                         </div>
                         <i class="fa fa-fw fa-lock" title="This article is locked" t-if="this.props.record.data.is_locked" />
                     </li>
+                    <t t-if="props.record.resId and props.record.data.active and !props.record.data.is_locked and props.record.data.user_can_write">
+                        <KnowledgeFormStatusIndicator model="props.record.model" save="env.save" discard="env.discard"/>
+                    </t>
                 </ol>
             </div>
             <!-- Buttons -->
-            <div class="d-flex gap-1 flex-column flex-lg-row">
+            <div class="d-flex gap-1 flex-wrap justify-content-end">
                 <!-- Icon and Cover buttons -->
                 <div class="d-flex gap-1 o_knowledge_add_buttons" t-if="props.record.resId and props.record.data.active and !props.record.data.is_locked and props.record.data.user_can_write">
                     <button class="btn btn-light text-nowrap o_knowledge_add_icon" t-if="!props.record.data.icon"
@@ -79,7 +82,7 @@
                         <i class="fa fa-fw fs-6 fa-plus-circle me-1"/>New
                     </a>
                     <div class="o-dropdown dropdown o-dropdown--no-caret" t-if="props.record.resId and props.record.data.active">
-                        <a t-ref="sharePanel_button" role="button" class="btn btn-light btn-share dropdown-toggle" id="dropdown_share_panel" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-hotkey="s">
+                        <a t-ref="sharePanel_button" role="button" class="btn btn-light btn-share dropdown-toggle" id="dropdown_share_panel" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-hotkey="shift+s">
                             <i class="fa fa-fw fs-6 fa-share-alt me-1"/>
                             <t t-if="isInternalUser">Share</t>
                             <t t-else="">Members</t>

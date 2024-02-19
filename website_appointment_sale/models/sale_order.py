@@ -82,3 +82,8 @@ class SaleOrder(models.Model):
         # It is linked to partner created / linked on appointment form submission.
         values['name'] = booking_sudo.with_context(tz=calendar_booking_tz, lang=self.partner_id.lang)._get_description()
         return values
+
+    def unlink(self):
+        """ Manually unlink in order to unlink answer inputs linked to calendar bookings. """
+        self.order_line.unlink()
+        return super().unlink()

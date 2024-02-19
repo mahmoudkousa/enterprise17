@@ -36,7 +36,10 @@ class MarketingCampaign(models.Model):
                 'state': 'object_write',
                 'selection_value': self.env.ref('crm.selection__crm_lead__priority__3').id,
                 'evaluation_type': 'value',
-                'update_field_id': self.env.ref('crm.field_crm_lead__priority').id
+                'update_field_id': self.env.ref('crm.field_crm_lead__priority').id,
+                'update_path': 'priority',
+                'update_boolean_value': 'true',
+                'update_m2m_operation': 'add'
             }
         }
 
@@ -50,7 +53,10 @@ class MarketingCampaign(models.Model):
                 'state': 'object_write',
                 'selection_value': self.env.ref('crm.selection__crm_lead__priority__0').id,
                 'evaluation_type': 'value',
-                'update_field_id': self.env.ref('crm.field_crm_lead__priority').id
+                'update_field_id': self.env.ref('crm.field_crm_lead__priority').id,
+                'update_path': 'priority',
+                'update_boolean_value': 'true',
+                'update_m2m_operation': 'add'
             }
         }
 

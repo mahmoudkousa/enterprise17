@@ -44,11 +44,10 @@
                             <field name="linked_resource_ids" widget="many2many_tags" options="{'no_create': True}"
                                 domain="[('id', '!=', id)]"/>
                         </group>
-                    </group>
-                    <group col="4" class="px-3">
-                        <group colspan="3">
+                        <group>
                             <field name="resource_calendar_id" string="Opening Hours"
-                                placeholder="Pick a work schedule to further restrict opening hours."/>
+                                placeholder="Pick a schedule to restrict openings"/>
+                            <field name="tz"/>
                         </group>
                     </group>
                     <notebook>
@@ -65,13 +64,15 @@
         <field name="name">appointment.resource.view.tree</field>
         <field name="model">appointment.resource</field>
         <field name="arch" type="xml">
-            <tree sample="1">
+            <tree multi_edit="1" sample="1">
+                <field name="company_id" column_invisible="True"/>
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
-                <field name="capacity" sum="Total Capacity"/>
-                <field name="shareable" optional="hidden"/>
-                <field name="linked_resource_ids" widget="many2many_tags" optional="hidden"/>
                 <field name="appointment_type_ids" widget="many2many_tags" optional="hidden"/>
+                <field name="linked_resource_ids" widget="many2many_tags" optional="hidden"/>
+                <field name="shareable" optional="hidden"/>
+                <field name="resource_calendar_id" optional="hidden"/>
+                <field name="capacity" sum="Total Capacity"/>
             </tree>
         </field>
     </record>

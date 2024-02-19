@@ -17,7 +17,8 @@
                         <field name="partner_ids" widget="many2many_tags_email"
                             class="o_knowledge_add_people_input w-100"
                             placeholder="Add people or email addresses"
-                            context="{'force_email': True, 'show_email': True}"/>
+                            options="{'no_quick_create': True}"
+                            context="{'show_email': True, 'form_view_ref': 'base.view_partner_simple_form'}"/>
                     </group>
                     <field name="message" class="border" placeholder="Extra Comment" invisible="permission == 'none'"/>
                 </sheet>

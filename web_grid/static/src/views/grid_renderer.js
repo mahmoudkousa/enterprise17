@@ -237,6 +237,14 @@ export class GridRenderer extends Component {
         return `height: ${heightPercentage}%; bottom: 0;`;
     }
 
+    getFooterTotalCellClasses(grandTotal) {
+        if (grandTotal < 0) {
+            return "bg-danger text-bg-danger";
+        }
+
+        return "bg-400";
+    }
+
     getUnavailableClass(column, section = undefined) {
         return "";
     }

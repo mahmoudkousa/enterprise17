@@ -45,6 +45,11 @@ class SpreadsheetMixin(models.AbstractModel):
                 else:
                     spreadsheet.server_revision_id = snapshot.get("revisionId", "START_REVISION")
 
+    def write(self, vals):
+        if "spreadsheet_binary_data" in vals and not self.env.context.get("preserve_spreadsheet_revisions"):
+            self._delete_collaborative_data()
+        return super().write(vals)
+
     def copy(self, default=None):
         self.ensure_one()
         new_spreadsheet = super().copy(default)
@@ -69,7 +74,7 @@ class SpreadsheetMixin(models.AbstractModel):
         spreadsheet_sudo = self.sudo()
         return {
             "id": spreadsheet_sudo.id,
-            "name": spreadsheet_sudo.display_name,
+            "name": spreadsheet_sudo.display_name or "",
             "data": spreadsheet_sudo._get_spreadsheet_snapshot(),
             "revisions": spreadsheet_sudo._build_spreadsheet_messages(),
             "snapshot_requested": can_write and spreadsheet_sudo._should_be_snapshotted(),
@@ -285,7 +290,8 @@ class SpreadsheetMixin(models.AbstractModel):
 
     def _delete_collaborative_data(self):
         self.spreadsheet_snapshot = False
-        self.with_context(active_test=False).spreadsheet_revision_ids.unlink()
+        self._check_collaborative_spreadsheet_access("write")
+        self.with_context(active_test=False).sudo().spreadsheet_revision_ids.unlink()
 
     def unlink(self):
         """ Override unlink to delete spreadsheet revision. This cannot be
@@ -305,7 +311,7 @@ class SpreadsheetMixin(models.AbstractModel):
     def get_spreadsheet_history(self, from_snapshot=False):
         """Fetch the spreadsheet history.
          - if from_snapshot is provided, then provides the last snapshot and the revisions since then
-         - otherwise, returns the empty skeleton of the spreasheet with all the revisions since its creation
+         - otherwise, returns the empty skeleton of the spreadsheet with all the revisions since its creation
         """
         self.ensure_one()
         self._check_collaborative_spreadsheet_access("read")
@@ -313,11 +319,15 @@ class SpreadsheetMixin(models.AbstractModel):
 
         if from_snapshot:
             data = spreadsheet_sudo._get_spreadsheet_snapshot()
-            revisions = spreadsheet_sudo._build_spreadsheet_messages()
-
+            revisions = spreadsheet_sudo.spreadsheet_revision_ids
         else:
             data = json.loads(self.spreadsheet_data)
-            revisions = [
+            revisions = spreadsheet_sudo.with_context(active_test=False).spreadsheet_revision_ids
+
+        return {
+            "name": spreadsheet_sudo.display_name,
+            "data": data,
+            "revisions": [
                 dict(
                     json.loads(rev.commands),
                     id=rev.id,
@@ -327,13 +337,8 @@ class SpreadsheetMixin(models.AbstractModel):
                     nextRevisionId=rev.revision_id,
                     timestamp=rev.create_date,
                 )
-                for rev in self.with_context(active_test=False).spreadsheet_revision_ids
-            ]
-
-        return {
-            "name": spreadsheet_sudo.display_name,
-            "data": data,
-            "revisions": revisions,
+                for rev in revisions
+            ],
         }
 
     def rename_revision(self, revision_id, name):
@@ -346,9 +351,10 @@ class SpreadsheetMixin(models.AbstractModel):
         default = default or {}
         default['spreadsheet_revision_ids'] = []
         default['spreadsheet_data'] = self.spreadsheet_data
-        default['spreadsheet_snapshot'] = base64.b64encode(json.dumps(spreadsheet_snapshot).encode())
         new_spreadsheet = self.copy(default)
         self.with_context(active_test=False)._copy_revisions_to(new_spreadsheet, revision_id)
+        new_spreadsheet.spreadsheet_snapshot = base64.b64encode(json.dumps(spreadsheet_snapshot).encode())
+        new_spreadsheet.spreadsheet_revision_ids.active = False
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',

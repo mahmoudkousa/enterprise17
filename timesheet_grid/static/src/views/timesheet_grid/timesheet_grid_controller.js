@@ -17,12 +17,7 @@ export class TimesheetGridController extends GridController {
             this.model.navigationInfo.periodStart,
             this.model.navigationInfo.periodEnd
         );
-        if (
-            !interval.contains(timesheet.data.date) ||
-            timesheet.data.date
-                .startOf("day")
-                .equals(this.model.navigationInfo.periodEnd.startOf("day"))
-        ) {
+        if (!interval.contains(timesheet.data.date)) {
             this.notificationService.add(
                 _t("The timesheet entry has successfully been created."),
                 {

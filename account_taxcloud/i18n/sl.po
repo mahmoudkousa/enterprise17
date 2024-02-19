@@ -1,28 +1,29 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # 	* account_taxcloud
-#
+# 
 # Translators:
-# Boris Kodelja <boris@hbs.si>, 2022
-# Grega Vavtar <grega@hbs.si>, 2022
-# matjaz k <matjaz@mentis.si>, 2022
-# laznikd <laznik@mentis.si>, 2022
-# Matjaz Mozetic <m.mozetic@matmoz.si>, 2022
-# Martin Trigaux, 2022
-# Tadej Lupšina <tadej@hbs.si>, 2022
-#
+# Boris Kodelja <boris@hbs.si>, 2023
+# Grega Vavtar <grega@hbs.si>, 2023
+# matjaz k <matjaz@mentis.si>, 2023
+# Martin Trigaux, 2023
+# laznikd <laznik@mentis.si>, 2023
+# Tomaž Jug <tomaz@editor.si>, 2023
+# Matjaz Mozetic <m.mozetic@matmoz.si>, 2023
+# Tadej Lupšina <tadej@hbs.si>, 2023
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 15.5alpha1+e\n"
+"Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-16 16:02+0000\n"
-"PO-Revision-Date: 2022-09-22 05:45+0000\n"
-"Last-Translator: Tadej Lupšina <tadej@hbs.si>, 2022\n"
+"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"PO-Revision-Date: 2023-10-26 23:10+0000\n"
+"Last-Translator: Tadej Lupšina <tadej@hbs.si>, 2023\n"
 "Language-Team: Slovenian (https://app.transifex.com/odoo/teams/41243/sl/)\n"
-"Language: sl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
+"Language: sl\n"
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3);\n"
 
 #. module: account_taxcloud
@@ -32,8 +33,12 @@ msgstr ""
 
 #. module: account_taxcloud
 #: model_terms:ir.ui.view,arch_db:account_taxcloud.res_config_settings_view_form
-msgid "<i title=\"Import/update TICs from TaxCloud\" role=\"img\" aria-label=\"Import/update TICs from TaxCloud\" class=\"fa fa-refresh fa-fw\"/>"
-msgstr "<i title=\"Import/update TICs from TaxCloud\" role=\"img\" aria-label=\"Import/update TICs from TaxCloud\" class=\"fa fa-refresh fa-fw\"/>"
+msgid ""
+"<i title=\"Import/update TICs from TaxCloud\" role=\"img\" aria-"
+"label=\"Import/update TICs from TaxCloud\" class=\"fa fa-refresh fa-fw\"/>"
+msgstr ""
+"<i title=\"Import/update TICs from TaxCloud\" role=\"img\" aria-"
+"label=\"Import/update TICs from TaxCloud\" class=\"fa fa-refresh fa-fw\"/>"
 
 #. module: account_taxcloud
 #: model_terms:ir.ui.view,arch_db:account_taxcloud.res_config_settings_view_form
@@ -88,7 +93,9 @@ msgstr "Prikazani naziv"
 
 #. module: account_taxcloud
 #: model_terms:ir.ui.view,arch_db:account_taxcloud.account_position_taxcloud_inherit_from_view
-msgid "Enable <b>Detect Automatically</b> to automatically use TaxCloud when selling to American customers."
+msgid ""
+"Enable <b>Detect Automatically</b> to automatically use TaxCloud when "
+"selling to American customers."
 msgstr ""
 
 #. module: account_taxcloud
@@ -140,19 +147,22 @@ msgstr "Zadnjič posodobljeno"
 #. odoo-python
 #: code:addons/account_taxcloud/models/taxcloud_request.py:0
 #, python-format
-msgid "Please configure taxcloud credentials on the current company or use a different fiscal position"
+msgid ""
+"Please configure taxcloud credentials on the current company or use a "
+"different fiscal position"
 msgstr ""
 
 #. module: account_taxcloud
 #: model_terms:ir.ui.view,arch_db:account_taxcloud.account_position_taxcloud_inherit_from_view
 #: model_terms:ir.ui.view,arch_db:account_taxcloud.invoice_form_inherit
-msgid "Please enter your Taxcloud credentials to compute tax rates automatically."
+msgid ""
+"Please enter your Taxcloud credentials to compute tax rates automatically."
 msgstr ""
 
 #. module: account_taxcloud
 #: model:ir.model,name:account_taxcloud.model_product_template
 msgid "Product"
-msgstr "Proizvod"
+msgstr "Izdelek"
 
 #. module: account_taxcloud
 #: model:ir.model,name:account_taxcloud.model_product_category
@@ -172,7 +182,12 @@ msgstr ""
 #. module: account_taxcloud
 #: model:ir.model.fields,help:account_taxcloud.field_res_company__tic_category_id
 #: model:ir.model.fields,help:account_taxcloud.field_res_config_settings__tic_category_id
-msgid "TIC (Taxability Information Codes) allow to get specific tax rates for each product type. This default value applies if no product is used in the order/invoice, or if no TIC is set on the product or its product category. By default, TaxCloud relies on the TIC *[0] Uncategorized* default referring to general goods and services."
+msgid ""
+"TIC (Taxability Information Codes) allow to get specific tax rates for each "
+"product type. This default value applies if no product is used in the "
+"order/invoice, or if no TIC is set on the product or its product category. "
+"By default, TaxCloud relies on the TIC *[0] Uncategorized* default referring"
+" to general goods and services."
 msgstr ""
 
 #. module: account_taxcloud
@@ -229,20 +244,35 @@ msgstr ""
 
 #. module: account_taxcloud
 #. odoo-python
+#: code:addons/account_taxcloud/models/product.py:0
+#, python-format
+msgid "The Taxcloud Category must be integer."
+msgstr ""
+
+#. module: account_taxcloud
+#. odoo-python
 #: code:addons/account_taxcloud/models/account_invoice.py:0
 #, python-format
-msgid "The tax rates have been updated, you may want to check it before validation"
+msgid ""
+"The tax rates have been updated, you may want to check it before validation"
 msgstr ""
 
 #. module: account_taxcloud
 #: model:ir.model.fields,help:account_taxcloud.field_product_product__tic_category_id
 #: model:ir.model.fields,help:account_taxcloud.field_product_template__tic_category_id
-msgid "This refers to TIC (Taxability Information Codes), these are used by TaxCloud to compute specific tax rates for each product type. The value set here prevails over the one set on the product category."
+msgid ""
+"This refers to TIC (Taxability Information Codes), these are used by "
+"TaxCloud to compute specific tax rates for each product type. The value set "
+"here prevails over the one set on the product category."
 msgstr ""
 
 #. module: account_taxcloud
 #: model:ir.model.fields,help:account_taxcloud.field_product_category__tic_category_id
-msgid "This refers to TIC (Taxability Information Codes), these are used by TaxCloud to compute specific tax rates for each product type. This value is used when no TIC is set on the product. If no value is set here, the default value set in Invoicing settings is used."
+msgid ""
+"This refers to TIC (Taxability Information Codes), these are used by "
+"TaxCloud to compute specific tax rates for each product type. This value is "
+"used when no TIC is set on the product. If no value is set here, the default"
+" value set in Invoicing settings is used."
 msgstr ""
 
 #. module: account_taxcloud
@@ -267,7 +297,8 @@ msgstr ""
 #: model:ir.model.fields,help:account_taxcloud.field_account_move__is_taxcloud_configured
 #: model:ir.model.fields,help:account_taxcloud.field_account_payment__is_taxcloud_configured
 #: model:ir.model.fields,help:account_taxcloud.field_res_company__is_taxcloud_configured
-msgid "Used to determine whether or not to warn the user to configure TaxCloud."
+msgid ""
+"Used to determine whether or not to warn the user to configure TaxCloud."
 msgstr ""
 
 #. module: account_taxcloud

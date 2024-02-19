@@ -4,14 +4,15 @@
         <t t-set="isShareable" t-value="hasShareDocuments()"/>
         <t t-set="folder" t-value="this.env.searchModel.getSelectedFolder()"/>
         <t t-set="tooltip">You cannot upload content in this workspace</t>
+        <t t-set="hasShareableWorkspace" t-value="env.searchModel.getFolders().some((workspaceFolder) => workspaceFolder.id and workspaceFolder.id !== 'TRASH')"/>
         <div class="btn-group">
 
             <span t-att-data-tooltip="!folder.id and tooltip">
-                <label for="uploadFileInput" t-attf-class="btn btn-primary o_documents_kanban_upload #{!folder.id ? 'pe-none opacity-25' : ''}" data-hotkey="a">Upload</label>
+                <label for="uploadFileInput" t-attf-class="btn btn-primary o_documents_kanban_upload #{!folder.id or folder.id === 'TRASH' ? 'pe-none opacity-25' : ''}" data-hotkey="a">Upload</label>
             </span>
             <button type="button" class="btn btn-primary dropdown-toggle
              dropdown-toggle-split"
-             t-att-disabled="this.env.searchModel.getFolders().length === 1"
+             t-att-disabled="!hasShareableWorkspace or folder.id === 'TRASH'"
              data-bs-toggle="dropdown" aria-expanded="false" data-hotkey="c">
                     <span class="visually-hidden">Toggle Dropdown</span>
             </button>

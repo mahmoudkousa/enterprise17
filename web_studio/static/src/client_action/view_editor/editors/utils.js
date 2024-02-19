@@ -221,3 +221,12 @@ export function useModelConfigFetchInvisible(model) {
         return load.call(model, ...args);
     };
 }
+
+export function getCurrencyField(fieldsGet) {
+    const field = Object.entries(fieldsGet).find(([fName, fInfo]) => {
+        return fInfo.type === "many2one" && fInfo.relation === "res.currency";
+    });
+    if (field) {
+        return field[0];
+    }
+}

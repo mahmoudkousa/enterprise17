@@ -114,7 +114,7 @@ class HrSalaryAttachment(models.Model):
             else:
                 record.has_total_amount = True
 
-    @api.depends('total_amount', 'paid_amount')
+    @api.depends('total_amount', 'paid_amount', 'monthly_amount')
     def _compute_remaining_amount(self):
         for record in self:
             if record.has_total_amount:

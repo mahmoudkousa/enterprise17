@@ -18,7 +18,7 @@
             <record id="l10n_kz_bl_assets" model="account.report.line">
                 <field name="name">Assets</field>
                 <field name="code">L10N_KZ_BS_A</field>
-                <field name="aggregation_formula">L10N_KZ_BS_A_1.balance + L10N_KZ_BS_A_2.balance</field>
+                <field name="aggregation_formula">L10N_KZ_BS_A_1.balance + L10N_KZ_BS_A_101.balance + L10N_KZ_BS_A_2.balance</field>
                 <field name="hierarchy_level">0</field>
                 <field name="children_ids">
                     <record id="l10n_kz_bl_current_assets" model="account.report.line">
@@ -268,7 +268,7 @@
                     <record id="l10n_kz_bl_liabilities" model="account.report.line">
                         <field name="name">Liabilities</field>
                         <field name="code">L10N_KZ_BS_B_2</field>
-                        <field name="aggregation_formula">L10N_KZ_BS_B_2_1.balance + L10N_KZ_BS_B_2_2.balance</field>
+                        <field name="aggregation_formula">L10N_KZ_BS_B_2_1.balance + L10N_KZ_BS_B_301.balance + L10N_KZ_BS_B_2_2.balance</field>
                         <field name="children_ids">
                             <record id="l10n_kz_report_line_bs_current_liabilities" model="account.report.line">
                                 <field name="name">III. Current liabilities</field>
@@ -483,7 +483,7 @@
                                         <field name="code">L10N_KZ_BS_B_410</field>
                                         <field name="groupby">account_id</field>
                                         <field name="foldable" eval="True"/>
-                                        <field name="account_codes_formula">-50 + 51</field>
+                                        <field name="account_codes_formula">-50 - 51</field>
                                     </record>
                                     <record id="l10n_kz_report_line_bs_equity_411" model="account.report.line">
                                         <field name="name">411. Share premium</field>

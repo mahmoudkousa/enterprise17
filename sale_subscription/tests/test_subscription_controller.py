@@ -166,7 +166,7 @@ class TestSubscriptionController(PaymentHttpCommon, PaymentCommon, TestSubscript
         subscription = self.subscription.create({
             'partner_id': self.partner.id,
             'company_id': self.company.id,
-            'payment_token_id': self.payment_method.id,
+            'payment_token_id': self.payment_token.id,
             'sale_order_template_id': self.subscription_tmpl.id,
 
         })
@@ -194,7 +194,7 @@ class TestSubscriptionController(PaymentHttpCommon, PaymentCommon, TestSubscript
         subscription.transaction_ids.provider_id.support_manual_capture = 'full_only'
         subscription.transaction_ids._set_authorized()
         subscription.invoice_ids.filtered(lambda am: am.state == 'draft')._post()
-        subscription.transaction_ids.token_id = self.payment_method.id
+        subscription.transaction_ids.token_id = self.payment_token.id
         self.assertEqual(subscription.next_invoice_date, datetime.date.today())
         self.assertEqual(subscription.state, 'sale')
         subscription.transaction_ids._reconcile_after_done()  # Create the payment
@@ -258,7 +258,7 @@ class TestSubscriptionController(PaymentHttpCommon, PaymentCommon, TestSubscript
         subscription = self.subscription.create({
             'partner_id': self.partner.id,
             'company_id': self.company.id,
-            'payment_token_id': self.payment_method.id,
+            'payment_token_id': self.payment_token.id,
             'sale_order_template_id': self.subscription_tmpl.id,
 
         })
@@ -301,53 +301,114 @@ class TestSubscriptionController(PaymentHttpCommon, PaymentCommon, TestSubscript
                 patch('odoo.addons.sale_subscription.models.sale_order.SaleOrder._send_success_mail',
                       wraps=self._mock_subscription_send_success_mail):
             self.env['ir.config_parameter'].sudo().set_param('sale.automatic_invoice', 'False')
-            subscription = self.subscription.create({
-                'partner_id': self.partner.id,
-                'company_id': self.company.id,
-                'sale_order_template_id': self.subscription_tmpl.id,
-            })
-            self.pricing_month.price = 100
-            subscription._onchange_sale_order_template_id()
-            subscription.state = 'sent'
-            subscription._portal_ensure_token()
-            # test customized /payment/pay route with sale_order_id param
-            # partial amount specified
-            self.amount = subscription.amount_total / 2.0 # self.amount is used to create the right transaction
-            pay_route_values = self._prepare_pay_values(
-                amount=self.amount,
-                currency=subscription.currency_id,
-                partner=subscription.partner_id,
-            )
-            pay_route_values['sale_order_id'] = subscription.id
-            tx_context = self._get_portal_pay_context(**pay_route_values)
-
-            tx_route_values = {
-                'provider_id': self.provider.id,
-                'payment_method_id': self.payment_method_id,
-                'token_id': None,
-                'amount': tx_context['amount'],
-                'flow': 'direct',
-                'tokenization_requested': False,
-                'landing_route': '/my/subscriptions',
-                'access_token': tx_context['access_token'],
-            }
-            with mute_logger('odoo.addons.payment.models.payment_transaction'):
-                processing_values = self._get_processing_values(
-                    tx_route=tx_context['transaction_route'], **tx_route_values
+            with freeze_time("2024-01-22"):
+                subscription = self.subscription.create({
+                    'partner_id': self.partner.id,
+                    'company_id': self.company.id,
+                    'sale_order_template_id': self.subscription_tmpl.id,
+                })
+                self.pricing_month.price = 100
+                subscription._onchange_sale_order_template_id()
+                subscription.state = 'sent'
+                subscription._portal_ensure_token()
+                # test customized /payment/pay route with sale_order_id param
+                # partial amount specified
+                self.amount = subscription.amount_total / 2.0 # self.amount is used to create the right transaction
+                pay_route_values = self._prepare_pay_values(
+                    amount=self.amount,
+                    currency=subscription.currency_id,
+                    partner=subscription.partner_id,
                 )
-            tx_sudo = self._get_tx(processing_values['reference'])
-            # make sure to have a token on the transaction. it is needed to test the confirmation flow
-            tx_sudo.token_id = self.payment_method.id
-            self.assertEqual(tx_sudo.sale_order_ids, subscription)
-            # self.assertEqual(tx_sudo.amount, amount)
-            self.assertEqual(tx_sudo.sale_order_ids.transaction_ids, tx_sudo)
+                pay_route_values['sale_order_id'] = subscription.id
+                tx_context = self._get_portal_pay_context(**pay_route_values)
 
-            tx_sudo._set_done()
-            with mute_logger('odoo.addons.sale.models.payment_transaction'):
-                tx_sudo._finalize_post_processing()
-            self.assertEqual(subscription.state, 'sent')  # Only a partial amount was paid
-            subscription.action_confirm()
-            self.assertEqual(subscription.next_invoice_date, datetime.date.today())
-            self.assertEqual(subscription.state, 'sale')
-            self.assertEqual(subscription.invoice_count, 0, "No invoice should be created")
-            self.assertFalse(subscription.payment_token_id, "No token should be saved")
+                tx_route_values = {
+                    'provider_id': self.provider.id,
+                    'payment_method_id': self.payment_method_id,
+                    'token_id': None,
+                    'amount': tx_context['amount'],
+                    'flow': 'direct',
+                    'tokenization_requested': False,
+                    'landing_route': '/my/subscriptions',
+                    'access_token': tx_context['access_token'],
+                }
+                with mute_logger('odoo.addons.payment.models.payment_transaction'):
+                    processing_values = self._get_processing_values(
+                        tx_route=tx_context['transaction_route'], **tx_route_values
+                    )
+                tx_sudo = self._get_tx(processing_values['reference'])
+                # make sure to have a token on the transaction. it is needed to test the confirmation flow
+                tx_sudo.token_id = self.payment_token.id
+                self.assertEqual(tx_sudo.sale_order_ids, subscription)
+                # self.assertEqual(tx_sudo.amount, amount)
+                self.assertEqual(tx_sudo.sale_order_ids.transaction_ids, tx_sudo)
+
+                tx_sudo._set_done()
+                with mute_logger('odoo.addons.sale.models.payment_transaction'):
+                    tx_sudo._finalize_post_processing()
+                self.assertEqual(subscription.state, 'sent')  # Only a partial amount was paid
+                subscription.action_confirm()
+                self.assertEqual(subscription.next_invoice_date, datetime.date.today())
+                self.assertEqual(subscription.state, 'sale')
+                self.assertEqual(subscription.invoice_count, 0, "No invoice should be created")
+                self.assertFalse(subscription.payment_token_id, "No token should be saved")
+
+                # Renew subscription and set payment amount as half of the total amount (partial).
+                subscription._create_recurring_invoice()
+                action = subscription.prepare_renewal_order()
+                renewal_so = self.env['sale.order'].browse(action['res_id'])
+                self.amount = renewal_so.amount_total / 2.0
+
+                # Prepare renewal subscription's payment values.
+                pay_route_values = self._prepare_pay_values(
+                    amount=self.amount,
+                    currency=renewal_so.currency_id,
+                    partner=renewal_so.partner_id,
+                )
+                pay_route_values['sale_order_id'] = renewal_so.id
+                tx_context = self._get_portal_pay_context(**pay_route_values)
+
+                tx_route_values = {
+                    'provider_id': self.provider.id,
+                    'payment_method_id': self.payment_method_id,
+                    'token_id': None,
+                    'amount': tx_context['amount'],
+                    'flow': 'direct',
+                    'tokenization_requested': False,
+                    'landing_route': '/my/subscriptions',
+                    'access_token': tx_context['access_token'],
+                }
+                with mute_logger('odoo.addons.payment.models.payment_transaction'):
+                    processing_values = self._get_processing_values(tx_route=tx_context['transaction_route'], **tx_route_values)
+
+                # Make sure to have a token on the transaction, it is needed to test the confirmation flow.
+                tx_sudo = self._get_tx(processing_values['reference'])
+                tx_sudo.token_id = self.payment_token.id
+                self.assertEqual(tx_sudo.sale_order_ids, renewal_so)
+                self.assertEqual(tx_sudo.sale_order_ids.transaction_ids, tx_sudo)
+                tx_sudo._set_done()
+                with mute_logger('odoo.addons.sale.models.payment_transaction'):
+                    tx_sudo._finalize_post_processing()
+
+                # Confirm renewal. Assert that no token was saved, renewal was sent and only one invoice was registered.
+                renewal_so.action_confirm()
+                self.assertFalse(renewal_so.payment_token_id, "No token should be saved")
+                self.assertEqual(renewal_so.state, 'sale')
+                self.assertEqual(renewal_so.invoice_count, 1, "Only one invoice from previous subscription should be registered")
+                self.assertEqual(renewal_so.next_invoice_date, datetime.date.today() + datetime.timedelta(days=31))
+
+    def test_portal_quote_document(self):
+        product_document = self.env['product.document'].create({
+            'name': 'doc.txt',
+            'active': True,
+            'datas': 'TXkgYXR0YWNobWVudA==',
+            'res_model': 'product.product',
+            'res_id': self.sub_product_tmpl.product_variant_ids.id,
+            'attached_on': 'sale_order',
+        })
+        self.subscription.action_confirm()
+        response = self.url_open(
+            self.subscription.get_portal_url('/document/' + str(product_document.id))
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual("My attachment", response.text)

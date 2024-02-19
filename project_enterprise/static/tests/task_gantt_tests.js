@@ -262,7 +262,7 @@ QUnit.test("progress bar has the correct unit", async (assert) => {
     assert.containsOnce(target, SELECTORS.progressBarForeground);
     assert.deepEqual(
         target.querySelector(SELECTORS.progressBarForeground).textContent,
-        "100 h / 100 h"
+        "100h / 100h"
     );
 });
 

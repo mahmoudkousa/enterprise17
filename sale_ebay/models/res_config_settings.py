@@ -40,7 +40,7 @@ class ResConfigSettings(models.TransientModel):
                                 default=lambda self: self.env['ebay.site'].search([('ebay_id', '=', '0')], limit=1).id,
                                 config_parameter='ebay_site')
     ebay_zip_code = fields.Char(string="Zip", default='', config_parameter='ebay_zip_code')
-    ebay_location = fields.Char(string="Location", default='', config_parameter='')
+    ebay_location = fields.Char(string="Location", default='', config_parameter='ebay_location')
     ebay_out_of_stock = fields.Boolean("Out Of Stock", default=False)
     ebay_sales_team = fields.Many2one("crm.team", string="ebay Sales Team",
                                       config_parameter='ebay_sales_team')

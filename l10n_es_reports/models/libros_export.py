@@ -136,7 +136,7 @@ class SpanishLibrosRegistroExportHandler(models.AbstractModel):
             'invoice_type': {
                 'out_invoice': 'F2' if line.move_id.l10n_es_is_simplified else 'F1',
                 'out_refund': 'R5' if line.move_id.l10n_es_is_simplified else 'R1',
-                'in_invoice': 'F1',
+                'in_invoice': 'F5' if tax.l10n_es_type == 'dua' else 'F1',
                 'in_refund': 'R4',
             }[line.move_type],
             'date_expedition': format_date(self.env, line.date.isoformat(), date_format='MM/dd/yyyy'),
@@ -230,23 +230,17 @@ class SpanishLibrosRegistroExportHandler(models.AbstractModel):
                         line_vals[field] = "{:.2f}".format(value)
 
     def _get_sheet_line_vals(self, lines):
-        inc_line_vals, exp_line_vals = {}, {}
-        surcharge_line_vals = {}
-        moves = []
+        inc_line_vals, exp_line_vals, surcharge_line_vals = {}, {}, {}
 
+        # initialize [inc/exp]_line_vals with move:tax ids and base balances
         for line in lines:
-            if line.move_type in ('out_invoice', 'out_refund'):
-                sheet_line_vals = inc_line_vals
-                create_line_vals = self._create_income_line_vals
-            else:
-                sheet_line_vals = exp_line_vals
-                create_line_vals = self._create_expense_line_vals
-            if line.move_id not in moves:
-                moves.append(line.move_id)
-
+            is_income = line.move_type in ('out_invoice', 'out_refund')
+            sheet_line_vals = inc_line_vals if is_income else exp_line_vals
+            create_line_vals = self._create_income_line_vals if is_income else self._create_expense_line_vals
             move = line.move_id
             sheet_line_vals.setdefault(move.id, {})
-            for tax in line.tax_ids:
+
+            for tax in line.tax_ids.flatten_taxes_hierarchy():
                 if tax.l10n_es_type == 'recargo':
                     for other_tax in line.tax_ids:
                         if other_tax.amount in SURCHARGE_TAX_EQUIVALENT[tax.amount]:
@@ -255,21 +249,27 @@ class SpanishLibrosRegistroExportHandler(models.AbstractModel):
                             break
                     else:
                         raise UserError(_('Unable to find matching surcharge tax in %s', move.name))
-
+                elif tax.l10n_es_type == 'ignore':
+                    continue
                 elif tax.id in sheet_line_vals[move.id]:
                     self._merge_base_line(sheet_line_vals[move.id][tax.id], line)
                 else:
                     sheet_line_vals[move.id][tax.id] = create_line_vals(line, tax)
 
-            # merge tax and surcharge values
-            if line.tax_line_id:
-                if line.tax_line_id.l10n_es_type == 'recargo':
-                    other_tax_id = surcharge_line_vals[move.id][line.tax_line_id.id]
-                    line_vals = sheet_line_vals[move.id][other_tax_id]
-                    self._merge_surcharge_line(line_vals, line)
-                else:
-                    line_vals = sheet_line_vals[move.id][line.tax_line_id.id]
-                    self._merge_tax_line(line_vals, line)
+        # merge tax and surcharge lines to [inc/exp]_line_vals
+        tax_lines = (line for line in lines if line.tax_line_id)
+        for line in tax_lines:
+            sheet_line_vals = inc_line_vals if line.move_type in ('out_invoice', 'out_refund') else exp_line_vals
+            move, tax = line.move_id, line.tax_line_id
+            if tax.l10n_es_type == 'recargo':
+                other_tax_id = surcharge_line_vals[move.id][tax.id]
+                line_vals = sheet_line_vals[move.id][other_tax_id]
+                self._merge_surcharge_line(line_vals, line)
+            elif tax.l10n_es_type == 'ignore':
+                continue
+            else:
+                line_vals = sheet_line_vals[move.id][tax.id]
+                self._merge_tax_line(line_vals, line)
 
         self._format_sheet_line_vals(inc_line_vals)
         self._format_sheet_line_vals(exp_line_vals)

@@ -15,6 +15,7 @@ QUnit.test(
         pyEnv["whatsapp.template"].create({
             name: "WhatsApp Template 1",
             model: "res.partner",
+            status: "approved",
         });
         const { openFormView } = await start();
         await openFormView("res.partner", pyEnv.currentPartnerId);

@@ -1,7 +1,7 @@
 # coding: utf-8
 from odoo.addons.account_edi.tests.common import AccountEdiTestCommon
-from odoo.tests import tagged
 from odoo.tools import misc
+from odoo import Command
 
 from unittest.mock import patch, Mock
 from freezegun import freeze_time
@@ -88,7 +88,7 @@ class TestCoEdiCommon(AccountEdiTestCommon):
         cls.company_data_2['company'].write({
             'country_id': cls.env.ref('base.co').id,
             'phone': '(870)-931-0505',
-            'website': 'hhtp://wwww.company_2.com',
+            'website': 'http://wwww.company_2.com',
             'email': 'company_2@example.com',
             'street': 'Route de Eghezée',
             'zip': '4567',
@@ -102,8 +102,6 @@ class TestCoEdiCommon(AccountEdiTestCommon):
             'l10n_co_edi_obligation_type_ids': [(6, 0, [cls.env.ref('l10n_co_edi.obligation_type_1').id])],
             'l10n_co_edi_large_taxpayer': True,
         })
-
-        cls.product_a.default_code = 'P0000'
 
         cls.tax = cls.company_data['default_tax_sale']
         cls.tax.write({
@@ -126,26 +124,149 @@ class TestCoEdiCommon(AccountEdiTestCommon):
 
         uom = cls.env.ref('uom.product_uom_unit')
         uom.l10n_co_edi_ubl = 'S7'
-        cls.product_a.uom_id = uom
 
-        cls.invoice = cls.env['account.move'].create({
+        cls.product_a.write({
+            'default_code': 'P0000',
+            'uom_id': uom,
+            'volume': 500.0,
+        })
+        invoice_data = {
             'partner_id': cls.company_data_2['company'].partner_id.id,
             'move_type': 'out_invoice',
             'ref': 'reference',
             'invoice_user_id': cls.salesperson.id,
             'invoice_payment_term_id': cls.env.ref('account.account_payment_term_end_following_month').id,
             'invoice_line_ids': [
-                (0, 0, {
+                Command.create({
                     'product_id': cls.product_a.id,
                     'quantity': 150,
                     'price_unit': 250,
                     'discount': 10,
                     'name': 'Line 1',
-                    'tax_ids': [(6, 0, (cls.tax.id, cls.retention_tax.id))],
+                    'tax_ids': [Command.set((cls.tax + cls.retention_tax).ids)],
                 }),
             ]
+        }
+        cls.invoice = cls.env['account.move'].create(invoice_data)
+
+        cls.sugar_tax_1 = cls.env['account.tax'].create({
+            'name': "IBUA >10gr 50ml",  # arbitrary values
+            'amount_type': 'fixed',
+            'amount': 17.5,  # actual rate of the tax = 35 (for a product with >10gr of sugar per 100ml)
+            'l10n_co_edi_type': cls.env.ref('l10n_co_edi.tax_type_20').id,
+        })
+        cls.sugar_tax_2 = cls.sugar_tax_1.copy({
+            'name': "IBUA >6gr & <10gr 50ml",
+            'amount': 18,  # actual rate of the tax = 36 (for a product with >10gr of sugar per 100ml)
+        })
+        # an IBUA tax group to display the total IBUA tax amount in the tax totals section on the invoice
+        cls.env['account.tax'].create({
+            'name': 'IBUA',
+            'amount_type': 'group',
+            'amount': 0.0,
+            'type_tax_use': 'sale',
+            'children_tax_ids': [Command.set([cls.sugar_tax_1.id, cls.sugar_tax_2.id])],
+        })
+        cls.product_sugar = cls.env['product.product'].create({
+            'name': 'Ice Cream',
+            'uom_id': uom.id,
+            'volume': 50.0,  # this should be the volume in milliliters
+            'property_account_income_id': cls.company_data['default_account_revenue'].id,
+            'property_account_expense_id': cls.company_data['default_account_expense'].id,
+            'default_code': 'P0000',
         })
 
-        cls.expected_invoice_xml = misc.file_open('l10n_co_edi/tests/accepted_invoice.xml', 'rb').read()
+        # Sugar Invoice
+        invoice_data['invoice_line_ids'] = [
+            # Sugar taxes should not be grouped together since they have different rates
+            Command.create({
+                'product_id': cls.product_sugar.id,
+                'quantity': 1,
+                'price_unit': 100,
+                'tax_ids': [Command.set([cls.tax.id, cls.sugar_tax_1.id])],
+            }),
+            Command.create({
+                'product_id': cls.product_sugar.id,
+                'quantity': 10,
+                'price_unit': 200,
+                'tax_ids': [Command.set([cls.tax.id, cls.sugar_tax_2.id])],
+            }),
+            # The following taxes should be grouped together (same CO tax code, amount, and amount_type)
+            Command.create({
+                'product_id': cls.product_a.id,
+                'quantity': 10,
+                'price_unit': 100,
+                'tax_ids': [Command.set([cls.tax.id, cls.retention_tax.id])],
+            }),
+            Command.create({
+                'product_id': cls.product_a.id,
+                'quantity': 5,
+                'price_unit': 100,
+                'tax_ids': [Command.set([cls.tax.id, cls.retention_tax.id])],
+            }),
+        ]
+        cls.sugar_tax_invoice = cls.env['account.move'].create(invoice_data)
 
+        cls.tax_iva_19 = cls.env['account.tax'].create({
+            'name': "IVA Ventas 19%",
+            'amount': 19,
+            'l10n_co_edi_type': cls.env.ref('l10n_co_edi.tax_type_0').id,
+        })
+        cls.tax_iva_5 = cls.env['account.tax'].create({
+            'name': "IVA Ventas 5%",
+            'amount': 5,
+            'l10n_co_edi_type': cls.env.ref('l10n_co_edi.tax_type_0').id,
+        })
+        cls.tax_iva_excento_0 = cls.env['account.tax'].create({
+            'name': "IVA Excento",
+            'amount': 0,
+            'l10n_co_edi_type': cls.env.ref('l10n_co_edi.tax_type_0').id,
+        })
+        cls.tax_iva_excluido_0 = cls.env['account.tax'].create({
+            'name': "IVA Excluido",
+            'amount': 0,
+            'l10n_co_edi_type': cls.env.ref('l10n_co_edi.tax_type_0').id,
+        })
+
+        # Testing the grouping inside the TIM sections: invoice with 2 IVA taxes with different rates and 1 Bolsas
+        invoice_data['invoice_line_ids'] = [
+            # IVA 5% and IVA 19% should be grouped inside the same TIM section
+            Command.create({
+                'product_id': cls.product_a.id,
+                'quantity': 1,
+                'price_unit': 100,
+                'tax_ids': [Command.set([cls.tax_iva_19.id])],
+            }),
+            Command.create({
+                'product_id': cls.product_a.id,
+                'quantity': 1,
+                'price_unit': 200,
+                'tax_ids': [Command.set([cls.tax_iva_5.id])],
+            }),
+            # The Bolsas tax should be in another TIM section
+            Command.create({
+                'product_id': cls.product_a.id,
+                'quantity': 1,
+                'price_unit': 200,
+                'tax_ids': [Command.set([cls.tax_iva_19.id, cls.retention_tax.id])],
+            }),
+            # IVA Excento (IVA, 0%) and IVA Excluido (IVA, 0%): both should be grouped together (same rate and CO type)
+            Command.create({
+                'product_id': cls.product_a.id,
+                'quantity': 1,
+                'price_unit': 400,
+                'tax_ids': [Command.set([cls.tax_iva_excento_0.id])],
+            }),
+            Command.create({
+                'product_id': cls.product_a.id,
+                'quantity': 1,
+                'price_unit': 500,
+                'tax_ids': [Command.set([cls.tax_iva_excluido_0.id])],
+            }),
+        ]
+        cls.invoice_tim = cls.env['account.move'].create(invoice_data)
+
+        cls.expected_invoice_xml = misc.file_open('l10n_co_edi/tests/accepted_invoice.xml', 'rb').read()
+        cls.expected_sugar_tax_invoice_xml = misc.file_open('l10n_co_edi/tests/accepted_sugar_tax_invoice.xml', 'rb').read()
         cls.expected_credit_note_xml = misc.file_open('l10n_co_edi/tests/accepted_credit_note.xml', 'rb').read()
+        cls.expected_invoice_tim_xml = misc.file_open('l10n_co_edi/tests/accepted_invoice_tim.xml', 'rb').read()

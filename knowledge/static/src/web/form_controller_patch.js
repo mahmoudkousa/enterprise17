@@ -4,8 +4,11 @@ import { FormController } from "@web/views/form/form_controller";
 import { patch } from "@web/core/utils/patch";
 import { useService } from "@web/core/utils/hooks";
 import { evaluateBooleanExpr } from "@web/core/py_js/py";
-import { onWillUnmount, useSubEnv } from "@odoo/owl";
 import { CallbackRecorder } from "@web/webclient/actions/action_hook";
+import {
+    useEffect,
+    useSubEnv
+} from "@odoo/owl";
 
 
 /**
@@ -52,18 +55,31 @@ const FormControllerPatch = {
             useSubEnv({
                 __knowledgeUpdateCommandsRecordInfo__: new CallbackRecorder(),
             });
-            // Register the last viewed record only once when leaving the Form view.
-            onWillUnmount(() => {
-                this._evaluateRecordCandidate();
-            });
+            useEffect(
+                () => this._evaluateRecordCandidate(),
+                () => [this.model.root.resId],
+            );
         }
     },
     /**
      * Evaluate the current record and register its relevant information in
      * @see KnowledgeCommandsService if it can be used in a Knowledge article
      * through a macro.
+     *
+     * The access rights information for the chatter is only available
+     * asynchronously after it is mounted, therefore populating this
+     * information for the `commandsRecordInfo` is delegated to the chatter
+     * through the __knowledgeUpdateCommandsRecordInfo__ callbackRecorder.
      */
     _evaluateRecordCandidate() {
+        if (
+            KNOWLEDGE_EXCLUDED_MODELS.has(this.props.resModel) ||
+            !this.env.config.breadcrumbs ||
+            !this.env.config.breadcrumbs.length
+        ) {
+            return;
+        }
+
         const record = this.model.root;
         const fields = this.props.fields;
         const xmlDoc = this.props.archInfo.xmlDoc;
@@ -81,14 +97,6 @@ const FormControllerPatch = {
             xmlDoc: this.props.archInfo.xmlDoc,
         };
 
-        if (
-            KNOWLEDGE_EXCLUDED_MODELS.has(this.props.resModel) ||
-            !this.env.config.breadcrumbs ||
-            !this.env.config.breadcrumbs.length
-        ) {
-            return;
-        }
-
         // check whether the form view has a chatter
         if (this.props.archInfo.xmlDoc.querySelector('.oe_chatter')) {
             for (const callback of this.env.__knowledgeUpdateCommandsRecordInfo__.callbacks) {
@@ -97,9 +105,6 @@ const FormControllerPatch = {
         }
 
         if (this.props.mode === "readonly" || !this.canEdit) {
-            if (this.knowledgeCommandsService.isRecordCompatibleWithMacro(commandsRecordInfo)) {
-                this.knowledgeCommandsService.setCommandsRecordInfo(commandsRecordInfo);
-            }
             return;
         }
 
@@ -177,7 +182,7 @@ const FormControllerPatch = {
         }
     },
     async onClickSearchKnowledgeArticle() {
-        if (this.model.root.isDirty || this.model.root.isNew) {
+        if (await this.model.root.isDirty() || this.model.root.isNew) {
             const saved = await this.model.root.save();
             if (!saved) {
                 return;

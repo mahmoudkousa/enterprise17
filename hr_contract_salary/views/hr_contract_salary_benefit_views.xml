@@ -89,7 +89,9 @@
                             <field name="activity_responsible_id" options="{'no_create_edit': True}" invisible="not activity_type_id" required="activity_type_id"/>
                             <separator string="sign"/>
                             <field name="sign_template_id"/>
-                            <field name="sign_copy_partner_id" invisible="not sign_template_id" context="{'force_email':True, 'show_email': True}"/>
+                            <field name="sign_copy_partner_id" invisible="not sign_template_id"
+                                   options="{'no_quick_create': True}"
+                                   context="{'show_email': True, 'form_view_ref': 'base.view_partner_simple_form'}"/>
                             <field name="sign_frenquency" widget="radio" invisible="not sign_template_id"/>
                         </group>
                         <group>

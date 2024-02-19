@@ -70,7 +70,7 @@ class MainComponent extends Component {
         useBus(this.barcodeService.bus, "barcode_scanned", (ev) => this.onBarcodeScanned(ev.detail.barcode));
 
         useBus(this.env.model, 'flash', this.flashScreen.bind(this));
-        useBus(this.env.model, 'error', this.playErrorSound.bind(this));
+        useBus(this.env.model, "playSound", this.playSound.bind(this));
         useBus(bus, "refresh", (ev) => this._onRefreshState(ev.detail));
 
         onWillStart(async () => {
@@ -81,11 +81,13 @@ class MainComponent extends Component {
             barcodeData.actionId = this.props.actionId;
             this.config = { play_sound: true, ...barcodeData.config };
             if (this.config.play_sound) {
-                this.errorSound = new Audio();
-                this.errorSound.src = this.errorSound.canPlayType('audio/ogg') ?
-                    url('/stock_barcode/static/src/audio/error.ogg') :
-                    url('/stock_barcode/static/src/audio/error.mp3');
-                this.errorSound.load();
+                const fileExtension = new Audio().canPlayType("audio/ogg") ? "ogg" : "mp3";
+                this.sounds = {
+                    error: new Audio(url(`/stock_barcode/static/src/audio/error.${fileExtension}`)),
+                    notify: new Audio(url(`/mail/static/src/audio/ting.${fileExtension}`)),
+                };
+                this.sounds.error.load();
+                this.sounds.notify.load();
             }
             this.groups = barcodeData.groups;
             this.env.model.setData(barcodeData);
@@ -101,10 +103,11 @@ class MainComponent extends Component {
         });
     }
 
-    playErrorSound() {
+    playSound(ev) {
+        const type = ev.detail || "notify";
         if (this.config.play_sound) {
-            this.errorSound.currentTime = 0;
-            this.errorSound.play();
+            this.sounds[type].currentTime = 0;
+            this.sounds[type].play();
         }
     }
 

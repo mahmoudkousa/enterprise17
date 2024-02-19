@@ -47,7 +47,7 @@
                         <h1 class="text-center">
                             <i class="fa fa-check-circle fa-1x text-success me-2" role="img" aria-label="Success" title="Success"/>
                             <t t-if="ticket">
-                                <span>Your Ticket Number is <a t-if="request.session.uid" t-attf-href="/helpdesk/ticket/#{ticket.id}">#<span t-field="ticket.ticket_ref"/></a><t t-if="not request.session.get('uid')">#<span t-field="ticket.id"/></t>.</span>
+                                <span>Your Ticket Number is <a t-if="request.session.uid" t-attf-href="/helpdesk/ticket/#{ticket.id}">#<span t-field="ticket.ticket_ref"/></a><t t-if="not request.session.get('uid')">#<span t-field="ticket.sudo().ticket_ref"/></t>.</span>
                             </t>
                         </h1>
                         <h2 class="text-center">Thank you for contacting us, our team will get right on it!</h2>
@@ -160,7 +160,7 @@
 
     <template id="search_box" name="Knowledge Base: Navbar Search Box">
         <form t-attf-action="/helpdesk/{{slug(team)}}/knowledgebase" method="get" onsubmit="return this.search.value !== ''"
-              role="search" class="o_helpdesk_knowledge_search w-100" t-att-data-autocomplete="autocomplete" t-attf-data-ac-url="/helpdesk/{{slug(team)}}/knowledgebase/autocomplete">
+              role="search" t-attf-class="o_helpdesk_knowledge_search w-100 #{_form_classes}" t-att-data-autocomplete="autocomplete" t-attf-data-ac-url="/helpdesk/{{slug(team)}}/knowledgebase/autocomplete">
             <t t-call="website.website_search_box"/>
         </form>
     </template>
@@ -269,7 +269,7 @@
                 </section>
                 <div class="container mb64">
                     <t t-call="website_helpdesk.search_box">
-                        <t t-set="_classes" t-valuef="justify-content-center mw-lg-50 mx-auto"/>
+                        <t t-set="_form_classes" t-valuef="w-lg-50 mx-auto"/>
                         <t t-set="_input_classes" t-valuef="form-control-lg"/>
                         <t t-set="placeholder">Search for articles, best practices and more...</t>
                         <t t-set="autocomplete" t-value="1" />

@@ -57,10 +57,5 @@ class ProductTemplate(models.Model):
             if product in restricted_product_ids:
                 raise UserError(_("Deleting this product is not allowed."))
 
-        if self:
-            log_vals = {
-                "action": "delete",
-                "model": self._name,
-                "name": self.name,
-            }
-            self.env["pos_blackbox_be.log"].sudo().create(log_vals)
+        for product in self:
+            self.env["pos_blackbox_be.log"].sudo().create(product, "delete", product._name, product.name)

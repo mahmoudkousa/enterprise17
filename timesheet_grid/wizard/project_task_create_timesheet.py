@@ -25,7 +25,7 @@ class ProjectTaskCreateTimesheet(models.TransientModel):
             'date': fields.Date.context_today(self),
             'name': self.description,
             'user_id': self.env.uid,
-            'unit_amount': self.task_id._get_rounded_hours(self.time_spent * 60),
+            'unit_amount': self.time_spent
         }
         self.task_id.user_timer_id.unlink()
         return self.env['account.analytic.line'].create(values)

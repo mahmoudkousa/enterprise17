@@ -303,7 +303,7 @@
                                         <field name="name">II. Retained Earnings</field>
                                         <field name="code">NO_204_209</field>
                                         <field name="foldable" eval="True"/>
-                                        <field name="aggregation_formula">NO_204.balance + NO_205_209.balance</field>
+                                        <field name="aggregation_formula">NO_204.balance + NO_205_208.balance + NO_209.balance + NO_current_profit.balance</field>
                                         <field name="children_ids">
                                             <record id="account_financial_report_NO_passive_reserves" model="account.report.line">
                                                 <field name="name">Reserves</field>
@@ -314,10 +314,47 @@
                                             </record>
                                             <record id="account_financial_report_NO_passive_share_premium_retained_equity" model="account.report.line">
                                                 <field name="name">Retained Equity</field>
-                                                <field name="code">NO_205_209</field>
+                                                <field name="code">NO_205_208</field>
                                                 <field name="groupby">account_id</field>
                                                 <field name="foldable" eval="True"/>
-                                                <field name="account_codes_formula">- 207 - 206 - 208 - 209 - 205</field>
+                                                <field name="account_codes_formula">- 207 - 206 - 208 - 205</field>
+                                            </record>
+                                            <record id="account_financial_report_NO_passive_previous_year_earnings" model="account.report.line">
+                                                <field name="name">Previous years' profit / loss</field>
+                                                <field name="code">NO_209</field>
+                                                <field name="expression_ids">
+                                                    <record id="account_financial_report_NO_passive_previous_year_earnings_accounts" model="account.report.expression">
+                                                        <field name="label">accounts</field>
+                                                        <field name="engine">account_codes</field>
+                                                        <field name="formula">-209 - 88 - 89</field>
+                                                    </record>
+                                                    <record id="account_financial_report_NO_passive_previous_year_earnings_cross_report" model="account.report.expression">
+                                                        <field name="label">cross_report</field>
+                                                        <field name="engine">aggregation</field>
+                                                        <field name="formula">NO_profit_loss.balance</field>
+                                                        <field name="subformula">cross_report</field>
+                                                        <field name="date_scope">to_beginning_of_fiscalyear</field>
+                                                    </record>
+                                                    <record id="account_financial_report_NO_passive_previous_year_earnings_balance" model="account.report.expression">
+                                                        <field name="label">balance</field>
+                                                        <field name="engine">aggregation</field>
+                                                        <field name="formula">NO_209.accounts + NO_209.cross_report</field>
+                                                    </record>
+                                                </field>
+                                            </record>
+                                            <record id="account_financial_report_NO_passive_current_year_earnings" model="account.report.line">
+                                                <field name="name">Current year's profit / loss</field>
+                                                <field name="code">NO_current_profit</field>
+                                                <field name="foldable" eval="True"/>
+                                                <field name="expression_ids">
+                                                    <record id="account_financial_report_NO_passive_current_year_earnings_balance" model="account.report.expression">
+                                                        <field name="label">balance</field>
+                                                        <field name="engine">aggregation</field>
+                                                        <field name="formula">NO_profit_loss.balance</field>
+                                                        <field name="subformula">cross_report</field>
+                                                        <field name="date_scope">from_fiscalyear</field>
+                                                    </record>
+                                                </field>
                                             </record>
                                         </field>
                                     </record>

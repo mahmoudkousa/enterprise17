@@ -18,8 +18,8 @@ class DeliveryCarrier(models.Model):
     sendcloud_public_key = fields.Char(help="Sendcloud API Integration Public key")
     sendcloud_secret_key = fields.Char(help="Sendcloud API Integration Secret key")
     sendcloud_default_package_type_id = fields.Many2one("stock.package.type", string="Default Package Type for Sendcloud", help="Some carriers require package dimensions, you can define these in a package type that you set as default")
-    sendcloud_shipping_id = fields.Many2one('sendcloud.shipping.product', store=True, compute='_compute_sendcloud_shipping_id')
-    sendcloud_return_id = fields.Many2one('sendcloud.shipping.product', store=True, compute='_compute_sendcloud_return_id')
+    sendcloud_shipping_id = fields.Many2one('sendcloud.shipping.product', store=True, compute='_compute_sendcloud_shipping_id', copy=False)
+    sendcloud_return_id = fields.Many2one('sendcloud.shipping.product', store=True, compute='_compute_sendcloud_return_id', copy=False)
     sendcloud_shipping_name = fields.Char(related='sendcloud_shipping_id.name', string="Sendcloud Shipping Product")
     sendcloud_return_name = fields.Char(related='sendcloud_return_id.name', string="Sendcloud Return Shipping Product")
     sendcloud_shipping_rules = fields.Boolean(string="Use Sendcloud shipping rules",

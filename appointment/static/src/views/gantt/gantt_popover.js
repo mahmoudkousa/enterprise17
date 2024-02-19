@@ -6,6 +6,7 @@ export class AppointmentBookingGanttPopover extends GanttPopover {
     static template = "appointment.AppointmentBookingGanttPopover";
     static props = [
         ...GanttPopover.props,
+        'appointmentTypeId',
         'markAsAttendedCallback',
         'attendedState'
     ];

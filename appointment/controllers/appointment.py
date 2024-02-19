@@ -20,6 +20,7 @@ from odoo.tools import plaintext2html, DEFAULT_SERVER_DATETIME_FORMAT as dtf
 from odoo.tools.mail import is_html_empty
 from odoo.tools.misc import babel_locale_parse, get_lang
 from odoo.addons.base.models.ir_qweb import keep_query
+from odoo.addons.base.models.res_partner import _tz_get
 from odoo.addons.http_routing.models.ir_http import unslug
 
 
@@ -108,6 +109,7 @@ class AppointmentController(http.Controller):
                 additional_domain=kwargs.get('domain')
             )
         )
+        appointment_types = appointment_types.sorted('is_published', reverse=True)
         return {
             'appointment_types': appointment_types,
             'invite_token': kwargs.get('invite_token'),
@@ -295,7 +297,7 @@ class AppointmentController(http.Controller):
         max_capacity_possible = possible_combinations[-1][1] if possible_combinations else 1
 
         return {
-            'asked_capacity': int(kwargs.get('asked_capacity', 1)),
+            'asked_capacity': int(kwargs['asked_capacity']) if kwargs.get('asked_capacity') else False,
             'available_appointments': kwargs['available_appointments'],
             'filter_appointment_type_ids': kwargs.get('filter_appointment_type_ids'),
             'filter_staff_user_ids': kwargs.get('filter_staff_user_ids'),
@@ -358,6 +360,24 @@ class AppointmentController(http.Controller):
             return appointment_type.staff_user_ids
         return appointment_type.staff_user_ids.filtered(lambda staff_user: staff_user.id in filter_staff_user_ids)
 
+    # Resource tools
+    # ------------------------------------------------------------
+
+    @http.route('/appointment/<int:appointment_type_id>/resource_avatar', type='http', auth="public")
+    def appointment_resource_avatar(self, appointment_type_id, resource_id=False, avatar_size=512):
+        """
+        Route used to bypass access rights on the appointment resource for public user.
+        Equivalent of ``appointment_staff_user_avatar()`` for appointment resource.
+        """
+        resource = request.env['appointment.resource'].sudo().browse(int(resource_id))
+        appointment_type = request.env['appointment.type'].sudo().browse(appointment_type_id)
+
+        resource = resource if appointment_type.avatars_display == 'show' and resource in appointment_type.resource_ids else request.env['appointment.resource']
+        return request.env['ir.binary']._get_image_stream_from(
+            resource,
+            field_name='avatar_%s' % (avatar_size if int(avatar_size) in [128, 256, 512, 1024, 1920] else 512),
+        ).get_response()
+
     # Tools / Data preparation
     # ------------------------------------------------------------
 
@@ -398,9 +418,9 @@ class AppointmentController(http.Controller):
 
         try:
             appointment_types.check_access_rights('read')
-            appointment_types.check_access_rule('read')
         except exceptions.AccessError:
             raise Forbidden()
+        appointment_types = appointment_types._filter_access_rules('read')
 
         if domain:
             appointment_types = appointment_types.filtered_domain(domain)
@@ -716,10 +736,6 @@ class AppointmentController(http.Controller):
 
             :returns: a dict of useful values used in the redirection to next step
         """
-        # FIXME AWA/TDE double check this and/or write some tests to ensure behavior
-        # The 'mail_notify_author' is only placed here and not in 'calendar.attendee#_send_mail_to_attendees'
-        # Because we only want to notify the author in the context of Online Appointments
-        # When creating a meeting from your own calendar in the backend, there is no need to notify yourself
         event = request.env['calendar.event'].with_context(
             mail_notify_author=True,
             mail_create_nolog=True,
@@ -761,7 +777,10 @@ class AppointmentController(http.Controller):
         """
         if appointment_type.location_id:
             return appointment_type.appointment_tz
-        return request.httprequest.cookies.get('tz', appointment_type.appointment_tz)
+        cookie = request.httprequest.cookies.get('tz')
+        if cookie and cookie in dict(_tz_get(self)):
+            return cookie
+        return appointment_type.appointment_tz
 
     # ------------------------------------------------------------
     # APPOINTMENT TYPE JSON DATA

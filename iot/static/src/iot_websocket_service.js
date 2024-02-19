@@ -36,7 +36,11 @@ export class IotWebsocket {
     }
         
         setJobInLocalStorage(value, args) {
-            browser.localStorage.setItem(`print_report_number_${args[0]}`, JSON.stringify(value));
+            let links = JSON.parse(browser.localStorage.getItem("odoo-iot-linked_reports"))
+            if (links === null || typeof links !== 'object')
+                links = {}
+            links[args[0]] = value
+            browser.localStorage.setItem("odoo-iot-linked_reports", JSON.stringify(links))
             this.addJob(value, args);
         }
     }

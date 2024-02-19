@@ -1,16 +1,24 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import logging
+
 from datetime import datetime, date, time
 from dateutil.relativedelta import relativedelta
 
-from odoo.tests import new_test_user, tagged
+from odoo.tests import new_test_user, tagged, loaded_demo_data
 from .test_ui_common import TestUiCommon
+
+_logger = logging.getLogger(__name__)
+
 
 @tagged('-at_install', 'post_install')
 class TestUi(TestUiCommon):
 
     def test_01_ui(self):
+        if not loaded_demo_data(self.env):
+            _logger.warning("This test relies on demo data. To be rewritten independently of demo data for accurate and reliable results.")
+            return
         self.start_tour("/", 'planning_test_tour', login='admin')
 
     def test_shift_switch_ui(self):

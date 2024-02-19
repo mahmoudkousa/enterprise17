@@ -47,19 +47,15 @@
         <span t-elif="subscription.lastRequestStatus === 'error'" class="oe_instance_register oe_instance_error">Something went wrong while registering your database. You can try again or contact <a class="alert-link text-decoration-underline" href="https://www.odoo.com/help" target="_blank">Odoo Support</a>.</span>
         <span t-elif="subscription.lastRequestStatus === 'link'" class="oe_instance_register oe_database_already_linked">
             Your subscription is already linked to a database.<br/>
-            To unlink it you can either:<br/>
-            <ul class="text-start d-inline-block">
-                <li>Login to your Odoo.com dashboard then unlink your previous database: <a t-att-href="subscription.linkedSubscriptionUrl"> <t t-esc="subscription.linkedSubscriptionUrl"/></a></li>
-                <li t-if="subscription.linkedEmail" class="oe_contract_email_block">
-                    <a href="#" class="oe_contract_send_mail alert-link text-decoration-underline" t-on-click.prevent="() => subscription.sendUnlinkEmail()">Click here to send an email</a> to the subscription owner (email: <strong t-esc="subscription.linkedEmail"/>) with the instructions to follow
-                    <p t-if="subscription.mailDeliveryStatus === 'ongoing'">Sending the instructions by email ...</p>
-                    <p t-elif="subscription.mailDeliveryStatus === 'success'">The instructions to unlink your subscription from the previous database(s) have been sent</p>
-                    <p t-elif="subscription.mailDeliveryStatus === 'fail'">Unable to send the instructions by email, please contact the <a href="https://www.odoo.com/help" target="_blank">Odoo Support</a><br/>
-                        Error reason: <t t-esc="subscription.mailDeliveryStatusError"/>
-                    </p>
-                </li>
-                <li t-else="">Contact your sales representative to help you to unlink your previous database</li>
-            </ul>
+            <span t-if="subscription.linkedEmail" class="oe_contract_email_block">
+                <a href="#" class="oe_contract_send_mail alert-link text-decoration-underline" t-on-click.prevent="() => subscription.sendUnlinkEmail()">Send an email</a> to the subscription owner to confirm the change, enter a new code or <a class="oe_instance_buy" href="#" t-on-click.prevent="() => subscription.buy()">buy a subscription.</a>
+                <p t-if="subscription.mailDeliveryStatus === 'ongoing'">Sending the instructions by email ...</p>
+                <p t-elif="subscription.mailDeliveryStatus === 'success'">The instructions to unlink your subscription from the previous database(s) have been sent</p>
+                <p t-elif="subscription.mailDeliveryStatus === 'fail'">Unable to send the instructions by email, please contact the <a href="https://www.odoo.com/help" target="_blank">Odoo Support</a><br/>
+                    Error reason: <t t-esc="subscription.mailDeliveryStatusError"/>
+                </p>
+            </span>
+            <span t-else="">Contact your sales representative to help you to unlink your previous database</span>
         </span>
         <Transition visible="state.displayRegisterForm and subscription.lastRequestStatus !== 'success'" t-slot-scope="transition" leaveDuration="400" name="'o-vertical-slide'">
             <form class="oe_instance_register oe_instance_register_form d-flex flex-wrap align-items-center overflow-hidden justify-content-center mt-4" t-att-class="transition.className">

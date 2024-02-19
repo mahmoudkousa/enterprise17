@@ -28,7 +28,7 @@
         <field name="model">product.product</field>
         <field name="mode">primary</field>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='name']" positon="before">
+            <xpath expr="//filter[@name='favorites']" position="before">
                 <filter string="Added Products" name="fsm_quantity" domain="[('fsm_quantity', '>', 0)]"/>
                 <separator/>
             </xpath>

@@ -69,12 +69,12 @@ export class AbstractMacro {
                     if (!breadcrumbEl) {
                         return null;
                     }
+                    return breadcrumbEl;
+                },
+                action: async () => {
                     try {
                         // Try to restore the target controller.
-                        this.services.action.restore(this.targetBreadcrumbs.at(-1).jsId);
-                        // Return any breadcrumb item to allow the macro to
-                        // advance.
-                        return breadcrumbEl;
+                        await this.services.action.restore(this.targetBreadcrumbs.at(-1).jsId);
                     } catch {
                         // If the controller is unreachable, abort the macro.
                         throw new KnowledgeMacroError(
@@ -82,11 +82,16 @@ export class AbstractMacro {
                         );
                     }
                 },
-                action: () => {},
             }, {
                 // Start the requested macro when the current breadcrumbs
                 // match the target Form view.
-                trigger: this.getFirstVisibleElement.bind(this, '.o_breadcrumb .o_last_breadcrumb_item'),
+                trigger: () => {
+                    const controllerBreadcrumbs = this.services.action.currentController.config.breadcrumbs;
+                    if (this.targetBreadcrumbs.at(-1).jsId === controllerBreadcrumbs.at(-1)?.jsId) {
+                        return this.getFirstVisibleElement.bind(this, '.o_breadcrumb .o_last_breadcrumb_item');
+                    }
+                    return null;
+                },
                 action: this.engine.activate.bind(this.engine, macroAction),
             }],
         };
@@ -138,7 +143,7 @@ export class AbstractMacro {
      */
     validatePage() {
         const controllerBreadcrumbs = this.services.action.currentController.config.breadcrumbs;
-        if (JSON.stringify(this.targetBreadcrumbs) !== JSON.stringify(controllerBreadcrumbs)) {
+        if (this.targetBreadcrumbs.at(-1).jsId !== controllerBreadcrumbs.at(-1)?.jsId) {
             throw new KnowledgeMacroError(
                 _t('The record that this macro is targeting could not be found.')
             );

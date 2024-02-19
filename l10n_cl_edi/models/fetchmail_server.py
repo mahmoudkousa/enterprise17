@@ -180,25 +180,30 @@ class FetchmailServer(models.Model):
             issuer_vat = self._get_dte_receptor_vat(dte)
             partner = self._get_partner(issuer_vat, company_id)
             if not partner:
-                _logger.error('Partner for incoming customer claim has not been found for %s' % issuer_vat)
+                _logger.warning('Partner for incoming customer claim has not been found for %s', issuer_vat)
                 continue
             document_type_code = self._get_document_type_from_xml(dte)
             document_type = self.env['l10n_latam.document.type'].search(
                 [('code', '=', document_type_code), ('country_id.code', '=', 'CL')], limit=1)
-            zfill = self._get_doc_number_padding(company_id)
-            name = '{} {}'.format(document_type.doc_code_prefix, document_number.zfill(zfill))
             move = self.env['account.move'].sudo().search([
                 ('partner_id', '=', partner.id),
                 ('move_type', 'in', ['out_invoice', 'out_refund']),
                 ('l10n_latam_document_type_id', '=', document_type.id),
                 ('l10n_cl_dte_status', '=', 'accepted'),
-                ('name', '=', name),
-                ('company_id', '=', company_id)
-            ], limit=1)
+                ('name', '=ilike', f'{document_type.doc_code_prefix}%{document_number}'),
+                ('company_id', '=', company_id),
+            ]).filtered(lambda m: m.name.split()[1].lstrip('0') == document_number)
+
             if not move:
-                _logger.error('Move not found with partner: %s, name: %s, l10n_latam_document_type: %s, '
-                              'company_id: %s' % (partner.id, name, document_type.id, company_id))
+                _logger.warning('Move not found with partner: %s, document_number: %s, l10n_latam_document_type: %s, '
+                              'company_id: %s', partner.id, document_number, document_type.id, company_id)
                 continue
+
+            if len(move) > 1:
+                _logger.warning('Multiple moves found for partner: %s, document_number: %s, l10n_latam_document_type: %s, '
+                            'company_id: %s. Expected only one move.', partner.id, document_number, document_type.id, company_id)
+                continue
+
             status = {'incoming_acknowledge': 'received', 'incoming_commercial_accept': 'accepted'}.get(
                 origin_type, 'claimed')
             move.write({'l10n_cl_dte_acceptation_status': status})
@@ -553,7 +558,7 @@ class FetchmailServer(models.Model):
             if (dte_xml.findtext('.//ns0:TasaIVA', namespaces=XML_NAMESPACES) is not None and
                     dte_line.findtext('.//ns0:IndExe', namespaces=XML_NAMESPACES) is None):
                 values['default_tax'] = True
-                values['taxes'] = self._get_withholding_taxes(company_id, dte_line)
+                values['taxes'] = set(default_purchase_tax) | self._get_withholding_taxes(company_id, dte_line)
             if gross_amount:
                 # in case the tag MntBruto is included in the IdDoc section, and there are not
                 # additional taxes (withholdings)

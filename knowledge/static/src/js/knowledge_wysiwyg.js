@@ -1,5 +1,6 @@
 /** @odoo-module */
 
+import { _t } from "@web/core/l10n/translation";
 import { isEmptyBlock } from "@web_editor/js/editor/odoo-editor/src/OdooEditor";
 import { Wysiwyg } from "@web_editor/js/wysiwyg/wysiwyg";
 import { useBus } from '@web/core/utils/hooks';
@@ -9,6 +10,7 @@ import {
     getSelectedNodes,
     closestElement,
 } from "@web_editor/js/editor/odoo-editor/src/utils/utils";
+import { ChatGPTPromptDialog } from '@web_editor/js/wysiwyg/widgets/chatgpt_prompt_dialog';
 import { useRef } from '@odoo/owl';
 
 /**
@@ -26,6 +28,35 @@ export class KnowledgeWysiwyg extends Wysiwyg {
         super.setup(...arguments);
         useBus(this.env.bus, 'KNOWLEDGE_WYSIWYG:HISTORY_STEP', () => this.odooEditor.historyStep());
         this.knowledgeCommentsToolbarBtnRef = useRef('knowledgeCommentsToolbarBtn');
+    }
+
+    /**
+     * This function enables the user to generate an article using ChatGPT.
+     * We search inside of the generated content if we have a title.
+     * If we find one then we put it inside of an H1 in order to have it as the article's
+     * title.
+     * Otherwise we put a blank H1 in the generated content so that the user can add
+     * one later.
+     */
+    generateArticle() {
+        this.env.services.dialog.add(ChatGPTPromptDialog, {
+            initialPrompt: _t('Write an article about'),
+            insert: (content) => {
+                const generatedContentTitle = content.querySelector('h1,h2');
+                const articleTitle = document.createElement('h1');
+                if (generatedContentTitle && generatedContentTitle.tagName !== 'H1') {
+                    articleTitle.innerText = generatedContentTitle.innerText;
+                    generatedContentTitle.replaceWith(articleTitle);
+                } else if (!generatedContentTitle) {
+                    articleTitle.innerHTML = '<br>';
+                    content.prepend(articleTitle);
+                }
+
+                const divElement = document.createElement('div');
+                divElement.appendChild(content);
+                this.odooEditor.resetContent(divElement.innerHTML);
+            }
+        });
     }
 
     /**

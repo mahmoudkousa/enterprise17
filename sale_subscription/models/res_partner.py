@@ -29,7 +29,7 @@ class ResPartner(models.Model):
         all_partners_subquery = self.with_context(active_test=False)._search([('id', 'child_of', self.ids)])
 
         subscription_data = self.env['sale.order']._read_group(
-            domain=[('partner_id', 'in', all_partners_subquery), ('is_subscription', '=', 'True'), ('subscription_state', 'in', ['3_progress', '6_churn'])],
+            domain=[('partner_id', 'in', all_partners_subquery), ('is_subscription', '=', 'True'), ('subscription_state', 'in', ['3_progress', '6_churn', '4_paused'])],
             groupby=['partner_id'], aggregates=['__count'],
         )
 
@@ -46,7 +46,7 @@ class ResPartner(models.Model):
             "type": "ir.actions.act_window",
             "res_model": "sale.order",
             "name": _("Partner Subscription"),
-            "domain": [('is_subscription', '=', True), ('subscription_state', 'in', ['3_progress', '6_churn'])],
+            "domain": [('is_subscription', '=', True), ('subscription_state', 'in', ['3_progress', '6_churn', '4_paused'])],
             "context": {
                 'search_default_partner_id': [self.id],
                 'default_partner_id': self.id,
@@ -55,7 +55,7 @@ class ResPartner(models.Model):
         all_partners = self.with_context(active_test=False).search([('id', 'child_of', self.ids)])
 
         subscription_ids = self.env['sale.order'].search_read(
-            domain=[('partner_id', 'in', all_partners.ids), ('is_subscription', '=', 'True'), ('subscription_state', 'in', ['3_progress', '6_churn'])],
+            domain=[('partner_id', 'in', all_partners.ids), ('is_subscription', '=', 'True'), ('subscription_state', 'in', ['3_progress', '6_churn', '4_paused'])],
             fields=['id']
         )
         if len(subscription_ids) == 1:

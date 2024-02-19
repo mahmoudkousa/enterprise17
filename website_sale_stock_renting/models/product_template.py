@@ -24,8 +24,6 @@ class ProductTemplate(models.Model):
 
         It will return true if any variant has an available stock.
         """
-        self = self.with_context(from_date=from_date, to_date=to_date, warehouse_id=warehouse_id)
-
         if to_date < from_date:
             return self.filtered(lambda p: not p.rent_ok)
 
@@ -36,8 +34,15 @@ class ProductTemplate(models.Model):
             else:
                 products_finite_qty |= product
 
-        # Check only for variants which quantity on hand in the date interval is positive or some had been rented out
-        variants_to_check = products_finite_qty.product_variant_ids.filtered(lambda p: bool(p.qty_available > 0 or p.qty_in_rent > 0))
+        if not products_finite_qty:
+            return products_infinite_qty
+
+        # Prefetch qty_available for all variants
+        variants_to_check = products_finite_qty.with_context(
+            from_date=from_date,
+            to_date=to_date,
+            warehouse=warehouse_id,
+        ).product_variant_ids.filtered(lambda p: bool(p.qty_available > 0 or p.qty_in_rent > 0))
         templates_with_available_qty = self.env['product.template']
         if variants_to_check:
             sols = self.env['sale.order.line'].search(
@@ -49,8 +54,10 @@ class ProductTemplate(models.Model):
                     ('reservation_begin', '<', to_date),
                     # We're in sudo, need to restrict the search to the SOL of the website company
                     ('company_id', '=', self.env.company.id),
+                    # Only load SOLs targeting the same warehouse whose stock we're considering
+                    ('order_id.warehouse_id', '=', warehouse_id),
                 ],
-                order="reservation_begin asc"
+                order='reservation_begin asc'
             )
             # Group SOL by product_id
             sol_by_variant = defaultdict(lambda: self.env['sale.order.line'])

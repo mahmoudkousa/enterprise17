@@ -167,8 +167,10 @@ function domHelpFieldSteps () {
             trigger: '.o_knowledge_behavior_type_embedded_view .o_kanban_renderer',
             run: () => {}
         }, { // open the view
-            trigger: '.o_knowledge_toolbar button:contains(Open)',
-            run: 'click'
+            trigger: '.o_control_panel_breadcrumbs_actions .dropdown-toggle',
+            run: 'click',
+        }, {
+            trigger: '.dropdown-item:contains(Open)'
         }, { // verify that the help message is displayed
             trigger: '.o_action_manager > .o_view_controller.o_kanban_view .o_nocontent_help:contains("Test help message")',
             run: () => {}
@@ -211,8 +213,10 @@ function domHelpFieldSteps () {
             trigger: '.o_knowledge_behavior_type_embedded_view .o_kanban_renderer',
             run: () => {},
         }, { // open the view
-            trigger: '.o_knowledge_toolbar button:contains(Open)',
-            run: 'click'
+            trigger: '.o_control_panel_breadcrumbs_actions .dropdown-toggle',
+            run: 'click',
+        }, {
+            trigger: '.dropdown-item:contains(Open)'
         }, { // verify that the default help message is displayed
             trigger: '.o_action_manager > .o_view_controller.o_kanban_view .o_nocontent_help:contains("No data to display")',
             run: () => {}

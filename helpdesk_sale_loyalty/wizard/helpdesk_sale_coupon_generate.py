@@ -25,7 +25,7 @@ class HelpdeskSaleCouponGenerate(models.TransientModel):
 
     def action_coupon_generate_send(self):
         self.ensure_one()
-        coupon = self.env['loyalty.card'].sudo().create({
+        coupon = self.env['loyalty.card'].with_context(action_no_send_mail=True).sudo().create({
             'partner_id': self.ticket_id.partner_id.id,
             'program_id': self.program.id,
             'points': self.points_granted,

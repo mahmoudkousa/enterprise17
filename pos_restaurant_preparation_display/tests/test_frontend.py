@@ -16,7 +16,7 @@ class TestUi(TestFrontend):
 
         # open a session, the /pos/ui controller will redirect to it
         self.pos_config.printer_ids.unlink()
-        self.pos_config.with_user(self.env.ref('base.user_demo')).open_ui()
+        self.pos_config.with_user(self.user_demo).open_ui()
         self.start_tour("/pos/ui?config_id=%d" % self.pos_config.id, 'PreparationDisplayTourResto', login="demo")
 
         # Order 1 should have 2 preparation orderlines (Coca-Cola and Water)

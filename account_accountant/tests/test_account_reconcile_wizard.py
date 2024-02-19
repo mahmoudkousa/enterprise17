@@ -463,3 +463,37 @@ class TestAccountReconcileWizard(AccountTestInvoicingCommon):
              'balance': 50.0, 'amount_currency': 50.0, 'currency_id': self.company_currency.id},
         ]
         self.assertWizardReconcileValues(line_1 + line_2, wizard_input_values, expected_values, expected_transfer_values=expected_transfer_values)
+
+    def test_write_off_on_same_account(self):
+        """ When creating a write-off in the same account than the one used by the lines to reconcile,
+        the lines and the write-off should be fully reconciled.
+        """
+        line_1 = self.create_line_for_reconciliation(1000.0, 1000.0, self.company_currency, '2016-01-01')
+        line_2 = self.create_line_for_reconciliation(2000.0, 2000.0, self.company_currency, '2016-01-01')
+        wizard_input_values = {
+            'journal_id': self.misc_journal.id,
+            'account_id': self.receivable_account.id,
+            'label': 'Write-Off Test Label',
+            'allow_partials': False,
+            'date': self.test_date,
+        }
+        write_off_expected_values = [
+            {'account_id': self.receivable_account.id, 'name': 'Write-Off', 'balance': -3000.0},
+            {'account_id': self.receivable_account.id, 'name': 'Write-Off Test Label', 'balance': 3000.0},
+        ]
+        self.assertWizardReconcileValues(line_1 + line_2, wizard_input_values, write_off_expected_values)
+
+    def test_reconcile_exchange_diff_foreign_currency_full(self):
+        """ When reconciling exchange_diff with amount_residual_currency = 0 we need to reconcile in company_currency.
+        """
+        exchange_gain_account = self.company_data['company'].income_currency_exchange_account_id
+        exchange_gain_account.reconcile = True
+        line_1 = self.create_line_for_reconciliation(100.0, 0.0, self.foreign_currency, '2016-01-01')
+        line_2 = self.create_line_for_reconciliation(-100.0, 0.0, self.foreign_currency, '2016-01-01', account_1=exchange_gain_account)
+        lines = line_1 + line_2
+        lines.action_reconcile()
+        self.assertTrue(lines.full_reconcile_id)
+        self.assertRecordValues(
+            lines,
+            [{'amount_residual': 0.0, 'amount_residual_currency': 0.0, 'reconciled': True}] * len(lines),
+        )

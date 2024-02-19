@@ -239,7 +239,7 @@ class AccountXmlPolizasWizard(TestMxEdiCommon, TestAccountReportsCommon):
                 'price_unit': 2000.0,
                 'quantity': 5,
                 'discount': 20.0,
-                'tax_ids': [(6, 0, (self.tax_16 + self.tax_10_negative).ids)],
+                'tax_ids': [(6, 0, (self.tax_16 + self.tax_10_ret_isr).ids)],
             })],
         })
 
@@ -269,6 +269,9 @@ class AccountXmlPolizasWizard(TestMxEdiCommon, TestAccountReportsCommon):
                       </PLZ:Transaccion>
                 </PLZ:Poliza>
                 <PLZ:Poliza Fecha="2017-01-01" Concepto="Customer Invoices" NumUnIdenPol="INV/2017/00001">
+                    <PLZ:Transaccion Concepto="Customer Invoices - 10% WH L I" DesCta="___ignore___" NumCta="216.03.01" Haber="0.00" Debe="800.00">
+                        <PLZ:CompNal UUID_CFDI="AAAAAAAA-ABCD-ABCD-ABCD-AAAAAAAAAAAA" RFC="XEXX010101000" MontoTotal="800.00"></PLZ:CompNal>
+                      </PLZ:Transaccion>
                     <PLZ:Transaccion Concepto="Customer Invoices - 16%" DesCta="___ignore___" NumCta="208.01.01" Haber="1280.00" Debe="0.00">
                         <PLZ:CompNal UUID_CFDI="AAAAAAAA-ABCD-ABCD-ABCD-AAAAAAAAAAAA" RFC="XEXX010101000" MontoTotal="-1280.00"></PLZ:CompNal>
                       </PLZ:Transaccion>
@@ -277,9 +280,6 @@ class AccountXmlPolizasWizard(TestMxEdiCommon, TestAccountReportsCommon):
                       </PLZ:Transaccion>
                     <PLZ:Transaccion Concepto="Customer Invoices - [product_mx] product_mx" DesCta="___ignore___" NumCta="401.01.01" Haber="8000.00" Debe="0.00">
                         <PLZ:CompNal UUID_CFDI="AAAAAAAA-ABCD-ABCD-ABCD-AAAAAAAAAAAA" RFC="XEXX010101000" MontoTotal="-8000.00"></PLZ:CompNal>
-                      </PLZ:Transaccion>
-                    <PLZ:Transaccion Concepto="Customer Invoices - tax_10_negative" DesCta="___ignore___" NumCta="401.01.01" Haber="0.00" Debe="800.00">
-                        <PLZ:CompNal UUID_CFDI="AAAAAAAA-ABCD-ABCD-ABCD-AAAAAAAAAAAA" RFC="XEXX010101000" MontoTotal="800.00"></PLZ:CompNal>
                       </PLZ:Transaccion>
                 </PLZ:Poliza>
             </PLZ:Polizas>
@@ -383,7 +383,7 @@ class AccountXmlPolizasWizard(TestMxEdiCommon, TestAccountReportsCommon):
                 'product_id': self.product.id,
                 'price_unit': 1000.0,
                 'quantity': 5,
-                'tax_ids': [(6, 0, (self.tax_16 + self.tax_10_negative).ids)],
+                'tax_ids': [(6, 0, (self.tax_16 + self.tax_10_ret_isr).ids)],
             })],
         })
 
@@ -422,6 +422,9 @@ class AccountXmlPolizasWizard(TestMxEdiCommon, TestAccountReportsCommon):
                       </PLZ:Transaccion>
                 </PLZ:Poliza>
                 <PLZ:Poliza Fecha="2017-01-01" Concepto="Customer Invoices" NumUnIdenPol="INV/2017/00001">
+                    <PLZ:Transaccion Concepto="Customer Invoices - 10% WH L I" DesCta="___ignore___" NumCta="216.03.01" Haber="0.00" Debe="10000.00">
+                        <PLZ:CompNal UUID_CFDI="AAAAAAAA-ABCD-ABCD-ABCD-AAAAAAAAAAAA" RFC="XEXX010101000" MontoTotal="500.00" Moneda="EUR" TipCamb="20.00000"/>
+                      </PLZ:Transaccion>
                     <PLZ:Transaccion Concepto="Customer Invoices - 16%" DesCta="___ignore___" NumCta="208.01.01" Haber="16000.00" Debe="0.00">
                         <PLZ:CompNal UUID_CFDI="AAAAAAAA-ABCD-ABCD-ABCD-AAAAAAAAAAAA" RFC="XEXX010101000" MontoTotal="-800.00" Moneda="EUR" TipCamb="20.00000"/>
                       </PLZ:Transaccion>
@@ -430,9 +433,6 @@ class AccountXmlPolizasWizard(TestMxEdiCommon, TestAccountReportsCommon):
                       </PLZ:Transaccion>
                     <PLZ:Transaccion Concepto="Customer Invoices - [product_mx] product_mx" DesCta="___ignore___" NumCta="401.01.01" Haber="100000.00" Debe="0.00">
                         <PLZ:CompNal UUID_CFDI="AAAAAAAA-ABCD-ABCD-ABCD-AAAAAAAAAAAA" RFC="XEXX010101000" MontoTotal="-5000.00" Moneda="EUR" TipCamb="20.00000"/>
-                      </PLZ:Transaccion>
-                    <PLZ:Transaccion Concepto="Customer Invoices - tax_10_negative" DesCta="___ignore___" NumCta="401.01.01" Haber="0.00" Debe="10000.00">
-                        <PLZ:CompNal UUID_CFDI="AAAAAAAA-ABCD-ABCD-ABCD-AAAAAAAAAAAA" RFC="XEXX010101000" MontoTotal="500.00" Moneda="EUR" TipCamb="20.00000"/>
                       </PLZ:Transaccion>
                 </PLZ:Poliza>
                 <PLZ:Poliza Fecha="2017-01-02" Concepto="Bank" NumUnIdenPol="PBNK1/2017/00001">

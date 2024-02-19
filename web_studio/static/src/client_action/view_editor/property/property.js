@@ -26,6 +26,7 @@ export class Property extends Component {
             optional: true,
         },
         tooltip: { type: String, optional: true },
+        inputAttributes: { type: Object, optional: true },
     };
 
     setup() {

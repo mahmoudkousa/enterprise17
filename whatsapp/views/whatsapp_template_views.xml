@@ -17,11 +17,12 @@
                         groups="whatsapp.group_whatsapp_admin"/>
                     <button name="button_create_action" string="Allow Multi"
                         class="btn btn-primary" type="object"
-                        invisible="has_action"
+                        invisible="has_action or status != 'approved'"
                         groups="whatsapp.group_whatsapp_admin"/>
                     <button name="button_delete_action" string="Disallow Multi"
-                        type="object" invisible="not has_action"
+                        type="object"
                         groups="whatsapp.group_whatsapp_admin"
+                        invisible="not has_action or status != 'approved'"
                         confirm="There might be other templates that still need the Multi"/>
                     <button name="button_sync_template" string="Sync Template"
                         type="object"
@@ -39,21 +40,21 @@
                         </button>
                     </div>
                     <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
-                    <label for="name"/>
-                    <h1>
-                        <field name="name" required="1"/>
-                    </h1>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" required="1"/></h1>
+                    </div>
                     <group>
                         <group>
                             <field name="active" invisible="1"/>
-                            <field name="model" invisible="1"/>
                             <field name="wa_account_id"
                                 groups="whatsapp.group_whatsapp_admin"
                                 readonly="status != 'draft'"/>
-                            <field name="model_id" required="1"/>
+                            <field name="model" invisible="1"/>
+                            <field name="model_id"/>
                             <field name="phone_field"
                                 widget="DynamicModelFieldSelectorChar"
-                                options="{'model': 'model' or 'res.partner'}"/>
+                                options="{'model': 'model'}"/>
                             <field name="template_type" readonly="status != 'draft'"/>
                             <field name="allowed_user_ids"
                                 widget="many2many_tags_avatar"
@@ -204,6 +205,7 @@
                 <search string="Templates">
                     <field name="name"/>
                     <field name="model_id"/>
+                    <field name="model" invisible="1"/>
                     <separator/>
                     <filter string="My Templates" name="my" domain="[('create_uid', '=', uid)]"/>
                     <separator/>

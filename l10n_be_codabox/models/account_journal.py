@@ -16,7 +16,7 @@ class AccountJournal(models.Model):
 
     def __get_bank_statements_available_sources(self):
         rslt = super().__get_bank_statements_available_sources()
-        rslt.append(("l10n_be_codabox", _("Codabox Synchronization")))
+        rslt.append(("l10n_be_codabox", _("CodaBox Synchronization")))
         return rslt
 
     def _fill_bank_cash_dashboard_data(self, dashboard_data):
@@ -84,7 +84,7 @@ class AccountJournal(models.Model):
             raise UserError(get_error_msg({"type": "error_codabox_not_configured"}))
 
         # Fetch last bank statement date for each journal, and take the oldest one as from_date
-        # for Codabox. If any Codabox journal has no bank statement, take 3 months ago as from_date
+        # for CodaBox. If any CodaBox journal has no bank statement, take 3 months ago as from_date
         latest_bank_stmt_dates = []
         codabox_journals = self.search([
             ("bank_statements_source", "=", "l10n_be_codabox"),
@@ -138,7 +138,7 @@ class AccountJournal(models.Model):
         if not self.company_id.vat or not self.company_id.l10n_be_codabox_is_connected:
             raise UserError(get_error_msg({"type": "error_codabox_not_configured"}))
         if self != self.company_id.l10n_be_codabox_soda_journal:
-            raise UserError(_("This journal is not configured as the Codabox SODA journal in the Settings"))
+            raise UserError(_("This journal is not configured as the CodaBox SODA journal in the Settings"))
 
         session = requests.Session()
         last_soda_date = self.env["account.move"].search([

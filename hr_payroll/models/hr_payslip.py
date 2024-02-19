@@ -21,6 +21,13 @@ from odoo.tools.safe_eval import safe_eval
 _logger = logging.getLogger(__name__)
 
 
+class DefaultDictPayroll(defaultdict):
+    def get(self, key, default=None):
+        if key not in self and default is not None:
+            self[key] = default
+        return self[key]
+
+
 class HrPayslip(models.Model):
     _name = 'hr.payslip'
     _description = 'Pay Slip'
@@ -770,14 +777,14 @@ class HrPayslip(models.Model):
         localdict = {
             **self._get_base_local_dict(),
             **{
-                'categories': defaultdict(lambda: 0),
-                'rules': defaultdict(lambda: dict(total=0, amount=0, quantity=0)),
+                'categories': DefaultDictPayroll(lambda: 0),
+                'rules': DefaultDictPayroll(lambda: dict(total=0, amount=0, quantity=0)),
                 'payslip': self,
                 'worked_days': {line.code: line for line in self.worked_days_line_ids if line.code},
                 'inputs': {line.code: line for line in self.input_line_ids if line.code},
                 'employee': self.employee_id,
                 'contract': self.contract_id,
-                'result_rules': defaultdict(lambda: dict(total=0, amount=0, quantity=0, rate=0)),
+                'result_rules': DefaultDictPayroll(lambda: dict(total=0, amount=0, quantity=0, rate=0)),
                 'same_type_input_lines': same_type_input_lines,
             }
         }
@@ -839,7 +846,7 @@ class HrPayslip(models.Model):
                     context = {'lang': employee_lang}
                     if rule.code in localdict['same_type_input_lines']:
                         for multi_line_rule in localdict['same_type_input_lines'][rule.code]:
-                            localdict['inputs'].dict[rule.code] = multi_line_rule
+                            localdict['inputs'][rule.code] = multi_line_rule
                             amount, qty, rate = rule._compute_rule(localdict)
                             tot_rule = amount * qty * rate / 100.0
                             localdict = rule.category_id._sum_salary_rule_category(localdict,
@@ -1025,6 +1032,9 @@ class HrPayslip(models.Model):
             ('date_start', '>=', generate_from),
             ('contract_id', 'in', self.contract_id.ids),
         ])
+        work_entries_by_contract = defaultdict(lambda: self.env['hr.work.entry'])
+        for work_entry in work_entries:
+            work_entries_by_contract[work_entry.contract_id.id] += work_entry
 
         for slip in valid_slips:
             if not slip.struct_id.use_worked_day_lines:
@@ -1035,8 +1045,7 @@ class HrPayslip(models.Model):
             utc = pytz.timezone('UTC')
             date_from = slip_tz.localize(datetime.combine(slip.date_from, time.min)).astimezone(utc).replace(tzinfo=None)
             date_to = slip_tz.localize(datetime.combine(slip.date_to, time.max)).astimezone(utc).replace(tzinfo=None)
-            payslip_work_entries = work_entries.filtered_domain([
-                ('contract_id', '=', slip.contract_id.id),
+            payslip_work_entries = work_entries_by_contract[slip.contract_id].filtered_domain([
                 ('date_stop', '<=', date_to),
                 ('date_start', '>=', date_from),
             ])
@@ -1142,7 +1151,7 @@ class HrPayslip(models.Model):
     @api.model
     def get_views(self, views, options=None):
         res = super().get_views(views, options)
-        if options.get('toolbar'):
+        if options and options.get('toolbar'):
             for view_type in res['views']:
                 res['views'][view_type]['toolbar'].pop('print', None)
         return res
@@ -1300,9 +1309,10 @@ class HrPayslip(models.Model):
         ])
         today = fields.Date.today()
         for employee in all_employees:
-            if employee.contract_id and employee.contract_id.date_end and employee.contract_id.date_end < today:
+            contract = employee.contract_id.sudo()
+            if contract and contract.date_end and contract.date_end < today:
                 employees_without_contracts += employee
-            elif not employee.contract_id:
+            elif not contract:
                 existing_draft_contract = self.env['hr.contract'].search([
                     ('employee_id', '=', employee.id),
                     ('company_id', '=', employee.company_id.id),
@@ -1785,7 +1795,7 @@ class HrPayslip(models.Model):
 
     @api.model
     def _get_dashboard_default_sections(self):
-        return ['actions', 'batches', 'stats']
+        return ['batches', 'stats']
 
     @api.model
     def _get_dashboard_batch_fields(self):
@@ -1798,16 +1808,6 @@ class HrPayslip(models.Model):
         if sections is None:
             sections = self._get_dashboard_default_sections()
         result = {}
-        if 'actions' in sections:
-            # 'actions': -> Array of the different actions and their properties [
-            #     {
-            #         'string' -> Title for the line
-            #         'count' -> Amount to display after the line
-            #         'action' -> What to execute upon clicking the line
-            #     }
-            # ]
-            # All actions can be either a xml_id or a dictionnary
-            result['actions'] = self._get_dashboard_warnings()
         if 'batches' in sections:
             # Batches are loaded for the last 3 months with batches, for example if there are no batches for
             # the summer and september is loaded, we want to get september, june, may.

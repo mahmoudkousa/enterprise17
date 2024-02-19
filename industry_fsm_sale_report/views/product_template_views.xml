@@ -11,7 +11,7 @@
                     <label for='worksheet_template_id'/>
                     <span class='fa fa-lg fa-building-o fa-fw' title="Values set here are company-specific." groups="base.group_multi_company"/>
                 </div>
-                <field name="worksheet_template_id" invisible="not allow_worksheets or service_tracking not in ['task_global_project', 'task_new_project']" nolabel="1"/>
+                <field name="worksheet_template_id" invisible="not allow_worksheets or service_tracking not in ['task_global_project', 'task_new_project']" nolabel="1" context="{'default_res_model': 'project.task'}"/>
             </field>
         </field>
     </record>

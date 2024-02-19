@@ -1,6 +1,5 @@
 /** @odoo-module **/
 
-import { _t } from "@web/core/l10n/translation";
 import { deserializeDateTime, serializeDateTime } from "@web/core/l10n/dates";
 import { GanttModel } from "@web_gantt/gantt_model";
 import { formatPercentage } from "@web/views/fields/formatters";
@@ -59,12 +58,6 @@ export class MRPWorkorderGanttModel extends GanttModel {
         super._addProgressBarInfo(...arguments);
         for (const row of rows) {
             if (row.progressBar) {
-                if (row.progressBar.value_formatted) {
-                    row.progressBar.value_formatted += _t(" h");
-                }
-                if (row.progressBar.max_value_formatted) {
-                    row.progressBar.max_value_formatted += _t(" h");
-                }
                 row.progressBar.ratio_formatted = formatPercentage(row.progressBar.ratio / 100);
             }
         }

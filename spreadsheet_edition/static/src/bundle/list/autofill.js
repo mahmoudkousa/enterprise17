@@ -14,11 +14,12 @@ autofillRulesRegistry.add("autofill_list", {
     condition: (cell) =>
         cell &&
         cell.isFormula &&
-        getNumberOfListFormulas(cell.content) === 1 &&
+        getNumberOfListFormulas(cell.compiledFormula.tokens) === 1 &&
         !containsReferences(cell),
     generateRule: (cell, cells) => {
         const increment = cells.filter(
-            (cell) => cell && cell.isFormula && getNumberOfListFormulas(cell.content) === 1
+            (cell) =>
+                cell && cell.isFormula && getNumberOfListFormulas(cell.compiledFormula.tokens) === 1
         ).length;
         return { type: "LIST_UPDATER", increment, current: 0 };
     },
@@ -51,11 +52,7 @@ autofillModifiersRegistry.add("LIST_UPDATER", {
                 isColumn = true;
                 steps = rule.current;
         }
-        const content = getters.getNextListValue(
-            getters.getFormulaCellContent(data.sheetId, data.cell),
-            isColumn,
-            steps
-        );
+        const content = getters.getNextListValue(data.cell.content, isColumn, steps);
         let tooltip = {
             props: {
                 content,

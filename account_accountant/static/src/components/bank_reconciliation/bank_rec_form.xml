@@ -173,6 +173,18 @@
                                                 t-out="formatDateField(line.data.date)"/>
                                         </t>
                                     </t>
+                                    <t t-if="column[0] === 'analytic_distribution'">
+                                        <td class="o_data_cell o_field_cell o_field_widget o_field_analytic_distribution" field="analytic_distribution">
+                                            <div class="o_field_tags d-inline-flex flex-wrap mw-100">
+                                                <AnalyticDistribution
+                                                    name="'analytic_distribution'"
+                                                    record="line"
+                                                    readonly="true"
+                                                    t-key="getKey(line.data)"
+                                                />
+                                            </div>
+                                        </td>
+                                    </t>
                                     <t t-if="column[0] === 'taxes'" name="col_taxes">
                                         <td class="o_data_cell o_field_cell o_field_widget o_field_many2many_tags"
                                             field="tax_ids">
@@ -215,7 +227,7 @@
                                     </t>
                                     <t t-if="column[0] === '__trash'">
                                         <td class="o_list_record_remove">
-                                            <button t-if="['valid', 'invalid'].includes(data.state) and !['liquidity', 'auto_balance', 'tax_line', 'exchange_diff'].includes(line.data.flag)"
+                                            <button t-if="['valid', 'invalid'].includes(data.state) and !['liquidity', 'auto_balance', 'tax_line'].includes(line.data.flag)"
                                                     t-on-click.prevent.stop="(ev) => this.actionRemoveLine(line)"
                                                     class="btn fa fa-trash-o"/>
                                         </td>
@@ -331,12 +343,14 @@
                         <div class="o_cell flex-grow-1 flex-sm-grow-0" style="width: 100%;">
                             <div class="d-flex" style="align-items: center; font-size: 0.9rem">
                                 <button class="btn btn-link"
+                                        style="white-space: nowrap"
                                         t-on-click="() => this.actionSetPartnerReceivableAccount()">Receivable:</button>
                                 <div class="o_field_widget o_readonly_modifier o_field_monetary ml4 mb0">
                                     <span t-out="formatMonetaryField(line.data.partner_receivable_amount, line.data.partner_currency_id[0])"/>
                                 </div>
                                 <span class="ml4 mr4">-</span>
                                 <button class="btn btn-link"
+                                        style="white-space: nowrap"
                                         t-on-click="() => this.actionSetPartnerPayableAccount()">Payable:</button>
                                 <div class="o_field_widget o_readonly_modifier o_field_monetary ml4 mb0">
                                     <span t-out="formatMonetaryField(line.data.partner_payable_amount, line.data.partner_currency_id[0])"/>
@@ -364,7 +378,7 @@
                                     readonly="readonly"
                                     canOpen="false"
                                     canQuickCreate="false"
-                                    domain="[['deprecated', '=', false], ['account_type', '!=', 'asset_cash'], ['company_id', '=', data.company_id[0]]]"
+                                    domain="() => line.getFieldDomain('account_id')"
                                 />
                             </div>
                         </div>
@@ -402,12 +416,14 @@
                         <div class="o_cell o_wrap_input flex-grow-1 flex-sm-grow-0"
                              style="width: 100%; margin-bottom: 5px">
                             <div class="o_field_widget o_field_analytic_distribution">
+                                <!-- t-key is needed to force component rerender and avoid synchronization issue on record change -->
                                 <AnalyticDistribution
                                     name="'analytic_distribution'"
                                     record="line"
                                     account_field="'account_id'"
                                     business_domain="'general'"
                                     allow_save="true"
+                                    t-key="line.data.index"
                                 />
                             </div>
                         </div>
@@ -631,28 +647,32 @@
                         </t>
 
                         <!-- Notebook -->
+                        <t t-set="amls_tab_title">Match Existing Entries</t>
+                        <t t-set="manual_operations_tab_title">Manual Operations</t>
+                        <t t-set="discuss_tab_title">Discuss</t>
+                        <t t-set="transaction_details_tab_title">Transaction Details</t>
                         <Notebook t-key="state.bankRecStLineId" defaultPage="state.bankRecNotebookPage || ''" onPageUpdate.bind="onPageUpdate" >
                             <t t-set-slot="amls_tab"
                                name="'amls_tab'"
-                               title="'Match Existing Entries'"
+                               title="amls_tab_title"
                                isVisible="['valid', 'invalid'].includes(data.state)">
                                 <t t-call="account_accountant.BankRecRecordNotebookAmls"/>
                             </t>
                             <t t-set-slot="manual_operations_tab"
                                name="'manual_operations_tab'"
-                               title="'Manual Operations'"
+                               title="manual_operations_tab_title"
                                isVisible="['valid', 'invalid'].includes(data.state)">
                                 <t t-call="account_accountant.BankRecRecordNotebookManualOperations"/>
                             </t>
                             <t t-set-slot="discuss_tab"
                                name="'discuss_tab'"
-                               title="'Discuss'"
+                               title="discuss_tab_title"
                                isVisible="true">
                                 <t t-call="account_accountant.BankRecRecordNotebookChatter"/>
                             </t>
                             <t t-set-slot="transaction_details_tab"
                                name="'transaction_details_tab'"
-                               title="'Transaction Details'"
+                               title="transaction_details_tab_title"
                                isVisible="data.state == 'reconciled' and data.st_line_narration and data.st_line_narration != ''">
                                 <t t-call="account_accountant.BankRecRecordNotebookTransactionDetails"/>
                             </t>

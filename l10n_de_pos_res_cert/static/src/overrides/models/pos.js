@@ -137,7 +137,7 @@ patch(Order.prototype, {
 
         lineDifference.forEach((line) => {
             line.quantity = line.quantity.toString(); // Fiskaly ask this to be a string
-            line.price_per_unit = this.env.utils.formatCurrency(line.price_per_unit, false);
+            line.price_per_unit = this.env.utils.roundCurrency(line.price_per_unit).toFixed(2);
         });
         const data = {
             state: "ACTIVE",

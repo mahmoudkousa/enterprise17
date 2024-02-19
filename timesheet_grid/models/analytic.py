@@ -133,7 +133,7 @@ class AnalyticLine(models.Model):
                 line.employee_id.timesheet_manager_id.id == self.env.user.id or
                 line.employee_id.parent_id.user_id.id == self.env.user.id or
                 line.project_id.user_id.id == self.env.user.id or
-                line.user_id == self.env.user.id)):
+                line.user_id.id == self.env.user.id)):
                 line.user_can_validate = True
             else:
                 line.user_can_validate = False
@@ -178,14 +178,14 @@ class AnalyticLine(models.Model):
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': None,
+                'message': None,
                 'type': None,  #types: success,warning,danger,info
                 'sticky': False,  #True/False will display for few seconds if false
             },
         }
         if not self.user_has_groups('hr_timesheet.group_hr_timesheet_approver'):
             notification['params'].update({
-                'title': _("You can only validate the timesheets of employees of whom you are the manager or the timesheet approver."),
+                'message': _("You can only validate the timesheets of employees of whom you are the manager or the timesheet approver."),
                 'type': 'danger'
             })
             return notification
@@ -193,7 +193,7 @@ class AnalyticLine(models.Model):
         analytic_lines = self.filtered_domain(self._get_domain_for_validation_timesheets())
         if not analytic_lines:
             notification['params'].update({
-                'title': _("You cannot validate the selected timesheets as they either belong to employees who are not part of your team or are not in a state that can be validated. This may be due to the fact that they are dated in the future."),
+                'message': _("You cannot validate the selected timesheets as they either belong to employees who are not part of your team or are not in a state that can be validated. This may be due to the fact that they are dated in the future."),
                 'type': 'danger',
             })
             return notification
@@ -212,7 +212,7 @@ class AnalyticLine(models.Model):
             lambda aal: aal.date < aal.employee_id.last_validated_timesheet_date)._stop_all_users_timer()
         if self.env.context.get('use_notification', True):
             notification['params'].update({
-                'title': _("The timesheets have successfully been validated."),
+                'message': _("The timesheets have successfully been validated."),
                 'type': 'success',
                 'next': {'type': 'ir.actions.act_window_close'},
             })
@@ -224,7 +224,7 @@ class AnalyticLine(models.Model):
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': None,
+                'message': None,
                 'type': None,
                 'sticky': False,
             },
@@ -236,7 +236,7 @@ class AnalyticLine(models.Model):
         analytic_lines = self.filtered_domain(domain)
         if not analytic_lines:
             notification['params'].update({
-                'title': _('There are no timesheets to reset to draft or they have already been invoiced.'),
+                'message': _('There are no timesheets to reset to draft or they have already been invoiced.'),
                 'type': 'warning',
             })
             return notification
@@ -245,7 +245,7 @@ class AnalyticLine(models.Model):
         self.env['account.analytic.line']._search_last_validated_timesheet_date(analytic_lines.employee_id.ids)
         if self.env.context.get('use_notification', True):
             notification['params'].update({
-                'title': _("The timesheets have successfully been reset to draft."),
+                'message': _("The timesheets have successfully been reset to draft."),
                 'type': 'success',
                 'next': {'type': 'ir.actions.act_window_close'},
             })
@@ -255,7 +255,7 @@ class AnalyticLine(models.Model):
     def check_if_allowed(self, vals=None, delete=False,):
         if not self.user_has_groups('hr_timesheet.group_timesheet_manager'):
             is_timesheet_approver = self.user_has_groups('hr_timesheet.group_hr_timesheet_approver')
-            employees = self.env['hr.employee'].search([
+            employees = self.env['hr.employee'].with_context(active_test=False).search([
                 ('id', 'in', self.employee_id.ids),
                 ('user_id', '!=', self._uid),
                 '|', ('parent_id.user_id', '=', self._uid),
@@ -316,24 +316,35 @@ class AnalyticLine(models.Model):
             return
         timesheets = self.search(domain, limit=2)
 
-        if timesheets.project_id and not timesheets.project_id.allow_timesheets:
+        # sudo in case of timesheeting a task belonging to a private project
+        if timesheets.project_id and not all(timesheets.project_id.sudo().mapped("allow_timesheets")):
             raise UserError(_("You cannot adjust the time of the timesheet for a project with timesheets disabled."))
 
-        if len(timesheets) > 1 or (len(timesheets) == 1 and timesheets.validated):
+        non_validated_timesheets = timesheets.filtered(lambda timesheet: not timesheet.validated)
+        if len(non_validated_timesheets) > 1 or (len(timesheets) == 1 and timesheets.validated):
             timesheets[0].copy({
                 'name': '/',
                 measure_field_name: value,
             })
-        elif len(timesheets) == 1:
-            timesheets[measure_field_name] += value
+        elif len(non_validated_timesheets) == 1:
+            non_validated_timesheets[measure_field_name] += value
         else:
             project_id = self._context.get('default_project_id', False)
             field_name, model_name = self._get_timesheet_field_and_model_name()
             field_value = self._context.get(f'default_{field_name}', False)
             if not project_id and field_value:
                 project_id = self.env[model_name].browse(field_value).project_id.id
-
-            if not self.env['project.project'].browse(project_id).allow_timesheets:
+            if not project_id:
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'message': _("Your timesheet entry is missing a project. Please either group the Grid view by project or enter your timesheets through another view."),
+                        'type': 'danger',
+                        'sticky': False,
+                    }
+                }
+            if not self.env['project.project'].browse(project_id).sudo().allow_timesheets:
                 raise UserError(_("You cannot adjust the time of the timesheet for a project with timesheets disabled."))
 
             self.create({
@@ -426,6 +437,9 @@ class AnalyticLine(models.Model):
                  ['date', '>=', '1970-01-01'],
                  ['date', '<=', '2250-01-01']
         """
+        if not self.env.context.get('group_expand', False):
+            return employees
+
         grid_anchor, last_week = self._get_last_week()
         domain_search = expression.AND([
             [('project_id.allow_timesheets', '=', True),
@@ -485,7 +499,7 @@ class AnalyticLine(models.Model):
             timesheet = self.create([{'project_id': self.project_id.id, 'task_id': self.task_id.id, 'date': datetime.today().date()}])
             timesheet.action_timer_start()
         elif not self.user_timer_id.timer_start and self.display_timer:
-            if self.date < fields.Date.context_today(self):
+            if self.date != fields.Date.context_today(self):
                 self.action_start_new_timesheet_timer({
                     'name': self.name,
                     'project_id': self.project_id.id,

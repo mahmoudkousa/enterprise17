@@ -35,6 +35,23 @@ export class AccountReportHeader extends Component {
         return header.colspan || this.controller.columnHeadersRenderData.level_colspan[column_index];
     }
 
+    //------------------------------------------------------------------------------------------------------------------
+    // Subheaders
+    //------------------------------------------------------------------------------------------------------------------
+    get subheaders() {
+        let subheaders = JSON.parse(JSON.stringify(this.controller.options.columns));
+
+        subheaders.forEach((subheader) => {
+            if (subheader.figure_type === 'monetary') {
+                const roundingUnit = this.controller.options.rounding_unit;
+
+                subheader.name += ` ( ${ this.controller.options.rounding_unit_names[roundingUnit] } )`;
+            }
+        });
+
+        return subheaders;
+    }
+
     // -----------------------------------------------------------------------------------------------------------------
     // Custom subheaders
     // -----------------------------------------------------------------------------------------------------------------

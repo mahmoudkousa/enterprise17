@@ -16,7 +16,9 @@ QUnit.test("TransferPopover input is pre-filled with external device number.", a
         external_device_number: externalDeviceNumber,
         user_id: pyEnv.currentUserId,
     });
-    const { advanceTime } = await start({ hasTimeControl: true });
+    const { advanceTime, env } = await start({ hasTimeControl: true });
+    // wait for external_device_number to be fetched
+    await env.services["voip"].isReady;
     await click(".o_menu_systray button[title='Open Softphone']");
     await click("button[title='Open Numpad']");
     await insertText("input[placeholder='Enter the number…']", "+380 (44) 4315351");

@@ -67,14 +67,17 @@ export class SignRequestControlPanel extends Component {
     }
 
     async goToNextDocument() {
+        const templateName = this.nextTemplate.name;
+        const templateId = parseInt(this.nextTemplate.template);
         multiFileUpload.removeFile(this.nextTemplate.template);
         await this.action.doAction(
-            "sign.Template",
             {
-                name: _t('Template "%s"', this.nextTemplate.name),
-                context: {
+                type: "ir.actions.client",
+                tag: "sign.Template",
+                name: _t("Template %s", templateName),
+                params: {
                     sign_edit_call: "sign_send_request",
-                    id: this.nextTemplate.template,
+                    id: templateId,
                     sign_directly_without_mail: false,
                 },
             },

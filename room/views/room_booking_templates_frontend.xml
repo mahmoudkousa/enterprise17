@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="room_booking" name="Room Booking" inherit_id="web.layout" primary="True">
+        <xpath expr="//html" position="before">
+            <t t-set="html_data" t-value="{'lang': lang}"/>
+        </xpath>
         <xpath expr="//head/meta[last()]" position="after">
             <meta name="viewport" content="width=device-width, initial-scale=1"/>
         </xpath>
@@ -18,7 +21,6 @@
             </script>
             <t t-set="title" t-value="room.name"/>
             <t t-set="body_classname" t-value="'o_room_booking_frontend'"/>
-            <t t-set="html_data" t-value="{'lang': lang}"/>
             <t t-call-assets="web.assets_frontend_minimal" t-css="false" defer_load="True"/>
             <t t-call="web.conditional_assets_tests">
                 <t t-set="ignore_missing_deps" t-value="True"/>

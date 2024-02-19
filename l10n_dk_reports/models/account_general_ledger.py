@@ -3,6 +3,7 @@
 import contextlib
 import io
 
+from odoo.exceptions import UserError
 from odoo.tools import pycompat, street_split
 
 from odoo import api, models, _
@@ -10,6 +11,16 @@ from odoo import api, models, _
 
 class GeneralLedgerCustomHandler(models.AbstractModel):
     _inherit = 'account.general.ledger.report.handler'
+
+    def _custom_line_postprocessor(self, report, options, lines, warnings=None):
+        lines = super()._custom_line_postprocessor(report, options, lines, warnings=warnings)
+        if self.env.company.account_fiscal_country_id.code != 'DK' or warnings is None:
+            return lines
+
+        if not any(self.env.company.partner_id.bank_ids):
+            company_data_warning = warnings.setdefault('account_saft.company_data_warning', {'alert_type': 'warning', 'args': ''})
+            company_data_warning['args'] += f"{', ' if company_data_warning['args'] else ''}{_('the account number')}"
+        return lines
 
     def _custom_options_initializer(self, report, options, previous_options=None):
         super()._custom_options_initializer(report, options, previous_options)
@@ -31,6 +42,9 @@ class GeneralLedgerCustomHandler(models.AbstractModel):
 
     @api.model
     def l10n_dk_export_saft_to_xml(self, options):
+        if not any(self.env.company.partner_id.bank_ids):
+            raise UserError(_('An account number is needed to export the SAF-T'))
+
         report = self.env['account.report'].browse(options['report_id'])
         template_vals = self._l10n_dk_saft_prepare_report_values(report, options)
         file_data = self._saft_generate_file_data_with_error_check(

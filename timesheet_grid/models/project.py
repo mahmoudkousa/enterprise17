@@ -15,7 +15,7 @@ class Project(models.Model):
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
-                    'title': _('You cannot start the timer for a project in a company encoding its timesheets in days.'),
+                    'message': _('You cannot start the timer for a project in a company encoding its timesheets in days.'),
                     'type': 'danger',
                     'sticky': False,
                 }

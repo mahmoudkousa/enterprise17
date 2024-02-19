@@ -81,12 +81,19 @@ export class SpreadsheetComponent extends Component {
      * Open a dialog to display an error message to the user.
      *
      * @param {string} body Content to display
+     * @param {function} callBack Callback function to be executed when the dialog is closed
      */
-    raiseError(body) {
-        this.dialog.add(ConfirmationDialog, {
-            title: _t("Odoo Spreadsheet"),
-            body,
-        });
+    raiseError(body, callBack) {
+        this.dialog.add(
+            ConfirmationDialog,
+            {
+                title: _t("Odoo Spreadsheet"),
+                body,
+            },
+            {
+                onClose: callBack,
+            }
+        );
     }
 }
 

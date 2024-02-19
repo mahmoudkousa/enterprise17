@@ -268,7 +268,7 @@ export class CorrespondenceDetails extends Component {
             return;
         }
         this.transferPopover.open(this.transferButtonRef.el, {
-            defaultInputValue: this.voip.cleanedExternalDeviceNumber,
+            defaultInputValue: this.voip.settings.external_device_number || "",
         });
     }
 }

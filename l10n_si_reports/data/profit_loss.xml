@@ -117,7 +117,7 @@
                         <field name="label">balance</field>
                         <field name="engine">domain</field>
                         <field name="formula" eval="[('account_id.code','=like','721%')]"/>
-                        <field name="subformula">-sum_if_pos</field>
+                        <field name="subformula">sum_if_pos</field>
                     </record>
                 </field>
             </record>
@@ -531,8 +531,8 @@
                     <record id="l10n_si_pl_10_balance" model="account.report.expression">
                         <field name="label">balance</field>
                         <field name="engine">aggregation</field>
-                        <field name="formula">si_pl_7.balance - si_pl_8.balance</field>
-                        <field name="subformula">if_below(EUR(0))</field>
+                        <field name="formula">-si_pl_7.balance + si_pl_8.balance</field>
+                        <field name="subformula">if_above(EUR(0))</field>
                     </record>
                 </field>
             </record>
@@ -840,7 +840,15 @@
             <record id="l10n_si_pl_15" model="account.report.line">
                 <field name="name">15. Total profit</field>
                 <field name="code">si_pl_15</field>
-                <field name="aggregation_formula">si_pl_9.balance - si_pl_10.balance + si_pl_11.balance - si_pl_12.balance + si_pl_13.balance - si_pl_14.balance</field>
+                <field name="aggregation_formula" eval="False"/>
+                <field name="expression_ids">
+                    <record id="l10n_ssi_pl_15_balance" model="account.report.expression">
+                        <field name="label">balance</field>
+                        <field name="engine">aggregation</field>
+                        <field name="formula">si_pl_9.balance - si_pl_10.balance + si_pl_11.balance - si_pl_12.balance + si_pl_13.balance - si_pl_14.balance</field>
+                        <field name="subformula">if_above(EUR(0))</field>
+                    </record>
+                </field>
             </record>
             <record id="l10n_ssi_pl_16" model="account.report.line">
                 <field name="name">16. Total loss</field>
@@ -891,7 +899,7 @@
                     <record id="l10n_si_pl_19_balance" model="account.report.expression">
                         <field name="label">balance</field>
                         <field name="engine">aggregation</field>
-                        <field name="formula">si_pl_15.balance - si_pl_17.balance - si_pl_18.balance</field>
+                        <field name="formula">si_pl_15.balance - si_pl_16.balance - si_pl_17.balance - si_pl_18.balance</field>
                         <field name="subformula">if_above(EUR(0))</field>
                     </record>
                 </field>
@@ -903,7 +911,7 @@
                     <record id="l10n_si_pl_20_balance" model="account.report.expression">
                         <field name="label">balance</field>
                         <field name="engine">aggregation</field>
-                        <field name="formula">si_pl_16.balance + si_pl_17.balance + si_pl_18.balance</field>
+                        <field name="formula">-si_pl_15.balance + si_pl_16.balance + si_pl_17.balance + si_pl_18.balance</field>
                         <field name="subformula">if_above(EUR(0))</field>
                     </record>
                 </field>
@@ -917,7 +925,7 @@
         <field name="tag">account_report</field>
         <field name="context" eval="{'report_id': ref('l10n_si_pl')}"/>
     </record>
-    <record id="l10n_si_balance_sheet_liabilities_a_VIII" model="account.report.line">
+    <record id="l10n_si_balance_sheet_liabilities_a_VII" model="account.report.line">
         <field name="action_id" ref="action_account_report_si_pl"/>
     </record>
 </data>

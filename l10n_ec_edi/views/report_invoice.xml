@@ -61,24 +61,26 @@
 
         <!-- Add a table for payment methods and additional info -->
         <xpath expr="//div[@id='payment_term']" position="after">
-            <div t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-6'}">
-                <table class="table table-sm table-borderless" style="page-break-inside: avoid">
-                    <thead>
-                        <tr>
-                            <th class="text-center" colspan="2">Payment Methods</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td t-esc="o.l10n_ec_sri_payment_id.name"/>
-                            <td class="text-end">
-                                <span t-esc="sum(d['payment_total'] for d in o._l10n_ec_get_payment_data())"
-                                    t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <t t-if="o.l10n_latam_document_type_id and o.l10n_latam_internal_type != 'credit_note'">
+                <div t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-6'}">
+                    <table class="table table-sm table-borderless" style="page-break-inside: avoid">
+                        <thead>
+                            <tr>
+                                <th class="text-center" colspan="2">Payment Methods</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td t-esc="o.l10n_ec_sri_payment_id.name"/>
+                                <td class="text-end">
+                                    <span t-esc="sum(d['payment_total'] for d in o._l10n_ec_get_payment_data())"
+                                        t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
 
             <t t-set="additional_info" t-value="o._l10n_ec_get_invoice_additional_info()"/>
             <t t-call="l10n_ec_edi.report_invoice_additional_info"/>

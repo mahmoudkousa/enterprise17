@@ -5,16 +5,16 @@
 # Translators:
 # JH CHOI <hwangtog@gmail.com>, 2023
 # Wil Odoo, 2023
-# Sarah Park, 2023
 # Daye Jeong, 2023
+# Sarah Park, 2023
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-26 16:10+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Daye Jeong, 2023\n"
+"Last-Translator: Sarah Park, 2023\n"
 "Language-Team: Korean (https://app.transifex.com/odoo/teams/41243/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -30,6 +30,8 @@ msgid ""
 "\n"
 "%(from_date)s to %(to_date)s"
 msgstr ""
+"\n"
+"%(from_date)s 에서 %(to_date)s 까지"
 
 #. module: sale_renting
 #. odoo-python
@@ -43,14 +45,14 @@ msgstr "%(amount)s (고정)"
 #: code:addons/sale_renting/models/product_pricing.py:0
 #, python-format
 msgid "%(amount)s / %(duration)s"
-msgstr ""
+msgstr "%(amount)s / %(duration)s"
 
 #. module: sale_renting
 #. odoo-python
 #: code:addons/sale_renting/models/sale_order_recurrence.py:0
 #, python-format
 msgid "%(duration)s %(unit)s"
-msgstr ""
+msgstr "%(duration)s %(unit)s"
 
 #. module: sale_renting
 #. odoo-python
@@ -72,7 +74,7 @@ msgstr ""
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.report_rental_order_document
 msgid "123 Main St"
-msgstr ""
+msgstr "123 Main St"
 
 #. module: sale_renting
 #: model:sale.temporal.recurrence,name:sale_renting.recurrence_2_weeks
@@ -82,7 +84,7 @@ msgstr "2주"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.report_rental_order_document
 msgid "2023-08-01"
-msgstr ""
+msgstr "2023-08-01"
 
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.report_rental_order_document
@@ -102,7 +104,7 @@ msgstr "3년"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.report_rental_order_document
 msgid "456 Other St"
-msgstr ""
+msgstr "456 Other St"
 
 #. module: sale_renting
 #: model:sale.temporal.recurrence,name:sale_renting.recurrence5_year
@@ -127,6 +129,9 @@ msgid ""
 "                    <span invisible=\"duration_days in [0,1]\"> days </span>\n"
 "                    <span invisible=\"duration_days == 0 or remaining_hours == 0\">and </span>"
 msgstr ""
+"<span invisible=\"duration_days != 1\"> 일 </span>\n"
+"                    <span invisible=\"duration_days in [0,1]\"> 일 </span>\n"
+"                    <span invisible=\"duration_days == 0 or remaining_hours == 0\"> 및 </span>"
 
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_order_form_view
@@ -134,6 +139,8 @@ msgid ""
 "<span invisible=\"remaining_hours != 1\"> hour </span>\n"
 "                    <span invisible=\"remaining_hours in [0,1]\"> hours </span>"
 msgstr ""
+"<span invisible=\"remaining_hours != 1\"> 시간 </span>\n"
+"                    <span invisible=\"remaining_hours in [0,1]\"> 시간 </span>"
 
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_schedule_view_gantt
@@ -143,7 +150,7 @@ msgstr "<strong>주문번호 — </strong>"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_schedule_view_gantt
 msgid "<strong>Pickup  — </strong>"
-msgstr "<strong>픽업  — </strong>"
+msgstr "<strong>수령  — </strong>"
 
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_schedule_view_gantt
@@ -248,7 +255,7 @@ msgstr "새 견적을 작성하려면 여기를 클릭하십시오."
 #: code:addons/sale_renting/static/src/js/tours/rental.js:0
 #, python-format
 msgid "Click here to register the pickup."
-msgstr "수령을 등록하려면 여기를 클릭하십시오."
+msgstr "수령 등록을 하려면 여기를 클릭하세요."
 
 #. module: sale_renting
 #. odoo-javascript
@@ -321,7 +328,7 @@ msgstr "렌탈주문서 생성"
 #. module: sale_renting
 #: model_terms:ir.actions.act_window,help:sale_renting.sale_temporal_recurrence_action
 msgid "Create a new period"
-msgstr ""
+msgstr "새 기간 생성"
 
 #. module: sale_renting
 #: model_terms:ir.actions.act_window,help:sale_renting.rental_order_action
@@ -523,7 +530,7 @@ msgstr "예상 반납일"
 #: code:addons/sale_renting/models/sale_order_line.py:0
 #, python-format
 msgid "Expected: %(date)s"
-msgstr ""
+msgstr "예상: %(date)s"
 
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_product_product__extra_daily
@@ -572,7 +579,7 @@ msgstr "그룹별"
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_sale_order__show_update_duration
 msgid "Has Duration Changed"
-msgstr ""
+msgstr "기간이 변경되었습니다."
 
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_sale_order__has_pickable_lines
@@ -645,7 +652,7 @@ msgstr "연체 여부"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.report_rental_order_document
 msgid "Jane Doe"
-msgstr ""
+msgstr "홍길동"
 
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.report_rental_order_document
@@ -714,7 +721,7 @@ msgstr "연체료를 적용하기 전에 최소 지연 시간."
 msgid ""
 "Minimum duration before this rule is applied. If set to 0, it represents a "
 "fixedrental price."
-msgstr ""
+msgstr "이 규칙이 적용되기 전까지의 최소 기간입니다. 0으로 설정하면, 고정 렌탈 가격을 나타냅니다."
 
 #. module: sale_renting
 #. odoo-python
@@ -890,7 +897,7 @@ msgstr "수령 영수증 #"
 #. module: sale_renting
 #: model:ir.actions.report,name:sale_renting.action_report_rental_saleorder
 msgid "Pickup and Return Receipt"
-msgstr "수령과 반납 영수증"
+msgstr "수령 및 반납 영수증"
 
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_sale_order_line__reservation_begin
@@ -900,7 +907,7 @@ msgstr "수령 날짜 - 패딩 시간"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_order_view_kanban
 msgid "Pickup:"
-msgstr "수령 :"
+msgstr "수령:"
 
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_product_pricing__price
@@ -927,7 +934,7 @@ msgstr "가격 책정"
 #. module: sale_renting
 #: model:ir.model,name:sale_renting.model_product_pricing
 msgid "Pricing rule of rental products"
-msgstr ""
+msgstr "렌탈 품목 가격 책정 규칙"
 
 #. module: sale_renting
 #: model:ir.model,name:sale_renting.model_product_template
@@ -1041,12 +1048,12 @@ msgstr "견적서"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_order_form_view
 msgid "Recompute all prices based on this duration"
-msgstr ""
+msgstr "이 기간을 기준으로 모든 가격을 재계산합니다."
 
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_sale_order__remaining_hours
 msgid "Remaining duration in hours"
-msgstr ""
+msgstr "시간 기준의 남은 기간"
 
 #. module: sale_renting
 #: model:ir.ui.menu,name:sale_renting.rental_menu_root
@@ -1090,13 +1097,13 @@ msgstr "임대 주문"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.product_pricelist_view
 msgid "Rental Pricelist Rules"
-msgstr ""
+msgstr "렌탈 가격표 기준"
 
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_sale_order__rental_return_date
 #: model:ir.model.fields,field_description:sale_renting.field_sale_order_line__return_date
 msgid "Rental Return Date"
-msgstr ""
+msgstr "렌탈 반납일"
 
 #. module: sale_renting
 #: model:ir.model,name:sale_renting.model_sale_rental_schedule
@@ -1107,7 +1114,7 @@ msgstr "대여 일정"
 #: model:ir.model.fields,field_description:sale_renting.field_sale_order__rental_start_date
 #: model:ir.model.fields,field_description:sale_renting.field_sale_order_line__start_date
 msgid "Rental Start Date"
-msgstr ""
+msgstr "렌탈 시작일"
 
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_sale_order__rental_status
@@ -1144,19 +1151,19 @@ msgstr "임대 요금"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.product_template_form_view_rental
 msgid "Rental prices"
-msgstr ""
+msgstr "렌탈 가격"
 
 #. module: sale_renting
 #. odoo-python
 #: code:addons/sale_renting/models/sale_order.py:0
 #, python-format
 msgid "Rental prices have been recomputed with the new period."
-msgstr ""
+msgstr "렌탈 가격이 새로운 기간에 맞게 재계산되었습니다."
 
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.product_pricelist_view
 msgid "Rental rules"
-msgstr ""
+msgstr "렌탈 규칙"
 
 #. module: sale_renting
 #: model:ir.model,name:sale_renting.model_rental_order_wizard_line
@@ -1171,12 +1178,12 @@ msgstr "임대"
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_product_pricing__recurrence_id
 msgid "Renting Period"
-msgstr ""
+msgstr "렌탈 기간"
 
 #. module: sale_renting
 #: model:ir.model.fields,field_description:sale_renting.field_product_pricelist__product_pricing_ids
 msgid "Renting Price Rules"
-msgstr ""
+msgstr "렌탈 가격 규칙"
 
 #. module: sale_renting
 #: model:ir.ui.menu,name:sale_renting.menu_rental_reporting
@@ -1235,7 +1242,7 @@ msgstr "반납함"
 #: code:addons/sale_renting/models/sale_order_line.py:0
 #, python-format
 msgid "Returned: %(date)s"
-msgstr ""
+msgstr "반납: %(date)s"
 
 #. module: sale_renting
 #: model:ir.model,name:sale_renting.model_sale_temporal_recurrence
@@ -1277,7 +1284,7 @@ msgstr "영업사원"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.report_rental_order_document
 msgid "Sample Document"
-msgstr ""
+msgstr "예시 문서"
 
 #. module: sale_renting
 #. odoo-javascript
@@ -1305,7 +1312,7 @@ msgstr "예약된 임대"
 msgid ""
 "Select Variants of the Product for which this rule applies.Leave empty if "
 "this rule applies for any variant of this template."
-msgstr ""
+msgstr "이 규칙을 적용시킬 품목별 속성을 선택하세요. 비워둘 경우 서식 속성 전체에 적용됩니다."
 
 #. module: sale_renting
 #: model:ir.model.fields,help:sale_renting.field_product_pricing__product_template_id
@@ -1317,7 +1324,7 @@ msgstr "이 가격 책정이 적용될 제품을 선택하십시오."
 #: code:addons/sale_renting/static/src/js/tours/rental.js:0
 #, python-format
 msgid "Select the rental dates and check the price."
-msgstr ""
+msgstr "렌탈 일자를 선택 후 가격을 확인하세요."
 
 #. module: sale_renting
 #. odoo-javascript
@@ -1370,12 +1377,12 @@ msgstr "일일 픽업 수량 합계"
 #. module: sale_renting
 #: model:ir.model.fields,help:sale_renting.field_sale_order__duration_days
 msgid "The duration in days of the rental period."
-msgstr ""
+msgstr "렌탈 기간의 일 기준 기간입니다."
 
 #. module: sale_renting
 #: model:ir.model.fields,help:sale_renting.field_sale_order__remaining_hours
 msgid "The leftover hours of the rental period."
-msgstr ""
+msgstr "렌탈 기간의 남은 시간입니다."
 
 #. module: sale_renting
 #: model:ir.model.constraint,message:sale_renting.constraint_sale_temporal_recurrence_temporal_recurrence_duration
@@ -1391,7 +1398,7 @@ msgstr "이 상품은 판매 주문에 비용을 추가하는 데 사용됩니�
 #: model:ir.model.fields,help:sale_renting.field_rental_order_wizard__is_late
 #: model:ir.model.fields,help:sale_renting.field_sale_order__is_late
 msgid "The products haven't been picked-up or returned in time"
-msgstr ""
+msgstr "품목 픽업 또는 반납이 정확한 시간에 완료되지 않았습니다."
 
 #. module: sale_renting
 #. odoo-javascript
@@ -1403,13 +1410,13 @@ msgstr "임대 환경 설정은 여기에서 사용할 수 있습니다."
 #. module: sale_renting
 #: model:ir.model.constraint,message:sale_renting.constraint_sale_order_rental_period_coherence
 msgid "The rental start date must be before the rental return date if any."
-msgstr ""
+msgstr "렌탈 시작일은 반드시 렌탈 반납일 이전이어야 합니다."
 
 #. module: sale_renting
 #: model_terms:ir.actions.act_window,help:sale_renting.rental_order_today_pickup_action
 #: model_terms:ir.actions.act_window,help:sale_renting.rental_order_today_return_action
 msgid "There isn't any scheduled pickup or return."
-msgstr "예정된 수령 또는 반납이 없습니다."
+msgstr "예약된 수령 또는 반납 항목이 없습니다."
 
 #. module: sale_renting
 #: model:ir.model.fields,help:sale_renting.field_res_config_settings__extra_day
@@ -1435,7 +1442,7 @@ msgstr "이 상품은 임대 주문에 연체료를 추가하는 데 사용됩�
 msgid ""
 "This will update the unit price of all rental products based on the new "
 "period."
-msgstr ""
+msgstr "새로운 기간을 기준으로 모든 렌탈 품목의 단가를 업데이트합니다."
 
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.res_config_settings_view_form
@@ -1454,7 +1461,7 @@ msgstr "오늘 시행할 예정"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_order_view_search_without_searchpanel
 msgid "To Pickup"
-msgstr "수령할 예정"
+msgstr "수령 예정"
 
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_order_view_search_without_searchpanel
@@ -1480,7 +1487,7 @@ msgstr "단위"
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_order_form_view
 msgid "Update Rental Prices"
-msgstr ""
+msgstr "렌탈 가격 업데이트"
 
 #. module: sale_renting
 #: model_terms:ir.ui.view,arch_db:sale_renting.rental_order_wizard_view_form
@@ -1492,7 +1499,7 @@ msgstr "승인"
 #: code:addons/sale_renting/models/sale_order.py:0
 #, python-format
 msgid "Validate a pickup"
-msgstr "수령 승인"
+msgstr "수령 확인"
 
 #. module: sale_renting
 #. odoo-python
@@ -1570,7 +1577,7 @@ msgstr "또한 제품 양식(예: 보험)에서 *판매 가능*을 확인하도�
 #: code:addons/sale_renting/models/product_pricelist.py:0
 #, python-format
 msgid "You can not have a time-based rule for products that are not rentable."
-msgstr ""
+msgstr "렌탈할 수 없는 품목에는 시간 기준 규칙을 적용할 수 없습니다."
 
 #. module: sale_renting
 #: model_terms:ir.actions.act_window,help:sale_renting.rental_order_today_pickup_action

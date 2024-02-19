@@ -7,6 +7,7 @@ import { listView } from '@web/views/list/list_view';
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { useService } from "@web/core/utils/hooks";
 import { useSubEnv } from "@odoo/owl";
+import { session } from "@web/session";
 
 export class DataMergeListModel extends listView.Model {}
 export class DataMergeListRecord extends DataMergeListModel.Record {
@@ -89,17 +90,29 @@ export class DataMergeListController extends DataCleaningCommonListController {
     /**
      * Merge all the selected records
      */
-    onValidateClick(ev) {
+    async onValidateClick(ev) {
         const records = this.model.root.selection;
         let group_ids = {};
-
-        records.forEach(function(record) {
-            const group_id = parseInt(record.data.group_id[0]);
-            let ids = group_ids[group_id] || [];
-            ids.push(parseInt(record.resId));
-            group_ids[group_id] = ids;
-        });
-
+        if (this.model.root.isDomainSelected) {
+            const { groups } = await this.orm.webReadGroup(
+                this.props.resModel,
+                this.props.domain,
+                ["record_ids:array_agg(id)"],
+                this.props.groupBy,
+                {
+                    limit: session.active_ids_limit,
+                    context: this.props.context,
+                },
+            );
+            group_ids = Object.fromEntries(groups.map(g => [g.group_id[0], g.record_ids]));
+        } else {
+            records.forEach(function (record) {
+                const group_id = parseInt(record.data.group_id[0]);
+                const ids = group_ids[group_id] || [];
+                ids.push(parseInt(record.resId));
+                group_ids[group_id] = ids;
+            });
+        }
 
         this.dialog.add(ConfirmationDialog, {
             body: _t("Are you sure that you want to merge the selected records in their respective group?"),

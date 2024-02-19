@@ -134,7 +134,7 @@ class HrLeave(models.Model):
             # Can handle both hr.leave and resource.calendar.leaves
             number_of_days = 0
             is_validated = True
-            if issubclass(type(leave), self.pool['hr.leave']):
+            if isinstance(leave, self.pool['hr.leave']):
                 number_of_days = leave.number_of_days
                 is_validated = False
             else:

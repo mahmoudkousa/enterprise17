@@ -68,5 +68,11 @@
         <field name="perm_read" eval="False"/>
     </record>
 
+    <record model="ir.rule" id="sale_subscription_log_report_multicompany">
+        <field name="name">Subscription log report multi-company</field>
+        <field name="model_id" ref="model_sale_order_log_report"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
     </data>
 </odoo>

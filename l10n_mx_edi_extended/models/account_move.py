@@ -2,6 +2,7 @@
 from odoo import fields, models, api, _
 from odoo.exceptions import ValidationError
 from odoo.tools.sql import column_exists, create_column
+from odoo.tools import float_round
 
 import re
 from collections import defaultdict
@@ -61,14 +62,17 @@ class AccountMove(models.Model):
     # CFDI
     # -------------------------------------------------------------------------
 
-    def _l10n_mx_edi_add_invoice_cfdi_values(self, cfdi_values, percentage_paid=None):
+    def _l10n_mx_edi_add_invoice_cfdi_values(self, cfdi_values, percentage_paid=None, global_invoice=False):
         # EXTENDS 'l10n_mx_edi'
         self.ensure_one()
 
         if self.journal_id.l10n_mx_address_issued_id:
             cfdi_values['issued_address'] = self.journal_id.l10n_mx_address_issued_id
 
-        super()._l10n_mx_edi_add_invoice_cfdi_values(cfdi_values, percentage_paid=percentage_paid)
+        super()._l10n_mx_edi_add_invoice_cfdi_values(cfdi_values, percentage_paid=percentage_paid, global_invoice=global_invoice)
+        if cfdi_values.get('errors'):
+            return
+
         cfdi_values['exportacion'] = self.l10n_mx_edi_external_trade_type or '01'
 
         # External Trade
@@ -170,8 +174,8 @@ class AccountMove(models.Model):
             mxn = self.env["res.currency"].search([('name', '=', 'MXN')], limit=1)
             usd = self.env["res.currency"].search([('name', '=', 'USD')], limit=1)
             ext_trade_values['tipo_cambio_usd'] = usd._get_conversion_rate(usd, mxn, self.company_id, self.date)
-            if cfdi_values['tipo_cambio'] and ext_trade_values['tipo_cambio_usd']:
-                to_usd_rate = cfdi_values['tipo_cambio'] / ext_trade_values['tipo_cambio_usd']
+            if ext_trade_values['tipo_cambio_usd']:
+                to_usd_rate = (cfdi_values['tipo_cambio'] or 1.0) / ext_trade_values['tipo_cambio_usd']
             else:
                 to_usd_rate = 0.0
 
@@ -197,13 +201,13 @@ class AccountMove(models.Model):
             ext_trade_values['total_usd'] = 0.0
             ext_trade_values['mercancia_list'] = []
             for product, product_values in product_values_map.items():
-                total_usd = usd.round(product_values['total'] * to_usd_rate)
+                total_usd = float_round(product_values['total'] * to_usd_rate, precision_digits=4)
                 ext_trade_values['mercancia_list'].append({
                     'no_identificacion': product.default_code,
                     'fraccion_arancelaria': product.l10n_mx_edi_tariff_fraction_id.code,
                     'cantidad_aduana': product_values['quantity'],
                     'unidad_aduana': product.l10n_mx_edi_umt_aduana_id.l10n_mx_edi_code_aduana,
-                    'valor_unitario_udana': usd.round(product_values['price_unit'] * to_usd_rate),
+                    'valor_unitario_udana': float_round(product_values['price_unit'] * to_usd_rate, precision_digits=6),
                     'valor_dolares': total_usd,
                 })
                 ext_trade_values['total_usd'] += total_usd
@@ -211,7 +215,6 @@ class AccountMove(models.Model):
             # Invoice lines.
             for line_vals in cfdi_values['conceptos_list']:
                 line_vals['informacion_aduanera_list'] = line_vals['line']['record']._l10n_mx_edi_get_custom_numbers()
-
 
 class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
@@ -239,7 +242,7 @@ class AccountMoveLine(models.Model):
              "It is based in the SAT catalog.")
     l10n_mx_edi_qty_umt = fields.Float(
         string="Qty UMT",
-        digits='Product Unit of Measure',
+        digits=(16, 3),
         readonly=False, store=True,
         compute='_compute_l10n_mx_edi_qty_umt',
         help="Quantity expressed in the UMT from product. It is used in the attribute 'CantidadAduana' in the CFDI")
@@ -282,7 +285,7 @@ class AccountMoveLine(models.Model):
             if product_aduana_code == uom_aduana_code:
                 line.l10n_mx_edi_qty_umt = line.quantity
             elif '01' in (product_aduana_code or ''):
-                line.l10n_mx_edi_qty_umt = round(line.product_id.weight * line.quantity, 3)
+                line.l10n_mx_edi_qty_umt = line.product_id.weight * line.quantity
             else:
                 line.l10n_mx_edi_qty_umt = None
 
@@ -290,7 +293,7 @@ class AccountMoveLine(models.Model):
     def _compute_l10n_mx_edi_price_unit_umt(self):
         for line in self:
             if line.l10n_mx_edi_qty_umt:
-                line.l10n_mx_edi_price_unit_umt = round(line.quantity * line.price_unit / line.l10n_mx_edi_qty_umt, 2)
+                line.l10n_mx_edi_price_unit_umt = line.quantity * line.price_unit / line.l10n_mx_edi_qty_umt
             else:
                 line.l10n_mx_edi_price_unit_umt = line.price_unit
 

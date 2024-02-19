@@ -4,14 +4,16 @@
 # 
 # Translators:
 # Wil Odoo, 2023
+# Erwin van der Ploeg <erwin@odooexperts.nl>, 2023
+# Jolien De Paepe, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-26 16:10+0000\n"
 "PO-Revision-Date: 2023-10-26 23:09+0000\n"
-"Last-Translator: Wil Odoo, 2023\n"
+"Last-Translator: Jolien De Paepe, 2024\n"
 "Language-Team: Dutch (https://app.transifex.com/odoo/teams/41243/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -56,8 +58,8 @@ msgid ""
 "accounts that match these analytic accounts to the destination account"
 msgstr ""
 "Voegt een voorwaarde toe om alleen de som van de regels van de "
-"oorspronkelijke rekeningen die overeenkomen met deze kostenplaatsen over te "
-"dragen naar de bestemmingsrekening"
+"oorspronkelijke rekeningen die overeenkomen met deze analytische rekeningen "
+"over te dragen naar de bestemmingsrekening"
 
 #. module: account_auto_transfer
 #: model:ir.model.fields,help:account_auto_transfer.field_account_transfer_model_line__partner_ids
@@ -72,7 +74,7 @@ msgstr ""
 #. module: account_auto_transfer
 #: model:ir.model.fields,field_description:account_auto_transfer.field_account_transfer_model_line__analytic_account_ids
 msgid "Analytic Filter"
-msgstr "Kostenplaatsfilter"
+msgstr "Analytische filter"
 
 #. module: account_auto_transfer
 #: model_terms:ir.ui.view,arch_db:account_auto_transfer.view_transfer_model_form
@@ -100,14 +102,15 @@ msgstr "Automatische boeking (-%s%%)"
 msgid ""
 "Automatic Transfer (entries with analytic account(s): %s and partner(s): %s)"
 msgstr ""
-"Automatische boeking (boekingen met kostenplaats(en): %s en relatie(s): %s)"
+"Automatische boeking (boekingen met analytische rekening(en): %s en "
+"relatie(s): %s)"
 
 #. module: account_auto_transfer
 #. odoo-python
 #: code:addons/account_auto_transfer/models/transfer_model.py:0
 #, python-format
 msgid "Automatic Transfer (entries with analytic account(s): %s)"
-msgstr "Automatische boeking (boekingen met kostenplaats(en): %s)"
+msgstr "Automatische boeking (boekingen met analytische rekening(en): %s)"
 
 #. module: account_auto_transfer
 #. odoo-python
@@ -124,7 +127,7 @@ msgid ""
 "Automatic Transfer (from account %s with analytic account(s): %s and "
 "partner(s): %s)"
 msgstr ""
-"Automatische boeking (van rekening %s met kostenplaats(en): %s en "
+"Automatische boeking (van rekening %s met analytische rekening(en): %s en "
 "relatie(s): %s)"
 
 #. module: account_auto_transfer
@@ -132,7 +135,8 @@ msgstr ""
 #: code:addons/account_auto_transfer/models/transfer_model.py:0
 #, python-format
 msgid "Automatic Transfer (from account %s with analytic account(s): %s)"
-msgstr "Automatische boeking (van rekening %s met kostenplaats(en): %s )"
+msgstr ""
+"Automatische boeking (van rekening %s met analytische rekening(en): %s )"
 
 #. module: account_auto_transfer
 #. odoo-python
@@ -379,7 +383,7 @@ msgstr "Begindatum"
 #. module: account_auto_transfer
 #: model:ir.model.fields,field_description:account_auto_transfer.field_account_transfer_model__state
 msgid "State"
-msgstr "Staat"
+msgstr "Status"
 
 #. module: account_auto_transfer
 #: model:ir.model.fields,field_description:account_auto_transfer.field_account_transfer_model__date_stop
@@ -391,7 +395,7 @@ msgstr "Einddatum"
 #: code:addons/account_auto_transfer/models/transfer_model.py:0
 #, python-format
 msgid "The analytic filter %s is duplicated"
-msgstr "Deze kostenplaatsfilter %s is gedupliceerd"
+msgstr "Deze analytische filter %s is gedupliceerd"
 
 #. module: account_auto_transfer
 #. odoo-python
@@ -401,7 +405,7 @@ msgid ""
 "The partner filter %s in combination with the analytic filter %s is "
 "duplicated"
 msgstr ""
-"Het reatiefilter %s in combinatie met de kostenplaatsfilter %s is "
+"Het reatiefilter %s in combinatie met de analytische filter %s is "
 "gedupliceerd"
 
 #. module: account_auto_transfer
@@ -447,10 +451,32 @@ msgstr "Automatische boekingen jaarlijkse schulden"
 
 #. module: account_auto_transfer
 #. odoo-python
+#: code:addons/account_auto_transfer/models/transfer_model.py:0
+#, python-format
+msgid ""
+"You cannot delete an automatic transfer that has draft moves attached "
+"('%s'). Please delete them before deleting this transfer."
+msgstr ""
+"Je kan geen automatische boeking verwijderen waaraan conceptverplaatsingen "
+"zijn gekoppeld ('%s'). Verwijder deze voordat je deze boeking verwijdert."
+
+#. module: account_auto_transfer
+#. odoo-python
+#: code:addons/account_auto_transfer/models/transfer_model.py:0
+#, python-format
+msgid ""
+"You cannot delete an automatic transfer that has posted moves attached "
+"('%s')."
+msgstr ""
+"Je kan geen automatische boeking verwijderen waaraan geposte verplaatsingen "
+"zijn gekoppeld ('%s')."
+
+#. module: account_auto_transfer
+#. odoo-python
 #: code:addons/account_auto_transfer/models/account_move_line.py:0
 #, python-format
 msgid "You cannot set Tax on Automatic Transfer's entries."
-msgstr "Je kan geen belastingen instellen op automatische boekingen."
+msgstr "Je kunt geen BTW instellen op automatische boekingen."
 
 #. module: account_auto_transfer
 #: model_terms:ir.ui.view,arch_db:account_auto_transfer.view_transfer_model_form

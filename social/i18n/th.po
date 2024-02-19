@@ -4,14 +4,15 @@
 # 
 # Translators:
 # Wil Odoo, 2023
+# Rasareeyar Lappiam, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-05 13:45+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Wil Odoo, 2023\n"
+"Last-Translator: Rasareeyar Lappiam, 2024\n"
 "Language-Team: Thai (https://app.transifex.com/odoo/teams/41243/th/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -29,7 +30,7 @@ msgstr "# บัญชี"
 #: code:addons/social/models/social_post.py:0
 #, python-format
 msgid "%s (max %s chars)"
-msgstr ""
+msgstr "%s (สูงสุด %s ตัวอักษร)"
 
 #. module: social
 #. odoo-javascript
@@ -45,18 +46,23 @@ msgstr "<b>เกิดข้อผิดพลาดขณะพยายาม
 
 #. module: social
 #: model_terms:ir.ui.view,arch_db:social.social_post_view_form
-msgid "<i class=\"fa fa-globe\" title=\"See the post\"/>"
-msgstr ""
+msgid "<i class=\"fa fa-globe ms-1\" title=\"See the post\"/>"
+msgstr "<i class=\"fa fa-globe ms-1\" title=\"ดูโพสต์\"/>"
 
 #. module: social
 #: model_terms:ir.ui.view,arch_db:social.social_http_error_view
 msgid "<i class=\"oi oi-arrow-left\"/> Go back to Odoo"
-msgstr ""
+msgstr "<i class=\"oi oi-arrow-left\"/> กลับไปที่ Odoo"
 
 #. module: social
 #: model_terms:ir.ui.view,arch_db:social.social_post_view_kanban
 msgid "<small class=\"pe-1\">Clicks:</small>"
-msgstr ""
+msgstr "<small class=\"pe-1\">คลิก:</small>"
+
+#. module: social
+#: model_terms:ir.ui.view,arch_db:social.social_post_view_kanban
+msgid "<small class=\"pe-1\">Engagement:</small>"
+msgstr "<small class=\"pe-1\">การมีส่วนร่วม:</small>"
 
 #. module: social
 #. odoo-javascript
@@ -66,6 +72,7 @@ msgid ""
 "<strong>Congrats! Come back in a few minutes to check your "
 "statistics.</strong>"
 msgstr ""
+"<strong>ยินดีด้วย! กลับมาตรวจสอบสถิติของคุณอีกครั้งในไม่กี่นาที</strong>"
 
 #. module: social
 #: model:ir.model.fields,field_description:social.field_social_media__message_needaction
@@ -108,7 +115,7 @@ msgstr "เพิ่ม"
 #. module: social
 #: model_terms:ir.ui.view,arch_db:social.utm_campaign_view_form
 msgid "Add Post"
-msgstr ""
+msgstr "เพิ่มโพสต์"
 
 #. module: social
 #. odoo-javascript
@@ -203,7 +210,7 @@ msgstr "ลิงก์ผู้เขียนไปยังโซเชีย
 #. module: social
 #: model_terms:ir.ui.view,arch_db:social.social_post_template_view_form
 msgid "Before posting, links will be converted to be trackable."
-msgstr ""
+msgstr "ก่อนโพสต์ ลิงก์จะถูกแปลงให้ติดตามได้"
 
 #. module: social
 #: model_terms:ir.ui.view,arch_db:social.social_stream_post_view_search
@@ -213,7 +220,7 @@ msgstr "โดยสตรีม"
 #. module: social
 #: model:ir.model.fields,field_description:social.field_social_media__csrf_token
 msgid "CSRF Token"
-msgstr "โทเคน CSRF "
+msgstr "โทเค็น CSRF "
 
 #. module: social
 #: model:ir.model.fields,field_description:social.field_social_post__calendar_date
@@ -245,7 +252,7 @@ msgstr "แคมเปญใช้เพื่อรวมศูนย์กา
 #. module: social
 #: model:ir.model.fields,field_description:social.field_social_media__can_link_accounts
 msgid "Can link accounts?"
-msgstr ""
+msgstr "เชื่อมโยงบัญชีได้หรือไม่?"
 
 #. module: social
 #. odoo-javascript
@@ -316,6 +323,8 @@ msgid ""
 "Contains the social media handle of the person that created this account. "
 "E.g: '@odoo.official' for the 'Odoo' Twitter account"
 msgstr ""
+"ประกอบด้วยตัวจัดการโซเชียลมีเดียของบุคคลที่สร้างบัญชีนี้ เช่น "
+"'@odoo.official' สำหรับบัญชี Twitter ของ 'Odoo'"
 
 #. module: social
 #: model:ir.model.fields,help:social.field_social_live_post__message
@@ -418,7 +427,7 @@ msgstr "คำอธิบาย"
 #. module: social
 #: model_terms:ir.ui.view,arch_db:social.res_config_settings_view_form
 msgid "Developer Accounts"
-msgstr ""
+msgstr "บัญชีนักพัฒนา"
 
 #. module: social
 #: model:ir.model.fields,field_description:social.field_social_account__display_name
@@ -438,7 +447,7 @@ msgstr "แสดงชื่อ"
 #: code:addons/social/static/src/js/stream_post_comment.js:0
 #, python-format
 msgid "Do you really want to delete %s"
-msgstr ""
+msgstr "คุณต้องการลบ %s จริงๆ หรือไม่"
 
 #. module: social
 #: model:ir.model.fields.selection,name:social.selection__social_post__state__draft
@@ -453,6 +462,8 @@ msgid ""
 "Due to length restrictions, the following posts cannot be posted:\n"
 " %s"
 msgstr ""
+"เนื่องจากข้อจำกัดด้านความยาว จึงไม่สามารถโพสต์โพสต์ต่อไปนี้ได้:\n"
+" %s"
 
 #. module: social
 #. odoo-javascript
@@ -472,6 +483,8 @@ msgid ""
 "Enable this option and load demo data to test the social module. This must "
 "never be used on a production database!"
 msgstr ""
+"เปิดใช้งานตัวเลือกนี้และโหลดข้อมูลสาธิตเพื่อทดสอบโมดูลโซเชียล "
+"สิ่งนี้จะต้องไม่ถูกนำไปใช้กับฐานข้อมูลการผลิต!"
 
 #. module: social
 #. odoo-javascript
@@ -480,7 +493,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:social.field_social_live_post__engagement
 #: model:ir.model.fields,field_description:social.field_social_post__engagement
 #: model_terms:ir.ui.view,arch_db:social.social_post_view_form
-#: model_terms:ir.ui.view,arch_db:social.social_post_view_kanban
 #: model_terms:ir.ui.view,arch_db:social.utm_campaign_view_form
 #, python-format
 msgid "Engagement"
@@ -572,7 +584,7 @@ msgstr "กลุ่มโดย"
 #. module: social
 #: model:ir.model.fields,field_description:social.field_social_account__social_account_handle
 msgid "Handle / Short Name"
-msgstr ""
+msgstr "จัดการ / ชื่อย่อ"
 
 #. module: social
 #. odoo-javascript
@@ -678,7 +690,7 @@ msgstr "ข้อมูลเชิงลึก"
 #. module: social
 #: model:ir.model.fields,field_description:social.field_social_stream_post__is_author
 msgid "Is Author"
-msgstr ""
+msgstr "เป็นผู้เขียน"
 
 #. module: social
 #: model:ir.model.fields,field_description:social.field_social_media__message_is_follower
@@ -799,7 +811,7 @@ msgstr "ลิงก์ URL"
 #: code:addons/social/static/src/xml/social_templates.xml:0
 #, python-format
 msgid "Link a new account"
-msgstr ""
+msgstr "เชื่อมโยงบัญชีใหม่"
 
 #. module: social
 #: model_terms:ir.ui.view,arch_db:social.social_media_view_kanban
@@ -825,7 +837,7 @@ msgstr ""
 #. module: social
 #: model:ir.model.fields,help:social.field_social_live_post__live_post_link
 msgid "Link of the live post on the target media."
-msgstr ""
+msgstr "ลิงค์โพสต์สดบนสื่อเป้าหมาย"
 
 #. module: social
 #: model_terms:ir.ui.view,arch_db:social.social_post_template_view_form
@@ -862,7 +874,7 @@ msgstr "โหลดความคิดเห็นเพิ่มเติม
 #. module: social
 #: model:ir.model.fields,field_description:social.field_social_media__max_post_length
 msgid "Max Post Length"
-msgstr ""
+msgstr "ความยาวโพสต์สูงสุด"
 
 #. module: social
 #: model:ir.model.fields,field_description:social.field_social_post__media_ids
@@ -894,7 +906,7 @@ msgstr "เกิดข้อผิดพลาดในการส่งข้
 #: model:ir.model.fields,field_description:social.field_social_post__message_length
 #: model:ir.model.fields,field_description:social.field_social_post_template__message_length
 msgid "Message Length"
-msgstr ""
+msgstr "ความยาวของข้อความ"
 
 #. module: social
 #. odoo-python
@@ -909,7 +921,7 @@ msgstr "โพสต์ข้อความ"
 #, python-format
 msgid ""
 "Message posted partially. These are the ones that couldn't be posted:%s"
-msgstr ""
+msgstr "ข้อความถูกโพสต์บางส่วน นี่คือรายการที่ไม่สามารถโพสต์ได้: %s"
 
 #. module: social
 #: model:ir.model.fields,field_description:social.field_social_media__message_ids
@@ -964,7 +976,7 @@ msgstr "โพสต์ใหม่"
 #: code:addons/social/static/src/xml/social_templates.xml:0
 #, python-format
 msgid "New content available"
-msgstr ""
+msgstr "มีเนื้อหาใหม่"
 
 #. module: social
 #. odoo-javascript
@@ -1106,7 +1118,7 @@ msgstr ""
 #: code:addons/social/static/src/xml/social_templates.xml:0
 #, python-format
 msgid "Or add"
-msgstr ""
+msgstr "หรือเพิ่ม"
 
 #. module: social
 #: model:ir.model.fields,help:social.field_social_account__audience_trend
@@ -1354,6 +1366,8 @@ msgstr "ลำดับที่ใช้ในคำสั่งสตรีม
 msgid ""
 "Set a maximum number of characters can be posted in post. 0 for no limit."
 msgstr ""
+"กำหนดจำนวนตัวอักษรสูงสุดที่สามารถโพสต์ได้ในโพสต์ หากกำหนดเป็น 0 "
+"จะถือว่าไม่จำกัด"
 
 #. module: social
 #: model:ir.actions.act_window,name:social.action_social_global_settings
@@ -1467,7 +1481,7 @@ msgstr "สตรีมโซเชียล"
 #. module: social
 #: model:res.groups,name:social.group_social_user
 msgid "Social User"
-msgstr ""
+msgstr "ผู้ใช้โซเชียล"
 
 #. module: social
 #: model:ir.actions.server,name:social.ir_cron_post_scheduled_ir_actions_server
@@ -1482,6 +1496,8 @@ msgid ""
 "Something went wrong while posting the comment. \n"
 "%s"
 msgstr ""
+"เกิดข้อผิดพลาดขณะโพสต์ความคิดเห็น \n"
+"%s"
 
 #. module: social
 #. odoo-javascript
@@ -1658,7 +1674,7 @@ msgid ""
 "This token can be used to verify that an incoming request from a social "
 "provider has not been forged."
 msgstr ""
-"โทเคนนี้สามารถใช้เพื่อตรวจสอบว่าคำขอขาเข้าจากผู้ให้บริการโซเชียลไม่ถูกปลอมแปลง"
+"โทเค็นนี้สามารถใช้เพื่อตรวจสอบว่าคำขอขาเข้าจากผู้ให้บริการโซเชียลไม่ถูกปลอมแปลง"
 
 #. module: social
 #: model:ir.model.fields,field_description:social.field_social_stream__name
@@ -1691,7 +1707,7 @@ msgstr "แคมเปญ UTM "
 #: model:ir.model,name:social.model_utm_medium
 #: model:ir.model.fields,field_description:social.field_social_account__utm_medium_id
 msgid "UTM Medium"
-msgstr "สื่อกลาง UTM"
+msgstr "วิธีที่เข้ามา UTM"
 
 #. module: social
 #: model:ir.model,name:social.model_utm_source
@@ -1718,6 +1734,8 @@ msgid ""
 "Use your own Developer Accounts on our Social app. Those credentials are "
 "provided in the developer section of your professional social media account."
 msgstr ""
+"ใช้บัญชีนักพัฒนาของคุณเองในแอปโซเชียลของเรา "
+"ข้อมูลประจำตัวเหล่านั้นมีให้ไว้ในส่วนนักพัฒนาของบัญชีโซเชียลมีเดียมืออาชีพของคุณ"
 
 #. module: social
 #: model:ir.model.fields,help:social.field_social_account__media_type
@@ -1807,6 +1825,8 @@ msgid ""
 "You cannot delete these UTM Mediums as they are linked to the following social accounts in Social:\n"
 "%(social_accounts)s"
 msgstr ""
+"คุณไม่สามารถลบวิธีที่เข้ามา UTM เหล่านี้ได้เนื่องจากเชื่อมโยงกับบัญชีโซเชียลต่อไปนี้ในโซเชียล:\n"
+"%(social_accounts)s"
 
 #. module: social
 #. odoo-python
@@ -1816,20 +1836,22 @@ msgid ""
 "You cannot delete these UTM Sources as they are linked to social posts in Social:\n"
 "%(utm_sources)s"
 msgstr ""
+"คุณไม่สามารถลบแหล่งที่มา UTM เหล่านี้ได้ เนื่องจากลิงก์ไปยังโพสต์โซเชียลในโซเชียล:\n"
+"%(utm_sources)s"
 
 #. module: social
 #. odoo-python
 #: code:addons/social/models/social_post.py:0
 #, python-format
 msgid "You cannot reschedule a post that has already been posted."
-msgstr ""
+msgstr "คุณไม่สามารถกำหนดเวลาโพสต์ที่โพสต์ไปแล้วได้"
 
 #. module: social
 #. odoo-python
 #: code:addons/social/models/social_post.py:0
 #, python-format
 msgid "You cannot schedule a post in the past."
-msgstr ""
+msgstr "คุณไม่สามารถกำหนดเวลาการโพสต์ในอดีตได้"
 
 #. module: social
 #: model_terms:ir.ui.view,arch_db:social.social_post_template_view_form
@@ -1841,7 +1863,7 @@ msgstr "โพสต์ของคุณ"
 #: code:addons/social/static/src/xml/social_templates.xml:0
 #, python-format
 msgid "a Stream from an existing account"
-msgstr ""
+msgstr "สตรีมจากบัญชีที่มีอยู่"
 
 #. module: social
 #: model_terms:ir.ui.view,arch_db:social.social_post_template_view_form

@@ -63,6 +63,13 @@ export class QualityCheck extends MrpWorkorder {
             }
             this.env.reload();
             return;
+        } else if (record.data.test_type === "print_label") {
+            const res = await record.model.orm.call(record.resModel, "action_print", [
+                record.resId,
+            ]);
+            this.action.doAction(res);
+            this._pass();
+            return;
         } else if (record.data.test_type === "picture") {
             this.fileUploaderToggle.el.click();
             return;

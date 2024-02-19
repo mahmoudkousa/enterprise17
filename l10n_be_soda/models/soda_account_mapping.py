@@ -31,6 +31,11 @@ class SodaAccountMapping(models.Model):
                 ('code', '=like', f'{mapping.code}%'),
             ], limit=1)
 
+    @api.depends('code', 'name')
+    def _compute_display_name(self):
+        for mapping in self:
+            mapping.display_name = f"{mapping.code} {mapping.name}"
+
     @api.model
     def find_or_create_mapping_entries(self, soda_code_to_name_mapping, company_id):
         """Find account mappings for the provided SODA codes and/or create new ones when mappings for some SODA codes
@@ -40,12 +45,13 @@ class SodaAccountMapping(models.Model):
         :param company_id: the company for which to find or create the entries
         :return: a recordset of soda.account.mapping entries for the given SODA codes
         """
+        soda_code_to_name_mapping = soda_code_to_name_mapping or {}
         soda_account_codes = list(soda_code_to_name_mapping.keys())
         # Find existing account mappings for the provided SODA codes
-        soda_account_mappings = self.search([
-            *self._check_company_domain(company_id),
-            ('code', 'in', soda_account_codes),
-        ])
+        domain = [*self._check_company_domain(company_id)]
+        if soda_account_codes:
+            domain.append(('code', 'in', soda_account_codes))
+        soda_account_mappings = self.search(domain)
         soda_account_mapping_codes = set(soda_account_mappings.mapped('code'))
         new_soda_account_mappings = []
         for code, name in soda_code_to_name_mapping.items():

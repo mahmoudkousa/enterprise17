@@ -7,7 +7,7 @@ import { EmbeddedView } from "@knowledge/views/embedded_view";
 import { ItemCalendarPropsDialog } from "@knowledge/components/item_calendar_props_dialog/item_calendar_props_dialog";
 import { PromptEmbeddedViewNameDialog } from "@knowledge/components/prompt_embedded_view_name_dialog/prompt_embedded_view_name_dialog";
 import { useOwnDebugContext } from "@web/core/debug/debug_context";
-import { useService } from "@web/core/utils/hooks";
+import { useBus, useService } from "@web/core/utils/hooks";
 import {
     Component,
     onWillStart,
@@ -15,10 +15,6 @@ import {
     useSubEnv
 } from "@odoo/owl";
 import { decodeDataBehaviorProps, encodeDataBehaviorProps } from "@knowledge/js/knowledge_utils";
-import {
-    BehaviorToolbar,
-    BehaviorToolbarButton,
-} from "@knowledge/components/behaviors/behavior_toolbar/behavior_toolbar";
 
 
 const EMBEDDED_VIEW_LIMITS = {
@@ -30,10 +26,6 @@ const EMBEDDED_VIEW_LIMITS = {
  * Wrapper for the embedded view, manage the toolbar and the embedded view props
  */
 export class EmbeddedViewManager extends Component {
-    static components = {
-        BehaviorToolbar,
-        BehaviorToolbarButton,
-    };
     static props = {
         action: { type: Object },
         additionalViewProps: { type: Object, optional: true },
@@ -70,6 +62,16 @@ export class EmbeddedViewManager extends Component {
         // store the start and end date properties that the model should use.
         this.state = useState({additionalViewProps: this.props.additionalViewProps});
 
+        useBus(this.env.bus, `KNOWLEDGE_EMBEDDED_${this.props.context.knowledgeEmbeddedViewId}:EDIT`, () => {
+            if (this.props.additionalViewProps) {
+                this._onEditBtnClick(this);
+            } else {
+                this._onRenameBtnClick(this);
+            }
+        });
+        useBus(this.env.bus, `KNOWLEDGE_EMBEDDED_${this.props.context.knowledgeEmbeddedViewId}:OPEN`, () => {
+            this._onOpenBtnClick(this);
+        });
         /**
          * @param {ViewType} viewType
          * @param {Object} [props={}]
@@ -301,7 +303,10 @@ export class EmbeddedViewManager extends Component {
         this.actionService.doAction(this.action, {
             viewType: this.props.viewType,
             props,
-            additionalContext: { knowledgeEmbeddedViewId: this.props.context.knowledgeEmbeddedViewId }
+            additionalContext: {
+                knowledgeEmbeddedViewId: this.props.context.knowledgeEmbeddedViewId,
+                isOpenedEmbeddedView: true
+            }
         });
     }
 

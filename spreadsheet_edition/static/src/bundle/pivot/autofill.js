@@ -67,11 +67,7 @@ autofillModifiersRegistry
                     isColumn = true;
                     steps = rule.current;
             }
-            const content = getters.getPivotNextAutofillValue(
-                getters.getFormulaCellContent(data.sheetId, data.cell),
-                isColumn,
-                steps
-            );
+            const content = getters.getPivotNextAutofillValue(data.cell.content, isColumn, steps);
             let tooltip = {
                 props: {
                     content: data.content,

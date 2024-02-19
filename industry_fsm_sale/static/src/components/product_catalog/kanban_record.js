@@ -16,7 +16,7 @@ export class FSMProductCatalogKanbanRecord extends ProductCatalogKanbanRecord {
     }
 
     async _updateQuantity() {
-        const { action, price } = await this.rpc("/product/catalog/update_order_line_info", {
+        const { action, price, min_quantity } = await this.rpc("/product/catalog/update_order_line_info", {
             order_id: this.env.orderId,
             product_id: this.env.productId,
             quantity: this.productCatalogData.quantity,
@@ -25,6 +25,9 @@ export class FSMProductCatalogKanbanRecord extends ProductCatalogKanbanRecord {
         });
         if (price) {
             this.productCatalogData.price = parseFloat(price);
+        }
+        if (min_quantity) {
+            this.productCatalogData.minimumQuantityOnProduct = min_quantity;
         }
         if (action && action !== true) {
             const actionContext = {

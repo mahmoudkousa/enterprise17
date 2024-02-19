@@ -637,6 +637,27 @@ registry.category("web_tour.tours").add('test_gs1_receipt_conflicting_barcodes_1
     ...stepUtils.validateBarcodeOperation(".o_validate_page.btn-success"),
 ]});
 
+registry.category("web_tour.tours").add('test_gs1_delivery_ambiguous_serial_number', {test:true, steps: () => [
+    {
+        trigger: '.o_barcode_client_action',
+        run: 'scan LOC-01-00-00',
+    },
+    {
+        trigger: '.o_barcode_client_action',
+        run: 'scan 01057115440019521524071010304',
+    },
+    {
+        trigger: '.o_barcode_line .qty-done:contains(1)',
+        run: function () {
+            helper.assertLinesCount(1);
+            const $line = helper.getLine({barcode: '05711544001952'});
+            helper.assertLineIsHighlighted($line, true);
+            helper.assertLineQty($line, "1 / 1");
+        }
+    },
+    // Validates the transfer.
+    ...stepUtils.validateBarcodeOperation(".o_validate_page.btn-success"),
+]});
 registry.category("web_tour.tours").add('test_gs1_receipt_conflicting_barcodes_2', {test: true, steps: () => [
     {
         trigger: '.o_barcode_client_action',
@@ -747,6 +768,78 @@ registry.category("web_tour.tours").add('test_gs1_receipt_conflicting_barcodes_3
         }
     },
     ...stepUtils.validateBarcodeOperation(".o_validate_page.btn-success"),
+]});
+
+registry.category("web_tour.tours").add("test_gs1_receipt_conflicting_barcodes_mistaken_as_gs1", {test: true, steps: () => [
+    // Creates a new receipt.
+    { trigger: ".o_stock_barcode_main_menu", run: "scan WH-RECEIPTS" },
+    // Scans 3000000015 -> Will be parsed as 15 units by the GS1 nomenclature
+    // but since we don't expect a quantity here (no line yet), it should also
+    // check if this barcode matches something else (by-passing the nomenclature.)
+    { trigger: ".o_barcode_client_action", run: "scan 3000000015" },
+    {
+        trigger: ".o_barcode_line",
+        run: function() {
+            const line = helper.getLine({ barcode: "3000000015" });
+            helper.assertLineQty(line, "1");
+        },
+    },
+    // Scans 21000000000003 -> Will be parsed as a serial number by the GS1 nomenclature but since
+    // it's irrelevant to scan a SN here (previous scanned product is not tracked), it should also
+    // check if it's something else barcode (by-passing the nomenclature.)
+    { trigger: ".o_barcode_client_action", run: "scan 21000000000003" },
+    {
+        trigger: ".o_barcode_line[data-barcode='21000000000003']",
+        run: function() {
+            const line = helper.getLine({ barcode: "21000000000003" });
+            helper.assertLineQty(line, "1");
+        },
+    },
+    // Scans again 3000000015 but since it could genuinely be a quantity, we have no way to find if
+    // it's really a GS1 or something else and use it as it was parsed.
+    { trigger: ".o_barcode_client_action", run: "scan 3000000015" },
+    {
+        trigger: ".o_barcode_line.o_selected .qty-done:contains('16')",
+        run: function() {
+            const line = helper.getLine({ barcode: "21000000000003" });
+            // The qty of the selected product should be incremented by 15.
+            helper.assertLineQty(line, "16");
+        },
+    },
+    // Scans 21-Chouette-MegaPack whom can be interpreted as a lot (AI 21, lot name:
+    // "-Chouette-MegaPack") but who is actually an existing package.
+    { trigger: ".o_barcode_client_action", run: "scan 21-Chouette-MegaPack" },
+    {
+        trigger: ".o_barcode_line[data-barcode='21000000000003'] div[name='package']",
+        run: function() {
+            const line = helper.getLine({ barcode: "21000000000003" });
+            helper.assertLineQty(line, "16");
+            helper.assert(line.querySelector(".result-package").innerText, "21-Chouette-MegaPack");
+        },
+    },
+    // Now, scans a product tracked by SN and ensures the barcode starting by 21 are indeed
+    // interpreted as serial number once a tracked product's waiting a SN.
+    { trigger: ".o_barcode_client_action", run: "scan productserial1" },
+    { trigger: ".o_barcode_line[data-barcode='productserial1']", run: "scan 21-Chouette-MegaPack" },
+    {
+        trigger: ".o_barcode_line.o_selected .o_line_lot_name",
+        run: function() {
+            const line = helper.getLine({ barcode: "productserial1" });
+            helper.assert(line.querySelector(".o_line_lot_name").innerText, "-Chouette-MegaPack");
+        },
+    },
+    { trigger: ".o_barcode_client_action", run: "scan 21000000000003" },
+    { trigger: ".o_barcode_line.o_selected .o_line_button.o_toggle_sublines" },
+    {
+        trigger: ".o_sublines .o_barcode_line.o_selected",
+        run: function() {
+            helper.assert(document.querySelector(".o_barcode_line_summary .qty-done").innerText, "2");
+            helper.assert(
+                document.querySelector(".o_sublines .o_selected .o_line_lot_name").innerText,
+                "000000000003"
+            );
+        },
+    },
 ]});
 
 registry.category("web_tour.tours").add('test_gs1_receipt_lot_serial', {test: true, steps: () => [

@@ -12,7 +12,7 @@ from odoo.addons.partner_commission.tests.setup import Line, Spec, TestCommissio
 from odoo.tools.misc import NON_BREAKING_SPACE
 
 
-@tagged('commission_purchase')
+@tagged('commission_purchase', 'post_install', '-at_install')
 class TestPurchaseOrder(TestCommissionsSetup):
     def test_automatic_confirm(self):
         """Only purchase orders within the frequency date range and

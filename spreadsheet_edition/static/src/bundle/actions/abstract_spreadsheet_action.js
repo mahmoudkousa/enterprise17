@@ -6,6 +6,7 @@ import { downloadFile } from "@web/core/network/download";
 import { standardActionServiceProps } from "@web/webclient/actions/action_service";
 
 import { UNTITLED_SPREADSHEET_NAME } from "@spreadsheet/helpers/constants";
+import { createDefaultCurrencyFormat } from "@spreadsheet/currency/helpers";
 import * as spreadsheet from "@odoo/o-spreadsheet";
 import { migrate } from "@spreadsheet/o_spreadsheet/migration";
 import { DataSources } from "@spreadsheet/data_sources/data_sources";
@@ -14,7 +15,6 @@ import { RecordFileStore } from "../image/record_file_store";
 import { useSpreadsheetCurrencies, useSpreadsheetLocales, useSpreadsheetThumbnail } from "../hooks";
 import { useSpreadsheetPrint } from "@spreadsheet/hooks";
 
-const { createCurrencyFormat } = spreadsheet.helpers;
 const uuidGenerator = new spreadsheet.helpers.UuidGenerator();
 
 const { Model } = spreadsheet;
@@ -132,11 +132,7 @@ export class AbstractSpreadsheetAction extends Component {
         });
         const defaultCurrency = this.record.default_currency;
         const defaultCurrencyFormat = defaultCurrency
-            ? createCurrencyFormat({
-                  symbol: defaultCurrency.symbol,
-                  position: defaultCurrency.position,
-                  decimalPlaces: defaultCurrency.decimalPlaces,
-              })
+            ? createDefaultCurrencyFormat(defaultCurrency)
             : undefined;
         this.model = new Model(
             migrate(this.spreadsheetData),

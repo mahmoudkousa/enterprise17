@@ -24,10 +24,19 @@ class TestSEPAFile(AccountTestInvoicingCommon):
             'company_id': cls.env.company.id,
         }])
 
+        cls.bank_bnp = cls.env['res.bank'].create({
+            'name': 'BNP Paribas',
+            'bic': 'GEBABEBB'
+        })
+        cls.bank_ing = cls.env['res.bank'].create({
+            'name': 'ING',
+            'bic': 'BBRUBEBB'
+        })
+
         cls.company_bank_account = cls.env['res.partner.bank'].create({
             'acc_type': "iban",
             'acc_number': "BE15001559627230",
-            'bank_id': cls.env.ref('base.bank_bnp').id,
+            'bank_id': cls.bank_bnp.id,
             'partner_id': cls.env.company.partner_id.id,
             'company_id': cls.env.company.id,
         })
@@ -40,7 +49,7 @@ class TestSEPAFile(AccountTestInvoicingCommon):
         cls.bank_account = cls.env['res.partner.bank'].create({
             'acc_type': "iban",
             'acc_number': "BE53485391778653",
-            'bank_id': cls.env.ref('base.bank_ing').id,
+            'bank_id': cls.bank_ing.id,
             'partner_id': cls.address_home.id,
             'company_id': cls.env.company.id,
         })

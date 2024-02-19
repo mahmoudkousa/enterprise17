@@ -10,21 +10,11 @@
 
 .o_knowledge_behavior_type_embedded_view {
     margin-left: calc(-1 * var(--editor-gutter-size));
-    margin-right: calc(-1 * var(--editor-gutter-size));
+    margin-right: calc(-1 * var(--editor-gutter-size) - 2rem);
     position: relative;
     background-color: $o-webclient-background-color;
     border-left: 2px solid transparent; // adjust to resizer
 
-    .o_knowledge_toolbar {
-        position: absolute;
-        visibility: hidden;
-        height: 2rem;
-    }
-    &:hover {
-        .o_knowledge_toolbar {
-            visibility: visible;
-        }
-    }
     .o_knowledge_embedded_view {
         .o_content:not(.o_view_sample_data) .o_view_nocontent:not(.o_knowledge_item_calendar_nocontent) {
             display: none !important;
@@ -97,22 +87,5 @@
     }
     .o_calendar_filter .ui-menu-item a {
         color: $o-gray-700 !important;
-    }
-}
-
-@include media-breakpoint-up(md) {
-    .o_knowledge_behavior_type_embedded_view {
-        .o_knowledge_toolbar {
-            top: -2rem;
-            right: 0;
-        }
-    }
-}
-@include media-breakpoint-down(md) {
-    .o_knowledge_behavior_type_embedded_view {
-        .o_knowledge_toolbar {
-            top: -2rem;
-            right: 0rem;
-        }
     }
 }

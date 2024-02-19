@@ -3,6 +3,7 @@
 
 from odoo import api, fields, models
 from odoo.osv import expression
+from odoo.addons.fleet.models.fleet_vehicle_model import FUEL_TYPES
 
 
 class HrContract(models.Model):
@@ -58,7 +59,7 @@ class HrContract(models.Model):
     max_unused_cars = fields.Integer(compute='_compute_max_unused_cars')
     acquisition_date = fields.Date(related='car_id.acquisition_date', readonly=False, groups="fleet.fleet_group_manager")
     car_value = fields.Float(related="car_id.car_value", readonly=False, groups="fleet.fleet_group_manager")
-    fuel_type = fields.Selection(related="car_id.fuel_type", readonly=False, groups="fleet.fleet_group_manager")
+    fuel_type = fields.Selection(selection=lambda self: FUEL_TYPES, compute="_compute_fuel_type", readonly=False, groups="fleet.fleet_group_manager")
     co2 = fields.Float(related="car_id.co2", readonly=False, groups="fleet.fleet_group_manager")
     driver_id = fields.Many2one('res.partner', related="car_id.driver_id", readonly=False, groups="fleet.fleet_group_manager")
     car_open_contracts_count = fields.Integer(compute='_compute_car_open_contracts_count', groups="fleet.fleet_group_manager")
@@ -147,6 +148,10 @@ class HrContract(models.Model):
             else:
                 contract.car_id = False
 
+    @api.depends('car_id', 'new_car_model_id')
+    def _compute_fuel_type(self):
+        for contract in self:
+            contract.fuel_type = contract.car_id.fuel_type if contract.car_id else contract.new_car_model_id.default_fuel_type or False
 
     @api.depends('car_id', 'new_car', 'new_car_model_id', 'car_id.total_depreciated_cost',
         'car_id.atn', 'new_car_model_id.default_atn', 'new_car_model_id.default_total_depreciated_cost')
@@ -233,6 +238,8 @@ class HrContract(models.Model):
         if self.transport_mode_car:
             self.new_car = False
             self.new_car_model_id = False
+        if self.car_id:
+            self.transport_mode_private_car = False
 
     def _get_fields_that_recompute_payslip(self):
         # Returns the fields that should recompute the payslip

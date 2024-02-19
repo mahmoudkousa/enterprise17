@@ -6,7 +6,7 @@ import { KnowledgeSidebar } from '@knowledge/components/sidebar/sidebar';
 import { useService } from "@web/core/utils/hooks";
 import { Deferred } from "@web/core/utils/concurrency";
 
-import { onMounted, onWillStart, useChildSubEnv, useRef } from "@odoo/owl";
+import { onMounted, onWillStart, useChildSubEnv, useExternalListener, useRef } from "@odoo/owl";
 
 export class KnowledgeArticleFormController extends FormController {
     setup() {
@@ -30,6 +30,8 @@ export class KnowledgeArticleFormController extends FormController {
             renameArticle: this.renameArticle.bind(this),
             toggleAsideMobile: this.toggleAsideMobile.bind(this),
             topbarMountedPromise: this.topbarMountedPromise,
+            save: this.save.bind(this),
+            discard: this.discard.bind(this),
         });
         // Unregister the current candidate recordInfo for Knowledge macros in
         // case of breadcrumbs mismatch.
@@ -46,6 +48,12 @@ export class KnowledgeArticleFormController extends FormController {
         });
         onMounted(() => {
             this.topbarMountedPromise.resolve();
+        });
+
+        useExternalListener(document.documentElement, 'mouseleave', async () => {
+            if (await this.model.root.isDirty()) {
+                await this.model.root.save();
+            }
         });
     }
 

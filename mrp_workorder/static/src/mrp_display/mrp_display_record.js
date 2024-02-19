@@ -31,16 +31,13 @@ export class MrpDisplayRecord extends Component {
     static props = {
         addToValidationStack: Function,
         groups: Object,
-        barcodeTarget: Boolean,
+        barcodeTarget: { type: Boolean, optional: true },
         production: { optional: true, type: Object },
         record: Object,
-        recordUpdated: Function,
         removeFromValidationStack: Function,
-        selectUser: Function,
         selectWorkcenter: { optional: true, type: Function },
         sessionOwner: Object,
         updateEmployees: Function,
-        workorders: Array,
         workcenters: Array,
         demoRecord: { type: Boolean, optional: true },
     };
@@ -85,6 +82,9 @@ export class MrpDisplayRecord extends Component {
     }
 
     async quickRegisterProduction() {
+        if (this.productionComplete) {
+            return this.registerProduction();
+        }
         const { production } = this.props;
         const qtyToSet = this.productionComplete ? 0 : production.data.product_qty;
         await production.update({ qty_producing: qtyToSet }, { save: true });
@@ -127,7 +127,7 @@ export class MrpDisplayRecord extends Component {
     get cssClass() {
         const active = this.active ? "o_active" : "";
         const disabled = this.disabled ? "o_disabled" : "";
-        const underValidation = this.state.underValidation ? "o_fadeout_animation" : "";
+        const underValidation = this.state.underValidation && !this.record.is_last_unfinished_wo ? "o_fadeout_animation" : "";
         const finished = this.state.validated ? "d-none" : "";
         return `${active} ${disabled} ${underValidation} ${finished}`;
     }
@@ -202,9 +202,8 @@ export class MrpDisplayRecord extends Component {
         if (this.resModel == "mrp.workorder") {
             return [];
         }
-        const activeWorkordersIds = this.props.workorders.map((wo) => wo.data.id);
-        return this.props.record.data.workorder_ids.records.filter((wo) =>
-            activeWorkordersIds.includes(wo.data.id)
+        return this.props.record.data.workorder_ids.records.filter(
+            (wo) => !["pending", "waiting"].includes(wo.data.state)
         );
     }
 
@@ -290,8 +289,21 @@ export class MrpDisplayRecord extends Component {
         }
     }
 
+    async openWorksheet(){
+        const res = await this.props.record.model.orm.call(
+            this.lastOpenedQualityCheck.resModel,
+            "action_fill_sheet",
+            [this.lastOpenedQualityCheck.resId]);
+        this.action.doAction(res, {
+            onClose: async () => {
+                await this.lastOpenedQualityCheck.load();
+                this.qualityCheckDone(false, this.lastOpenedQualityCheck.data.quality_state);
+            },
+        });
+    }
+
     async displayInstruction(record) {
-        if (!record) {
+        if (!record && this.lastOpenedQualityCheck) {
             // Searches the next Quality Check.
             let lastQC = this.lastOpenedQualityCheck.data;
             const checks = this.props.record.data.check_ids.records;
@@ -309,8 +321,19 @@ export class MrpDisplayRecord extends Component {
             delete this.lastOpenedQualityCheck;
             return;
         }
+        if (!isNaN(record)) {
+            record = this.props.record.data.check_ids.records.find((r) => r.resId === record);
+        }
 
         const worksheetData = await this.getWorksheetData(record);
+
+        this.lastOpenedQualityCheck = record;
+
+        if (!worksheetData && !record.data.operation_note && record.data.test_type === 'worksheet') {
+            // if there is no instruction to display, open worksheet form directly
+            this.openWorksheet();
+            return;
+        }
         const params = {
             body: record.data.note,
             record,
@@ -322,8 +345,8 @@ export class MrpDisplayRecord extends Component {
                 delete this.lastOpenedQualityCheck;
             },
             qualityCheckDone: this.qualityCheckDone.bind(this),
+            openCheck: this.displayInstruction.bind(this),
         };
-        this.lastOpenedQualityCheck = record;
 
         this.dialog.add(MrpQualityCheckConfirmationDialog, params);
     }
@@ -336,11 +359,13 @@ export class MrpDisplayRecord extends Component {
                 As the props are not yet updated with the new checks, we need to use this hack
                 to get the updated next check from the env model.
              */
-            const MOChecks = this.env.model.root.records.find(
-                (r) => r.resId === this.props.production.resId
-            ).data.check_ids.records;
-            const nextCheckId = MOChecks.find((r) => r.resId === this.lastOpenedQualityCheck.resId).data.next_check_id[0];
-            return this.displayInstruction(MOChecks.find((r) => r.resId === nextCheckId));
+            const WOChecks = this.env.model.root.records
+                .find((r) => r.resId === this.props.production.resId)
+                .data.workorder_ids.records.find((wo) => wo.resId === this.props.record.resId).data
+                .check_ids.records;
+            const nextCheckId = WOChecks.find((r) => r.resId === this.lastOpenedQualityCheck.resId)
+                .data.next_check_id[0];
+            return this.displayInstruction(WOChecks.find((r) => r.resId === nextCheckId));
         }
         // Show the next Quality Check only if the previous one is passed.
         if (qualityState === "pass") {
@@ -407,16 +432,8 @@ export class MrpDisplayRecord extends Component {
             record: this.props.record,
             params,
             reload: this.env.reload.bind(this),
+            removeFromCache: this.env.searchModel.removeRecordFromCache.bind(this.env.searchModel),
         });
-    }
-
-    async actionAssignSerial() {
-        const { resModel, resId } = this.props.record;
-        if (resModel === "mrp.workorder") {
-            return;
-        }
-        await this.model.orm.call(resModel, "action_generate_serial", [resId]);
-        this.model.load();
     }
 
     onClickValidateButton() {
@@ -435,8 +452,13 @@ export class MrpDisplayRecord extends Component {
             if (this.record.state === "ready" && this.record.qty_producing === 0) {
                 this.props.record.update({ qty_producing: this.record.qty_production });
             }
+            this.validatingEmployee = this.props.sessionOwner.id;
             await this.props.record.save();
-            await this.model.orm.call(resModel, "end_all", [resId]);
+            const action = await this.model.orm.call(resModel, "pre_record_production", [resId]);
+            if (action && typeof action === "object") {
+                action.context.skip_redirection = true;
+                return this._doAction(action);
+            }
             await this.props.updateEmployees();
         }
         if (resModel === "mrp.production") {
@@ -452,7 +474,7 @@ export class MrpDisplayRecord extends Component {
             // wizard will straight mark the MO as done without the confirmation delay.
             if (action && typeof action === "object") {
                 action.context.skip_redirection = true;
-                return this._doAction(action);
+                return this._doAction(action, resId);
             }
         }
         // Makes the validation taking a little amount of time (see o_fadeout_animation CSS class).
@@ -483,18 +505,22 @@ export class MrpDisplayRecord extends Component {
         }
         const action = await this.model.orm.call(resModel, "button_mark_done", [resId], kwargs);
         if (action && typeof action === "object") {
-            action.context.skip_redirection = true;
+            if (action.context) {
+                action.context.skip_redirection = true;
+            }
             return this._doAction(action);
         } else if (this.props.record.resModel === "mrp.production") {
             await this.props.removeFromValidationStack(this.props.record);
             this.state.validated = true;
-            await this.props.updateEmployees();
         }
     }
 
     async workorderValidation(skipRemoveFromStack = false) {
         const { resId, resModel } = this.props.record;
         const context = { no_start_next: true, mrp_display: true };
+        if (this.validatingEmployee) {
+            context.employee_id = this.validatingEmployee;
+        }
         await this.model.orm.call(resModel, "do_finish", [resId], { context });
         if (!skipRemoveFromStack){
             await this.props.removeFromValidationStack(this.props.record);
@@ -503,11 +529,15 @@ export class MrpDisplayRecord extends Component {
         await this.props.updateEmployees();
     }
 
-    _doAction(action) {
-        const options = {
-            onClose: () => this.env.reload(),
-        };
-        return this.model.action.doAction(action, options);
+    _doAction(action, idToRemoveFromCache = false) {
+        let onClose = () => this.env.reload();
+        if (idToRemoveFromCache) {
+            onClose = () => {
+                this.env.searchModel.removeRecordFromCache(idToRemoveFromCache);
+                this.env.reload();
+            };
+        }
+        return this.model.action.doAction(action, { onClose });
     }
 
     openFormView() {
@@ -553,8 +583,6 @@ export class MrpDisplayRecord extends Component {
             await this.model.orm.call(resModel, "stop_employee", [resId, [admin_id]]);
         }
         await this.env.reload();
-        await this.props.recordUpdated(this.record.id);
-        await this.props.updateEmployees();
     }
 
     get showWorksheetCheck() {
@@ -564,7 +592,7 @@ export class MrpDisplayRecord extends Component {
         const hasPDF = this.record.worksheet;
         const hasSlide = this.record.worksheet_google_slide;
         const hasNote = this.record.operation_note.length;
-        return !this.record.check_ids.count && (hasPDF || hasSlide || hasNote);
+        return hasPDF || hasSlide || hasNote;
     }
 
     onAnimationEnd(ev) {
@@ -597,9 +625,10 @@ export class MrpDisplayRecord extends Component {
         // wizard will straight mark the MO as done without the confirmation delay.
         if (action && typeof action === "object") {
             action.context.skip_redirection = true;
-            return this._doAction(action);
+            return this._doAction(action, this.props.record.resId);
         }
         await this.productionValidation();
+        this.env.searchModel.removeRecordFromCache(this.props.record.resId);
         this.env.reload();
     }
 }

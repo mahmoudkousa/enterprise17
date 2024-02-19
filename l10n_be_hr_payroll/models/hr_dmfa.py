@@ -410,7 +410,8 @@ class DMFAWorker(DMFANode):
                 # </Remun>
                 termination_periods = _split_termination_period(
                     employee.start_notice_period, employee.end_notice_period)
-                termination_remuneration = termination_payslips._get_line_values(['BASIC'])['BASIC'][termination_payslips.id]['total']
+                termination_values = termination_payslips._get_line_values(['BASIC'])
+                termination_remuneration = sum(termination_values['BASIC'][p.id]['total'] for p in termination_payslips)
 
                 period_remuneration = termination_remuneration / len(termination_periods)
                 # values.append((occupation_contracts, termination_payslips, termination_from, termination_to))
@@ -640,6 +641,8 @@ class DMFAOccupation(DMFANode):
                 self.reorganisation_measure = 3
             else:
                 self.reorganisation_measure = 4
+        elif contract.time_credit and contract.time_credit_type_id.code == "LEAVE281":
+            self.reorganisation_measure = 5
         else:
             self.reorganisation_measure = -1
 
@@ -1055,7 +1058,7 @@ class HrDMFAReport(models.Model):
 
         # GO File
         # =======
-        self.dmfa_go = base64.b64encode('go')
+        self.dmfa_go = base64.b64encode(b'go')
 
     def generate_dmfa_pdf_report(self):
         dmfa_pdf, dummy = self.env["ir.actions.report"].sudo()._render_qweb_pdf(

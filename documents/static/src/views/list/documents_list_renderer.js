@@ -13,6 +13,7 @@ import { DocumentsFileViewer } from "../helper/documents_file_viewer";
 import { DocumentsListRendererCheckBox } from "./documents_list_renderer_checkbox";
 import { useCommand } from "@web/core/commands/command_hook";
 import { useRef } from "@odoo/owl";
+import { getActiveHotkey } from "@web/core/hotkeys/hotkey_service";
 
 export class DocumentsListRenderer extends ListRenderer {
     static props = [...ListRenderer.props, "inspectedDocuments", "previewStore"];
@@ -54,10 +55,12 @@ export class DocumentsListRenderer extends ListRenderer {
     }
 
     getDocumentsInspectorProps() {
+        const documents = this.props.inspectedDocuments.length
+            ? this.props.inspectedDocuments
+            : this.props.list.selection;
+        const documentsIds = documents.map((doc) => doc.resId);
         return {
-            documents: this.props.inspectedDocuments.length
-                ? this.props.inspectedDocuments
-                : this.props.list.selection,
+            documents: this.props.list.records.filter((rec) => documentsIds.includes(rec.resId)),
             count: this.props.list.model.useSampleModel ? 0 : this.props.list.count,
             fileSize: this.props.list.model.fileSize,
             fields: this.props.list.fields,
@@ -101,6 +104,14 @@ export class DocumentsListRenderer extends ListRenderer {
             return;
         }
         this.props.list.selection.forEach((el) => el.toggleSelection(false));
+    }
+
+    onCellKeydown(ev, group = null, record = null) {
+        const hotkey = getActiveHotkey(ev);
+        if (hotkey === "enter") {
+            return;
+        }
+        return super.onCellKeydown(...arguments);
     }
 
     get hasSelectors() {

@@ -78,6 +78,7 @@
                             <field name="employee_contract_id" invisible="applicant_id"/>
                             <field name="applicant_id" invisible="employee_contract_id" readonly="1" context="{'show_partner_name': True}"/>
                             <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="company_id" invisible="1" groups="!base.group_multi_company"/>
                             <field name="currency_id" invisible="1"/>
                         </group>
                         <group string="Token" name="group_token" groups="base.group_no_one">

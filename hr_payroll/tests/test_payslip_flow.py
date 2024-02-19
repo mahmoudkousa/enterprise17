@@ -107,7 +107,6 @@ class TestPayslipFlow(TestPayslipBase):
         # I create record for generating the payslip for this Payslip run.
         payslip_employee = self.env['hr.payslip.employees'].create({
             'employee_ids': [(4, self.richard_emp.id)],
-            'structure_id': self.ref('hr_payroll.structure_003'),
         })
         # I generate the payslip by clicking on Generat button wizard.
         payslip_employee.with_context(active_id=payslip_run.id).compute_sheet()

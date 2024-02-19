@@ -6,7 +6,6 @@
             <field name="root_report_id" ref="account_reports.balance_sheet"/>
             <field name="availability_condition">coa</field>
             <field name="chart_template">be_comp</field>
-            <field name="active" eval="False"/>
             <field name="filter_unfold_all" eval="True"/>
             <field name="filter_date_range" eval="False"/>
             <field name="filter_analytic_groupby" eval="True"/>
@@ -717,6 +716,11 @@
         </record>
         <record id="account_financial_report_bs_comp_acap_el_e_apl_ply" model="account.report.line">
             <field name="action_id" ref="action_account_report_be_pl_comp_a"/>
+        </record>
+    </data>
+    <data noupdate="1">
+        <record id="account_financial_report_bs_comp_acap" model="account.report">
+            <field name="active" eval="False"/>
         </record>
     </data>
 </odoo>

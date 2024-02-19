@@ -9,6 +9,65 @@ from odoo.exceptions import ValidationError
 from odoo.tests import tagged, users
 
 
+class AppointmentHRLeavesTest(AppointmentHrCommon):
+    @users('apt_manager', 'staff_user_bxls')
+    def test_partner_on_leave_with_calendar_leave(self):
+        """Check that resource leaves are correctly reflected in the partners_on_leave field.
+
+        Overlapping times between the leave time of an employee and the meeting should add the partner
+        to the list of unavailable partners.
+        """
+        self.env['calendar.event'].search([('user_id', '=', self.staff_user_bxls.id)]).unlink()
+        self.env['resource.calendar.leaves'].sudo().search([('calendar_id', '=', self.staff_user_bxls.resource_calendar_id.id)]).unlink()
+        [meeting] = self._create_meetings(
+            self.staff_user_bxls,
+            [(self.reference_monday + timedelta(days=1),
+              self.reference_monday + timedelta(days=1, hours=3),
+              False,
+              )],
+            self.apt_type_bxls_2days.id
+        )
+        self.assertFalse(meeting.partners_on_leave)
+        self.env['resource.calendar.leaves'].sudo().create({
+            'calendar_id': self.staff_user_bxls.resource_calendar_id.id,
+            'date_from': self.reference_monday + timedelta(days=1),
+            'date_to': self.reference_monday + timedelta(days=1, minutes=5),
+            'name': 'Tuesday Morning Leave'
+        })
+        # a sane depedency cannot be expressed so it will only be updated when removed from cache
+        meeting.invalidate_recordset()
+        self.assertEqual(meeting.partners_on_leave, self.staff_user_bxls.partner_id)
+
+    @users('apt_manager', 'staff_user_bxls')
+    def test_partner_on_leave_with_conflicting_event(self):
+        """Check that conflicting meetings are correctly reflected in the partners_on_leave field.
+
+        Overlapping times between any other meeting of the employee and the meeting should add the partner
+        to the list of unavailable partners.
+        """
+        self.env['calendar.event'].search([('user_id', '=', self.staff_user_bxls.id)]).unlink()
+        self.env['resource.calendar.leaves'].sudo().search([('calendar_id', '=', self.staff_user_bxls.resource_calendar_id.id)]).unlink()
+        [meeting] = self._create_meetings(
+            self.staff_user_bxls,
+            [(self.reference_monday,
+              self.reference_monday + timedelta(hours=3),
+              False,
+              )],
+            self.apt_type_bxls_2days.id
+        )
+        self.assertFalse(meeting.partners_on_leave)
+        [conflicting_meeting] = self._create_meetings(
+            self.staff_user_bxls,
+            [(self.reference_monday,
+              self.reference_monday + timedelta(minutes=5),
+              False,
+              )],
+        )
+        meeting.invalidate_recordset()
+        self.assertEqual(meeting.partners_on_leave, self.staff_user_bxls.partner_id)
+        self.assertFalse(conflicting_meeting.partners_on_leave)
+
+
 @tagged('appointment_slots')
 class AppointmentHrTest(AppointmentHrCommon):
 

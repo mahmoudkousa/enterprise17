@@ -603,6 +603,10 @@ class TestConsolidationCompanyPeriod(AccountConsolidationTestCase):
         # = 0.75 * mlb
         expected_amount = 0.75 * move_line.balance
         self.assertAlmostEqual(cp._apply_historical_rates(move_line), expected_amount)
+        rate = self.env['consolidation.rate'].search([('rate', '=', 1.5)])
+        rate.rate = 3.0
+        # Check if the rate cache is properly invalidated
+        self.assertAlmostEqual(cp._apply_historical_rates(move_line), 1.5*move_line.balance)
 
     @patch(
         'odoo.addons.account_consolidation.models.consolidation_period.ConsolidationCompanyPeriod._convert')

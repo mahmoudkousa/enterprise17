@@ -348,7 +348,8 @@ QUnit.module("Spreadsheet Test History Action", {}, function () {
                         const revisions = [];
                         revisions.push(
                             createRevision(revisions, "REMOTE_REVISION", {
-                                id: "I clikced o",
+                                id: 999,
+                                nextRevisionId: "I clicked o",
                             })
                         );
                         revisions.push(
@@ -360,6 +361,11 @@ QUnit.module("Spreadsheet Test History Action", {}, function () {
                             revisions,
                         };
                     case "fork_history":
+                        assert.strictEqual(args.kwargs.revision_id, 999);
+                        assert.strictEqual(
+                            args.kwargs.spreadsheet_snapshot.revisionId,
+                            "I clicked o"
+                        );
                         assert.step("forking");
                         // placeholder return
                         return {

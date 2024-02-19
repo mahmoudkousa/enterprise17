@@ -8,7 +8,7 @@ class PosOrder(models.Model):
 
     def action_sent_receipt_on_whatsapp(self, name, partner, ticket_image):
         """ Send receipt on whatsapp if whatsapp is enabled and partner has whatsapp number or number is provided."""
-        if not self or not self.config_id.whatsapp_enabled or not partner.get('whatsapp'):
+        if not self or not self.config_id.whatsapp_enabled or not self.config_id.receipt_template_id or not partner.get('whatsapp'):
             return
         self.ensure_one()
         filename = 'Receipt-' + name + '.jpg'

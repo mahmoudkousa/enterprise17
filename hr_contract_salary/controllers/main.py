@@ -122,13 +122,10 @@ class HrContractSalary(http.Controller):
         contract_sudo = request.env['hr.contract'].sudo().browse(contract_id)
         if not contract_sudo.employee_id or contract_sudo.employee_id.user_id == request.env.user:
             return contract_sudo
-        try:
-            contract = request.env['hr.contract'].with_context(allowed_company_ids=request.env.user.company_ids.ids).browse(contract_id)
-            contract.check_access_rights('read')
-            contract.check_access_rule('read')
-            return contract_sudo
-        except:
-            return request.env['hr.contract']
+        contract = request.env['hr.contract'].with_context(allowed_company_ids=request.env.user.company_ids.ids).browse(contract_id)
+        contract.check_access_rights('read')
+        contract.check_access_rule('read')
+        return contract_sudo
 
     def _get_default_template_values(self, contract, offer):
         values = self._get_salary_package_values(contract, offer)
@@ -940,6 +937,8 @@ class HrContractSalary(http.Controller):
                 # YTI FIXME: Clean that brol
                 elif item.name == 'l10n_be_group_insurance_rate':
                     new_value = 1 if item.name in new_contract and new_contract[item.name] else 0
+                elif item.name == "ip_wage_rate":
+                    new_value = new_value if new_contract.ip else 0
                 else:
                     new_values = new_contract.mapped(item.name)
                     if not new_values or isinstance(new_values, models.BaseModel):

@@ -3,15 +3,16 @@
 # 	* helpdesk
 # 
 # Translators:
-# Wil Odoo, 2023
+# Rasareeyar Lappiam, 2024
+# Wil Odoo, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-26 16:09+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Wil Odoo, 2023\n"
+"Last-Translator: Wil Odoo, 2024\n"
 "Language-Team: Thai (https://app.transifex.com/odoo/teams/41243/th/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -90,13 +91,13 @@ msgstr "<b>ลากและวาง</b>บัตรเพื่อเปล�
 #: code:addons/helpdesk/static/src/js/tours/helpdesk.js:0
 #, python-format
 msgid ""
-"<b>Log notes</b> for internal communications (you will only notify the persons you specifically tag). \n"
-"    Use <b>@ mentions</b> to ping a colleague \n"
-"    or <b># mentions</b> to contact a group of people."
+"<b>Log notes</b> for internal communications (you will only notify the "
+"persons you specifically tag). Use <b>@ mentions</b> to ping a colleague or "
+"<b># mentions</b> to contact a group of people."
 msgstr ""
-"<b>บันทึกโน๊ต</b> สำหรับการสื่อสารภายใน (คุณจะแจ้งเฉพาะบุคคลที่คุณแท็กถึงโดยเฉพาะ) \n"
-"    ใช้ <b>@ mentions</b> เพื่อแจ้งเพื่อนร่วมงาน \n"
-"    หรือ <b># mentions</b> เพื่อติดต่อกลุ่มของผู้คน"
+"<b>บันทึกโน๊ต</b> สำหรับการสื่อสารภายใน "
+"(คุณจะแจ้งเฉพาะบุคคลที่คุณแท็กถึงโดยเฉพาะ) ใช้ <b>@ mentions</b> "
+"เพื่อแจ้งเพื่อนร่วมงาน หรือ <b># mentions</b> เพื่อติดต่อกลุ่มของผู้คน"
 
 #. module: helpdesk
 #. odoo-javascript
@@ -265,7 +266,7 @@ msgid ""
 "        <a t-attf-href=\"/my/ticket/{{ object.id }}/{{ object.access_token }}\" t-out=\"object.name or ''\">Table legs are unbalanced</a>\n"
 "    </t>\n"
 "    has been received and is being reviewed by our <t t-out=\"object.team_id.name or ''\">VIP Support</t> team.<br><br>\n"
-"    The reference for your ticket is <strong><t t-out=\"object.id or ''\">15</t></strong>.<br><br>\n"
+"    The reference for your ticket is <strong><t t-out=\"object.ticket_ref or ''\">15</t></strong>.<br><br>\n"
 "\n"
 "    To provide any additional information, simply reply to this email.<br><br>\n"
 "    <t t-if=\"object.team_id.show_knowledge_base\">\n"
@@ -292,21 +293,21 @@ msgid ""
 "        "
 msgstr ""
 "<div>\n"
-"    เรียน <t t-out=\"object.sudo().partner_id.name or object.sudo().partner_name or 'Madam/Sir'\">ลูกค้าที่เคารพ</t><br><br>\n"
-"    คำร้องขอของคุณ\n"
+"    เรียน <t t-out=\"object.sudo().partner_id.name or object.sudo().partner_name or 'Madam/Sir'\">ท่านผู้มีเกียรติ</t><br><br>\n"
+"    คำขอ\n"
 "    <t t-if=\"object.get_portal_url()\">\n"
 "        <a t-attf-href=\"/my/ticket/{{ object.id }}/{{ object.access_token }}\" t-out=\"object.name or ''\">ขาโต๊ะไม่สมดุล</a>\n"
 "    </t>\n"
-"    ได้รับแล้วและกำลังถูกตรวจสอบโดย <t t-out=\"object.team_id.name or ''\">ทีมช่วยเหลือ VIP</t> ของเรา<br><br>\n"
-"    ข้อมูลอ้างอิงสำหรับทิกเก็ตของคุณคือ <strong><t t-out=\"object.id or ''\">15</t></strong>.<br><br>\n"
+"    ของคุณ ได้รับแล้วและกำลังได้รับการตรวจสอบโดยทีม <t t-out=\"object.team_id.name or ''\">ช่วยเหลือสำหรับ VIP</t>ของเรา<br><br>\n"
+"    ข้อมูลอ้างอิงสำหรับทิกเก็ตของคุณคือ<strong><t t-out=\"object.ticket_ref or ''\">15</t></strong>.<br><br>\n"
 "\n"
 "    หากต้องการให้ข้อมูลเพิ่มเติม เพียงตอบกลับอีเมลนี้<br><br>\n"
 "    <t t-if=\"object.team_id.show_knowledge_base\">\n"
-"        โปรดเยี่ยมชม <a t-attf-href=\"{{ object.team_id.get_knowledge_base_url() }}\">ศูนย์ช่วยเหลือ</a> ของเรา คุณอาจพบคำตอบสำหรับคำถามของคุณ\n"
+"        คุณสามารถขอความช่วยเหลือที่<a t-attf-href=\"{{ object.team_id.get_knowledge_base_url() }}\">ศูนย์ช่วยเหลือ</a>ได้ และคุณอาจพบคำตอบสำหรับคำถามของคุณ\n"
 "        <br><br>\n"
 "    </t>\n"
 "    <t t-if=\"object.team_id.allow_portal_ticket_closing\">\n"
-"        อย่าลังเลที่จะปิดตั๋วของคุณหากไม่ต้องการความช่วยเหลือของเราอีกต่อไป ขอบคุณสำหรับความร่วมมือของคุณ<br><br>\n"
+"        อย่าลังเลที่จะปิดทิกเก็ตของคุณหากไม่ต้องการความช่วยเหลือของเราอีกต่อไป ขอบคุณสำหรับความร่วมมือ<br><br>\n"
 "    </t>\n"
 "\n"
 "    <div style=\"text-align: center; padding: 16px 0px 16px 0px;\">\n"
@@ -315,12 +316,12 @@ msgstr ""
 "            <a style=\"background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;\" t-att-href=\"'/my/ticket/close/%s/%s' % (object.id, object.access_token)\" target=\"_blank\">ปิดทิกเก็ต</a>\n"
 "        </t>\n"
 "        <t t-if=\"object.team_id.use_website_helpdesk_forum or object.team_id.use_website_helpdesk_knowledge or object.team_id.use_website_helpdesk_slides\">\n"
-"            <a style=\"background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;\" t-att-href=\"object.team_id.feature_form_url\" target=\"_blank\">เยี่ยมชมศูนย์ช่วยเหลือ</a>\n"
+"            <a style=\"background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;\" t-att-href=\"object.team_id.feature_form_url\" target=\"_blank\">ไปที่ศูนย์ช่วยเหลือ</a>\n"
 "        </t><br><br>\n"
 "    </div>\n"
 "\n"
 "    ขอแสดงความนับถือ<br><br>\n"
-"    ทีม<t t-out=\"object.team_id.name or 'Helpdesk'\">Helpdesk</t>\n"
+"    ทีม <t t-out=\"object.team_id.name or 'Helpdesk'\">Helpdesk</t>\n"
 "</div>\n"
 "        "
 
@@ -341,6 +342,9 @@ msgid ""
 "                            <i class=\"fa fa-fw o_button_icon fa-meh-o text-warning\" invisible=\"rating_avg &lt; 2.33 or rating_avg &gt;= 3.66\" title=\"Okay\"/>\n"
 "                            <i class=\"fa fa-fw o_button_icon fa-frown-o text-danger\" invisible=\"rating_avg &gt;= 2.33\" title=\"Dissatisfied\"/>"
 msgstr ""
+"<i class=\"fa fa-fw o_button_icon fa-smile-o text-success\" invisible=\"rating_avg < 3.66\" title=\"พึงพอใจ\"/>\n"
+"                            <i class=\"fa fa-fw o_button_icon fa-meh-o text-warning\" invisible=\"rating_avg < 2.33 or rating_avg >= 3.66\" title=\"โอเค\"/>\n"
+"                            <i class=\"fa fa-fw o_button_icon fa-frown-o text-danger\" invisible=\"rating_avg >= 2.33\" title=\"ไม่พอใจ\"/>"
 
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_ticket_view_form
@@ -359,6 +363,9 @@ msgid ""
 " this by navigating to the General Settings and configuring the "
 "corresponding field.</span>"
 msgstr ""
+"<i class=\"fa fa-lightbulb-o\" role=\"img\"/><span "
+"class=\"ms-2\">หากต้องการใช้อีเมลนามแฝง ขั้นตอนแรกคือกำหนดค่าโดเมนนามแฝง "
+"ทำได้โดยไปที่การตั้งค่าทั่วไปและกำหนดค่าฟิลด์ที่เกี่ยวข้อง</span>"
 
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_team_view_form
@@ -395,12 +402,12 @@ msgstr "<small class=\"text-end\">ขั้นตอน:</small>"
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.tickets_followup
 msgid "<small class=\"text-muted\">Assigned to</small>"
-msgstr ""
+msgstr "<small class=\"text-muted\">ได้รับมอบหมายให้</small>"
 
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.tickets_followup
 msgid "<small class=\"text-muted\">Customer</small>"
-msgstr ""
+msgstr "<small class=\"text-muted\">ลูกค้า</small>"
 
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.portal_helpdesk_ticket
@@ -414,11 +421,15 @@ msgid ""
 "title=\"By saving this change, the customer phone number will also be "
 "updated.\" invisible=\"not is_partner_phone_update\"/>"
 msgstr ""
+"<span class=\"fa fa-exclamation-triangle text-warning oe_edit_only\" "
+"title=\"เมื่อบันทึกการเปลี่ยนแปลงนี้ "
+"หมายเลขโทรศัพท์ของลูกค้าก็จะได้รับการอัปเดตด้วย\" invisible=\"not "
+"is_partner_phone_update\"/>"
 
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_ticket_view_activity
 msgid "<span class=\"m-1\"/>#"
-msgstr ""
+msgstr "<span class=\"m-1\"/>#"
 
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_sla_view_form
@@ -527,7 +538,7 @@ msgstr "<strong class=\"col-lg-2\">จัดการโดย</strong>"
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.tickets_followup
 msgid "<strong class=\"col-lg-3\">Reported on</strong>"
-msgstr ""
+msgstr "<strong class=\"col-lg-3\">รายงานเมื่อ</strong>"
 
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_team_view_form
@@ -689,12 +700,12 @@ msgstr "ชื่อโดเมน"
 #. module: helpdesk
 #: model:ir.model.fields,field_description:helpdesk.field_helpdesk_team__alias_domain
 msgid "Alias Domain Name"
-msgstr ""
+msgstr "ชื่อโดเมนนามแฝง"
 
 #. module: helpdesk
 #: model:ir.model.fields,field_description:helpdesk.field_helpdesk_team__alias_full_name
 msgid "Alias Email"
-msgstr ""
+msgstr "อีเมลนามแฝง"
 
 #. module: helpdesk
 #: model:ir.model.fields,field_description:helpdesk.field_helpdesk_team__alias_email_from
@@ -986,6 +997,8 @@ msgid ""
 "Centralize, manage, share and grow your knowledge library. Allow customers "
 "to search your articles in the help center for answers to their questions."
 msgstr ""
+"รวมศูนย์ จัดการ แชร์ และขยายคลังข้อมูลของคุณ "
+"อนุญาตให้ลูกค้าค้นหาบทความของคุณในศูนย์ช่วยเหลือเพื่อหาคำตอบสำหรับคำถามของพวกเขา"
 
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_team_view_form
@@ -1093,7 +1106,7 @@ msgstr "หน่วยงานในเชิงพาณิชย์"
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.tickets_followup
 msgid "Communication history"
-msgstr ""
+msgstr "ประวัติการติดต่อสื่อสาร"
 
 #. module: helpdesk
 #: model:ir.model.fields,field_description:helpdesk.field_helpdesk_team__use_website_helpdesk_forum
@@ -1351,7 +1364,7 @@ msgstr "วันครบกำหนด"
 #: code:addons/helpdesk/static/src/views/helpdesk_ticket_pivot/helpdesk_ticket_pivot_model.js:0
 #, python-format
 msgid "Deadline reached"
-msgstr ""
+msgstr "ครบกำหนดแล้ว"
 
 #. module: helpdesk
 #: model:ir.model.fields,field_description:helpdesk.field_helpdesk_team__alias_defaults
@@ -1588,7 +1601,7 @@ msgstr "ติดตามทิกเก็ตของทีมทั้งห
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.portal_my_home_helpdesk_ticket
 msgid "Follow all your helpdesk tickets"
-msgstr ""
+msgstr "ติดตามทิกเก็ตของ Helpdesk ทั้งหมดของคุณ"
 
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_tickets_view_search_base
@@ -1643,7 +1656,7 @@ msgstr "รับทิกเก็ตผ่านแบบฟอร์มออ
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_team_view_form
 msgid "Grant discounts, free products or free shipping"
-msgstr ""
+msgstr "มอบส่วนลด ของแถม หรือจัดส่งฟรี"
 
 #. module: helpdesk
 #. odoo-python
@@ -2140,6 +2153,8 @@ msgid ""
 " to search your forum posts in the help center for answers to their "
 "questions."
 msgstr ""
+"ให้ลูกค้าของคุณตอบคำถามของกันและกันในฟอรัม "
+"อนุญาตให้ลูกค้าค้นหาโพสต์ในฟอรัมของคุณในศูนย์ช่วยเหลือเพื่อหาคำตอบสำหรับคำถามของพวกเขา"
 
 #. module: helpdesk
 #. odoo-javascript
@@ -2172,7 +2187,7 @@ msgstr "ไลฟ์แชท"
 #. module: helpdesk
 #: model:ir.model.fields,field_description:helpdesk.field_helpdesk_team__alias_incoming_local
 msgid "Local-part based incoming detection"
-msgstr ""
+msgstr "การตรวจจับขาเข้าตามชิ้นส่วนในพื้นที่"
 
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_tickets_view_search_base
@@ -2225,7 +2240,7 @@ msgstr ""
 #. module: helpdesk
 #: model:ir.model.fields,field_description:helpdesk.field_helpdesk_ticket__medium_id
 msgid "Medium"
-msgstr "สื่อกลาง"
+msgstr "ปานกลาง"
 
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_tickets_view_search_base
@@ -2297,12 +2312,14 @@ msgstr "วันครบกำหนดของฉัน"
 #. module: helpdesk
 #. odoo-javascript
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
+#: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #, python-format
 msgid "My Performance"
 msgstr "ประสิทธิภาพของฉัน"
 
 #. module: helpdesk
 #. odoo-javascript
+#: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
@@ -2890,7 +2907,7 @@ msgstr "การอ้างอิง"
 #. module: helpdesk
 #: model:mail.message.subtype,name:helpdesk.mt_ticket_refund_status
 msgid "Refund Status"
-msgstr ""
+msgstr "สถานะการคืนเงิน"
 
 #. module: helpdesk
 #: model:ir.model.fields,field_description:helpdesk.field_helpdesk_team__use_credit_notes
@@ -2905,7 +2922,7 @@ msgstr "ซ่อมแซม"
 #. module: helpdesk
 #: model:mail.message.subtype,name:helpdesk.mt_ticket_repair_status
 msgid "Repair Status"
-msgstr ""
+msgstr "สถานะการซ่อมแซม"
 
 #. module: helpdesk
 #: model:ir.model.fields,field_description:helpdesk.field_helpdesk_team__use_product_repairs
@@ -2935,7 +2952,7 @@ msgstr "คืนค่า"
 #. module: helpdesk
 #: model:mail.message.subtype,name:helpdesk.mt_ticket_return_status
 msgid "Return Status"
-msgstr ""
+msgstr "สถานะการคืนสินค้า"
 
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_team_view_form
@@ -3223,6 +3240,9 @@ msgid ""
 "customers to search your eLearning courses in the help center for answers to"
 " their questions."
 msgstr ""
+"แชร์การนำเสนอและวิดีโอ และจัดระเบียบเป็นหลักสูตร "
+"อนุญาตให้ลูกค้าค้นหาหลักสูตร eLearning "
+"ของคุณในศูนย์ช่วยเหลือเพื่อหาคำตอบสำหรับคำถามของพวกเขา"
 
 #. module: helpdesk
 #: model:res.groups,name:helpdesk.group_use_rating
@@ -3545,14 +3565,14 @@ msgstr "ขั้นตอนนี้เสร็จสิ้น คลิก�
 #: code:addons/helpdesk/models/helpdesk_ticket.py:0
 #, python-format
 msgid "This ticket was closed %s hours after its SLA deadline."
-msgstr ""
+msgstr "ทิกเก็ตนี้ถูกปิด %s ชั่วโมงหลังจากกำหนดเวลา SLA แล้ว"
 
 #. module: helpdesk
 #. odoo-python
 #: code:addons/helpdesk/models/helpdesk_ticket.py:0
 #, python-format
 msgid "This ticket was successfully closed %s hours before its SLA deadline."
-msgstr ""
+msgstr "ทิกเก็ตนี้ถูกปิด %s ชั่วโมงก่อนถึงกำหนดเวลา SLA แล้ว"
 
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.view_helpdesk_stage_delete_confirmation_wizard
@@ -3680,8 +3700,8 @@ msgid "Ticket created"
 msgstr "ทิกเก็ตที่สร้างแล้ว"
 
 #. module: helpdesk
-#. odoo-python
 #. odoo-javascript
+#. odoo-python
 #: code:addons/helpdesk/models/helpdesk_team.py:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
@@ -3914,7 +3934,7 @@ msgstr "ใช้ <b>กิจกรรม</b> เพื่อจัดระเ
 #. module: helpdesk
 #: model:ir.model.fields,field_description:helpdesk.field_helpdesk_team__use_alias
 msgid "Use Alias"
-msgstr ""
+msgstr "ใช้นามแฝง"
 
 #. module: helpdesk
 #: model:ir.model.fields,field_description:helpdesk.field_helpdesk_ticket__use_coupons
@@ -3946,11 +3966,12 @@ msgstr "ใช้การคืน"
 #: code:addons/helpdesk/static/src/js/tours/helpdesk.js:0
 #, python-format
 msgid ""
-"Use the chatter to <b>send emails</b> and communicate efficiently with your customers. \n"
-"    Add new people to the followers' list to make them aware of the progress of this ticket."
+"Use the chatter to <b>send emails</b> and communicate efficiently with your "
+"customers. Add new people to the followers' list to make them aware of the "
+"progress of this ticket."
 msgstr ""
-"ใช้การสนทนาเพื่อ <b>ส่งอีเมล</b> และสื่อสารกับลูกค้าของคุณอย่างมีประสิทธิภาพ\n"
-"    เพิ่มบุคคลใหม่ในรายชื่อผู้ติดตามเพื่อให้พวกเขาทราบถึงความคืบหน้าของทิกเก็ตนี้"
+"ใช้ช่องแชทเพื่อ<b>ส่งอีเมล</b>และสื่อสารกับลูกค้าของคุณอย่างมีประสิทธิภาพ "
+"เพิ่มคนใหม่ลงในรายชื่อผู้ติดตามเพื่อให้พวกเขาทราบถึงความคืบหน้าของตั๋วนี้"
 
 #. module: helpdesk
 #: model:ir.model,name:helpdesk.model_res_users
@@ -4124,7 +4145,7 @@ msgstr "เช่น คำถาม"
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_team_view_form
 msgid "e.g. domain.com"
-msgstr ""
+msgstr "e.g. domain.com"
 
 #. module: helpdesk
 #: model:ir.model.fields,field_description:helpdesk.field_helpdesk_team__use_website_helpdesk_slides

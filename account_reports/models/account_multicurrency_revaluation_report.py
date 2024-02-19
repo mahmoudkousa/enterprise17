@@ -205,72 +205,22 @@ class MulticurrencyRevaluationReportCustomHandler(models.AbstractModel):
         query = "(VALUES {})".format(', '.join("(%s, %s)" for rate in options['currency_rates']))
         params = list(chain.from_iterable((cur['currency_id'], cur['rate']) for cur in options['currency_rates'].values()))
         custom_currency_table_query = self.env.cr.mogrify(query, params).decode(self.env.cr.connection.encoding)
-        select_part_exchange_move_id = """
-            SELECT part.exchange_move_id
-              FROM account_partial_reconcile part
-             WHERE part.exchange_move_id IS NOT NULL
-               AND part.max_date <= %s
+        select_part_not_an_exchange_move_id = """
+            NOT EXISTS (
+                SELECT 1
+                  FROM account_partial_reconcile part_exch
+                 WHERE part_exch.exchange_move_id = account_move_line.move_id
+                   AND part_exch.max_date <= %s
+            )
         """
 
         date_to = fields.Date.from_string(options['date']['date_to'])
         tables, where_clause, where_params = report._query_get(options, 'strict_range')
         tail_query, tail_params = report._get_engine_query_tail(offset, limit)
         full_query = f"""
-            WITH custom_currency_table(currency_id, rate) AS ({custom_currency_table_query}),
-                 -- The amount_residuals_by_aml_id will have all moves that have at least one partial at a certain date
-                 amount_residuals_by_aml_id AS (
-                    -- We compute the amount_residual and amount_residual_currency of customer invoices by taking the date into account
-                    -- And we keep the aml_id and currency_id to help us do a join later in the query
-                    SELECT aml.balance - SUM(part.amount) AS amount_residual,
-                           ROUND(
-                               aml.amount_currency - SUM(part.debit_amount_currency),
-                               curr.decimal_places
-                           ) AS amount_residual_currency,
-                           aml.currency_id AS currency_id,
-                           aml.id AS aml_id
-                      FROM account_move_line aml
-                      JOIN account_partial_reconcile part ON aml.id = part.debit_move_id
-                      JOIN res_currency curr ON curr.id = part.debit_currency_id
-                      JOIN account_account account ON aml.account_id = account.id
-                     WHERE (
-                             account.currency_id != aml.company_currency_id
-                             OR (
-                                 account.account_type IN ('asset_receivable', 'liability_payable')
-                                 AND (aml.currency_id != aml.company_currency_id)
-                                )
-                           )
-                       AND part.max_date <= %s
-                       AND account.account_type NOT IN ('income', 'income_other', 'expense', 'expense_depreciation', 'expense_direct_cost', 'off_balance')
-                  GROUP BY aml_id,
-                           curr.decimal_places
+            WITH custom_currency_table(currency_id, rate) AS ({custom_currency_table_query})
 
-                 UNION
-                    -- We compute the amount_residual and amount_residual_currency of a bill by taking the date into account
-                    -- And we keep the aml_id and currency_id to help us do a join later in the query
-                    SELECT aml.balance + SUM(part.amount) AS amount_residual,
-                           ROUND(
-                               aml.amount_currency + SUM(part.credit_amount_currency),
-                               curr.decimal_places
-                           ) AS amount_residual_currency,
-                           aml.currency_id AS currency_id,
-                           aml.id AS aml_id
-                      FROM account_move_line aml
-                      JOIN account_partial_reconcile part ON aml.id = part.credit_move_id
-                      JOIN res_currency curr ON curr.id = part.credit_currency_id
-                      JOIN account_account account ON aml.account_id = account.id
-                     WHERE (
-                             account.currency_id != aml.company_currency_id
-                             OR (
-                                 account.account_type IN ('asset_receivable', 'liability_payable')
-                                 AND (aml.currency_id != aml.company_currency_id)
-                                )
-                           )
-                       AND part.max_date <= %s
-                       AND account.account_type NOT IN ('income', 'income_other', 'expense', 'expense_depreciation', 'expense_direct_cost', 'off_balance')
-                  GROUP BY aml_id,
-                           curr.decimal_places
-                 )
-            -- Final select that gets the following lines: 
+            -- Final select that gets the following lines:
             -- (where there is a change in the rates of currency between the creation of the move and the full payments)
             -- - Moves that don't have a payment yet at a certain date
             -- - Moves that have a partial but are not fully paid at a certain date
@@ -283,26 +233,87 @@ class MulticurrencyRevaluationReportCustomHandler(models.AbstractModel):
                    SUM(subquery.adjustment) AS adjustment,
                    COUNT(subquery.aml_id) AS aml_count
               FROM (
-                -- From the amount_residuals_by_aml_id we will get all the necessary information for our report 
-                -- for moves that have at least one partial at a certain date, and in this select we add the condition
-                -- that the move is not fully paid.
+                -- Get moves that have at least one partial at a certain date and are not fully paid at that date
                 SELECT
                        """ + (f"account_move_line.{current_groupby} AS grouping_key," if current_groupby else '') + f"""
-                       ara.amount_residual AS balance_operation,
-                       ara.amount_residual_currency AS balance_currency,
-                       ara.amount_residual_currency / custom_currency_table.rate AS balance_current,
-                       ara.amount_residual_currency / custom_currency_table.rate - ara.amount_residual AS adjustment,
-                       ara.currency_id AS currency_id,
-                       ara.aml_id AS aml_id
-                  FROM {tables}
-                  JOIN amount_residuals_by_aml_id ara ON ara.aml_id = account_move_line.id
-                  JOIN custom_currency_table ON custom_currency_table.currency_id = ara.currency_id
+                       ROUND(account_move_line.balance - SUM(ara.amount_debit) + SUM(ara.amount_credit), aml_comp_currency.decimal_places) AS balance_operation,
+                       ROUND(account_move_line.amount_currency - SUM(ara.amount_debit_currency) + SUM(ara.amount_credit_currency), aml_currency.decimal_places) AS balance_currency,
+                       ROUND(account_move_line.amount_currency - SUM(ara.amount_debit_currency) + SUM(ara.amount_credit_currency), aml_currency.decimal_places) / custom_currency_table.rate AS balance_current,
+                       (
+                          -- adjustment is computed as: balance_current - balance_operation
+                          ROUND( account_move_line.amount_currency - SUM(ara.amount_debit_currency) + SUM(ara.amount_credit_currency), aml_currency.decimal_places) / custom_currency_table.rate
+                          - ROUND(account_move_line.balance - SUM(ara.amount_debit) + SUM(ara.amount_credit), aml_comp_currency.decimal_places)
+                       ) AS adjustment,
+                       account_move_line.currency_id AS currency_id,
+                       account_move_line.id AS aml_id
+                  FROM {tables},
+                       account_account AS account,
+                       res_currency AS aml_currency,
+                       res_currency AS aml_comp_currency,
+                       custom_currency_table,
+
+                       -- Get for each move line the amount residual and amount_residual currency
+                       -- both for matched "debit" and matched "credit" the same way as account.move.line
+                       -- '_compute_amount_residual()' method does
+                       -- (using LATERAL greatly reduce the number of lines for which we have to compute it)
+                       LATERAL (
+                               -- Get sum of matched "debit" amount and amount in currency for related move line at date
+                               SELECT COALESCE(SUM(part.amount), 0.0) AS amount_debit,
+                                      ROUND(
+                                          SUM(part.debit_amount_currency),
+                                          curr.decimal_places
+                                      ) AS amount_debit_currency,
+                                      0.0 AS amount_credit,
+                                      0.0 AS amount_credit_currency,
+                                      account_move_line.currency_id AS currency_id,
+                                      account_move_line.id AS aml_id
+                                 FROM account_partial_reconcile part
+                                 JOIN res_currency curr ON curr.id = part.debit_currency_id
+                                WHERE account_move_line.id = part.debit_move_id
+                                  AND part.max_date <= %s
+                             GROUP BY aml_id,
+                                      curr.decimal_places
+                           UNION
+                               -- Get sum of matched "credit" amount and amount in currency for related move line at date
+                               SELECT 0.0 AS amount_debit,
+                                      0.0 AS amount_debit_currency,
+                                      COALESCE(SUM(part.amount), 0.0) AS amount_credit,
+                                      ROUND(
+                                          SUM(part.credit_amount_currency),
+                                          curr.decimal_places
+                                      ) AS amount_credit_currency,
+                                      account_move_line.currency_id AS currency_id,
+                                      account_move_line.id AS aml_id
+                                 FROM account_partial_reconcile part
+                                 JOIN res_currency curr ON curr.id = part.credit_currency_id
+                                WHERE account_move_line.id = part.credit_move_id
+                                  AND part.max_date <= %s
+                             GROUP BY aml_id,
+                                      curr.decimal_places
+                            ) AS ara
                  WHERE {where_clause}
-                   AND (account_move_line.move_id NOT IN ({select_part_exchange_move_id}))
-                   AND (ara.amount_residual != 0 OR ara.amount_residual_currency != 0)
+                   AND account_move_line.account_id = account.id
+                   AND account_move_line.currency_id = aml_currency.id
+                   AND account_move_line.company_currency_id = aml_comp_currency.id
+                   AND account_move_line.currency_id = custom_currency_table.currency_id
+                   AND account.account_type NOT IN ('income', 'income_other', 'expense', 'expense_depreciation', 'expense_direct_cost', 'off_balance')
+                   AND (
+                        account.currency_id != account_move_line.company_currency_id
+                        OR (
+                            account.account_type IN ('asset_receivable', 'liability_payable')
+                            AND (account_move_line.currency_id != account_move_line.company_currency_id)
+                        )
+                   )
                    AND {'NOT EXISTS' if line_code == 'to_adjust' else 'EXISTS'} (
-                        SELECT * FROM account_account_exclude_res_currency_provision WHERE account_account_id = account_id AND res_currency_id = account_move_line.currency_id
-                    )
+                        SELECT 1
+                          FROM account_account_exclude_res_currency_provision
+                         WHERE account_account_id = account_move_line.account_id
+                           AND res_currency_id = account_move_line.currency_id
+                   )
+                   AND ({select_part_not_an_exchange_move_id})
+              GROUP BY account_move_line.id, aml_comp_currency.decimal_places,  aml_currency.decimal_places, custom_currency_table.rate
+                HAVING ROUND(account_move_line.balance - SUM(ara.amount_debit) + SUM(ara.amount_credit), aml_comp_currency.decimal_places) != 0
+                    OR ROUND(account_move_line.amount_currency - SUM(ara.amount_debit_currency) + SUM(ara.amount_credit_currency), aml_currency.decimal_places) != 0.0
 
                 UNION
                 -- Moves that don't have a payment yet at a certain date
@@ -315,24 +326,30 @@ class MulticurrencyRevaluationReportCustomHandler(models.AbstractModel):
                        account_move_line.currency_id AS currency_id,
                        account_move_line.id AS aml_id
                   FROM {tables}
-             LEFT JOIN amount_residuals_by_aml_id ara ON ara.aml_id = account_move_line.id
                   JOIN account_account account ON account_move_line.account_id = account.id
-                  JOIN res_currency currency ON currency.id = account_move_line.currency_id
-                  JOIN custom_currency_table ON custom_currency_table.currency_id = currency.id
+                  JOIN custom_currency_table ON custom_currency_table.currency_id = account_move_line.currency_id
                  WHERE {where_clause}
-                   AND (
-                         account.currency_id != account_move_line.company_currency_id
-                         OR (
-                             account.account_type IN ('asset_receivable', 'liability_payable')
-                             AND (account_move_line.currency_id != account_move_line.company_currency_id)
-                            )
-                       )
-                   AND (account_move_line.move_id NOT IN ({select_part_exchange_move_id}))
-                   AND {'NOT EXISTS' if line_code == 'to_adjust' else 'EXISTS'} (
-                        SELECT * FROM account_account_exclude_res_currency_provision WHERE account_account_id = account_id AND res_currency_id = account_move_line.currency_id
-                    )
                    AND account.account_type NOT IN ('income', 'income_other', 'expense', 'expense_depreciation', 'expense_direct_cost', 'off_balance')
-                   AND ara IS NULL
+                   AND (
+                        account.currency_id != account_move_line.company_currency_id
+                        OR (
+                            account.account_type IN ('asset_receivable', 'liability_payable')
+                            AND (account_move_line.currency_id != account_move_line.company_currency_id)
+                        )
+                   )
+                   AND {'NOT EXISTS' if line_code == 'to_adjust' else 'EXISTS'} (
+                        SELECT 1
+                          FROM account_account_exclude_res_currency_provision
+                         WHERE account_account_id = account_id
+                           AND res_currency_id = account_move_line.currency_id
+                   )
+                   AND ({select_part_not_an_exchange_move_id})
+                   AND NOT EXISTS (
+                        SELECT 1 FROM account_partial_reconcile part
+                        WHERE (part.debit_move_id = account_move_line.id OR part.credit_move_id = account_move_line.id)
+                          AND part.max_date <= %s
+                   )
+                   AND (account_move_line.balance != 0.0 OR account_move_line.amount_currency != 0.0)
 
             ) subquery
 
@@ -340,12 +357,16 @@ class MulticurrencyRevaluationReportCustomHandler(models.AbstractModel):
             {tail_query}
         """
         params = [
-            date_to,  # For Customer Invoice in amount_residuals_by_aml_id
-            date_to,  # For Vendor Bill in amount_residuals_by_aml_id
+            # First part: move line with existing payments
+            date_to,  # lateral join - matched "debit"
+            date_to,  # lateral join - matched "credit"
             *where_params,  # First params for where_clause
-            date_to,  # Date to for first call of select_part_exchange_move_id
+            date_to,  # select_part_not_an_exchange_move_id
+
+            # Second part: move lines without any payments
             *where_params,  # Second params for where_clause
-            date_to,  # Date to for the second call of select_part_exchange_move_id
+            date_to,  # select_part_not_an_exchange_move_id
+            date_to,  # for check that no payment existing at date
             *tail_params,
         ]
         self._cr.execute(full_query, params)

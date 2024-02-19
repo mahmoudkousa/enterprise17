@@ -9,6 +9,10 @@ from odoo.tests import tagged
 @tagged('post_install_l10n', 'post_install', '-at_install')
 class TestL10nBeReportsPostWizard(TestAccountReportsCommon):
 
+    @classmethod
+    def setUpClass(cls, chart_template_ref='be_comp'):
+        super().setUpClass(chart_template_ref=chart_template_ref)
+
     def setUp(self, *args, **kwargs):
         super().setUp(*args, **kwargs)
 
@@ -26,14 +30,10 @@ class TestL10nBeReportsPostWizard(TestAccountReportsCommon):
             'tax_closing_end_date': end_of_last_month,
         })
 
-
     @classmethod
     def setup_company_data(cls, company_name, **kwargs):
         res = super().setup_company_data(company_name, **kwargs)
-        country_be_id = cls.env.ref('base.be').id
         res['company'].update({
-            'country_id': country_be_id,
-            'account_fiscal_country_id': country_be_id,
             'vat': 'BE0477472701',
         })
         res['company'].partner_id.update({

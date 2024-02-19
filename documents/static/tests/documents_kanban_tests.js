@@ -6,6 +6,7 @@ import { fileUploadService } from "@web/core/file_upload/file_upload_service";
 import { multiTabService } from "@bus/multi_tab_service";
 import { busParametersService } from "@bus/bus_parameters_service";
 import { busService } from "@bus/services/bus_service";
+import { DocumentsKanbanRenderer } from "@documents/views/kanban/documents_kanban_renderer";
 import { documentService } from "@documents/core/document_service";
 import { storeService } from "@mail/core/common/store_service";
 import { attachmentService } from "@mail/core/common/attachment_service";
@@ -35,6 +36,7 @@ import {
     clickOpenM2ODropdown,
     dragAndDrop,
     getFixture,
+    makeDeferred,
     nextTick,
     patchWithCleanup,
     triggerEvent,
@@ -287,7 +289,7 @@ QUnit.module("documents", {}, function () {
         },
         function () {
             QUnit.test("kanban basic rendering", async function (assert) {
-                assert.expect(25);
+                assert.expect(26);
                 await createDocumentsView({
                     type: "kanban",
                     resModel: "documents.document",
@@ -441,6 +443,12 @@ QUnit.module("documents", {}, function () {
                 assert.ok(
                     target.querySelector(".o_documents_kanban_share_domain").disabled === false,
                     "the share button should be enabled when a folder is selected"
+                );
+                await legacyClick(target, ".o_search_panel_category_value[title='Trash'] header");
+                assert.containsOnce(
+                    target.querySelector(".o_cp_buttons"),
+                    ".o_documents_kanban_upload.pe-none.opacity-25",
+                    "the upload button should be disabled inside TRASH folder."
                 );
             });
 
@@ -2063,6 +2071,86 @@ QUnit.module("documents", {}, function () {
                 await click(".o_inspector_tags ul li");
                 await contains(".o_inspector_tag", { count: 2 });
                 await contains(".o_inspector_tags input:focus");
+            });
+
+            /**
+             * Open the preview without selecting the record, and edit its values.
+             */
+            QUnit.test("document inspector: edit without selecting", async function (assert) {
+                assert.expect(18);
+
+                let waitWrite = makeDeferred();
+
+                await createDocumentsView({
+                    type: "kanban",
+                    resModel: "documents.document",
+                    arch: `<kanban js_class="documents_kanban"><templates><t t-name="kanban-box">
+                        <div>
+                            <i class="fa fa-circle-thin o_record_selector"/>
+                            <field name="name"/>
+                        </div>
+                        <div name="document_preview">
+                            <span class="open_preview">Preview</span>
+                        </div>
+                    </t></templates></kanban>`,
+                    mockRPC: function (route, args) {
+                        if (
+                            ["web_save", "write"].includes(args.method) &&
+                            args.model === "documents.document"
+                        ) {
+                            assert.step(JSON.stringify(args.args[1]));
+                            waitWrite.resolve();
+                        }
+                    },
+                });
+
+                await click(".o_kanban_record:nth-child(4) .open_preview");
+
+                assert.notOk(
+                    target
+                        .querySelector(".o_kanban_record:nth-child(4)")
+                        .classList.contains("o_record_selected"),
+                    "Should not select the record if we just open the preview"
+                );
+                assert.verifySteps([]);
+
+                // change the partner
+                await click("div[name='partner_id'] input");
+                await click(".o-autocomplete--dropdown-item:nth-child(2)");
+                await waitWrite;
+                waitWrite = makeDeferred();
+                assert.verifySteps(
+                    [JSON.stringify({ partner_id: 3 })],
+                    "Should have written the new partner"
+                );
+                assert.strictEqual(
+                    target.querySelector("div[name='partner_id'] input").value,
+                    "Your Company, Mitchell Admin"
+                );
+
+                // add a new tag
+                await click(".o_inspector_tags input");
+                await click(".o_inspector_tags .o-autocomplete--dropdown-item:nth-child(1)");
+                await waitWrite;
+                waitWrite = makeDeferred();
+                assert.verifySteps(
+                    [JSON.stringify({ tag_ids: [[4, 3]] })],
+                    "Should have added the tag"
+                );
+                await nextTick();
+                const tag = target.querySelector(".o_tag_prefix");
+                assert.ok(tag);
+                assert.strictEqual(tag.innerText, "Priority");
+
+                // remove the added tag
+                await click(".o_inspector_tag_remove");
+                await waitWrite;
+                assert.verifySteps(
+                    [JSON.stringify({ tag_ids: [[3, 3]] })],
+                    "Should have removed the tag"
+                );
+                await nextTick();
+                assert.notOk(target.querySelector(".o_tag_prefix"));
             });
 
             QUnit.test(
@@ -4078,6 +4166,75 @@ QUnit.module("documents", {}, function () {
                 assert.ok($(targetFolder).find(".o_search_panel_label_title:contains(Workspace3)"));
             });
 
+            QUnit.test(
+                "SearchPanel: editing facet and tag opens correct view",
+                async function (assert) {
+                    assert.expect(4);
+
+                    const views = {
+                        "documents.facet,false,form": '<form class="facet">facet</form>',
+                        "documents.tag,false,form": '<form class="tag">tag</form>',
+                        "documents.facet,documents.folder_view_form,form":
+                            '<form class="folder">folder</form>',
+                        "documents.tag,documents.folder_view_form,form":
+                            '<form class="folder">folder</form>',
+                        "documents.folder,documents.folder_view_form,form":
+                            '<form class="folder">folder</form>',
+                    };
+
+                    serviceRegistry.add(
+                        "user",
+                        makeFakeUserService(
+                            (group) => group === "documents.group_documents_manager"
+                        ),
+                        { force: true }
+                    );
+
+                    await createDocumentsView({
+                        type: "kanban",
+                        resModel: "documents.document",
+                        arch: `
+                <kanban js_class="documents_kanban"><templates><t t-name="kanban-box">
+                    <div draggable="true" class="oe_kanban_global_area">
+                        <i class="fa fa-circle-thin o_record_selector"/>
+                        <field name="name"/>
+                    </div>
+                </t></templates></kanban>`,
+                        serverData: { views },
+                    });
+
+                    // Edition of facet opens correct view
+                    triggerEvent(
+                        target,
+                        ".o_search_panel_filter_group:nth-of-type(1) .o_search_panel_group_header .o_documents_search_panel_section_edit",
+                        "click",
+                        {},
+                        { skipVisibilityCheck: true }
+                    );
+                    await nextTick();
+                    assert.containsOnce(target, ".o_search_panel_item_settings_popover");
+                    triggerEvent(target, ".o_search_panel_value_edit_edit", "click", {});
+                    await nextTick();
+                    assert.containsOnce(target, ".o_form_view.facet");
+
+                    triggerEvent(target, ".modal-dialog .btn-close", "click", {});
+
+                    // Edition of tag opens correct view
+                    triggerEvent(
+                        target,
+                        ".o_search_panel_filter_group:nth-of-type(1) .o_search_panel_filter_value .o_documents_search_panel_section_edit",
+                        "click",
+                        {},
+                        { skipVisibilityCheck: true }
+                    );
+                    await nextTick();
+                    assert.containsOnce(target, ".o_search_panel_item_settings_popover");
+                    triggerEvent(target, ".o_search_panel_value_edit_edit", "click", {});
+                    await nextTick();
+                    assert.containsOnce(target, ".o_form_view.tag");
+                }
+            );
+
             QUnit.test("SearchPanel: can edit attributes", async function (assert) {
                 assert.expect(2);
 
@@ -5103,6 +5260,112 @@ QUnit.module("documents", {}, function () {
                         }),
                     ]);
                     assert.verifySteps(["xhrSend"]);
+                }
+            );
+
+            QUnit.test(
+                "when no sharable workspace is present, check the visibility of dropdown button inside 'All' workspace",
+                async function (assert) {
+                    pyEnv["documents.folder"].unlink(pyEnv["documents.folder"].search([]));
+                    await createDocumentsView({
+                        type: "kanban",
+                        resModel: "documents.document",
+                        arch: `<kanban js_class="documents_kanban">
+                                    <templates>
+                                        <t t-name="kanban-box">
+                                            <div>
+                                                <i class="fa fa-circle-thin o_record_selector"/>
+                                                <field name="name"/>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>`,
+                    });
+                    await click(".o_search_panel_category_value:nth-of-type(1) header");
+                    await nextTick();
+                    assert.ok(
+                        target.querySelector(".btn-group button.dropdown-toggle-split").disabled,
+                        "the dropdown button should be disabled"
+                    );
+                }
+            );
+
+            QUnit.test(
+                "click events triggered inside the FileViewer should not bubble up to trigger the event bound on the DocumentsKanbanRenderer",
+                async function (assert) {
+                    assert.expect(6);
+
+                    const { openView } = await createDocumentsViewWithMessaging({
+                        serverData: {
+                            views: {
+                                "documents.document,false,kanban": `<kanban js_class="documents_kanban">
+                                    <templates>
+                                        <t t-name="kanban-box">
+                                            <div>
+                                                <field name="name"/>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>`,
+                            },
+                        },
+                    });
+                    await openView({
+                        res_model: "documents.document",
+                        views: [[false, "kanban"]],
+                    });
+                    patchWithCleanup(DocumentsKanbanRenderer.prototype, {
+                        onGlobalClick(ev) {
+                            super.onGlobalClick(ev);
+                            assert.step("global click");
+                        },
+                    });
+                    await legacyClick($(target).find(".o_kanban_record:contains(burp)")[0]);
+                    assert.containsOnce(
+                        target,
+                        ".o_preview_available",
+                        "should have a clickable image"
+                    );
+                    await legacyClick(target, ".o_preview_available");
+                    assert.containsOnce(target, ".o-FileViewer");
+
+                    assert.containsOnce(target, ".o-FileViewer-header");
+                    await legacyClick(target, ".o-FileViewer-header");
+
+                    assert.containsOnce(
+                        target,
+                        ".o-FileViewer-navigation[title='Next (Right-Arrow)']"
+                    );
+                    await legacyClick(
+                        target,
+                        ".o-FileViewer-navigation[title='Next (Right-Arrow)']"
+                    );
+                    await legacyClick(target, ".o-FileViewer-headerButton[title='Close (Esc)']");
+
+                    // to verify the patchWithCleanup above works
+                    await legacyClick(target.querySelectorAll(".o_kanban_ghost")[2]);
+                    assert.verifySteps(["global click"]);
+                }
+            );
+
+            QUnit.test(
+                "documents Kanban : preview automatically close while restoring a document",
+                async function (assert) {
+                    await createDocumentsView({
+                        type: "kanban",
+                        resModel: "documents.document",
+                        arch: `
+                            <kanban js_class="documents_kanban"><templates><t t-name="kanban-box">
+                                <div name="document_preview">
+                                    <field name="name"/>
+                                </div>
+                            </t></templates></kanban>`,
+                    });
+                    await legacyClick(target, ".o_search_panel_label_title[data-tooltip='Trash']");
+                    await legacyClick(target, ".o_kanban_record:nth-of-type(2) [name='document_preview']");
+                    assert.containsOnce(target, ".o-FileViewer-view");
+                    await legacyClick(target, ".o_archived");
+                    assert.containsNone(target, ".o-FileViewer-view");
                 }
             );
         }

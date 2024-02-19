@@ -14,7 +14,7 @@ registry.category("web_tour.tours").add('documents_account_tour', {
     content: markup(_t("Want to become a <b>paperless company</b>? Let's discover Odoo Documents.")),
     position: 'bottom',
 }, {
-    trigger: 'body:not(:has(.o_FileViewer)) img[src="https://img.youtube.com/vi/Ayab6wZ_U1A/0.jpg"]',
+    trigger: 'body:not(:has(.o-FileViewer)) img[src="https://img.youtube.com/vi/Ayab6wZ_U1A/0.jpg"]',
     content: markup(_t("Click on a thumbnail to <b>preview the document</b>.")),
     position: 'bottom',
     run: function (actions) {
@@ -30,7 +30,7 @@ registry.category("web_tour.tours").add('documents_account_tour', {
         $('.o_search_panel_filter_value:eq(0) .o_search_panel_label_title').click();
     },
 }, {
-    trigger: 'body:not(:has(.o_FileViewer)) .o_documents_kanban',
+    trigger: '.o_kanban_record:contains(mail.png)',
     extra_trigger: '.o_documents_kanban',
     content: markup(_t("Click on a card to <b>select the document</b>.")),
     position: 'bottom',
@@ -58,14 +58,19 @@ registry.category("web_tour.tours").add('documents_account_tour', {
     extra_trigger: '.o_documents_pdf_manager',
     content: markup(_t("<b>Deselect this page</b> as we plan to process all bills first.")),
     position: 'left',
-}, { // equivalent to '.o_pdf_rule_buttons:contains(Scan Bill)' but language agnostic.
-    trigger: '.o_pdf_rule_buttons:nth-last-child(2)',
+}, { // equivalent to '.o_pdf_manager_button:contains(Create Vendor Bill)' but language agnostic.
+    trigger: '.o_pdf_manager_button:nth-last-child(2)',
     extra_trigger: '.o_documents_pdf_manager',
     content: _t("Let's process these bills: turn them into vendor bills."),
     position: 'bottom',
-}, { // equivalent to '.o_pdf_rule_buttons:contains(Send to Legal)' but language agnostic.
-    trigger: '.o_pdf_rule_buttons:first',
-    extra_trigger: '.o_pdf_rule_buttons:not(:disabled)',
+}, {
+    trigger: '.o_documents_pdf_page_selector',
+    extra_trigger: '.o_documents_pdf_manager',
+    content: markup(_t("<b>Select</b> this page to continue.")),
+    position: 'bottom',
+}, { // equivalent to '.o_pdf_manager_button:contains(Send to Legal)' but language agnostic.
+    trigger: '.o_pdf_manager_button:nth-child(4)',
+    extra_trigger: '.o_pdf_manager_button:not(:disabled)',
     content: _t("Send this letter to the legal department, by assigning the right tags."),
     position: 'bottom',
 }]});

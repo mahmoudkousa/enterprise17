@@ -364,13 +364,12 @@ class Document(models.Model):
         share = self.create_share_id
         if share and not self.env.context.get("no_document") or message.message_type == 'email':
             attachments = self.env['ir.attachment'].browse([x[1] for x in m2m_commands])
-            partner = share.partner_id.id or self.env['res.partner'].find_or_create(msg_vals['email_from']).id
             documents = self.env['documents.document'].create([{
                 'name': attachment.name,
                 'attachment_id': attachment.id,
                 'folder_id': share.folder_id.id,
                 'owner_id': share.owner_id.user_ids[0].id if share.owner_id.user_ids else share.create_uid.id,
-                'partner_id': partner,
+                'partner_id': share.partner_id.id or False,
                 'tag_ids': [(6, 0, share.tag_ids.ids or [])],
             } for attachment in attachments])
             for (attachment, document) in zip(attachments, documents):

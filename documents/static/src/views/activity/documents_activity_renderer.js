@@ -35,9 +35,10 @@ export class DocumentsActivityRenderer extends ActivityRenderer {
     getDocumentsInspectorProps() {
         return {
             documents: this.props.records.filter((rec) => rec.selected),
-            count: 0,
-            fileSize: 0,
+            count: this.props.records.length,
+            fileSize: this.env.model.fileSize,
             archInfo: this.props.archInfo,
+            fields: this.props.fields,
         };
     }
 }

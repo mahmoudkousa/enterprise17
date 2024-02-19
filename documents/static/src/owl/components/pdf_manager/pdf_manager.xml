@@ -4,7 +4,7 @@
         <div role="dialog" class="modal d-block o_technical_modal o_dialog_split_tools position-fixed" tabindex="-1">
             <div class='o_documents_pdf_manager' t-ref="root" t-att-class="{'pe-none': state.isSelecting}">
                 <div class="o_documents_pdf_manager_top_bar">
-                    <input type="file" t-ref="addFileInput" class="o_input_file o_hidden" t-on-change.stop="onFileInputChange"/>
+                    <input type="file" t-ref="addFileInput" class="o_input_file o_hidden" accept="application/pdf" t-on-change.stop="onFileInputChange"/>
                     <t t-if="env.isSmall" t-call="documents.component.PdfManager.ButtonsMobile"/>
                     <span t-else="" class="o_pdf_global_buttons">
                         <div>

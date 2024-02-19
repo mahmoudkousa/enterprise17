@@ -101,8 +101,9 @@ export class VersionHistoryAction extends Component {
     }
 
     async forkHistory(revisionId) {
-        const { data, thumbnail } = this.getSaveData();
+        const data = this.model.exportData();
         const revision = this.state.revisions.find((rev) => rev.id === revisionId);
+        data.revisionId = revision.nextRevisionId;
         const code = this.model.getters.getLocale().code.replace("_", "-");
         const timestamp = formatToLocaleString(revision.timestamp, code);
         const name = _t("%(name)s (restored from %(timestamp)s)", {
@@ -110,7 +111,7 @@ export class VersionHistoryAction extends Component {
             timestamp,
         });
         const defaultValues = {
-            thumbnail,
+            thumbnail: this.getThumbnail(),
             name,
         };
         const action = await this.orm.call(this.resModel, "fork_history", [this.resId], {
@@ -250,19 +251,6 @@ Would you like to load the more recent modifications?"
             spreadsheet.__DEBUG__ = spreadsheet.__DEBUG__ || {};
             spreadsheet.__DEBUG__.model = this.model;
         }
-    }
-
-    /**
-     * Retrieve the spreadsheet_data and the thumbnail associated to the
-     * current spreadsheet
-     */
-    getSaveData() {
-        const data = this.model.exportData();
-        return {
-            data,
-            revisionId: data.revisionId,
-            thumbnail: this.getThumbnail(),
-        };
     }
 }
 

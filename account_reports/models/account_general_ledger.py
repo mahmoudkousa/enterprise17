@@ -91,12 +91,31 @@ class GeneralLedgerCustomHandler(models.AbstractModel):
             if model == 'account.account':
                 account_ids_to_expand.append(model_id)
 
+        limit_to_load = report.load_more_limit if report.load_more_limit and not options.get('export_mode') else None
+        has_more_per_account_id = {}
+
+        unlimited_aml_results_per_account_id = self._get_aml_values(report, options, account_ids_to_expand)[0]
+        if limit_to_load:
+            # Apply the load_more_limit.
+            # load_more_limit cannot be passed to the call to _get_aml_values, otherwise it won't be applied per account but on the whole result.
+            # We gain perf from batching, but load every result ; then we need to filter them.
+
+            aml_results_per_account_id = {}
+            for account_id, account_aml_results in unlimited_aml_results_per_account_id.items():
+                account_values = {}
+                for key, value in account_aml_results.items():
+                    if len(account_values) == limit_to_load:
+                        has_more_per_account_id[account_id] = True
+                        break
+                    account_values[key] = value
+                aml_results_per_account_id[account_id] = account_values
+        else:
+            aml_results_per_account_id = unlimited_aml_results_per_account_id
+
         return {
             'initial_balances': self._get_initial_balance_values(report, account_ids_to_expand, options),
-
-            # load_more_limit canno( be passed to this call, otherwise it won't be applied per account but on the whole result.
-            # We gain perf from batching, but load every result, even if the limit restricts them later.
-            'aml_values': self._get_aml_values(report, options, account_ids_to_expand)[0],
+            'aml_results': aml_results_per_account_id,
+            'has_more': has_more_per_account_id,
         }
 
     def _tax_declaration_lines(self, report, options, tax_type):
@@ -123,7 +142,7 @@ class GeneralLedgerCustomHandler(models.AbstractModel):
 
         # Call the generic tax report
         generic_tax_report = self.env.ref('account.generic_tax_report')
-        tax_report_options = generic_tax_report.get_options({**options, 'report_id': generic_tax_report.id, 'forced_domain': [('tax_line_id.type_tax_use', '=', tax_type)]})
+        tax_report_options = generic_tax_report.get_options({**options, 'selected_variant_id': generic_tax_report.id, 'forced_domain': [('tax_line_id.type_tax_use', '=', tax_type)]})
         tax_report_lines = generic_tax_report._get_lines(tax_report_options)
         tax_type_parent_line_id = generic_tax_report._get_generic_line_id(None, None, markup=tax_type)
 
@@ -242,7 +261,7 @@ class GeneralLedgerCustomHandler(models.AbstractModel):
 
             query_domain = []
 
-            if options.get('filter_search_bar'):
+            if options.get('export_mode') == 'print' and options.get('filter_search_bar'):
                 query_domain.append(('account_id', 'ilike', options['filter_search_bar']))
 
             if options_group.get('include_current_year_in_unaff_earnings'):
@@ -574,13 +593,17 @@ class GeneralLedgerCustomHandler(models.AbstractModel):
             ))
 
         line_id = report._get_generic_line_id('account.account', account.id)
+        is_in_unfolded_lines = any(
+            report._get_res_id_from_line_id(line_id, 'account.account') == account.id
+            for line_id in options.get('unfolded_lines')
+        )
         return {
             'id': line_id,
             'name': f'{account.code} {account.name}',
             'columns': line_columns,
             'level': 1,
             'unfoldable': has_lines,
-            'unfolded': has_lines and (line_id in options.get('unfolded_lines') or options.get('unfold_all')),
+            'unfolded': has_lines and (is_in_unfolded_lines or options.get('unfold_all')),
             'expand_function': '_report_expand_unfoldable_line_general_ledger',
         }
 
@@ -615,10 +638,11 @@ class GeneralLedgerCustomHandler(models.AbstractModel):
                 else:
                     caret_type = 'account.move.line'
                 move_name = column_group_dict['move_name']
+                date = str(column_group_dict.get('date', ''))
                 break
 
         return {
-            'id': report._get_generic_line_id('account.move.line', aml_id, parent_line_id=parent_line_id),
+            'id': report._get_generic_line_id('account.move.line', aml_id, parent_line_id=parent_line_id, markup=date),
             'caret_options': caret_type,
             'parent_id': parent_line_id,
             'name': move_name,
@@ -678,9 +702,9 @@ class GeneralLedgerCustomHandler(models.AbstractModel):
 
         # Get move lines
         limit_to_load = report.load_more_limit + 1 if report.load_more_limit and options['export_mode'] != 'print' else None
-        has_more = False
         if unfold_all_batch_data:
-            aml_results = unfold_all_batch_data['aml_values'][model_id]
+            aml_results = unfold_all_batch_data['aml_results'][model_id]
+            has_more = unfold_all_batch_data['has_more'].get(model_id, False)
         else:
             aml_results, has_more = self._get_aml_values(report, options, [model_id], offset=offset, limit=limit_to_load)
             aml_results = aml_results[model_id]

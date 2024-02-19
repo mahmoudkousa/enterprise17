@@ -2,12 +2,101 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 import json
 from lxml import etree, html
+from lxml.html.clean import Cleaner
 from psycopg2 import OperationalError
+from itertools import groupby
+from collections import defaultdict
 
 from odoo import http, _, Command, models
 from odoo.http import request, serialize_exception
 from odoo.addons.web_studio.controllers import main
 from odoo.tools.safe_eval import safe_eval
+
+# We are dealing with an HTML document that has QWeb syntax in it (<t />, t-att etc..)
+# in addition to some attributes that are specific to the reportEditor (oe-..., ws-...)
+# We cannot use the tools.mail cleaner for that.
+html_cleaner = Cleaner(safe_attrs_only=False, remove_unknown_tags=False)
+def html_to_xml_tree(stringHTML):
+    temp = html.fromstring(stringHTML)
+    temp = _cleanup_from_client(temp)
+    html_cleaner(temp)
+    return temp
+
+def _group_t_call_content(t_call_node):
+    """Groups the content of a t_call_node according to whether they are "real" (div, h2 etc...)
+    or mere <t t-set="" />. In the QWeb semantics the former will form the content inserted
+    in place of the <t t-out="0" /> nodes.
+
+    param etree.Element t_call_node: a node that is of the form <t t-call="sometemplace">....</t>
+
+    returns dict:
+        {
+            [call_group_key: str]: {
+                "nodes": list[etree.Element],
+                "are_real": bool,
+            }
+        }
+    """
+    node_groups = {}
+    for index, (k, g) in enumerate(groupby(t_call_node.iterchildren(etree.Element), key=lambda n: bool(n.get("t-set")))):
+        node_groups[str(index + 1)] = {
+            "nodes": list(g),
+            "are_real": not k,
+        }
+    return node_groups
+
+def _collect_t_call_content(tree):
+    """Collect every node that has a t-call attribute in tree and their content in an object.
+    Each node is assigned an ID that will be necessary in def _recompose_arch_with_t_call_parts.
+    Since the report editor inlines the t-calls and puts their content in the t-row="0" of the called
+    template, we endup with some pieces of view scattered everywhere.
+    This function prepares the battlefield by identifying nodes that belong to a certain original tree
+
+    param etree.Element tree: the root element of a tree.
+
+    returns dict:
+        {
+            [call_key: str]: {
+                "node": etree.Element,
+                "content": dict (see def _group_t_call_content)
+            }
+        }
+    """
+    t_calls = {}
+    t_call_nodes = [tree] if tree.get("t-call") else []
+    for index, tcall in enumerate(t_call_nodes + tree.findall(".//*[@t-call]")):
+        call_key = str(index+1)
+        tcall.set("ws-call-key", call_key)
+        t_calls[call_key] = {
+            "node": tcall,
+            "content": _group_t_call_content(tcall),
+        }
+    return t_calls
+
+def _recompose_arch_with_t_call_parts(main_tree, origin_call_groups, changed_call_groups):
+    """Reciprocal to def _collect_t_call_content. Except each TCallGroup's content may have
+    changed. In the main_tree, which has been cleaned from all its t-call contents, append either
+    the content that has changed, or the original one.
+
+    param etree.Element main_tree: a tree which t-call do not have children, and must have ids
+    param dict origin_call_groups: see def _collect_t_call_content
+    param dict changed_call_groups: see def _collect_t_call_content
+    """
+    for call_key in sorted(origin_call_groups.keys(), key=int):
+        origin = origin_call_groups[call_key]["content"]
+        changed = changed_call_groups.get(call_key, {}).get("content")
+        nodes_to_append = []
+
+        for group_key in origin:
+            if changed and changed.get(group_key):
+                nodes_to_append.extend(changed[group_key]["nodes"])
+            else:
+                nodes_to_append.extend(origin[group_key]["nodes"])
+
+        if nodes_to_append:
+            target = main_tree.xpath(f"//t[@t-call and @ws-call-key='{call_key}']")[0]
+            for n in nodes_to_append:
+                target.append(etree.fromstring(etree.tostring(n)))
 
 def api_tree_or_string(func):
     def from_tree_or_string(tree_or_string, *args, **kwargs):
@@ -34,15 +123,11 @@ def _html_to_client_compliant(tree):
 @api_tree_or_string
 def _cleanup_from_client(tree):
     tree = _to_qweb(tree)
-    for el in tree.xpath("//*[@oe-context]"):
-        el.attrib.pop("oe-context")
-
-    for el in tree.xpath("//*[@oe-expression-readable]"):
-        el.attrib.pop("oe-expression-readable")
-
-    for el in tree.xpath("//img[@t-att-src]"):
-        el.attrib.pop("src")
-
+    for node in tree.iter(etree.Element):
+        for att in ("oe-context", "oe-expression-readable"):
+            node.attrib.pop(att, None)
+        if node.tag == "img" and "t-att-src" in node.attrib:
+            node.attrib.pop("src", None)
     return tree
 
 @api_tree_or_string
@@ -224,7 +309,7 @@ def _guess_qweb_variables(tree, report, qcontext):
             src = qweb_like_string_eval(src, qcontext) or placeholder
             node.set("src", src)
 
-        if node.get("id") == "wrapwrap":
+        if node.get("id") == "wrapwrap" or (node.tag == "t" and "t-name" in node.attrib):
             apply_oe_context(node, qcontext, keys_info)
 
         for child in node:
@@ -234,7 +319,6 @@ def _guess_qweb_variables(tree, report, qcontext):
     return tree
 
 VIEW_BACKUP_KEY = "web_studio.__backup__._{view.id}_._{view.key}_"
-
 def get_report_view_copy(view):
     key = VIEW_BACKUP_KEY.format(view=view)
     return view.with_context(active_test=False).search([("key", "=", key)], limit=1)
@@ -252,6 +336,22 @@ def _copy_report_view(view):
         })
     return copy
 
+STUDIO_VIEW_KEY_TEMPLATE = "web_studio.report_editor_customization_full.view._{key}"
+def _get_and_write_studio_view(view, values=None, should_create=True):
+    key = STUDIO_VIEW_KEY_TEMPLATE.format(key=view.key)
+    studio_view = view.with_context(active_test=False).search([("inherit_id", "=", view.id), ("key", "=", key)])
+
+    if values is None:
+        return studio_view
+
+    if studio_view:
+        vals = {"active": True, **values}
+        studio_view.write(vals)
+    elif should_create:
+        vals = {"name": key, "key": key, "inherit_id": view.id, "mode": "extension", "priority": 9999999, **values}
+        studio_view = view.create(vals)
+
+    return studio_view
 
 class WebStudioReportController(main.WebStudioController):
 
@@ -263,14 +363,14 @@ class WebStudioReportController(main.WebStudioController):
         if layout == 'web.basic_layout':
             arch_document = etree.fromstring("""
                 <t t-name="studio_report_document">
-                    <div class="page"><br/></div>
+                    <div class="page"><div class="oe_structure" /></div>
                 </t>
                 """)
         else:
             arch_document = etree.fromstring("""
                 <t t-name="studio_report_document">
                     <t t-call="%(layout)s">
-                        <div class="page"><br/></div>
+                        <div class="page"><div class="oe_structure" /></div>
                     </t>
                 </t>
                 """ % {'layout': layout})
@@ -383,43 +483,79 @@ class WebStudioReportController(main.WebStudioController):
         loaded = {}
         report = report.with_context(studio=True)
         report_name = report.report_name
-        IrQweb = request.env["ir.qweb"].with_context(studio=True, inherit_branding=True, lang=None)
+        IrQweb = request.env["ir.qweb"].with_context(studio=True, lang=None)
+        IrView = IrQweb.env["ir.ui.view"]
 
-        def inline_t_call(tree, variables):
-            if variables:
-                touts = tree.xpath("//t[@t-out='0']")
+        def inline_t_call(tree, variables, recursive_set):
+            view_id = tree.get("ws-view-id")
+
+            if recursive_set is None:
+                recursive_set = set()
+
+            # Collect t-calls before in an object for id assignation
+            # without being polluted by the variables coming from above
+            # and discrimination between real nodes and mere t-sets
+            collected_t_calls = _collect_t_call_content(tree)
+
+            # Inject t-out="0" values
+            if variables and variables.get("__zero__"):
+                value = variables["__zero__"]
+                touts = tree.findall(".//t[@t-out='0']")
                 for node in touts:
-                    val = variables.get("__zero__")
-                    if not val:
-                        continue
-                    subtree = etree.fromstring(val)
+                    subtree = etree.fromstring(value)
                     for child in subtree:
                         node.append(child)
+                    node.set("oe-origin-t-out", "0")
                     node.attrib.pop("t-out")
 
-            if not variables:
-                variables = dict()
-            for node in tree.xpath("//*[@t-call]"):
-                tcall = node.get("t-call")
-                if '{' in tcall:
+            # We want a wrapper tag around nodes that will be visible
+            # on the report editor in order to insert/remove/edit nodes at the root
+            # We don't want to do anything for nodes that are mere t-sets except leaving them in their group
+            # Do it in opposite tree direction, to make sure we don't delete a node that still needs
+            # to be treated
+            for call_key, call_data in reversed(collected_t_calls.items()):
+                call_node = call_data["node"]
+                call_node.set("ws-view-id", view_id)
+                template = call_node.get("t-call")
+
+                if '{' in template:
                     # this t-call value is dynamic (e.g. t-call="{{company.tmp}})
                     # so its corresponding view cannot be read
                     # this template won't be returned to the Editor so it won't
                     # be customizable
                     continue
+                if template in recursive_set:
+                    continue
 
-                _vars = dict(variables)
-                z = etree.Element("t", {'process_zero': "1"})
-                for child in node:
-                    if not child.get("t-set"):
-                        z.append(child)
-                if len(z) > 0:
-                    _vars["__zero__"] = etree.tostring(z)
+                zero = etree.Element("t", {'process_zero': "1"})
+                grouped_content = call_data["content"]
+                for group_key, group in grouped_content.items():
+                    are_real = group.get("are_real")
+                    group_element = etree.Element("t", {
+                        "ws-view-id": view_id,
+                        "ws-call-group-key": group_key,
+                        "ws-call-key": call_key,
+                    })
+                    if are_real:
+                        group_element.set("ws-real-children", "1")
+                        zero.append(group_element)
+                    else:
+                        group_element.set("ws-real-children", "0")
+                        call_node.append(group_element)
 
-                sub_element = load_arch(tcall, _vars)
-                node.append(sub_element)
+                    for subnode in group["nodes"]:
+                        group_element.append(subnode)
 
-        def load_arch(view_name, variables=None):
+                _vars = dict({} if variables is None else variables)
+                if len(zero) > 0:
+                    _vars["__zero__"] = etree.tostring(zero)
+
+                new_recursive_set = set(recursive_set)
+                new_recursive_set.add(template)
+                sub_element = load_arch(template, _vars, new_recursive_set)
+                call_node.append(sub_element)
+
+        def load_arch(view_name, variables=None, recursive_set=None):
             if not variables:
                 variables = dict()
             if view_name in loaded:
@@ -428,12 +564,13 @@ class WebStudioReportController(main.WebStudioController):
                 external_layout = "web.external_layout_standard"
                 if request.env.company.external_report_layout_id:
                     external_layout = request.env.company.external_report_layout_id.sudo().key
-                tree = load_arch(external_layout, variables)
+                return load_arch(external_layout, variables, recursive_set)
             else:
+                view = IrView._get(view_name)
                 tree = IrQweb._get_template(view_name)[0]
+                tree.set("ws-view-id", str(view.id))
                 loaded[view_name] = etree.tostring(tree)
-
-            inline_t_call(tree, variables)
+            inline_t_call(tree, variables, recursive_set)
             return tree
 
         main_qweb = _html_to_client_compliant(load_arch(report_name))
@@ -484,20 +621,17 @@ class WebStudioReportController(main.WebStudioController):
         IrView = request.env["ir.ui.view"].with_context(studio=True, no_cow=True, lang=None)
         xml_ids = request.env["ir.model.data"]
         if html_parts:
-            for view_id, data in html_parts.items():
+            for view_id, changes in html_parts.items():
                 view = IrView.browse(int(view_id))
                 _copy_report_view(view)
-                for xpath, escaped_html in data.items():
-                    if xpath == "entire_view":
-                        xpath = "."
-                    view.save(_cleanup_from_client(escaped_html), xpath)
+                self._handle_view_changes(view, changes)
                 xml_ids = xml_ids | view.model_data_id
 
         if xml_verbatim:
             for view_id, arch in xml_verbatim.items():
                 view = IrView.browse(int(view_id))
                 _copy_report_view(view)
-                view.write({"arch": arch})
+                view.write({"arch": arch, "active": True})
                 xml_ids = xml_ids | view.model_data_id
 
         if report_changes or html_parts or xml_verbatim:
@@ -519,6 +653,69 @@ class WebStudioReportController(main.WebStudioController):
             "report_data": report_data and report_data[0],
         }
 
+    def _handle_view_changes(self, view, changes):
+        """Reconciles the old view's arch and the changes and saves the result
+        as an inheriting view.
+        1. Mark and collect the relevant editable blocks in the old view's combined arch (essentially the t-calls contents)
+        2. process the changes to convert the html they contain to xml, build the adequate object
+            (see def _recompose_arch_with_t_call_parts)
+        3. Decide if the main block (the root node that has not been moved around by t-call inlining) has changed
+        4. Build a new tree that has the changes instead of the old version
+        5. Save that tree as the arch of the inheriting view.
+
+        param RecordSet['ir.ui.view'] view
+        param changes list[dict]
+            dict: {
+                "type": "full" | "in_t_call",
+                "call_key": str,
+                "call_group_key": str,
+                "html": str,
+            }
+        """
+        old = etree.fromstring(view.get_combined_arch())
+
+        # Collect t_call and their groups from the original view
+        origin_call_groups = _collect_t_call_content(old)
+        for call_data in origin_call_groups.values():
+            node = call_data["node"]
+            # Remove the content of each t-call
+            # They will be replaced by either the changed content or the original one
+            # in a following step
+            for child in node:
+                node.remove(child)
+
+        changed_call_groups = defaultdict(dict)
+        new_full = None
+        for change in changes:
+            xml = html_to_xml_tree(change["html"])
+            if change["type"] == "full":
+                new_full = xml
+            else:
+                changed_call_groups[change["call_key"]] = {
+                    "content": {
+                        change["call_group_key"]: {
+                           "nodes": list(xml.iterchildren(etree.Element))
+                        }
+                    }
+                }
+
+        new_arch = new_full if new_full is not None else old
+        _recompose_arch_with_t_call_parts(new_arch, origin_call_groups, changed_call_groups)
+        for node in new_arch.iter(etree.Element):
+            for att in ("ws-view-id", "ws-call-key", "ws-call-group-key"):
+                node.attrib.pop(att, None)
+
+        studio_view_arch = etree.Element("data")
+        xpath_node = etree.Element("xpath", {"expr": f"/{old.tag}[@t-name='{old.get('t-name')}']", "position": "replace", "mode": "inner"})
+        for child in new_arch:
+            xpath_node.append(child)
+
+        studio_view_arch.append(xpath_node)
+        etree.indent(studio_view_arch)
+        studio_view_arch = etree.tostring(studio_view_arch)
+
+        _get_and_write_studio_view(view, {"arch": studio_view_arch})
+
     @http.route("/web_studio/reset_report_archs", type="json", auth="user")
     def reset_report_archs(self, report_id, include_web_layout=True):
         report = request.env["ir.actions.report"].browse(report_id)
@@ -526,4 +723,12 @@ class WebStudioReportController(main.WebStudioController):
         if not include_web_layout:
             views = views.filtered(lambda v: not v.key.startswith("web.") or "layout" not in v.key)
         views.reset_arch(mode="hard")
+
+        studio_keys = [STUDIO_VIEW_KEY_TEMPLATE.format(key=v.key) for v in views]
+        studio_views = request.env["ir.ui.view"].search([("inherit_id", "in", views.ids), ("key", "in", studio_keys)])
+        to_deactivate = request.env["ir.ui.view"]
+        for studio_view in studio_views:
+            if studio_view.key == STUDIO_VIEW_KEY_TEMPLATE.format(key=studio_view.inherit_id.key):
+                to_deactivate |= studio_view
+        to_deactivate.write({"active": False})
         return True

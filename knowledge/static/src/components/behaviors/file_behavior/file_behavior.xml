@@ -13,7 +13,7 @@
                     />
                 </div>
                 <div class="d-block ps-2 text-break flex-grow-1">
-                    <div t-attf-class="o_knowledge_file_name #{ state.editFileName ? 'd-none' : '' }"
+                    <div t-attf-class="o_knowledge_file_name_container #{ state.editFileName ? 'd-none' : '' }"
                         data-oe-protected="false" t-ref="fileNameRef" t-att-tabindex="!this.props.readonly ? '-1' : undefined"
                         t-on-focus="props.readonly ? () => {} : onFocusFileName"/>
                     <div data-oe-transient-content="true">
@@ -57,7 +57,7 @@
     </t>
     <t t-name="knowledge.FileBehaviorFileName">
         <div class="d-flex">
-            <span t-out="fileName"/>
+            <span class="o_knowledge_file_name" t-out="fileName"/>
             <i class="fa fa-pencil mx-1 invisible align-items-center d-inline-flex"/>
         </div>
     </t>

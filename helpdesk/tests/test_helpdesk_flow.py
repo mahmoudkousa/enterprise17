@@ -31,6 +31,28 @@ class TestHelpdeskFlow(HelpdeskCommon):
             'alias_parent_thread_id': cls.test_team.id,
             'alias_defaults': "{'team_id': %s}" % cls.test_team.id,
         })
+
+        cls.email_to_alias_from = 'client_a@someprovider.com'
+        cls.email_to_alias = """MIME-Version: 1.0
+Date: Thu, 27 Dec 2018 16:27:45 +0100
+Message-ID: blablabla1
+Subject: helpdesk team 1 in company 1
+From:  Client A <client_a@someprovider.com>
+To: helpdesk_team@test.mycompany.com
+Content-Type: multipart/alternative; boundary="000000000000a47519057e029630"
+
+--000000000000a47519057e029630
+Content-Type: text/plain; charset="UTF-8"
+
+
+--000000000000a47519057e029630
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div>A good message ter</div>
+
+--000000000000a47519057e029630--
+"""
         return res
 
     def test_access_rights(self):
@@ -422,30 +444,49 @@ Content-Transfer-Encoding: quoted-printable
         stage = self.test_team._determine_stage()[self.test_team.id]
         stage.template_id = False
 
-        new_message = """MIME-Version: 1.0
-Date: Thu, 27 Dec 2018 16:27:45 +0100
-Message-ID: blablabla1
-Subject: helpdesk team 1 in company 1
-From:  Client A <client_a@someprovider.com>
-To: helpdesk_team@test.mycompany.com
-Content-Type: multipart/alternative; boundary="000000000000a47519057e029630"
-
---000000000000a47519057e029630
-Content-Type: text/plain; charset="UTF-8"
-
-
---000000000000a47519057e029630
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div>A good message ter</div>
-
---000000000000a47519057e029630--
-"""
-        helpdesk_ticket = self.env['mail.thread'].message_process('helpdesk.ticket', new_message)
+        helpdesk_ticket = self.env['mail.thread'].message_process('helpdesk.ticket', self.email_to_alias)
         helpdesk_ticket = self.env['helpdesk.ticket'].browse(helpdesk_ticket)
 
         self.assertEqual(helpdesk_ticket.partner_id.name, "Client A")
+
+    def test_email_with_mail_template_portal_user(self):
+        """
+        Portal users receive an email when they create a ticket
+        """
+        self.stage_new.template_id = self.env.ref('helpdesk.new_ticket_request_email_template')
+        self.helpdesk_portal.email = self.email_to_alias_from
+
+        helpdesk_ticket = self.env['mail.thread'].message_process('helpdesk.ticket', self.email_to_alias)
+        helpdesk_ticket = self.env['helpdesk.ticket'].browse(helpdesk_ticket)
+        self.assertEqual(helpdesk_ticket.partner_id, self.helpdesk_portal.partner_id)
+
+        self.flush_tracking()
+
+        # check that when a portal user creates a ticket there is two message on the ticket:
+        # - the creation message note
+        # - the mail from the stage mail template
+        template_msg, creation_log = helpdesk_ticket.message_ids
+        self.assertEqual(template_msg.subtype_id, self.env.ref('mail.mt_note'))
+        self.assertEqual(creation_log.subtype_id, self.env.ref('helpdesk.mt_ticket_new'))
+
+    def test_email_with_mail_template_internal_user(self):
+        """
+        Internal users do not receive an email when they create a ticket
+        """
+        self.stage_new.template_id = self.env.ref('helpdesk.new_ticket_request_email_template')
+        self.helpdesk_user.email = self.email_to_alias_from
+
+        helpdesk_ticket = self.env['mail.thread'].message_process('helpdesk.ticket', self.email_to_alias)
+        helpdesk_ticket = self.env['helpdesk.ticket'].browse(helpdesk_ticket)
+        self.assertEqual(helpdesk_ticket.partner_id, self.helpdesk_user.partner_id)
+
+        self.flush_tracking()
+
+        # check that when an internal user creates a ticket there is one message on the ticket:
+        # - the creation message note
+        self.assertEqual(len(helpdesk_ticket.message_ids), 1)
+        creation_log = helpdesk_ticket.message_ids
+        self.assertEqual(creation_log.subtype_id, self.env.ref('helpdesk.mt_ticket_new'))
 
     def test_team_assignation_balanced_sla(self):
         #We create an sla policy with minimum priority set as '2'

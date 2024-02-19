@@ -22,8 +22,14 @@ class TestDeliveryFedex(TransactionCase):
     def setUp(self):
         super(TestDeliveryFedex, self).setUp()
 
-        self.iPadMini = self.env.ref('product.product_product_6')
-        self.large_desk = self.env.ref('product.product_product_8')
+        self.iPadMini = self.env['product.product'].create({
+            'name': 'Ipad Mini',
+            'weight': 0.01,
+        })
+        self.large_desk = self.env['product.product'].create({
+            'name': 'Large Desk',
+            'weight': 0.01,
+        })
         self.uom_unit = self.env.ref('uom.product_uom_unit')
 
         self.your_company = self.env.ref('base.main_partner')
@@ -34,20 +40,26 @@ class TestDeliveryFedex(TransactionCase):
                                  'zip': '94107',
                                  'phone': 9874582356})
 
-        self.agrolait = self.env.ref('base.res_partner_2')
-        self.agrolait.write({'street': "rue des Bourlottes, 9",
-                             'street2': "",
-                             'city': "Ramillies",
-                             'zip': 1367,
-                             'state_id': False,
-                             'country_id': self.env.ref('base.be').id})
-        self.delta_pc = self.env.ref('base.res_partner_4')
-        self.delta_pc.write({'street': "1515 Main Street",
-                             'street2': "",
-                             'city': "Columbia",
-                             'zip': 29201,
-                             'state_id': self.env.ref('base.state_us_41').id,
-                             'country_id': self.env.ref('base.us').id})
+        self.agrolait = self.env['res.partner'].create({
+            'name': 'Agrolait',
+            'phone': '(603)-996-3829',
+            'street': "rue des Bourlottes, 9",
+            'street2': "",
+            'city': "Ramillies",
+            'zip': 1367,
+            'state_id': False,
+            'country_id': self.env.ref('base.be').id,
+        })
+        self.delta_pc = self.env['res.partner'].create({
+            'name': 'Delta PC',
+            'phone': '(803)-873-6126',
+            'street': "1515 Main Street",
+            'street2': "",
+            'city': "Columbia",
+            'zip': 29201,
+            'state_id': self.env.ref('base.state_us_41').id,
+            'country_id': self.env.ref('base.us').id,
+        })
         self.stock_location = self.env.ref('stock.stock_location_stock')
         self.customer_location = self.env.ref('stock.stock_location_customers')
 

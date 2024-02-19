@@ -4,15 +4,16 @@
 # 
 # Translators:
 # Wil Odoo, 2023
-# Jolien De Paepe, 2023
+# Erwin van der Ploeg <erwin@odooexperts.nl>, 2024
+# Jolien De Paepe, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-05 13:45+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Jolien De Paepe, 2023\n"
+"Last-Translator: Jolien De Paepe, 2024\n"
 "Language-Team: Dutch (https://app.transifex.com/odoo/teams/41243/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -90,13 +91,13 @@ msgstr ""
 
 #. module: documents
 #: model:documents.tag,name:documents.documents_finance_fiscal_year_2017
-msgid "2022"
-msgstr "2022"
+msgid "2023"
+msgstr "2023"
 
 #. module: documents
 #: model:documents.tag,name:documents.documents_finance_fiscal_year_2018
-msgid "2023"
-msgstr "2023"
+msgid "2024"
+msgstr "2024"
 
 #. module: documents
 #: model_terms:digest.tip,tip_description:documents.digest_tip_documents_0
@@ -118,6 +119,15 @@ msgid ""
 "<br/>\n"
 "                    is sharing content with you"
 msgstr ""
+"<br/>\n"
+"                    deelt inhoud met jou"
+
+#. module: documents
+#. odoo-javascript
+#: code:addons/documents/static/src/js/tours/documents.js:0
+#, python-format
+msgid "<b>Select</b> this page to continue."
+msgstr "<b>Selecteer</b> deze pagina om verder te gaan."
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.public_page_layout
@@ -127,7 +137,7 @@ msgstr "<br/>Aangeboden door"
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.share_view_form_popup
 msgid "<i class=\"fa fa fa-folder text-primary me-2\" title=\"Workspace\"/>"
-msgstr ""
+msgstr "<i class=\"fa fa fa-folder text-primary me-2\" title=\"Werkruimte\"/>"
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.share_workspace_page
@@ -138,6 +148,8 @@ msgstr "<i class=\"fa fa-download fa-fw\"/>  Download alle"
 #: model_terms:ir.ui.view,arch_db:documents.document_view_form
 msgid "<i class=\"fa fa-lock oe_inline\" title=\"Locked\" invisible=\"not lock_uid\"/>"
 msgstr ""
+"<i class=\"fa fa-lock oe_inline\" title=\"Vergrendeld\" invisible=\"not "
+"lock_uid\"/>"
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.share_view_form_popup
@@ -145,6 +157,8 @@ msgid ""
 "<i class=\"fa fa-tag o_documents_tag_color ms-2\" invisible=\"not tag_ids\" "
 "title=\"Tags\"/>"
 msgstr ""
+"<i class=\"fa fa-tag o_documents_tag_color ms-2\" invisible=\"not tag_ids\" "
+"title=\"Labels\"/>"
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.share_workspace_page
@@ -334,7 +348,7 @@ msgstr ""
 "                                                </div>\n"
 "                                                <div>\n"
 "                                                    <t t-if=\"object.create_share_id.activity_note\">\n"
-"                                                        Voorbeeld van een nota.</i>\n"
+"                                                        <i t-out=\"object.create_share_id.activity_note or ''\">Voorbeeld van een factuur.</i>\n"
 "                                                    </t>\n"
 "                                                </div>\n"
 "                                                <br>\n"
@@ -541,7 +555,7 @@ msgstr ""
 "                                                </div>\n"
 "                                                <div>\n"
 "                                                    <t t-if=\"object.activity_note\">\n"
-"                                                        Voorbeeld van een nota.</i>\n"
+"                                                        <i t-out=\"object.activity_note or ''\">Voorbeeld van een factuur.</i>\n"
 "                                                    </t>\n"
 "                                                </div>\n"
 "                                                <br>\n"
@@ -678,7 +692,7 @@ msgstr "Naam van actieknop"
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_folder__action_count
 msgid "Action Count"
-msgstr "Actie teller"
+msgstr "Aantal acties"
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.workflow_rule_form_view
@@ -692,8 +706,8 @@ msgid "Action Needed"
 msgstr "Actie gevraagd"
 
 #. module: documents
-#. odoo-python
 #. odoo-javascript
+#. odoo-python
 #: code:addons/documents/models/documents_folder.py:0
 #: code:addons/documents/static/src/views/inspector/documents_inspector.xml:0
 #: model:ir.ui.menu,name:documents.workflow_rules_menu
@@ -734,6 +748,11 @@ msgid "Activity Note"
 msgstr "Activiteiten notitie"
 
 #. module: documents
+#: model:ir.ui.menu,name:documents.mail_activity_plan_menu
+msgid "Activity Plans"
+msgstr "Activiteitenplan"
+
+#. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_document__activity_state
 msgid "Activity State"
 msgstr "Activiteitsfase"
@@ -747,6 +766,12 @@ msgstr "Soort activiteit"
 #: model:ir.model.fields,field_description:documents.field_documents_document__activity_type_icon
 msgid "Activity Type Icon"
 msgstr "Activiteitensoort icoon"
+
+#. module: documents
+#: model:ir.actions.act_window,name:documents.mail_activity_type_action_document
+#: model:ir.ui.menu,name:documents.mail_activity_type_menu
+msgid "Activity Types"
+msgstr "Activiteitensoorten"
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_request_wizard__activity_type_id
@@ -779,6 +804,11 @@ msgstr "URL Toevoegen"
 #, python-format
 msgid "Add a Link"
 msgstr "Link toevoegen"
+
+#. module: documents
+#: model_terms:ir.actions.act_window,help:documents.mail_activity_plan_action_document
+msgid "Add a new plan"
+msgstr "Een nieuw plan toevoegen"
 
 #. module: documents
 #. odoo-javascript
@@ -918,7 +948,7 @@ msgstr "Gearchiveerd"
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.folder_view_search
 msgid "Archived Workspace"
-msgstr ""
+msgstr "Gearchiveerde werkruimte"
 
 #. module: documents
 #. odoo-javascript
@@ -946,14 +976,14 @@ msgstr "Weet je zeker dat je deze pagina wilt verwijderen?"
 #: code:addons/documents/static/src/views/documents_model_mixin.js:0
 #, python-format
 msgid "Are you sure you want to permanently erase the document?"
-msgstr ""
+msgstr "Weet je zeker dat je dit document definitief wilt wissen?"
 
 #. module: documents
 #. odoo-javascript
 #: code:addons/documents/static/src/views/documents_model_mixin.js:0
 #, python-format
 msgid "Are you sure you want to permanently erase the documents?"
-msgstr ""
+msgstr "Weet je zeker dat je deze documenten definitief wilt wissen?"
 
 #. module: documents
 #. odoo-javascript
@@ -1065,7 +1095,7 @@ msgstr "Kan uploaden"
 #: code:addons/documents/static/src/views/hooks.js:0
 #, python-format
 msgid "Can't share documents of different workspaces."
-msgstr ""
+msgstr "Kan documenten van verschillende werkruimtes niet delen."
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.documents_link_to_record_form_view
@@ -1080,6 +1110,8 @@ msgid ""
 "Cannot move folder under the given parent as this would create a recursive "
 "hierarchy"
 msgstr ""
+"Kan het bestand niet verplaatsen onder het opgegeven bovenliggend bestand, "
+"omdat dit een recursieve hiërarchie zou creëren"
 
 #. module: documents
 #: model_terms:documents.folder,description:documents.documents_internal_folder
@@ -1112,7 +1144,7 @@ msgstr "Kies een record om te linken"
 #: model_terms:ir.ui.view,arch_db:documents.share_view_form
 #: model_terms:ir.ui.view,arch_db:documents.share_view_form_popup
 msgid "Choose or Configure Email Servers"
-msgstr ""
+msgstr "Kies of configureer e-mailservers"
 
 #. module: documents
 #. odoo-javascript
@@ -1153,6 +1185,13 @@ msgstr "Afsluiten"
 #, python-format
 msgid "Close split tools"
 msgstr "Sluit splitstools"
+
+#. module: documents
+#. openerp-web
+#: code:addons/documents/static/src/js/tours/documents.js:0
+#, python-format
+msgid "Click the cross to <b>exit preview</b>."
+msgstr "Klik op het kruis om <b>de preview te verlaten</b>."
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_document__company_id
@@ -1293,6 +1332,8 @@ msgstr "Standaardwaarden voor geüploade documenten"
 #: model:ir.model.fields,help:documents.field_res_config_settings__deletion_delay
 msgid "Delay after permanent deletion of the document in the trash (days)"
 msgstr ""
+"Termijn na het definitieve verwijderen van het document in de prullenbak "
+"(dagen)"
 
 #. module: documents
 #. odoo-javascript
@@ -1321,22 +1362,22 @@ msgstr "Verwijder gerichte of geselecteerde pagina's"
 #: code:addons/documents/static/src/views/documents_model_mixin.js:0
 #, python-format
 msgid "Delete permanently"
-msgstr ""
+msgstr "Definitief verwijderen"
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_res_config_settings__deletion_delay
 msgid "Deletion Delay"
-msgstr ""
+msgstr "Verwijdertermijn"
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_folder__deletion_delay
 msgid "Deletion delay"
-msgstr ""
+msgstr "Verwijdertermijn"
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.res_config_settings_view_form
 msgid "Deletion delay (days)"
-msgstr ""
+msgstr "Verwijdertermijn (dagen)"
 
 #. module: documents
 #: model:documents.workflow.rule,name:documents.documents_rule_internal_deprecate
@@ -1422,6 +1463,11 @@ msgid "Document Owner"
 msgstr "Eigenaar van het document"
 
 #. module: documents
+#: model:ir.actions.act_window,name:documents.mail_activity_plan_action_document
+msgid "Document Plans"
+msgstr "Documentplannen"
+
+#. module: documents
 #: model:ir.model,name:documents.model_documents_request_wizard
 msgid "Document Request"
 msgstr "Aanvraag document"
@@ -1473,8 +1519,8 @@ msgid "Document: Document Request"
 msgstr "Document: Documentaanvraag"
 
 #. module: documents
-#. odoo-python
 #. odoo-javascript
+#. odoo-python
 #: code:addons/documents/models/documents_folder.py:0
 #: code:addons/documents/models/res_partner.py:0
 #: code:addons/documents/static/src/views/inspector/documents_inspector.xml:0
@@ -1557,7 +1603,7 @@ msgstr "Download en upload"
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.share_files_page
 msgid "Download file"
-msgstr ""
+msgstr "Bestand downloaden"
 
 #. module: documents
 #. odoo-javascript
@@ -1627,7 +1673,7 @@ msgstr "Fout"
 #: code:addons/documents/static/src/owl/components/pdf_manager/pdf_manager.js:0
 #, python-format
 msgid "Escape Preview/Deselect/Exit"
-msgstr "Preview verlaten/deselecteren/afsluiten"
+msgstr "Voorbeeld verlaten/deselecteren/afsluiten"
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_workflow_rule__excluded_tag_ids
@@ -1724,6 +1770,7 @@ msgstr "Bestandencentralisatie"
 #: model_terms:ir.ui.view,arch_db:documents.folder_deletion_form
 msgid "Files will be sent to trash and deleted forever after"
 msgstr ""
+"Bestanden worden naar de prullenbak verstuurd en definitief verwijderd na"
 
 #. module: documents
 #. odoo-javascript
@@ -1732,6 +1779,8 @@ msgstr ""
 #, python-format
 msgid "Files will be sent to trash and deleted forever after %s days."
 msgstr ""
+"Bestanden worden naar de prullenbak verstuurd en definitief verwijderd na %s"
+" dagen."
 
 #. module: documents
 #: model:documents.folder,name:documents.documents_finance_folder
@@ -1818,7 +1867,7 @@ msgstr "Verzamelen in één document"
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.format_file_size
 msgid "Gb"
-msgstr ""
+msgstr "Gb"
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.document_view_search
@@ -1989,19 +2038,19 @@ msgstr "Wordt beschouwd als meerdere pagina's"
 #: code:addons/documents/static/src/views/search/documents_search_model.js:0
 #, python-format
 msgid "Items in trash will be deleted forever after %s days."
-msgstr ""
+msgstr "Items in de prullenbak worden definitief verwijderd na %s dagen."
 
 #. module: documents
 #. odoo-javascript
 #: code:addons/documents/static/src/views/documents_model_mixin.js:0
 #, python-format
 msgid "Items moved to the trash will be deleted forever after %s days."
-msgstr ""
+msgstr "Items in de prullenbak worden definitief verwijderd na %s dagen."
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.format_file_size
 msgid "Kb"
-msgstr ""
+msgstr "Kb"
 
 #. module: documents
 #: model:documents.facet,name:documents.documents_internal_knowledge
@@ -2130,7 +2179,7 @@ msgstr "Lokale deelgebaseerde inkomende detectie"
 #: model_terms:ir.ui.view,arch_db:documents.document_view_form
 #, python-format
 msgid "Lock"
-msgstr "Vergrendelen"
+msgstr "Blokkeren"
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_document__is_locked
@@ -2177,7 +2226,7 @@ msgstr "Marketing"
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.format_file_size
 msgid "Mb"
-msgstr ""
+msgstr "Mb"
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_request_wizard__activity_note
@@ -2253,17 +2302,17 @@ msgstr "Naar werkruimte verplaatsen"
 #: model_terms:ir.ui.view,arch_db:documents.folder_deletion_form
 #, python-format
 msgid "Move to trash"
-msgstr ""
+msgstr "Verplaatsen naar de prullenbak"
 
 #. module: documents
-#. odoo-python
 #. odoo-javascript
+#. odoo-python
 #: code:addons/documents/models/documents_folder.py:0
 #: code:addons/documents/static/src/views/form/folder_form_controller.js:0
 #: code:addons/documents/static/src/views/list/folder_list_controller.js:0
 #, python-format
 msgid "Move to trash?"
-msgstr ""
+msgstr "Verplaatsen naar de prullenbak?"
 
 #. module: documents
 #. odoo-javascript
@@ -2363,6 +2412,11 @@ msgstr "Volgende activiteit overzicht"
 #: model:ir.model.fields,field_description:documents.field_documents_document__activity_type_id
 msgid "Next Activity Type"
 msgstr "Volgende activiteit type"
+
+#. module: documents
+#: model_terms:ir.actions.act_window,help:documents.mail_activity_type_action_document
+msgid "No activity types found. Let's create one!"
+msgstr "Geen activiteitensoorten gevonden. Laten we er een maken!"
 
 #. module: documents
 #. odoo-javascript
@@ -2706,6 +2760,8 @@ msgid ""
 "Requested\n"
 "                                ∙"
 msgstr ""
+"Aangevraagd\n"
+"                                ∙"
 
 #. module: documents
 #: model:mail.activity.type,name:documents.mail_documents_activity_data_md
@@ -2861,8 +2917,8 @@ msgstr "Reeks"
 
 #. module: documents
 #: model:documents.workflow.rule,name:documents.documents_rule_finance_2018contracts
-msgid "Set As 2023 Contracts"
-msgstr "Instellen als 2023 contracten"
+msgid "Set As 2024 Contracts"
+msgstr "Instellen als 2024 Contracten"
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_workflow_rule__partner_id
@@ -2882,7 +2938,7 @@ msgstr "Labels Instellen"
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.res_config_settings_view_form
 msgid "Set deletion delay for documents in the Trash"
-msgstr ""
+msgstr "Bepaal verwijdertermijn voor documenten in de prullenbak"
 
 #. module: documents
 #: model:mail.template,description:documents.mail_template_document_request_reminder
@@ -3155,14 +3211,14 @@ msgstr ""
 #. module: documents
 #: model:ir.model.constraint,message:documents.constraint_res_config_settings_check_deletion_delay
 msgid "The deletion delay should be positive."
-msgstr ""
+msgstr "De verwijdertermijn moet positief zijn."
 
 #. module: documents
 #. odoo-javascript
 #: code:addons/documents/static/src/views/hooks.js:0
 #, python-format
 msgid "The links and requested documents are not shareable."
-msgstr ""
+msgstr "De links en de aangevraagde documenten kunnen niet worden gedeeld."
 
 #. module: documents
 #: model:ir.model.fields,help:documents.field_documents_share__alias_model_id
@@ -3230,7 +3286,7 @@ msgstr ""
 #: code:addons/documents/models/documents_document.py:0
 #, python-format
 msgid "This file has been restored"
-msgstr ""
+msgstr "Dit bestand is hersteld"
 
 #. module: documents
 #. odoo-python
@@ -3239,12 +3295,23 @@ msgstr ""
 msgid ""
 "This file has been sent to the trash and will be deleted forever on the %s"
 msgstr ""
+"Dit bestand is naar de prullenbak verstuurd en wordt definitief verwijderd "
+"op %s"
 
 #. module: documents
 #: model:ir.model.fields,help:documents.field_documents_document__company_id
 #: model:ir.model.fields,help:documents.field_documents_folder__company_id
 msgid "This workspace will only be available to the selected company"
 msgstr "Deze werkruimte is alleen beschikbaar voor het geselecteerde bedrijf"
+
+#. module: documents
+#: model_terms:ir.actions.act_window,help:documents.mail_activity_type_action_document
+msgid ""
+"Those represent the different categories of things you have to do (e.g. "
+"\"Call\" or \"Send email\")."
+msgstr ""
+"Die vertegenwoordigen de verschillende categorieën van dingen die je moet "
+"doen (bijvoorbeeld \"Bellen\" of \"E-mail verzenden\")."
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_document__thumbnail
@@ -3437,7 +3504,7 @@ msgstr "Bevestigd"
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.share_files_page
 msgid "Validity date:"
-msgstr ""
+msgstr "Geldigheidsdatum:"
 
 #. module: documents
 #: model:documents.tag,name:documents.documents_marketing_assets_Videos
@@ -3548,7 +3615,7 @@ msgstr ""
 #: code:addons/documents/static/src/views/documents_controller_mixin.xml:0
 #, python-format
 msgid "You cannot upload content in this workspace"
-msgstr ""
+msgstr "Je kan geen inhoud in deze werkruimte uploaden"
 
 #. module: documents
 #. odoo-python
@@ -3676,7 +3743,7 @@ msgstr "file_extension"
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.share_files_page
 msgid "files"
-msgstr ""
+msgstr "bestanden"
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_link_to_record_wizard__is_readonly_model

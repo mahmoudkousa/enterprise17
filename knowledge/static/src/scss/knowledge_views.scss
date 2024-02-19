@@ -68,8 +68,6 @@
     // = Sidebar
     // --------------------------------------------------------------------------
     .o_knowledge_sidebar {
-        transition: width 0.15s linear;
-
         .o_scroll_view {
             max-height: 100%;
         }
@@ -389,14 +387,16 @@
     }
 }
 
-@include media-breakpoint-down(md) {
-    .o_knowledge_form_view {
-        --editor-gutter-size: 1rem;
+@include media-breakpoint-up(md) {
+    .o_knowledge_sidebar {
+        transition: width 0.15s linear;
+        width: clamp(200px, var(--knowledge-article-sidebar-size), 35%);
     }
 }
 
-@include media-breakpoint-down(sm) {
+@include media-breakpoint-down(md) {
     .o_knowledge_form_view {
+        --editor-gutter-size: 1rem;
         &:not(.o_toggle_aside) {
             .o_knowledge_backdrop {
                 display: none;
@@ -411,7 +411,6 @@
         }
         .o_knowledge_sidebar {
             @include o-position-absolute(0, 50px, 0, 0);
-            width: auto;
             z-index: 3; // should be greater than the backdrop z-index
         }
         .o_knowledge_backdrop {

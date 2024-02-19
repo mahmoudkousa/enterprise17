@@ -3,7 +3,7 @@
 {
     'name': 'Austrian SAF-T Export',
     'countries': ['at'],
-    'version': '1.0',
+    'version': '1.1',
     'category': 'Accounting/Localizations/Reporting',
     'description': """
     The Austrian Standard Audit File for Tax (SAF-T) is a standard file format for exporting various types of accounting transactional data using the XML format.

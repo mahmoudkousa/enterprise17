@@ -99,7 +99,7 @@ QUnit.test("progress bar has the correct unit", async (assert) => {
     assert.containsOnce(target, SELECTORS.progressBarForeground);
     assert.deepEqual(
         target.querySelector(SELECTORS.progressBarForeground).textContent,
-        "465 h / 744 h"
+        "465h / 744h"
     );
     assert.deepEqual(
         target.querySelector(SELECTORS.progressBar + " > span > .o_gantt_group_hours_ratio").textContent,
@@ -110,7 +110,7 @@ QUnit.test("progress bar has the correct unit", async (assert) => {
     assert.containsOnce(target, SELECTORS.progressBarForeground);
     assert.deepEqual(
         target.querySelector(SELECTORS.progressBarForeground).textContent,
-        "651 h / 744 h"
+        "651h / 744h"
     );
     assert.deepEqual(
         target.querySelector(SELECTORS.progressBar + " > span > .o_gantt_group_hours_ratio").textContent,

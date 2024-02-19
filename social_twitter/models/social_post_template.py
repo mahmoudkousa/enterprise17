@@ -19,7 +19,7 @@ class SocialPostTemplate(models.Model):
 
     @api.depends('message', 'has_twitter_accounts')
     def _compute_twitter_post_limit_message(self):
-        self.twitter_post_limit_message = ''
+        self.twitter_post_limit_message = False
         self.is_twitter_post_limit_exceed = False
         for post in self.filtered('has_twitter_accounts'):
             twitter_account = post.account_ids._filter_by_media_types(['twitter'])

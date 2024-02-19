@@ -24,3 +24,11 @@ class AccountPayment(models.Model):
 
     def l10n_mx_edi_cfdi_try_sat(self):
         self.move_id.l10n_mx_edi_cfdi_try_sat()
+
+    def _process_attachments_for_template_post(self, mail_template):
+        """ Add CFDI attachment to template. """
+        result = super()._process_attachments_for_template_post(mail_template)
+        for payment in self.filtered('l10n_mx_edi_cfdi_attachment_id'):
+            payment_result = result.setdefault(payment.id, {})
+            payment_result.setdefault('attachment_ids', []).append(payment.l10n_mx_edi_cfdi_attachment_id.id)
+        return result

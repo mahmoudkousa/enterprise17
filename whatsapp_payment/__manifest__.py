@@ -2,7 +2,7 @@
 
 {
     'name': 'Whatsapp-Payment',
-    'category': 'Hidden/Tools',
+    'category': 'WhatsApp',
     'description': """This module Integrates Payment with WhatsApp""",
     'depends': ['payment', 'whatsapp'],
     'data': [

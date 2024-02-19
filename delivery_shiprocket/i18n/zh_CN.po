@@ -5,14 +5,18 @@
 # Translators:
 # Wil Odoo, 2023
 # 山西清水欧度(QQ:54773801) <54773801@qq.com>, 2023
+# 何彬 <vnsoft.he@gmail.com>, 2023
+# Jeffery CHEN <jeffery9@gmail.com>, 2023
+# Chloe Wang, 2024
+# 湘子 南 <1360857908@qq.com>, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-26 16:10+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: 山西清水欧度(QQ:54773801) <54773801@qq.com>, 2023\n"
+"Last-Translator: 湘子 南 <1360857908@qq.com>, 2024\n"
 "Language-Team: Chinese (China) (https://app.transifex.com/odoo/teams/41243/zh_CN/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -45,8 +49,8 @@ msgid ""
 "<b>In Odoo configuration click on <i class=\"fa fa-refresh oe_inline\"/> "
 "icon near Shiprocket Channel to sync newly created channels.</b>"
 msgstr ""
-"<b>在 Odoo 设置中点击<i class=\"fa fa-refresh oe_inline\"/>Shiprocket "
-"频道附近的图标，同步新创建的频道。</b>"
+"<b>在 ERP 设置中点击<i class=\"fa fa-refresh oe_inline\"/>Shiprocket "
+"频道附近的图标，同步新创建的频道.</b>"
 
 #. module: delivery_shiprocket
 #: model_terms:ir.ui.view,arch_db:delivery_shiprocket.view_delivery_carrier_form_inherit_delivery_shiprocket
@@ -92,6 +96,14 @@ msgstr "清单是一些承运商为简化提货流程而要求提供的文件，
 #: model_terms:ir.ui.view,arch_db:delivery_shiprocket.view_delivery_carrier_form_inherit_delivery_shiprocket
 msgid "API User"
 msgstr "API 用户"
+
+#. module: delivery_shiprocket
+#. odoo-python
+#: code:addons/delivery_shiprocket/models/shiprocket_request.py:0
+#: code:addons/delivery_shiprocket/models/shiprocket_request.py:0
+#, python-format
+msgid "AWB assignment was unsuccessful: %s"
+msgstr "AWB 分配未成功：%s"
 
 #. module: delivery_shiprocket
 #. odoo-python
@@ -165,6 +177,13 @@ msgid "Country is required!"
 msgstr "必须填写国家！"
 
 #. module: delivery_shiprocket
+#. odoo-python
+#: code:addons/delivery_shiprocket/models/shiprocket_request.py:0
+#, python-format
+msgid "Courier (%s): %s"
+msgstr "快递商（%s）：%s"
+
+#. module: delivery_shiprocket
 #: model:ir.model.fields,field_description:delivery_shiprocket.field_shiprocket_courier__courier_code
 msgid "Courier Code"
 msgstr "快递编码"
@@ -173,22 +192,15 @@ msgstr "快递编码"
 #. odoo-python
 #: code:addons/delivery_shiprocket/models/shiprocket_request.py:0
 #, python-format
-msgid "Courier is - %s"
-msgstr "快递是 - %s"
-
-#. module: delivery_shiprocket
-#. odoo-python
-#: code:addons/delivery_shiprocket/models/shiprocket_request.py:0
-#, python-format
-msgid "Courier is - %s, recommended by %s!"
-msgstr "快递是 - %s，由%s推荐！"
-
-#. module: delivery_shiprocket
-#. odoo-python
-#: code:addons/delivery_shiprocket/models/shiprocket_request.py:0
-#, python-format
 msgid "Courier is not available for delivery!"
 msgstr "不提供快递服务！"
+
+#. module: delivery_shiprocket
+#. odoo-python
+#: code:addons/delivery_shiprocket/models/shiprocket_request.py:0
+#, python-format
+msgid "Courier: %s"
+msgstr "快递商：%s"
 
 #. module: delivery_shiprocket
 #: model_terms:ir.ui.view,arch_db:delivery_shiprocket.view_delivery_carrier_form_inherit_delivery_shiprocket
@@ -622,7 +634,7 @@ msgstr "令牌失效"
 #. module: delivery_shiprocket
 #: model:ir.model,name:delivery_shiprocket.model_stock_picking
 msgid "Transfer"
-msgstr "转账"
+msgstr "调拨"
 
 #. module: delivery_shiprocket
 #. odoo-python

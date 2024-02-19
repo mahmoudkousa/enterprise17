@@ -25,7 +25,7 @@ export class GridRow extends Component {
         let value = 'value' in this.props ? this.props.value : this.props.row.initialRecordValues[this.props.name];
         const fieldInfo = this.props.model.fieldsInfo[this.props.name];
         if (fieldInfo.type === "selection") {
-            value = fieldInfo.selection.find(([key,]) => key === value)[1];
+            value = fieldInfo.selection.find(([key,]) => key === value)?.[1];
         }
         return value;
     }

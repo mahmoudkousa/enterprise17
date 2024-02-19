@@ -7,6 +7,13 @@ import { sprintf } from '@web/core/utils/strings';
 
 export class StreamPostCommentLinkedin extends StreamPostComment {
 
+    async _onReplyComment() {
+        if (!this.action.showReplyComment) {
+            await this._onLoadReplies();
+        }
+        await super._onReplyComment();
+    }
+
     async _onLoadReplies() {
         const innerComments = await this.rpc('/social_linkedin/get_comments', {
             stream_post_id: this.originalPost.id.raw_value,

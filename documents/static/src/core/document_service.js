@@ -21,7 +21,8 @@ export class DocumentService {
      */
     insert(data) {
         let document = this.store.Document.records[data.id];
-        if (!document) {
+        // Comparing the datapoint id here.
+        if (document?.record.id !== data.record.id) {
             document = new Document();
             if ("id" in data) {
                 document.id = data.id;

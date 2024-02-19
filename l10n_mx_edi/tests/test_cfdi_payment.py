@@ -153,3 +153,55 @@ class TestCFDIPayment(TestMxEdiCommon):
             payment3.move_id,
             'test_payment_partial_foreign_currency_invoice3',
         )
+
+    @freeze_time('2017-01-01')
+    def test_invoice_partial_payment_tax_rounding(self):
+        '''
+        In order to succesfully validate the payment we need to avoid
+        rounding errors coming from the several mathematical operations performed during
+        collection of invoice/payment data.
+        In particular in case of partial payment the system uses a payment percentage
+        (payment amount / invoice amount) to compute the correct amounts for the document.
+        To reduce the risk of rounding errors it is best to compute the "full" tax and base amounts
+        and multiply for the percentage paid as last step.
+        '''
+        invoice_vals = [
+            # pylint: disable=C0326
+            ( 30,  84.88,  13.00),
+            ( 30,  18.00,  13.00),
+            (  3, 564.32,  13.00),
+            ( 33,   7.00,  13.00),
+            ( 20,  49.88,  13.00),
+            (100,   3.10,  13.00),
+            (  2, 300.00,  13.00),
+            ( 36,  36.43,  13.00),
+            ( 36,  15.00,  13.00),
+            (  2,  61.08,      0),
+            (  2,  13.05,      0),
+        ]
+        invoice = self._create_invoice(
+            invoice_line_ids=[
+                Command.create({
+                    'product_id': self.product.id,
+                    'quantity': quantity,
+                    'price_unit': price_unit,
+                    'discount': discount,
+                    'tax_ids': [Command.set(self.tax_16.ids)],
+                }) for quantity, price_unit, discount in invoice_vals
+            ])
+        with self.with_mocked_pac_sign_success():
+            invoice._l10n_mx_edi_cfdi_invoice_try_send()
+        self._assert_invoice_cfdi(invoice, 'test_invoice_partial_payment_tax_rounding_1')
+
+        # Partial payment in MXN.
+        payment = self._create_payment(
+            invoice,
+            amount=4450.14,
+            currency_id=self.comp_curr.id,
+        )
+        with self.with_mocked_pac_sign_success():
+            payment.move_id._l10n_mx_edi_cfdi_payment_try_send()
+        self._assert_invoice_payment_cfdi(
+            payment.move_id,
+            'test_invoice_partial_payment_tax_rounding_2',
+        )

@@ -19,6 +19,23 @@ export class LastTransactionStatusButton extends Component {
         this.popup = useService("popup");
         this.state = useState({ pending: false });
         this.pos = usePos();
+
+        // Precompute the worldline payment methods values
+
+        // An IoT box can only support one WorldLine payment terminal
+        // However, several payment method can use the same terminal (eco/meal vouchers for instance)
+        // In some cases, there is no need to perform several call to the same IoT and might cause errors
+        this.worldline_payment_method_terminals = [];
+        const worldlineTerminalIoT = new Set();
+
+        this.pos.payment_methods.filter(pm => pm.use_payment_terminal === 'worldline').forEach(worldline_pm => {
+            const terminal = worldline_pm.payment_terminal && worldline_pm.payment_terminal.get_terminal();
+            const terminalIoTIP = terminal && terminal.iotIp;
+            if (terminal && terminalIoTIP && !worldlineTerminalIoT.has(terminalIoTIP)) {
+                this.worldline_payment_method_terminals.push(terminal);
+                worldlineTerminalIoT.add(terminalIoTIP);
+            }
+        });
     }
 
     sendLastTransactionStatus() {
@@ -36,22 +53,42 @@ export class LastTransactionStatusButton extends Component {
             });
             return;
         }
-
         this.state.pending = true;
-        this.pos.payment_methods.map((pm) => {
-            if (pm.use_payment_terminal == "worldline") {
-                var terminal = pm.payment_terminal.get_terminal();
-                terminal.addListener(this._onLastTransactionStatus.bind(this));
-                terminal.action({ messageType: "LastTransactionStatus" }).catch(() => {
+        if (this.worldline_payment_method_terminals.length === 0) {
+            this.state.pending = false;
+            this.popup.add(ErrorPopup, {
+                'title': _t('No worldline terminal configured'),
+                'body': _t('No worldline terminal device configured for any payment methods. ' +
+                    'Double check if your configured payment method define the field Payment Terminal Device')
+            });
+        }
+        else {
+            this.worldline_payment_method_terminals.forEach(worldline_terminal => {
+                worldline_terminal.addListener(this._onLastTransactionStatus.bind(this));
+                worldline_terminal.action({ messageType: "LastTransactionStatus" }).catch(() => {
                     this.state.pending = false;
                 });
-            }
-        });
+            });
+        }
     }
 
     _onLastTransactionStatus(data) {
+        // If the response data has a cid,
+        // it's not a response to a Last Transaction Status request
+        if (data.cid)
+            return;
+
         this.state.pending = false;
-        this.popup.add(LastTransactionPopup, data.value);
+
+        if (data.Error) {
+            this.popup.add(ErrorPopup, {
+                title: _t('Failed to request last transaction status'),
+                body: data.Error,
+            });
+        }
+        else {
+            this.popup.add(LastTransactionPopup, data.value);
+        }
     }
 }
 

@@ -60,7 +60,7 @@ class IrAttachment(models.Model):
         res_model = vals.get('res_model')
         res_id = vals.get('res_id')
         model = self.env.get(res_model)
-        if model is not None and res_id and issubclass(type(model), self.pool['documents.mixin']):
+        if model is not None and res_id and issubclass(self.pool[res_model], self.pool['documents.mixin']):
             vals_list = [
                 model.browse(res_id)._get_document_vals(attachment)
                 for attachment in self

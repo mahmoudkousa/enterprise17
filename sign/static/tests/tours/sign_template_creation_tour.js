@@ -52,7 +52,7 @@ function dragAndDropSignItemAtHeight(type, page, height = 0.5, width = 0.5) {
 
 registry.category("web_tour.tours").add("sign_template_creation_tour", {
     test: true,
-    url: "/web",
+    url: "/web?debug=1",
     steps: () => [
         stepUtils.showAppsMenuItem(),
         {
@@ -105,6 +105,13 @@ registry.category("web_tour.tours").add("sign_template_creation_tour", {
             },
         },
         {
+            content: "Drop Text Sign Item",
+            trigger: "iframe body",
+            run: function () {
+                dragAndDropSignItemAtHeight("Text", 1, 0.15, 0.25);
+            },
+        },
+        {
             content: "Open popover on name sign item",
             trigger: 'iframe .o_sign_sign_item:contains("Name") .o_sign_item_display',
             run: "click",
@@ -117,6 +124,48 @@ registry.category("web_tour.tours").add("sign_template_creation_tour", {
         {
             content: "select employee",
             trigger: '.o_popover .o_input_dropdown .dropdown .dropdown-item:contains("Employee")',
+        },
+        {
+            content: "Validate changes",
+            trigger: ".o_popover .o_sign_validate_field_button",
+        },
+        {
+            content: "Drop Selection Sign Item",
+            trigger: "iframe body",
+            run: function () {
+                dragAndDropSignItemAtHeight("Selection", 1, 0.75, 0.25);
+            },
+        },
+        {
+            content: "Open popover on Selection sign item",
+            trigger: 'iframe .o_sign_sign_item:contains("Selection") .o_sign_item_display',
+            run: "click",
+        },
+        {
+            content: "Write new selection option name",
+            trigger: ".o_popover .o_input_dropdown input",
+            run: "text option",
+        },
+        {
+            content: "Create new selection option",
+            trigger: '.o_popover .o_input_dropdown .dropdown a:contains("Create")',
+        },
+        {
+            content: "Check option is added",
+            trigger: '.o_popover #o_sign_select_options_input .o_tag_badge_text:contains("option")',
+        },
+        {
+            content: "Validate changes",
+            trigger: ".o_popover .o_sign_validate_field_button",
+        },
+        {
+            content: "Open popover on text sign item",
+            trigger: "iframe .o_sign_sign_item:contains('Text') .o_sign_item_display",
+        },
+        {
+            content: "Change text placeholder",
+            trigger: ".o_popover .o_popover_placeholder input",
+            run: "text placeholder",
         },
         {
             content: "Validate changes",

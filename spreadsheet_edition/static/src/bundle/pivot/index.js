@@ -10,7 +10,6 @@ import { PivotSidePanel } from "./side_panels/pivot_list_side_panel";
 import "./autofill";
 import "./operational_transform";
 import { insertPivot } from "./pivot_init_callback";
-import { pivotFormulaRegex } from "@spreadsheet/pivot/pivot_helpers";
 
 const { featurePluginRegistry, sidePanelRegistry, cellMenuRegistry } = spreadsheet.registries;
 
@@ -33,8 +32,8 @@ cellMenuRegistry.add("pivot_properties", {
         env.openSidePanel("PIVOT_PROPERTIES_PANEL", {});
     },
     isVisible: (env) => {
-        const cell = env.model.getters.getActiveCell();
-        return cell && cell.isFormula && cell.content.match(pivotFormulaRegex);
+        const position = env.model.getters.getActivePosition();
+        return env.model.getters.isExistingPivot(env.model.getters.getPivotIdFromPosition(position));
     },
-    icon: "o-spreadsheet-Icon.SEE_RECORDS",
+    icon: "o-spreadsheet-Icon.PIVOT",
 });

@@ -106,7 +106,7 @@
                         <button class="btn btn-primary me-2 rounded w-auto" special="save" data-hotkey="q">Save</button>
                         <button class="btn btn-secondary rounded w-auto" special="cancel" data-hotkey="x">Discard</button>
                     </div>
-                    <button class="btn btn-outline-danger text-uppercase rounded w-auto" type="object" name="action_delete_folder" data-hotkey="d">Delete</button>
+                    <button invisible="not id" class="btn btn-outline-danger text-uppercase rounded w-auto" type="object" name="action_delete_folder" data-hotkey="d">Delete</button>
                 </footer>
             </form>
         </field>
@@ -115,6 +115,7 @@
     <record id="folder_deletion_form" model="ir.ui.view">
         <field name="name">Folder Deletion</field>
         <field name="model">documents.folder</field>
+        <field name="priority">20</field>
         <field name="arch" type="xml">
             <form>
                 <div>

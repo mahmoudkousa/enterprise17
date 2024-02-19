@@ -55,7 +55,7 @@ QUnit.test("Should not have attachment preview for still uploading attachment", 
     );
 });
 
-QUnit.test("Attachment on side", async () => {
+QUnit.test("Attachment on side", async (assert) => {
     const pyEnv = await startServer();
     const recordId = pyEnv["mail.test.simple.main.attachment"].create({});
     const attachmentId = pyEnv["ir.attachment"].create({
@@ -83,6 +83,12 @@ QUnit.test("Attachment on side", async () => {
     patchUiSize({ size: SIZES.XXL });
     const { openFormView } = await start({
         mockRPC(route, args) {
+            if (String(route).includes("/mail/thread/data")) {
+                assert.step("/mail/thread/data");
+            }
+            if (String(route).includes("register_as_main_attachment")) {
+                assert.step("register_as_main_attachment");
+            }
             if (String(route).includes("/web/static/lib/pdfjs/web/viewer.html")) {
                 var canvas = document.createElement("canvas");
                 return canvas.toDataURL();
@@ -99,16 +105,20 @@ QUnit.test("Attachment on side", async () => {
     await contains(".arrow", { count: 0 });
     // send a message with attached PDF file
     await click("button", { text: "Send message" });
+    assert.verifySteps(["/mail/thread/data", "register_as_main_attachment"]);
     await inputFiles(".o-mail-Composer-coreMain .o_input_file", [
         await createFile({ name: "invoice.pdf", contentType: "application/pdf" }),
     ]);
     await click(".o-mail-Composer-send:enabled");
     await contains(".arrow", { count: 2 });
+    assert.verifySteps(["/mail/thread/data"]);
     await click(".o_move_next");
     await contains(".o-mail-Attachment-imgContainer > img", { count: 0 });
     await contains(".o-mail-Attachment > iframe");
+    assert.verifySteps(["register_as_main_attachment"]);
     await click(".o_move_previous");
     await contains(".o-mail-Attachment-imgContainer > img");
+    assert.verifySteps(["register_as_main_attachment"]);
 });
 
 QUnit.test(

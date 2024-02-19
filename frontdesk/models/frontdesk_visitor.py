@@ -101,7 +101,7 @@ class FrontdeskVisitor(models.Model):
                     'view_type': 'form',
                 })
                 name = f"{self.name} ({self.company})" if self.company else self.name
-                msg = _("%(name)s just checked-in. He requested %(drink)s.",
+                msg = _("%(name)s just checked-in. Requested Drink: %(drink)s.",
                     name=Markup('<a href="%s">%s</a>') % (url_join(visitor.get_base_url(), '/web?#%s' % url), name),
                     drink=', '.join(drink.name for drink in visitor.drink_ids),
                 )

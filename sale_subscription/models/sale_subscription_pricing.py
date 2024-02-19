@@ -26,12 +26,15 @@ class SaleSubscriptionPricing(models.Model):
 
     @api.constrains('plan_id', 'pricelist_id', 'product_template_id', 'product_variant_ids')
     def _unique_pricing_constraint(self):
-        pricings_per_group = self.read_group([('product_template_id', '!=', False)], ['product_variant_ids:array_agg'], ['product_template_id', 'plan_id', 'pricelist_id'], lazy=False)
+        pricings_per_group = self.read_group(
+            ['|', ('product_template_id', 'in', self.product_template_id.ids), ('product_variant_ids', 'in', self.product_variant_ids.ids)],
+            ['product_variant_ids:array_agg'],
+            ['product_template_id', 'plan_id', 'pricelist_id'], lazy=False)
         for pricings in pricings_per_group:
             if pricings['__count'] < 2:
                 continue
             if len(set(pricings['product_variant_ids'])) != len(pricings['product_variant_ids']):
-                raise UserError(_("There is multiple pricings for an unique product, plan and pricelist."))
+                raise UserError(_("There are multiple pricings for an unique product, plan and pricelist."))
 
     @api.constrains('pricelist_id')
     def _unique_company_contraint(self):

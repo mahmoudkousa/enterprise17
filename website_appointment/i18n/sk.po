@@ -1,41 +1,27 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # 	* website_appointment
-#
+# 
 # Translators:
-# Jaroslav Bosansky <jaro.bosansky@ekoenergo.sk>, 2022
-# Alexandra Brencicova <alexandra.brencicova@gmail.com>, 2022
-# Martin Trigaux, 2022
-# Damian Brencic <brencicdamian12313@gmail.com>, 2023
-# Rastislav Brencic <rastislav.brencic@azet.sk>, 2023
-#
+# Wil Odoo, 2023
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 16.0+e\n"
+"Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-16 16:03+0000\n"
-"PO-Revision-Date: 2022-09-22 05:49+0000\n"
-"Last-Translator: Rastislav Brencic <rastislav.brencic@azet.sk>, 2023\n"
+"POT-Creation-Date: 2023-10-26 22:22+0000\n"
+"PO-Revision-Date: 2023-10-26 23:10+0000\n"
+"Last-Translator: Wil Odoo, 2023\n"
 "Language-Team: Slovak (https://app.transifex.com/odoo/teams/41243/sk/)\n"
-"Language: sk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
+"Language: sk\n"
 "Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n == 1 ? 0 : n % 1 == 0 && n >= 2 && n <= 4 ? 1 : n % 1 != 0 ? 2: 3);\n"
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_booking_resource_description
-msgid "(+1 other)"
-msgstr ""
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointments_cards
 msgid "<i class=\"fa fa-ban me-2\"/>Unpublished"
-msgstr ""
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_pages_kanban_view
-msgid "<i class=\"fa fa-globe me-2\" title=\"Website URL\"/>"
 msgstr ""
 
 #. module: website_appointment
@@ -46,8 +32,15 @@ msgid "<i class=\"fa fa-long-arrow-left me-2\"/>All Appointments"
 msgstr ""
 
 #. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.website_calendar_index_topbar
-msgid "<span class=\"navbar-brand h4 my-0 me-auto my-auto\">Choose Your Appointment</span>"
+#: model_terms:ir.ui.view,arch_db:website_appointment.appointments_cards
+msgid ""
+"<i class=\"fa fa-video-camera fa-fw me-1 fs-5 text-muted\"/>\n"
+"                                <span class=\"o_not_editable\">Online</span>"
+msgstr ""
+
+#. module: website_appointment
+#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_pages_kanban_view
+msgid "<span class=\"fa fa-globe\" title=\"website\"/>"
 msgstr ""
 
 #. module: website_appointment
@@ -57,7 +50,7 @@ msgstr ""
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointment_select_operator
-msgid "<span> See all availabilities <i class=\"fa fa-long-arrow-right\"/></span>"
+msgid "<span>See all availabilities <i class=\"fa fa-long-arrow-right\"/></span>"
 msgstr ""
 
 #. module: website_appointment
@@ -81,11 +74,6 @@ msgid "Add an intro message here..."
 msgstr "Tu pridajte úvodnú správu..."
 
 #. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_validated
-msgid "All Appointments"
-msgstr "Všetky stretnutia"
-
-#. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.s_online_appointment_options
 msgid "All Types"
 msgstr ""
@@ -99,9 +87,15 @@ msgstr ""
 #. odoo-python
 #: code:addons/website_appointment/models/website.py:0
 #: model:website.menu,name:website_appointment.menu_appointment
+#: model_terms:ir.ui.view,arch_db:website_appointment.website_online_appointment_snippet
 #, python-format
 msgid "Appointment"
 msgstr "Stretnutie"
+
+#. module: website_appointment
+#: model:ir.model,name:website_appointment.model_appointment_invite
+msgid "Appointment Invite"
+msgstr "Pozvánka na stretnutie"
 
 #. module: website_appointment
 #: model:ir.actions.act_window,name:website_appointment.action_appointment_pages_list
@@ -122,6 +116,7 @@ msgstr ""
 
 #. module: website_appointment
 #: model:ir.ui.menu,name:website_appointment.menu_appointment_pages
+#: model:ir.ui.menu,name:website_appointment.website_appointment_type_menu
 #: model_terms:ir.ui.view,arch_db:website_appointment.s_online_appointment_options
 msgid "Appointments"
 msgstr "Schôdzky"
@@ -138,10 +133,11 @@ msgstr ""
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointment_progress_bar
-msgid "Booked<span class=\"chevron position-absolute d-block\"/>"
-msgstr ""
+msgid "Booked"
+msgstr "Rezervované"
 
 #. module: website_appointment
+#: model:ir.model.fields,field_description:website_appointment.field_appointment_invite__can_publish
 #: model:ir.model.fields,field_description:website_appointment.field_appointment_type__can_publish
 msgid "Can Publish"
 msgstr "Môžete publikovať"
@@ -153,12 +149,12 @@ msgstr ""
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointment_select_operator
-msgid "Choose"
-msgstr "Vyberte"
+msgid "Choose who you will meet"
+msgstr ""
 
 #. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_select_operator
-msgid "Choose who you will meet"
+#: model_terms:ir.ui.view,arch_db:website_appointment.website_calendar_index_topbar
+msgid "Choose your appointment"
 msgstr ""
 
 #. module: website_appointment
@@ -175,7 +171,19 @@ msgstr "Vlastnosti obálky"
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointment_progress_bar
-msgid "Details<span class=\"chevron position-absolute d-block\"/>"
+msgid "Date &amp; time"
+msgstr ""
+
+#. module: website_appointment
+#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_progress_bar
+msgid ""
+"Details<span class=\"d-inline-block mx-sm-3 fa fa-angle-right text-muted "
+"fs-5\"/>"
+msgstr ""
+
+#. module: website_appointment
+#: model:ir.model.fields,field_description:website_appointment.field_appointment_invite__appointment_type_warning_msg
+msgid "Different Website Message"
 msgstr ""
 
 #. module: website_appointment
@@ -186,6 +194,7 @@ msgid "Go back to Appointment"
 msgstr ""
 
 #. module: website_appointment
+#: model:ir.model.fields,field_description:website_appointment.field_appointment_invite__is_published
 #: model:ir.model.fields,field_description:website_appointment.field_appointment_type__is_published
 msgid "Is Published"
 msgstr "Publikované"
@@ -193,7 +202,7 @@ msgstr "Publikované"
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointment_progress_bar
 msgid "Meeting"
-msgstr ""
+msgstr "Stretnutie"
 
 #. module: website_appointment
 #: model:ir.actions.act_window,name:website_appointment.appointment_type_action_add_simplified
@@ -202,23 +211,8 @@ msgstr "Nový typ schôdzky"
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointments_cards
-msgid "No appointment found."
-msgstr "Nenašlo sa žiadne stretnutie."
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointments_cards
-msgid "Online"
-msgstr "Online"
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.website_online_appointment_snippet
-msgid "Online Appointment"
+msgid "No result for \""
 msgstr ""
-
-#. module: website_appointment
-#: model:ir.ui.menu,name:website_appointment.website_appointment_type_menu
-msgid "Online Appointments"
-msgstr "Online stretnutia"
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointment_progress_bar
@@ -244,24 +238,15 @@ msgid "Published"
 msgstr "Publikovať"
 
 #. module: website_appointment
+#: model:ir.model.fields,help:website_appointment.field_appointment_invite__website_id
+#: model:ir.model.fields,help:website_appointment.field_appointment_type__website_id
+msgid "Restrict publishing to this website."
+msgstr "Obmedzte publikovanie na túto webstránku."
+
+#. module: website_appointment
 #: model:ir.model.fields,field_description:website_appointment.field_appointment_type__is_seo_optimized
 msgid "SEO optimized"
 msgstr "Optimalizované SEO"
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_select_operator
-msgid "Schedule"
-msgstr "Rozvrh"
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_validated
-msgid "Schedule Another Appointment"
-msgstr ""
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointments_cards
-msgid "Schedule an Appointment"
-msgstr "Naplánovať schôdzku"
 
 #. module: website_appointment
 #. odoo-python
@@ -271,8 +256,18 @@ msgid "Schedule an appointment"
 msgstr ""
 
 #. module: website_appointment
+#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_validated
+msgid "Schedule another appointment"
+msgstr ""
+
+#. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.website_calendar_index_topbar
-msgid "Search an appointment..."
+msgid "Search..."
+msgstr "Hľadať..."
+
+#. module: website_appointment
+#: model_terms:ir.ui.view,arch_db:website_appointment.appointments_cards
+msgid "See all appointments <i class=\"fa fa-long-arrow-right\"/>"
 msgstr ""
 
 #. module: website_appointment
@@ -291,13 +286,23 @@ msgid "Specific users"
 msgstr ""
 
 #. module: website_appointment
+#. odoo-python
+#: code:addons/website_appointment/models/appointment_invite.py:0
+#, python-format
+msgid ""
+"The following appointment type(s) are not compatible with the website "
+"chosen: "
+msgstr ""
+
+#. module: website_appointment
+#: model:ir.model.fields,help:website_appointment.field_appointment_invite__website_url
 #: model:ir.model.fields,help:website_appointment.field_appointment_type__website_url
 msgid "The full URL to access the document through the website."
 msgstr "Úplná URL na prístup k dokumentu cez webové stránky."
 
 #. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_progress_bar
-msgid "Time<span class=\"chevron position-absolute d-block\"/>"
+#: model_terms:ir.ui.view,arch_db:website_appointment.appointments_cards
+msgid "There is currently no appointment available"
 msgstr ""
 
 #. module: website_appointment
@@ -319,21 +324,21 @@ msgid "Users"
 msgstr "Užívatelia"
 
 #. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointments_cards
-msgid "View availability <i class=\"oi oi-arrow-right\"/>"
-msgstr ""
-
-#. module: website_appointment
+#: model:ir.model.fields,field_description:website_appointment.field_appointment_invite__website_published
 #: model:ir.model.fields,field_description:website_appointment.field_appointment_type__website_published
 msgid "Visible on current website"
 msgstr "Viditeľné na aktuálnej webstránke"
 
 #. module: website_appointment
 #: model:ir.model,name:website_appointment.model_website
+#: model:ir.model.fields,field_description:website_appointment.field_appointment_invite__website_id
+#: model:ir.model.fields,field_description:website_appointment.field_appointment_type__website_id
+#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_type_view_search
 msgid "Website"
 msgstr "Webstránka"
 
 #. module: website_appointment
+#: model:ir.model.fields,field_description:website_appointment.field_appointment_invite__website_url
 #: model:ir.model.fields,field_description:website_appointment.field_appointment_type__website_url
 msgid "Website URL"
 msgstr "URL Webstránok"
@@ -359,11 +364,6 @@ msgid "Website opengraph image"
 msgstr "Obrázok otvorenej webstránky"
 
 #. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_booking_resource_description
-msgid "available"
-msgstr ""
-
-#. module: website_appointment
 #. odoo-javascript
 #: code:addons/website_appointment/static/src/xml/appointment_no_slot.xml:0
 #, python-format
@@ -383,21 +383,6 @@ msgstr "napr. \"Technické demo\""
 #, python-format
 msgid "or"
 msgstr "alebo"
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_booking_resource_description
-msgid "others)"
-msgstr ""
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_booking_resource_description
-msgid "people"
-msgstr ""
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_booking_resource_description
-msgid "resource(s)"
-msgstr ""
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.s_online_appointment_options

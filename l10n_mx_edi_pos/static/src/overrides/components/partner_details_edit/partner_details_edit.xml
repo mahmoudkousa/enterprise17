@@ -11,6 +11,7 @@
                     <label class="form-label" for="fiscal_regime">Fiscal Regime</label>
                     <select 
                         class="detail form-select" 
+                        t-att="{'disabled': isFieldCommercialAndPartnerIsChild('l10n_mx_edi_fiscal_regime')}"
                         name="l10n_mx_edi_fiscal_regime" 
                         t-model="changes.l10n_mx_edi_fiscal_regime"
                         t-att-class="{'border-danger': missingFields.includes('l10n_mx_edi_fiscal_regime')}"
@@ -28,6 +29,7 @@
                         <label class="form-check-label" for="tax_breakdown">No Tax Breakdown</label>
                         <input 
                             type="checkbox" 
+                            t-att="{'disabled': isFieldCommercialAndPartnerIsChild('l10n_mx_edi_no_tax_breakdown')}"
                             name="l10n_mx_edi_no_tax_breakdown" 
                             t-model="changes.l10n_mx_edi_no_tax_breakdown"
                             style="width: 15px; height: 15px" 

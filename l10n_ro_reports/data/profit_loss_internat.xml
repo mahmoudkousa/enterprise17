@@ -19,7 +19,7 @@
             <record id="account_financial_report_ro_pnl_internat_01_01" model="account.report.line">
                 <field name="name">1. Net turnover | 01</field>
                 <field name="code">RO_PNL_internat_01_01</field>
-                <field name="aggregation_formula">RO_PNL_internat_01_02.balance + RO_PNL_internat_01_03.balance - RO_PNL_internat_01_04.balance + RO_PNL_internat_01_04.balance</field>
+                <field name="aggregation_formula">RO_PNL_internat_01_02.balance + RO_PNL_internat_01_03.balance - RO_PNL_internat_01_04.balance + RO_PNL_internat_01_05.balance</field>
                 <field name="children_ids">
                     <record id="account_financial_report_ro_pnl_internat_01_02" model="account.report.line">
                         <field name="name">Production sales | 02</field>
@@ -43,7 +43,7 @@
                         <field name="groupby">account_id</field>
                         <field name="hierarchy_level" eval="3"/>
                         <field name="foldable" eval="True"/>
-                        <field name="account_codes_formula">-709</field>
+                        <field name="account_codes_formula">709</field>
                     </record>
                     <record id="account_financial_report_ro_pnl_internat_01_05" model="account.report.line">
                         <field name="name">Income from operating subsidies related to net turnover | 05</field>
@@ -63,18 +63,38 @@
                     <record id="account_financial_report_ro_pnl_internat_02_06" model="account.report.line">
                         <field name="name">SOLDE C | 06</field>
                         <field name="code">RO_PNL_internat_02_06</field>
-                        <field name="groupby">account_id</field>
                         <field name="hierarchy_level" eval="3"/>
-                        <field name="foldable" eval="True"/>
-                        <field name="domain_formula">-sum([ ('credit', '&gt;', 0.0), '|', ('account_id.code', '=like', '711%'), '|', ('account_id.code', '=like', '712%'), ('account_id.code', '=like', '713%'), ])</field>
+                        <field name="domain_formula" eval="False"/>
+                        <field name="expression_ids">
+                            <record id="account_financial_report_ro_pnl_internat_02_06_balance_unfiltered"
+                                model="account.report.expression">
+                                <field name="label">balance_unfiltered</field>
+                                <field name="engine">account_codes</field>
+                                <field name="formula">-711 - 712 - 713</field>
+                            </record>
+                            <record id="account_financial_report_ro_pnl_internat_02_06_balance"
+                                model="account.report.expression">
+                                <field name="label">balance</field>
+                                <field name="engine">aggregation</field>
+                                <field name="formula">RO_PNL_internat_02_06.balance_unfiltered</field>
+                                <field name="subformula">if_above(RON(0))</field>
+                            </record>
+                        </field>
                     </record>
                     <record id="account_financial_report_ro_pnl_internat_02_07" model="account.report.line">
                         <field name="name">SOLDE D | 07</field>
                         <field name="code">RO_PNL_internat_02_07</field>
-                        <field name="groupby">account_id</field>
                         <field name="hierarchy_level" eval="3"/>
-                        <field name="foldable" eval="True"/>
-                        <field name="domain_formula">sum([ ('debit', '&gt;', 0.0), '|', ('account_id.code', '=like', '711%'), '|', ('account_id.code', '=like', '712%'), ('account_id.code', '=like', '713%'), ])</field>
+                        <field name="domain_formula" eval="False"/>
+                        <field name="expression_ids">
+                            <record id="account_financial_report_ro_pnl_internat_02_07_balance"
+                                model="account.report.expression">
+                                <field name="label">balance</field>
+                                <field name="engine">aggregation</field>
+                                <field name="formula">-RO_PNL_internat_02_06.balance_unfiltered</field>
+                                <field name="subformula">if_above(RON(0))</field>
+                            </record>
+                        </field>
                     </record>
                 </field>
             </record>
@@ -143,7 +163,7 @@
             <record id="account_financial_report_ro_pnl_internat_09_16" model="account.report.line">
                 <field name="name">9. Other operating revenues , of which: | 16</field>
                 <field name="code">RO_PNL_internat_09_16</field>
-                <field name="aggregation_formula">RO_PNL_internat_09_17.balance + RO_PNL_internat_09_18.balance</field>
+                <field name="account_codes_formula">-751 - 758 - 7815</field>
                 <field name="children_ids">
                     <record id="account_financial_report_ro_pnl_internat_09_17" model="account.report.line">
                         <field name="name">- income from investment grants | 17</field>
@@ -331,7 +351,7 @@
                         <field name="groupby">account_id</field>
                         <field name="hierarchy_level" eval="3"/>
                         <field name="foldable" eval="True"/>
-                        <field name="account_codes_formula">7816 + 7818 + 7813</field>
+                        <field name="account_codes_formula">-7816 - 7818 - 7813</field>
                     </record>
                     <record id="account_financial_report_ro_pnl_internat_12_32" model="account.report.line">
                         <field name="name">b) Value adjustments on current assets | 32</field>
@@ -691,7 +711,7 @@
                 <field name="code">RO_PNL_internat_24_62</field>
                 <field name="groupby">account_id</field>
                 <field name="foldable" eval="True"/>
-                <field name="account_codes_formula">-7688 - 7615 - 767 - 764</field>
+                <field name="account_codes_formula">-7680 - 7688 - 7615 - 767 - 764</field>
             </record>
             <record id="account_financial_report_ro_pnl_internat_00_63" model="account.report.line">
                 <field name="name">FINANCIAL INCOME - TOTAL | 63</field>
@@ -739,20 +759,20 @@
                 <field name="code">RO_PNL_internat_26_67</field>
                 <field name="groupby">account_id</field>
                 <field name="foldable" eval="True"/>
-                <field name="account_codes_formula">-661</field>
+                <field name="account_codes_formula">661</field>
             </record>
             <record id="account_financial_report_ro_pnl_internat_27_68" model="account.report.line">
                 <field name="name">27. Costs of derivative transactions | 68</field>
                 <field name="code">RO_PNL_internat_27_68</field>
                 <field name="groupby">account_id</field>
                 <field name="foldable" eval="True"/>
-                <field name="account_codes_formula">-662</field>
+                <field name="account_codes_formula">662</field>
             </record>
             <record id="account_financial_report_ro_pnl_internat_28_69" model="account.report.line">
                 <field name="name">28. Interest charges | 69</field>
                 <field name="code">RO_PNL_internat_28_69</field>
                 <field name="foldable" eval="True"/>
-                <field name="account_codes_formula">-666</field>
+                <field name="account_codes_formula">666</field>
                 <field name="children_ids">
                     <record id="account_financial_report_ro_pnl_internat_28_70" model="account.report.line">
                         <field name="name">- of which, charges in relation group companies | 70</field>
@@ -760,7 +780,7 @@
                         <field name="groupby">account_id</field>
                         <field name="hierarchy_level" eval="3"/>
                         <field name="foldable" eval="True"/>
-                        <field name="account_codes_formula">-666</field>
+                        <field name="account_codes_formula">666</field>
                     </record>
                 </field>
             </record>
@@ -769,21 +789,21 @@
                 <field name="code">RO_PNL_internat_29_71</field>
                 <field name="groupby">account_id</field>
                 <field name="foldable" eval="True"/>
-                <field name="account_codes_formula">-6681</field>
+                <field name="account_codes_formula">6681</field>
             </record>
             <record id="account_financial_report_ro_pnl_internat_30_72" model="account.report.line">
                 <field name="name">30. Interest costs on leasing contracts | 72</field>
                 <field name="code">RO_PNL_internat_30_72</field>
                 <field name="groupby">account_id</field>
                 <field name="foldable" eval="True"/>
-                <field name="account_codes_formula">-6685</field>
+                <field name="account_codes_formula">6685</field>
             </record>
             <record id="account_financial_report_ro_pnl_internat_31_73" model="account.report.line">
                 <field name="name">31. Other financial expenses | 73</field>
                 <field name="code">RO_PNL_internat_31_73</field>
                 <field name="groupby">account_id</field>
                 <field name="foldable" eval="True"/>
-                <field name="account_codes_formula">-665 - 664 - 667 - 6688 - 663 - 660</field>
+                <field name="account_codes_formula">665 + 664 + 667 + 6688 + 663 + 660 + 668</field>
             </record>
             <record id="account_financial_report_ro_pnl_internat_00_74" model="account.report.line">
                 <field name="name">FINANCIAL COSTS - TOTAL | 74</field>

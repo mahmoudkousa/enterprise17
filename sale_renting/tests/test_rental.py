@@ -15,6 +15,11 @@ class TestRentalCommon(TransactionCase):
     def setUpClass(cls):
         super().setUpClass()
 
+        cls.env.company.country_id = cls.env.ref('base.us')
+        cls.env['account.tax.group'].create(
+            {'name': 'Test Account Tax Group', 'company_id': cls.env.company.id}
+        )
+
         cls.product_id = cls.env['product.product'].create({
             'name': 'Projector',
             'categ_id': cls.env.ref('product.product_category_all').id,

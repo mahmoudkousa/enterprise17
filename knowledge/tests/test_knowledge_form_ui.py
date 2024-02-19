@@ -10,11 +10,12 @@ from markupsafe import Markup
 from PIL import Image
 from unittest import skipIf
 from odoo import fields
-from odoo.tests.common import tagged, HttpCase, users
+from odoo.tests.common import tagged, users
+from odoo.addons.base.tests.common import HttpCaseWithUserDemo
 from odoo.addons.mail.tests.common import MailCommon, mail_new_test_user
 
 
-class TestKnowledgeUICommon(HttpCase, MailCommon):
+class TestKnowledgeUICommon(HttpCaseWithUserDemo, MailCommon):
     @classmethod
     def setUpClass(cls):
         super(TestKnowledgeUICommon, cls).setUpClass()
@@ -244,7 +245,7 @@ class TestKnowledgeUI(TestKnowledgeUICommon):
                 'partner_id': self.env.ref('base.partner_admin').id,
                 'permission': 'write',
             }), (0, 0, {
-                'partner_id': self.env.ref('base.partner_demo').id,
+                'partner_id': self.partner_demo.id,
                 'permission': 'read',
             })],
             'is_article_visible_by_everyone': True,
@@ -252,11 +253,11 @@ class TestKnowledgeUI(TestKnowledgeUICommon):
 
         self.start_tour('/knowledge/article/%s' % articles[0].id, 'knowledge_readonly_favorite_tour', login='demo', step_delay=100)
 
-        self.assertTrue(articles[0].with_user(self.env.ref('base.user_demo').id).is_user_favorite)
-        self.assertTrue(articles[1].with_user(self.env.ref('base.user_demo').id).is_user_favorite)
+        self.assertTrue(articles[0].with_user(self.user_demo.id).is_user_favorite)
+        self.assertTrue(articles[1].with_user(self.user_demo.id).is_user_favorite)
         self.assertGreater(
-            articles[0].with_user(self.env.ref('base.user_demo').id).user_favorite_sequence,
-            articles[1].with_user(self.env.ref('base.user_demo').id).user_favorite_sequence,
+            articles[0].with_user(self.user_demo.id).user_favorite_sequence,
+            articles[1].with_user(self.user_demo.id).user_favorite_sequence,
         )
 
     def test_knowledge_resequence_children_of_readonly_parent_tour(self):

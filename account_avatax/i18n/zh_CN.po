@@ -3,16 +3,18 @@
 # 	* account_avatax
 # 
 # Translators:
-# Wil Odoo, 2023
 # 山西清水欧度(QQ:54773801) <54773801@qq.com>, 2023
+# Jeffery CHEN <jeffery9@gmail.com>, 2023
+# Chloe Wang, 2023
+# Wil Odoo, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-26 16:10+0000\n"
 "PO-Revision-Date: 2023-10-26 23:09+0000\n"
-"Last-Translator: 山西清水欧度(QQ:54773801) <54773801@qq.com>, 2023\n"
+"Last-Translator: Wil Odoo, 2024\n"
 "Language-Team: Chinese (China) (https://app.transifex.com/odoo/teams/41243/zh_CN/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -119,6 +121,20 @@ msgstr "地址验证"
 #, python-format
 msgid "Address validation is only supported for North American addresses."
 msgstr "仅北美地址支持地址验证。"
+
+#. module: account_avatax
+#. odoo-python
+#: code:addons/account_avatax/models/res_company.py:0
+#, python-format
+msgid "Authentication failed."
+msgstr "身份验证失败。"
+
+#. module: account_avatax
+#. odoo-python
+#: code:addons/account_avatax/models/res_company.py:0
+#, python-format
+msgid "Authentication success."
+msgstr "身份验证成功。"
 
 #. module: account_avatax
 #: model:account.fiscal.position,name:account_avatax.account_fiscal_position_avatax_us
@@ -233,7 +249,7 @@ msgstr "Avatax退款科目"
 msgid ""
 "Avatax will use this date to calculate the tax on this invoice. If not "
 "specified it will use the Invoice Date."
-msgstr "Avatax将使用该日期计算该发票中的税费。如未指定，它使用发票日期。"
+msgstr "Avatax 将使用此日期计算此发票的税款。如果未指定，则将使用发票日期。"
 
 #. module: account_avatax
 #: model_terms:ir.ui.view,arch_db:account_avatax.avatax_validate_address_view_form
@@ -437,8 +453,8 @@ msgid ""
 "Odoo could not change the state of the transaction related to %(document)s in AvaTax\n"
 "Please check the status of `%(technical)s` in the AvaTax portal."
 msgstr ""
-"Odoo无法更改与AvaTax中%(document)s相关的交易状态\n"
-"请在AvaTax门户查看“%(technical)s”的状态。"
+"Odoo 无法更改与 AvaTax 中%(document)s相关的交易状态\n"
+"请在 AvaTax 门户查看 “%(technical)s” 的状态。"
 
 #. module: account_avatax
 #. odoo-python
@@ -455,8 +471,8 @@ msgid ""
 "Odoo could not fetch the taxes related to %(document)s.\n"
 "Please check the status of `%(technical)s` in the AvaTax portal."
 msgstr ""
-"Odoo无法获取与%(document)s相关的税项。\n"
-"请在AvaTax门户查看“%(technical)s”的状态。"
+"Odoo 无法获取与%(document)s相关的税项。\n"
+"请在 AvaTax 门户查看 “%(technical)s” 的状态。"
 
 #. module: account_avatax
 #. odoo-python
@@ -473,8 +489,8 @@ msgid ""
 "Odoo could not void the transaction related to %(document)s in AvaTax\n"
 "Please check the status of `%(technical)s` in the AvaTax portal."
 msgstr ""
-"Odoo无法使在AvaTax中使与%(document)s相关的交易无效\n"
-"请在AvaTax门户查看“%(technical)s”的状态。"
+"Odoo 无法使 AvaTax 中的%(document)s相关交易无效\n"
+"请在 AvaTax 门户查看 “%(technical)s” 状态。"
 
 #. module: account_avatax
 #: model_terms:ir.ui.view,arch_db:account_avatax.avatax_validate_address_view_form
@@ -539,7 +555,7 @@ msgstr "服务器响应"
 #: model:ir.model.fields,field_description:account_avatax.field_avatax_validate_address__state_id
 #: model_terms:ir.ui.view,arch_db:account_avatax.avatax_validate_address_view_form
 msgid "State"
-msgstr "状态"
+msgstr "省/州"
 
 #. module: account_avatax
 #: model:ir.model.fields,field_description:account_avatax.field_avatax_validate_address__street
@@ -579,7 +595,7 @@ msgstr "测试与 avatax 的连接"
 msgid ""
 "The Avalara Company Code for this company. Avalara will interpret as DEFAULT"
 " if it is not set."
-msgstr "该公司的Avalara公司代码。如未设置，Avalara 将解释为默认。"
+msgstr "该公司的 Avalara 公司代码。如未设置，Avalara 将解释为 DEFAULT。"
 
 #. module: account_avatax
 #. odoo-python
@@ -599,7 +615,7 @@ msgstr ""
 msgid ""
 "The following customer(s) need to have a zip, state and country when using "
 "Avatax:"
-msgstr "以下客户使用Avatax时需要提供邮编、州和国家/地区信息："
+msgstr "以下客户使用 Avatax 时需要提供邮编、州和国家/地区信息："
 
 #. module: account_avatax
 #: model:ir.model.fields,help:account_avatax.field_res_config_settings__avalara_commit
@@ -632,7 +648,7 @@ msgstr "使用 UPC"
 #. module: account_avatax
 #: model:ir.model.fields,help:account_avatax.field_res_config_settings__avalara_use_upc
 msgid "Use Universal Product Code instead of custom defined codes in Avalara."
-msgstr "使用通用产品代码，而非Avalara中的自定义代码。"
+msgstr "使用通用产品代码，而非 Avalara 中的自定义代码。"
 
 #. module: account_avatax
 #: model:ir.model.fields,help:account_avatax.field_account_avatax_unique_code__avatax_unique_code
@@ -666,7 +682,7 @@ msgstr "验证%s的地址"
 msgid ""
 "Validate and correct the addresses of partners in North America with "
 "Avalara."
-msgstr "使用Avalara验证并更正北美合作伙伴的地址。"
+msgstr "使用 Avalara 验证并更正北美合作伙伴的地址。"
 
 #. module: account_avatax
 #: model_terms:ir.ui.view,arch_db:account_avatax.avatax_validate_address_view_form
@@ -686,7 +702,7 @@ msgstr "经验证国家/地区"
 #. module: account_avatax
 #: model:ir.model.fields,field_description:account_avatax.field_avatax_validate_address__validated_state_id
 msgid "Validated State"
-msgstr "经验证州"
+msgstr "验证的省/州"
 
 #. module: account_avatax
 #: model:ir.model.fields,field_description:account_avatax.field_avatax_validate_address__validated_street

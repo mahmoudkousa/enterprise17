@@ -184,6 +184,10 @@ export class KnowledgeArticleHtmlField extends HtmlField {
         });
     }
 
+    onGenerateArticleClick() {
+        this.wysiwyg.generateArticle();
+    }
+
     /**
      * @param {string} title
      * @param {string} body

@@ -12,6 +12,7 @@
                 <field name="avg_response_hours" widget="float_time" type="measure"/>
                 <field name="ticket_close_hours" widget="float_time" type="measure"/>
                 <field name="ticket_deadline_hours" widget="float_time"/>
+                <field name="rating_avg" type="measure" invisible="1"/>
             </pivot>
         </field>
     </record>
@@ -110,6 +111,7 @@
                 <field name="team_id"/>
                 <field name="stage_id"/>
                 <field name="ticket_open_hours" widget="float_time"/>
+                <field name="rating_avg" type="measure" invisible="1"/>
             </graph>
         </field>
     </record>
@@ -147,7 +149,9 @@
         <field name="name">helpdesk.ticket.report.analysis.cohort</field>
         <field name="model">helpdesk.ticket.report.analysis</field>
         <field name="arch" type="xml">
-            <cohort string="Tickets Analysis" date_start="create_date" date_stop="close_date" disable_linking="True" interval="day" sample="1" measure="ticket_open_hours"/>
+            <cohort string="Tickets Analysis" date_start="create_date" date_stop="close_date" disable_linking="True" interval="day" sample="1" measure="ticket_open_hours">
+                <field name="rating_avg" invisible="1"/>
+            </cohort>
         </field>
     </record>
 

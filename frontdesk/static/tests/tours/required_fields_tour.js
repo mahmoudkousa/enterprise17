@@ -41,7 +41,7 @@ registry.category("web_tour.tours").add("required_fields_tour", {
         },
         {
             content: "Select the host from the dropdown",
-            trigger: '.ui-autocomplete.dropdown-menu a:contains("Marc Demo")',
+            trigger: '.ui-autocomplete.dropdown-menu a:contains("Mitchell Admin")',
         },
         {
             content: "Click on the check in button",

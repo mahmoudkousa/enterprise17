@@ -42,11 +42,10 @@ class TestTaxReport(TestAccountReportsCommon):
 
         # Setup fiscal data
         cls.company_data['company'].write({
-            'country_id': cls.fiscal_country.id,
-            'account_fiscal_country_id': cls.fiscal_country.id,
             'state_id': cls. country_state_1.id, # Not necessary at the moment; put there for consistency and robustness with possible future changes
             'account_tax_periodicity': 'trimester',
         })
+        cls.change_company_country(cls.company_data['company'], cls.fiscal_country)
 
         # Prepare tax groups
         cls.tax_group_1 = cls._instantiate_basic_test_tax_group()
@@ -1759,7 +1758,7 @@ class TestTaxReport(TestAccountReportsCommon):
         invoice_date = fields.Date.from_string('2018-01-01')
         for index, company in enumerate(all_companies):
             # Make sure the fiscal country is what we want
-            company.account_fiscal_country_id = self.fiscal_country
+            self.change_company_country(company, self.fiscal_country)
 
             # Create a tax for this report
             tax_account = self.env['account.account'].create({
@@ -2757,3 +2756,51 @@ class TestTaxReport(TestAccountReportsCommon):
             {'account_id': initial_values[0]['account_id'], 'balance': initial_values[0]['balance'] + 150},
             {'account_id': initial_values[1]['account_id'], 'balance': initial_values[1]['balance'] - 150},
         ])
+
+    def test_tax_report_multi_company_post_closing(self):
+        # Branches
+        root_company = self.setup_company_data("Root Company", chart_template=self.env.company.chart_template)['company']
+        branch_1 = self.env['res.company'].create({'name': "Branch 1", 'parent_id': root_company.id})
+        branch_1_1 = self.env['res.company'].create({'name': "Branch 1.1", 'parent_id': branch_1.id})
+        branch_2 = self.env['res.company'].create({'name': "Branch 2", 'parent_id': root_company.id})
+        branch_companies = root_company + branch_1 + branch_1_1 + branch_2
+        branch_companies.account_tax_periodicity_journal_id = root_company.account_tax_periodicity_journal_id.id
+
+        # Tax unit
+        unit_part_1 = self.setup_company_data("Unit part 1", chart_template=self.env.company.chart_template)['company']
+        unit_part_2 = self.setup_company_data("Unit part 2", chart_template=self.env.company.chart_template)['company']
+
+        tax_unit = self.env['account.tax.unit'].create({
+            'name': "One unit to rule them all",
+            'country_id': unit_part_1.account_fiscal_country_id.id,
+            'vat': "123",
+            'company_ids': (unit_part_1 + unit_part_2).ids,
+            'main_company_id': unit_part_1.id,
+        })
+
+        tax_report = self.env['account.report'].create({
+            'name': "My Onw Particular Tax Report",
+            'country_id': unit_part_1.account_fiscal_country_id.id,
+            'root_report_id': self.env.ref("account.generic_tax_report").id,
+            'column_ids': [Command.create({'name': 'balance', 'sequence': 1, 'expression_label': 'balance',})],
+        })
+
+        for test_type, main_company, active_companies in [('branches', root_company, branch_companies), ('tax units', tax_unit.main_company_id, tax_unit.company_ids)]:
+            with self.subTest(f"Post multicompany closing - {test_type}"):
+                tax_report_with_companies = tax_report.with_context(allowed_company_ids=active_companies.ids)
+                options = self._generate_options(tax_report_with_companies, '2023-01-01', '2023-01-01')
+                closing_moves = self.env['account.generic.tax.report.handler'].with_context(allowed_company_ids=active_companies.ids)._generate_tax_closing_entries(tax_report_with_companies, options)
+
+                self.assertEqual(len(closing_moves), len(active_companies), "One closing move should have been created per company")
+                self.assertTrue(all(move.state == 'draft' for move in closing_moves), "All generated closing moves should be in draft")
+                main_closing_move = closing_moves.filtered(lambda x: x.company_id == main_company)
+                self.assertEqual(len(main_closing_move), 1)
+
+                # The warning message telling multiple closing will be posted at once by posting the current one should only appear on the
+                # main company's closing move.
+                self.assertTrue(main_closing_move.tax_closing_show_multi_closing_warning)
+                self.assertFalse(any(closing.tax_closing_show_multi_closing_warning for closing in (closing_moves - main_closing_move)))
+
+                main_closing_move.action_post()
+                self.assertTrue(all(move.state == 'posted' for move in closing_moves), "Posting the main closing should have posted all the depending closings")
+                self.assertFalse(main_closing_move.tax_closing_show_multi_closing_warning)

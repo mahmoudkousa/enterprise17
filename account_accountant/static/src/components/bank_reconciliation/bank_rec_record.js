@@ -3,6 +3,7 @@
 import { Record } from "@web/model/relational_model/record";
 import { RelationalModel } from "@web/model/relational_model/relational_model";
 import { parseServerValue } from "@web/model/relational_model/utils";
+import { getFieldDomain } from "@web/views/fields/field";
 
 export class BankRecRecord extends Record {
 
@@ -67,6 +68,11 @@ export class BankRecRecord extends Record {
             }
         }
     }
+
+    getFieldDomain(fieldName) {
+        return getFieldDomain(this, fieldName);
+    }
+
 }
 
 export class BankRecRelationalModel extends RelationalModel{

@@ -5,12 +5,13 @@
         <field name="model">hr.contract</field>
         <field name="inherit_id" ref="hr_contract_salary.hr_contract_view_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//button[@name='%(hr_contract_salary.generate_simulation_link_action)d']" position="before">
+                <field name="work_time_rate" invisible="1"/>
+            </xpath>
             <xpath expr="//button[@name='%(hr_contract_salary.generate_simulation_link_action)d']" position="attributes">
                 <attribute name="invisible">not employee_id or country_code == 'BE' and time_credit and work_time_rate == 0</attribute>
-                <attribute name="groups">hr.group_hr_manager</attribute>
             </xpath>
             <field name="image_1920" position="replace">
-                <field name="work_time_rate" invisible="1"/>
                 <field name="image_1920_filename" invisible="1"/>
                 <field name="image_1920" filename="image_1920_filename" class="oe_inline" widget="binaryContractFile"/>
                 <field name="id_card_filename" invisible="1"/>

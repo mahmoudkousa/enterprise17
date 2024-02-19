@@ -671,3 +671,58 @@ class TestMpsMps(common.TransactionCase):
 
         state = self.mps_wardrobe.get_production_schedule_view_state()[0]
         self.assertTrue(all(forecast['incoming_qty'] == 0 for forecast in state['forecast_ids']))
+
+    def test_product_variants_in_mps(self):
+        """
+        Test that only the impacted  components are updated when the forecast demand of a product is changed.
+        """
+        # create the attribute size with two values ('M', 'L')
+        size_attribute = self.env['product.attribute'].create({'name': 'Size', 'sequence': 4})
+        self.env['product.attribute.value'].create([{
+            'name': name,
+            'attribute_id': size_attribute.id,
+            'sequence': 1,
+        } for name in ('M', 'L')])
+        product, c1, c2 = self.env['product.product'].create([{
+            'name': i,
+            'type': 'product',
+        } for i in range(3)])
+        product_template = product.product_tmpl_id
+        size_attribute_line = self.env['product.template.attribute.line'].create([{
+                'product_tmpl_id': product_template.id,
+                 'attribute_id': size_attribute.id,
+                 'value_ids': [(6, 0, size_attribute.value_ids.ids)]
+            }])
+        # Check that two product variant are created
+        self.assertEqual(product_template.product_variant_count, 2)
+        # Create a BoM with two components ('c1 applied only in m'  and 'c2 applied only in L')
+        self.env['mrp.bom'].create({
+            'product_tmpl_id': product_template.id,
+            'product_uom_id': product_template.uom_id.id,
+            'product_qty': 1.0,
+            'type': 'normal',
+            'bom_line_ids': [
+                Command.create({
+                    'product_id': c1.id,
+                    'product_qty': 1,
+                    'bom_product_template_attribute_value_ids': [(4, size_attribute_line.product_template_value_ids[0].id)]}), # M size
+                Command.create({
+                    'product_id': c2.id,
+                    'product_qty': 1,
+                    'bom_product_template_attribute_value_ids': [(4, size_attribute_line.product_template_value_ids[1].id)]}), # L size
+            ]
+        })
+
+        mps_p_m, mps_p_l, mps_c1, mps_c2 = self.env['mrp.production.schedule'].create([{
+            'product_id': product,
+            'warehouse_id': self.warehouse.id,
+        } for product in (product_template.product_variant_ids[0] | product_template.product_variant_ids[1] | c1 | c2).ids])
+
+        # check the mps of the product variant M
+        mps_impacted = mps_p_m[0].get_impacted_schedule()
+        self.assertEqual(len(mps_impacted), 1)
+        self.assertEqual(mps_impacted[0], mps_c1.id)
+        # check the mps of the product variant L
+        mps_impacted = mps_p_l[0].get_impacted_schedule()
+        self.assertEqual(len(mps_impacted), 1)
+        self.assertEqual(mps_impacted[0], mps_c2.id)

@@ -148,10 +148,10 @@ class DocumentFolder(models.Model):
                     # Folders created from the search panel are set as first
                     # child of their parent by default
                     vals['sequence'] = 0
-                if 'folder_id' not in vals:
+                if 'parent_folder_id' not in vals:
                     continue
                 # Folders created from the search panel inherit the parent's rights.
-                vals.update(self.browse(vals['folder_id'])._get_inherited_settings_as_vals())
+                vals.update(self.browse(vals['parent_folder_id'])._get_inherited_settings_as_vals())
         return super().create(vals_list)
 
     def _get_old_id_to_new_id_maps(self, copied_folder):

@@ -25,6 +25,34 @@ class Applicant(models.Model):
     max_points = fields.Integer(related="job_id.max_points")
     friend_id = fields.Many2one('hr.referral.friend', copy=False)
     last_valuable_stage_id = fields.Many2one('hr.recruitment.stage', "Last Valuable Stage")
+    is_accessible_to_current_user = fields.Boolean(
+        compute='_compute_is_accessible_to_current_user',
+        search='_search_is_accessible_to_current_user')
+
+    def _search_is_accessible_to_current_user(self, operator, value):
+        if not isinstance(value, bool) or operator not in ['=', '!=']:
+            raise NotImplementedError(_("Unsupported search on field is_accessible_to_current_user: %s operator & %s value. Only = and != operator and boolean values are supported.", operator, value))
+        if self.env.user.has_group('hr_recruitment.group_hr_recruitment_user'):
+            return []
+        applications = self.env['hr.applicant'].search([
+            '|',
+                ('job_id', 'any', [('interviewer_ids', 'in', self.env.user.id)]),
+                ('interviewer_ids', 'in', self.env.user.id),
+        ])
+        domain_operator = 'in' if value ^ (operator == '!=') else 'not in'
+        return [('id', domain_operator, applications.ids)]
+
+    @api.depends_context('uid')
+    def _compute_is_accessible_to_current_user(self):
+        if self.env.user.has_group('hr_recruitment.group_hr_recruitment_user'):
+            self.is_accessible_to_current_user = True
+        else:
+            for applicant in self:
+                interviewers = applicant.interviewer_ids
+                corresponding_job_interviewers = applicant.job_id.interviewer_ids
+                applicant.is_accessible_to_current_user = self.env.user in interviewers or self.env.user in corresponding_job_interviewers
+                if not applicant.is_accessible_to_current_user:
+                    raise AccessError(_("You are not allowed to access this application record because you're not one of the interviewers of this application. If you think that's an error, please contact your administrator."))
 
     @api.depends('source_id')
     def _compute_ref_user_id(self):

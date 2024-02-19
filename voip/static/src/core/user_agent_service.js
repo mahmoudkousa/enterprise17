@@ -4,6 +4,7 @@
 import { reactive } from "@odoo/owl";
 
 import { Registerer } from "@voip/core/registerer";
+import { cleanPhoneNumber } from "@voip/utils/utils";
 
 import { getBundle, loadBundle } from "@web/core/assets";
 import { browser } from "@web/core/browser/browser";
@@ -129,6 +130,15 @@ export class UserAgent {
         this.voip.triggerError(_t("Please accept the use of the microphone."));
     }
 
+    /**
+     * @param {string} phoneNumber
+     * @returns {SIP.URI}
+     */
+    getUri(phoneNumber) {
+        const sanitizedNumber = cleanPhoneNumber(phoneNumber);
+        return SIP.UserAgent.makeURI(`sip:${sanitizedNumber}@${this.voip.pbxAddress}`);
+    }
+
     async hangup({ activityDone = true } = {}) {
         this.ringtoneService.stopPlaying();
         browser.clearTimeout(this.demoTimeout);
@@ -221,27 +231,40 @@ export class UserAgent {
     invite(phoneNumber) {
         let calleeUri;
         if (this.voip.willCallFromAnotherDevice) {
-            calleeUri = SIP.UserAgent.makeURI(
-                `sip:${this.voip.cleanedExternalDeviceNumber}@${this.voip.pbxAddress}`
-            );
+            calleeUri = this.getUri(this.voip.settings.external_device_number);
             this.session.transferTarget = phoneNumber;
         } else {
-            calleeUri = SIP.UserAgent.makeURI(`sip:${phoneNumber}@${this.voip.pbxAddress}`);
+            calleeUri = this.getUri(phoneNumber);
         }
-        const inviter = new SIP.Inviter(this.__sipJsUserAgent, calleeUri);
-        inviter.delegate = this.sessionDelegate;
-        inviter.stateChange.addListener((state) => this._onSessionStateChange(state));
-        this.session.sipSession = inviter;
-        this.session.sipSession.invite({
-            requestDelegate: {
-                onAccept: (response) => this._onOutgoingInvitationAccepted(response),
-                onProgress: (response) => this._onOutgoingInvitationProgress(response),
-                onReject: (response) => this._onOutgoingInvitationRejected(response),
-            },
-            sessionDescriptionHandlerOptions: {
-                constraints: this.mediaConstraints,
-            },
-        });
+        try {
+            const inviter = new SIP.Inviter(this.__sipJsUserAgent, calleeUri);
+            inviter.delegate = this.sessionDelegate;
+            inviter.stateChange.addListener((state) => this._onSessionStateChange(state));
+            this.session.sipSession = inviter;
+            this.session.sipSession.invite({
+                requestDelegate: {
+                    onAccept: (response) => this._onOutgoingInvitationAccepted(response),
+                    onProgress: (response) => this._onOutgoingInvitationProgress(response),
+                    onReject: (response) => this._onOutgoingInvitationRejected(response),
+                },
+                sessionDescriptionHandlerOptions: {
+                    constraints: this.mediaConstraints,
+                },
+            }).catch((error) => {
+                if (error.name === "NotAllowedError") {
+                    return;
+                }
+                throw error;
+            });
+        } catch (error) {
+            console.error(error);
+            this.voip.triggerError(
+                _t(
+                    "An error occurred trying to invite the following number: %(phoneNumber)s\n\nError: %(error)s",
+                    { phoneNumber, error: error.message }
+                )
+            );
+        }
     }
 
     /** @param {Object} data */
@@ -303,7 +326,7 @@ export class UserAgent {
             this.hangup();
             return;
         }
-        const transferTarget = SIP.UserAgent.makeURI(`sip:${number}@${this.voip.pbxAddress}`);
+        const transferTarget = this.getUri(number);
         this.session.sipSession.refer(transferTarget, {
             requestDelegate: {
                 onAccept: (response) => this._onReferAccepted(response),
@@ -483,6 +506,11 @@ export class UserAgent {
      */
     _onOutgoingInvitationRejected(response) {
         this.ringtoneService.stopPlaying();
+        if (response.message.statusCode === 487) { // Request Terminated
+            // invitation has been cancelled by the user, the session has
+            // already been terminated
+            return;
+        }
         const errorMessage = (() => {
             switch (response.message.statusCode) {
                 case 404: // Not Found

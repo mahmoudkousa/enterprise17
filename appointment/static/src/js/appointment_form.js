@@ -29,17 +29,18 @@ publicWidget.registry.appointmentForm = publicWidget.Widget.extend({
         this._validateCheckboxes();
         const textArea = this.el.querySelector('#o_appointment_input_guest_emails');
         const appointmentForm = document.querySelector('.appointment_submit_form');
-        if (!textArea || textArea.value.trim() === '') {
-            appointmentForm.submit();
-        } else {
-            let emailInfo = findInvalidEmailFromText(textArea.value)
+        if (textArea && textArea.value.trim() !== '') {
+            let emailInfo = findInvalidEmailFromText(textArea.value);
             if (emailInfo.invalidEmails.length || emailInfo.emailList.length > 10) {
                 const errorMessage = emailInfo.invalidEmails.length > 0 ? _t('Invalid Email') : _t("You cannot invite more than 10 people");
                 this._showErrorMsg(errorMessage);
+                return;
             } else {
                 this._hideErrorMsg();
-                appointmentForm.submit();
             }
+        }
+        if (appointmentForm.reportValidity()) {
+            appointmentForm.submit();
         }
     },
 
@@ -70,10 +71,7 @@ publicWidget.registry.appointmentForm = publicWidget.Widget.extend({
     _validateCheckboxes: function() {
         this.$el.find('.checkbox-group.required').each(function() {
             var checkboxes = $(this).find('.checkbox input');
-            checkboxes.prop("required", !checkboxes.some((checkbox) => checkbox.checked));
+            checkboxes.prop("required", ![...checkboxes].some((checkbox) => checkbox.checked));
         });
-        if ($(this.$el.find('form'))[0].checkValidity()) {
-            return new Promise((resolve, reject) => {});
-        }
     },
 });

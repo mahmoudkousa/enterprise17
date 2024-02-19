@@ -30,7 +30,7 @@
 
                     <group name="l10n_mx_edi_group_1">
                         <field name="l10n_mx_edi_payment_method_id"
-                               invisible="country_code != 'MX'"
+                               invisible="is_internal_transfer or country_code != 'MX'"
                                readonly="state != 'draft'"
                                options="{'no_open': True}"/>
                         <field name="l10n_mx_edi_cfdi_origin"

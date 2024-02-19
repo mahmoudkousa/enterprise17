@@ -29,6 +29,11 @@
         'web.assets_backend': [
             'room/static/src/room_booking_gantt_view/**/*',
         ],
+        'web.qunit_suite_tests': [
+            'room/static/tests/*.js',
+            'room/static/src/room_booking/**/*.js',
+            'room/static/src/room_booking/**/*.xml',
+        ],
         'room.assets_room_booking': [
             # 1 Define room variables (takes priority)
             "room/static/src/room_booking/primary_variables.scss",
@@ -44,6 +49,8 @@
             "web/static/lib/odoo_ui_icons/*",
             'web/static/src/legacy/scss/ui.scss',
             'web/static/src/scss/base_frontend.scss',
+            'web/static/src/core/utils/transitions.scss',
+            'web/static/src/core/notifications/notification.scss',
 
             # Room's specific assets
             'room/static/src/room_booking/**/*',

@@ -96,13 +96,12 @@ patch(PosStore.prototype, {
             this.config.id,
         ]);
     },
-    getReceiptHeaderData() {
+    getReceiptHeaderData(order) {
         const result = super.getReceiptHeaderData(...arguments);
-        const order = this.get_order();
-        if (this.useBlackBoxSweden()) {
+        result.posIdentifier = this.config.name;
+        if (order && this.useBlackBoxSweden()) {
             result.receipt_type = order.receipt_type;
             result.blackboxDate = order.blackbox_date;
-            result.posIdentifier = this.config.name;
             result.isReprint = order.isReprint;
             result.orderSequence = order.sequence_number;
             if (order.isReprint) {
@@ -204,7 +203,7 @@ patch(Order.prototype, {
         const order = this.pos.get_order();
         result.orderlines = result.orderlines.map((l) => ({
             ...l,
-            price: l.price + " " + l.taxLetter,
+            price: l.price === "free" ? l.price : l.price + " " + l.taxLetter,
         }));
         result.tax_details = result.tax_details.map((t) => ({
             ...t,

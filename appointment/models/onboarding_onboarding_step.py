@@ -13,8 +13,8 @@ class OnboardingStep(models.Model):
     def action_open_appointment_onboarding_create_appointment_type(self):
         view_id = self.env.ref('appointment.appointment_type_view_form_appointment_onboarding').id
         existing_appointment = self.env['appointment.type'].search([
-            ('staff_user_ids', 'in', [self.env.uid]),
-        ], limit=1)
+            ('create_uid', '=', self.env.uid),
+        ], order='create_date desc', limit=1)
 
         return {
             'name': _('Create your first Appointment'),

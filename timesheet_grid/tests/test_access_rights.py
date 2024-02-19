@@ -452,3 +452,26 @@ class TestAccessRightsTimesheetGrid(TestCommonTimesheet):
         timesheet_to_validate = self.timesheet5
         timesheet_to_validate.with_user(self.user_approver).action_validate_timesheet()
         self.assertEqual(timesheet_to_validate.validated, True)
+
+    def test_update_timesheet_from_archived_employee(self):
+        """
+            Check the approver can alter a timesheet of an archived employee.
+
+            Test Cases:
+                - Create a timesheet for an employee
+                - Archive the employee
+                - Update the timesheet
+                - Approve the timesheet
+                - Update the timesheet
+        """
+        self.empl_employee3.active = False
+        self.assertEqual(self.timesheet2.employee_id, self.empl_employee3, "The timesheet should be for the archived employee")
+        self.assertEqual(self.timesheet2.unit_amount, 2, "The timesheet should have 2 hours")
+        self.assertEqual(self.timesheet2.validated, False, "The timesheet should not be validated")
+        self.timesheet2.with_user(self.user_approver).write({'unit_amount': 3})
+        self.assertEqual(self.timesheet2.unit_amount, 3, "The timesheet should have 3 hours")
+
+        self.timesheet2.with_user(self.user_approver).action_validate_timesheet()
+        self.assertEqual(self.timesheet2.validated, True, "The timesheet should be validated")
+        self.timesheet2.with_user(self.user_approver).write({'unit_amount': 4})
+        self.assertEqual(self.timesheet2.unit_amount, 4, "The timesheet should have 4 hours")

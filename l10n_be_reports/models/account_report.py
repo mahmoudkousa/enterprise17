@@ -111,11 +111,6 @@ class BelgianTaxReportCustomHandler(models.AbstractModel):
             'file_export_type': _('XML'),
         })
 
-        # Set tax_report_control_error. We use the fact this key is in the dictionary to know if the tax report
-        # needs to be recomputed when refreshing the closing entry (as it could change the value of the checks).
-        # Localizations without tax report checks don't set it ; thanks to that we don't degrade their performances.
-        options['tax_report_control_error'] = False
-
     def print_tax_report_to_xml(self, options):
         # add options to context and return action to open transient model
         new_wizard = self.env['l10n_be_reports.periodic.vat.xml.export'].create({})
@@ -338,11 +333,11 @@ class BelgianTaxReportCustomHandler(models.AbstractModel):
             if not _evaluate_check(check_func)
         ]
 
-        if warnings is not None and _evaluate_check(lambda expr_totals: not any(
+        if warnings is not None and _evaluate_check(lambda expr_totals: any(
             [expr_totals[expr_map[grid]]['value'] for grid in ('c44', 'c46L', 'c46T', 'c48s44', 'c48s46L', 'c48s46T')]
         )):
             # remind user to submit EC Sales Report if any ec sales related taxes
             warnings['l10n_be_reports.tax_report_warning_ec_sales_reminder'] = {}
 
-        if failed_controls:
+        if failed_controls and warnings is not None:
             warnings['l10n_be_reports.tax_report_warning_checks'] = {'failed_controls': failed_controls, 'alert_type': 'danger'}

@@ -40,11 +40,11 @@ class AccountMove(models.Model):
 
     def button_draft(self):
         res = super().button_draft()
-        self._uncommit_external_taxes()
+        self._filtered_external_tax_moves()._uncommit_external_taxes()
         return res
 
     def unlink(self):
-        self._void_external_taxes()
+        self._filtered_external_tax_moves()._void_external_taxes()
         return super().unlink()
 
     def _post(self, soft=True):
@@ -52,11 +52,13 @@ class AccountMove(models.Model):
         self._get_and_set_external_taxes_on_eligible_records()
         return super()._post(soft=soft)
 
+    def _filtered_external_tax_moves(self):
+        return self.filtered(lambda move: move.is_tax_computed_externally and
+                                          move.move_type in ('out_invoice', 'out_refund'))
+
     def _get_and_set_external_taxes_on_eligible_records(self):
         """ account.external.tax.mixin override. """
-        eligible_moves = self.filtered(lambda move: move.is_tax_computed_externally and
-                                                    move.move_type in ('out_invoice', 'out_refund') and
-                                                    move.state != 'posted')
+        eligible_moves = self._filtered_external_tax_moves().filtered(lambda move: move.state != 'posted')
         eligible_moves._set_external_taxes(*eligible_moves._get_external_taxes())
         return super()._get_and_set_external_taxes_on_eligible_records()
 

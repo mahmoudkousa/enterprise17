@@ -157,7 +157,7 @@ class SocialPost(models.Model):
     def _compute_live_posts_by_media(self):
         """ See field 'help' for more information. """
         for post in self:
-            accounts_by_media = dict((media_id.id, list()) for media_id in post.media_ids)
+            accounts_by_media = {media_id: [] for media_id in post.media_ids.ids}
             for live_post in post.live_post_ids.filtered(lambda lp: lp.account_id.media_id.ids):
                 accounts_by_media[live_post.account_id.media_id.id].append(live_post.display_name)
             post.live_posts_by_media = json.dumps(accounts_by_media)

@@ -49,7 +49,7 @@ class SpreadsheetRevision(models.Model):
         for res_model, res_id, _last_revision_date in inactive_spreadsheets:
             ids_by_model[res_model].append(res_id)
         for res_model, res_ids in ids_by_model.items():
-            records = self.env[res_model].browse(res_ids)
+            records = self.env[res_model].browse(res_ids).with_context(preserve_spreadsheet_revisions=True)
             for record in records:
                 # reset the initial data to the current snapshot
                 record.spreadsheet_binary_data = record.spreadsheet_snapshot

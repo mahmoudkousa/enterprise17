@@ -34,6 +34,19 @@ function getActionActiveFields() {
 }
 
 export class SignTemplateTopBar extends Component {
+    static template = "sign.SignTemplateTopBar";
+    static components = {
+        Many2ManyTagsFieldColorEditable,
+        Many2ManyTagsField,
+        Record,
+    };
+    static props = {
+        signTemplate: { type: Object },
+        hasSignRequests: { type: Boolean },
+        onTemplateNameChange: { type: Function },
+        manageTemplateAccess: { type: Boolean },
+    };
+
     setup() {
         this.displayNameInput = useRef("display-name");
         this.action = useService("action");
@@ -103,10 +116,3 @@ export class SignTemplateTopBar extends Component {
         }
     }
 }
-
-SignTemplateTopBar.template = "sign.SignTemplateTopBar";
-SignTemplateTopBar.components = {
-    Many2ManyTagsFieldColorEditable,
-    Many2ManyTagsField,
-    Record,
-};

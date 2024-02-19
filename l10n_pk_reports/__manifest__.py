@@ -14,6 +14,7 @@ Accounting reports for Pakistan
     'data': [
         'data/balance_sheet.xml',
         'data/profit_and_loss.xml',
+        'data/report_actions.xml',
     ],
     'auto_install': ['l10n_pk', 'account_reports'],
     'installable': True,

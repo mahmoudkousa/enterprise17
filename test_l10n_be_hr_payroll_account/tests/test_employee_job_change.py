@@ -37,9 +37,13 @@ class TestEmployeeJobChange(common.TestPayrollAccountCommon):
             'name': 'Jean Jasse',
             'company_id': cls.company_id.id,
         })
+        bank_ing = cls.env['res.bank'].create({
+            'name': 'ING',
+            'bic': 'BBRUBEBB'
+        })
         account = cls.env['res.partner.bank'].create({
             'acc_number': 'BE02151804051200',
-            'bank_id': cls.env.ref("base.bank_ing").id,
+            'bank_id': bank_ing.id,
             'partner_id': partner.id,
             'company_id': cls.company_id.id,
         })
@@ -89,7 +93,7 @@ class TestEmployeeJobChange(common.TestPayrollAccountCommon):
             'wage': 3000,
             'hr_responsible_id': cls.env.ref('base.user_admin').id,
             'default_contract_id': cls.new_dev_contract.id,
-            'sign_template_id': cls.env.ref('hr_contract_salary.sign_template_cdi_developer').id,
+            'sign_template_id': cls.template.id,
             'ip_wage_rate': 25,
             'internet': 0,
             'date_start': datetime.date(2015, 1, 1),

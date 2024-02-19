@@ -4,7 +4,16 @@ import { patch } from "@web/core/utils/patch";
 
 import { registry } from "@web/core/registry";
 import { timerHelpdeskService } from "@helpdesk_timesheet/services/helpdesk_timer_header_service";
-import { TimesheetGridSetupHelper } from "@timesheet_grid/../tests/helpers";
+import { TimesheetGridSetupHelper, timesheetListSetupHelper } from "@timesheet_grid/../tests/helpers";
+
+const serviceRegistry = registry.category("services");
+
+patch(timesheetListSetupHelper, {
+    setupTimesheetList() {
+        super.setupTimesheetList();
+        serviceRegistry.add("helpdesk_timer_header", timerHelpdeskService, { force: true });
+    },
+});
 
 patch(TimesheetGridSetupHelper.prototype, {
     async mockTimesheetGridRPC(route, args) {
@@ -15,7 +24,6 @@ patch(TimesheetGridSetupHelper.prototype, {
         return result;
     },
     async setupTimesheetGrid() {
-        const serviceRegistry = registry.category("services");
         serviceRegistry.add("helpdesk_timer_header", timerHelpdeskService, { force: true });
         const result = await super.setupTimesheetGrid();
         if (this.withTimer) {

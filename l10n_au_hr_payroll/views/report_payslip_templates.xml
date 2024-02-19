@@ -27,8 +27,9 @@
                                 t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}"/>
                         </span><br/>
                         <span>
-                            <t t-set="attendance_hours" t-value="o._get_worked_days_line_number_of_hours('WORK100')"/>
-                            <t t-esc="o._get_worked_days_line_amount('WORK100') / attendance_hours if attendance_hours else 0"
+                            <strong>Hourly Rate: </strong>
+                            <t t-set="attendance" t-value="o.worked_days_line_ids.filtered(lambda line: line.code == 'WORK100')"/>
+                            <t t-esc="attendance._get_l10n_au_hourly_rate()"
                                 t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}"/>
                         </span><br/>
                         <span>
@@ -52,73 +53,71 @@
                             t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}"/></span><br/>
                     </div>
                 </div>
-                <div id="total">
-                    <table class="table table-sm">
-                        <thead class="o_black_border">
-                            <tr>
-                                <th>DESCRIPTION</th>
-                                <th>HOURS</th>
-                                <th>CALC. RATE</th>
-                                <th>AMOUNT</th>
-                                <th>YTD</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <t t-set="year_to_date_totals" t-value="o.with_context(l10n_au_include_current_slip=True)._l10n_au_get_year_to_date_totals(o.date_from)"/>
-                            <t t-set="total_hours" t-value="0.0"/>
-                            <!-- show the detail of the worked lines -->
-                            <tr t-if="o.use_worked_day_lines">
-                                <td colspan="5"><strong>Worked Days</strong></td>
-                            </tr>
-                            <tr t-if="o.use_worked_day_lines" t-foreach="o.worked_days_line_ids" t-as="worked_line">
-                                <td>
-                                    <t t-esc="worked_line.name"/>
-                                </td>
-                                <td>
-                                    <t t-esc="worked_line.number_of_hours" t-options="{'widget': 'float_time'}"/>
-                                    <t t-set="total_hours" t-value="total_hours + worked_line.number_of_hours"/>
-                                </td>
-                                <td>
-                                    <t t-esc="worked_line.amount / (worked_line.number_of_hours or 1.0)"
-                                        t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}"/>
-                                </td>
-                                <td>
-                                    <t t-esc="worked_line.amount"
-                                        t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}"/>
-                                </td>
-                                <td>
-                                    <t t-esc="year_to_date_totals['worked_days'][worked_line.work_entry_type_id]['amount']"
-                                        t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="5"><strong>Payslip Lines</strong></td>
-                            </tr>
-                            <!-- Hide Medicare Adjustment line if the amount is 0 -->
-                            <tr t-foreach="o.line_ids.filtered(lambda line: line.appears_on_payslip and
-                                not (line.salary_rule_id == env.ref('l10n_au_hr_payroll.l10n_au_medicare_structure_1') and line.amount == 0))"
-                                t-as="line">
-                                <td><t t-esc="line.name"/></td>
-                                <td>
-                                    <t t-if="line.category_id.code == 'BASIC'" t-esc="total_hours" t-options="{'widget': 'float_time'}"/>
-                                </td>
-                                <td>
-                                    <t t-if="line.category_id.name == 'BASIC'"
-                                        t-esc="line.amount"
-                                        t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}"
-                                    />
-                                </td>
-                                <td>
-                                    <t t-esc="line.total" t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}"/>
-                                </td>
-                                <td>
-                                    <t t-esc="year_to_date_totals['slip_lines'][line.category_id.name]['total']"
-                                        t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}"/>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <table class="table table-sm">
+                    <thead class="o_black_border">
+                        <tr>
+                            <th>DESCRIPTION</th>
+                            <th>HOURS</th>
+                            <th>CALC. RATE</th>
+                            <th>AMOUNT</th>
+                            <th>YTD</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="year_to_date_totals" t-value="o.with_context(l10n_au_include_current_slip=True)._l10n_au_get_year_to_date_totals(o.date_from)"/>
+                        <t t-set="total_hours" t-value="0.0"/>
+                        <!-- show the detail of the worked lines -->
+                        <tr t-if="o.use_worked_day_lines">
+                            <td colspan="5"><strong>Worked Days</strong></td>
+                        </tr>
+                        <tr t-if="o.use_worked_day_lines" t-foreach="o.worked_days_line_ids" t-as="worked_line">
+                            <td>
+                                <t t-esc="worked_line.name"/>
+                            </td>
+                            <td>
+                                <t t-esc="worked_line.number_of_hours" t-options="{'widget': 'float_time'}"/>
+                                <t t-set="total_hours" t-value="total_hours + worked_line.number_of_hours"/>
+                            </td>
+                            <td>
+                                <t t-esc="worked_line._get_l10n_au_hourly_rate()"
+                                    t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}"/>
+                            </td>
+                            <td>
+                                <t t-esc="worked_line.amount"
+                                    t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}"/>
+                            </td>
+                            <td>
+                                <t t-esc="year_to_date_totals['worked_days'][worked_line.work_entry_type_id]['amount']"
+                                    t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5"><strong>Payslip Lines</strong></td>
+                        </tr>
+                        <!-- Hide Medicare Adjustment line if the amount is 0 -->
+                        <tr t-foreach="o.line_ids.filtered(lambda line: line.appears_on_payslip and
+                            not (line.salary_rule_id == env.ref('l10n_au_hr_payroll.l10n_au_medicare_structure_1') and line.amount == 0))"
+                            t-as="line">
+                            <td><t t-esc="line.name"/></td>
+                            <td>
+                                <t t-if="line.category_id.code == 'BASIC'" t-esc="total_hours" t-options="{'widget': 'float_time'}"/>
+                            </td>
+                            <td>
+                                <t t-if="line.category_id.name == 'BASIC'"
+                                    t-esc="line.amount"
+                                    t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}"
+                                />
+                            </td>
+                            <td>
+                                <t t-esc="line.total" t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}"/>
+                            </td>
+                            <td>
+                                <t t-esc="year_to_date_totals['slip_lines'][line.category_id.name]['total']"
+                                    t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
                 <p t-if="o.net_wage &gt;= 0">To pay on <b><span t-field="o.employee_id.bank_account_id"/></b> of <i><span t-field="o.employee_id"/></i>: <span t-field="o.net_wage"/></p>
                 <p t-if="o.net_wage &lt; 0">The net amount will be recovered from the first positive remuneration established after this.</p>
             </div>

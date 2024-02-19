@@ -82,7 +82,7 @@ QUnit.module("Studio > Navbar", (hooks) => {
             },
             { force: true }
         );
-        menuButtonsRegistry.add("new_model_item", { Component: NewModelItem }, { force: true });
+        menuButtonsRegistry.add("new_model_item", { Component: NewModelItem, props: { env } }, { force: true });
         // Force the parent width, to make this test independent of screen size
         target.style.width = "100%";
 

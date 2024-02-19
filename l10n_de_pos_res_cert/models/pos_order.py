@@ -97,25 +97,14 @@ class PosOrder(models.Model):
         keys = itemgetter('product_id', 'price_unit', 'discount')
         for k, g in groupby(sorted(order_lines, key=keys), key=keys):
             group = list(g)
-            unit_price = str(group[0]['price_subtotal_incl']/group[0]['qty'])
+            unit_price = group[0]['price_subtotal_incl']/group[0]['qty']
             line_dict[k] = {
                 'quantity': sum(line['qty'] for line in group),
                 'text': group[0]['full_product_name'],
-                'price_per_unit': unit_price + '0' if len(unit_price.split('.')[1]) < 2 else unit_price
+                'price_per_unit': unit_price
             }
 
         return line_dict
-
-    @api.model
-    def export_for_ui_table_draft(self, table_ids):
-        table_orders = super().export_for_ui_table_draft(table_ids)
-        if self.env.company.l10n_de_is_germany_and_fiskaly():
-            for order in table_orders:
-                order['tss_info'] = {}
-                order['tss_info']['time_start'] = order['l10n_de_fiskaly_time_start']
-                del order['l10n_de_fiskaly_time_start']
-
-        return table_orders
 
     @api.model
     def retrieve_line_difference(self, ui_orders):

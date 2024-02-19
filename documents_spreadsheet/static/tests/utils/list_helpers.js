@@ -8,8 +8,9 @@ import {
     makeDeferred,
     triggerEvent,
     mouseEnter,
+    nextTick,
 } from "@web/../tests/helpers/utils";
-import { toggleActionMenu, findItem } from "@web/../tests/search/helpers";
+import { findItem } from "@web/../tests/search/helpers";
 import { getBasicServerData } from "@spreadsheet/../tests/utils/data";
 import {
     getSpreadsheetActionEnv,
@@ -20,7 +21,7 @@ import { SpreadsheetAction } from "../../src/bundle/actions/spreadsheet_action";
 import { waitForDataSourcesLoaded } from "@spreadsheet/../tests/utils/model";
 import { registry } from "@web/core/registry";
 import { fieldService } from "@web/core/field_service";
-import { browser } from "@web/core/browser/browser";
+import { contains } from "@web/../tests/utils";
 import { onMounted } from "@odoo/owl";
 
 /** @typedef {import("@spreadsheet/o_spreadsheet/o_spreadsheet").Model} Model */
@@ -110,9 +111,7 @@ export async function createSpreadsheetFromListView(params = {}) {
         await params.actions(target);
     }
     /** Put the current list in a new spreadsheet */
-    await toggleActionMenu(target);
-    await toggleCogMenuSpreadsheet(target);
-    await click(target.querySelector(".o_insert_list_spreadsheet_menu"));
+    await invokeInsertListInSpreadsheetDialog(webClient.env);
     /** @type {HTMLInputElement} */
     const input = target.querySelector(`.o-sp-dialog-meta-threshold-input`);
     input.value = params.linesNumber ? params.linesNumber.toString() : "10";
@@ -135,8 +134,16 @@ export async function createSpreadsheetFromListView(params = {}) {
  * @returns Promise
  */
 export async function toggleCogMenuSpreadsheet(el) {
-    patchWithCleanup(browser, {
-        setTimeout: (fn) => fn(),
-    });
-    return mouseEnter(findItem(el, ".o_cp_action_menus .dropdown-toggle", "Spreadsheet"));
+    await contains(".o_cp_action_menus .dropdown-toggle", { text: "Spreadsheet" });
+    await mouseEnter(findItem(el, ".o_cp_action_menus .dropdown-toggle", "Spreadsheet"));
+    await contains(".o-dropdown .show", { text: "Spreadsheet" });
+}
+
+/** While the actual flow requires to toggle the list view action menu
+ * The current helper uses `contains` which slowsdown drastically the tests
+ * This helper takes a shortcut by relying on the implementation
+ */
+export async function invokeInsertListInSpreadsheetDialog(env) {
+    env.bus.trigger("insert-list-spreadsheet");
+    await nextTick();
 }

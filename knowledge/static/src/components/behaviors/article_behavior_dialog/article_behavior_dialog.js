@@ -67,7 +67,10 @@ export class ArticleSelectionBehaviorDialog extends Component {
 
     async fetchArticles(searchValue) {
         this.state.createLabel = _t('Create "%s"', searchValue);
-        const domain = [['user_has_access', '=', true]];
+        const domain = [
+            ['user_has_access', '=', true],
+            ['is_template', '=', false]
+        ];
         if (searchValue) {
             domain.push(['name', '=ilike', `%${searchValue}%`]);
         }

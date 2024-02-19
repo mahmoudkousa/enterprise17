@@ -29,6 +29,7 @@ class MarketingTestBlPhone(models.Model):
     _description = 'MarketAuto: blacklist + phone-enabled model'
     _inherit = ['mail.thread.blacklist', 'mail.thread.phone']
     _primary_email = 'email_from'
+    _order = 'id ASC'
 
     name = fields.Char()
     email_from = fields.Char(compute='_compute_from_customer', readonly=False, store=True)

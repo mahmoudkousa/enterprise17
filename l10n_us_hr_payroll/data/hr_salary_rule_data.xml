@@ -623,7 +623,7 @@ result = -step5
         <field name="amount_select">code</field>
         <field name="amount_python_compute">
 result = categories['TAXABLE'] - result_rules['MEDICALHSA']['total'] - result_rules['401K']['total']
-result_rate = - 0.9
+result_rate = - payslip._rule_parameter('l10n_us_ca_sdi_tax_rate')
         </field>
         <field name="struct_id" ref="l10n_us_hr_payroll.hr_payroll_structure_us_employee_salary"/>
         <field name="partner_id" ref="res_partner_edd_ca"/>

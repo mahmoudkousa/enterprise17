@@ -52,5 +52,10 @@ registry.category("web_tour.tours").add('industry_fsm_tour', {
     extra_trigger: '.o_form_project_tasks',
     content: markup(_t('Let\'s <b>mark your task as done!</b> <i>Tip: when doing so, your stock will automatically be updated, and your task will be closed.</i>')),
     position: 'bottom',
+}, {
+    // check the task is marked as done
+    trigger: "div[name='state'] .btn-outline-success",
+    auto: true,
+    isCheck: true,
     id: 'fsm_invoice_create',
 }]});

@@ -75,6 +75,12 @@ class KanbanEditorController extends kanbanView.Controller {
         super.setup();
         useModelConfigFetchInvisible(this.model);
     }
+
+    get modelParams() {
+        const params = super.modelParams;
+        params.groupsLimit = 1;
+        return params;
+    }
 }
 
 const kanbanEditor = {

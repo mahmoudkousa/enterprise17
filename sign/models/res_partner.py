@@ -10,7 +10,7 @@ class ResPartner(models.Model):
     signature_count = fields.Integer(compute='_compute_signature_count', string="# Signatures")
 
     def _compute_signature_count(self):
-        signature_data = self.env['sign.request.item'].sudo()._read_group([('partner_id', 'in', self.ids)], ['partner_id'], ['__count'])
+        signature_data = self.env['sign.request.item'].sudo()._read_group([('partner_id', 'in', self.ids), ('state', 'in', ['sent', 'completed'])], ['partner_id'], ['__count'])
         signature_data_mapped = {partner.id: count for partner, count in signature_data}
         for partner in self:
             partner.signature_count = signature_data_mapped.get(partner.id, 0)

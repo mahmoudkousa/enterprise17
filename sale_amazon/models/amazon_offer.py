@@ -91,13 +91,19 @@ class AmazonOffer(models.Model):
             :param Element root_: The root XML element to which messages should be added.
             :return: None
             """
+            location_ = self.account_id.location_id
+            quant_ids_ = location_.quant_ids.filtered(lambda q: q.product_id in self.product_id)
+            fba_offers_ = self.filtered(lambda o: o.product_id in quant_ids_.product_id)
             for offer_ in self:
                 # Build the message base.
                 message_ = ElementTree.SubElement(root_, 'Message')
                 inventory_ = ElementTree.SubElement(message_, 'Inventory')
                 ElementTree.SubElement(inventory_, 'SKU').text = offer_.sku
-                # We don't filter FBA products out because Amazon will ignore them anyway.
-                quantity_ = offer_.product_id.free_qty
+                # We consider products in the Amazon location to be FBA. Their quantity is set to 0
+                # as we don't add any fulfillment channel to the feed. Amazon won't  change their
+                # quantity on hand, but by forcing the quantity here, we make sure Amazon will not
+                # consider we are selling it through another channel.
+                quantity_ = offer_.product_id.free_qty if offer_ not in fba_offers_ else 0
                 ElementTree.SubElement(inventory_, 'Quantity').text = str(int(quantity_))
 
         xml_feed = amazon_utils.build_feed(account, 'Inventory', build_feed_messages)

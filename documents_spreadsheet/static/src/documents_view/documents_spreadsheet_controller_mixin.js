@@ -64,24 +64,17 @@ export const DocumentsSpreadsheetControllerMixin = () => ({
     /**
      * @override
      */
-    async _onOpenDocumentsPreview({ documents }) {
-        if (
-            documents.length !== 1 ||
-            (documents[0].data.handler !== "spreadsheet" &&
-                documents[0].data.mimetype !== XLSX_MIME_TYPE)
-        ) {
-            return this.baseOnOpenDocumentsPreview(...arguments);
-        }
-        if (documents[0].data.handler === "spreadsheet") {
+    async _onOpenDocumentsPreview({ mainDocument }) {
+        if (mainDocument.data.handler === "spreadsheet") {
             this.action.doAction({
                 type: "ir.actions.client",
                 tag: "action_open_spreadsheet",
                 params: {
-                    spreadsheet_id: documents[0].resId,
+                    spreadsheet_id: mainDocument.resId,
                 },
             });
-        } else if (documents[0].data.mimetype === XLSX_MIME_TYPE) {
-            if (!documents[0].data.active) {
+        } else if (mainDocument.data.mimetype === XLSX_MIME_TYPE) {
+            if (!mainDocument.data.active) {
                 this.dialogService.add(ConfirmationDialog, {
                     title: _t("Restore file?"),
                     body: _t(
@@ -90,9 +83,9 @@ export const DocumentsSpreadsheetControllerMixin = () => ({
                     cancel: () => {},
                     confirm: async () => {
                         await this.orm.call("documents.document", "action_unarchive", [
-                            documents[0].resId,
+                            mainDocument.resId,
                         ]);
-                        this.env.searchModel.toggleCategoryValue(1, documents[0].data.folder_id[0]);
+                        this.env.searchModel.toggleCategoryValue(1, mainDocument.data.folder_id[0]);
                     },
                     confirmLabel: _t("Restore"),
                 });
@@ -101,10 +94,12 @@ export const DocumentsSpreadsheetControllerMixin = () => ({
                     title: _t("Format issue"),
                     cancel: () => {},
                     cancelLabel: _t("Discard"),
-                    documentId: documents[0].resId,
+                    documentId: mainDocument.resId,
                     confirmLabel: _t("Open with Odoo Spreadsheet"),
                 });
             }
+        } else {
+            return this.baseOnOpenDocumentsPreview(...arguments);
         }
     },
 
@@ -112,7 +107,9 @@ export const DocumentsSpreadsheetControllerMixin = () => ({
         this.dialogService.add(TemplateDialog, {
             folderId: this.env.searchModel.getSelectedFolderId() || undefined,
             context: this.props.context,
-            folders: this.env.searchModel.getFolders().slice(1),
+            folders: this.env.searchModel
+                .getFolders()
+                .filter((folder) => folder.id && folder.id !== "TRASH"),
         });
     },
 });

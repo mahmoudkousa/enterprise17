@@ -74,7 +74,7 @@
                                     <span t-field="ticket.create_date" t-options='{"widget": "datetime", "hide_seconds": True}'/>
                                 </td>
                                 <td id="ticket_user_body" t-if="groupby != 'user'" class="ps-5 lh-1">
-                                    <img t-if="ticket.user_id" class="o_avatar o_portal_contact_img rounded" t-attf-src="#{image_data_uri(ticket.user_id.sudo().avatar_1024)}" alt="Contact"/>
+                                    <img t-if="ticket.user_id" class="o_avatar o_portal_contact_img rounded" t-attf-src="#{image_data_uri(ticket.user_id.sudo().avatar_128)}" alt="Contact"/>
                                     <span t-field="ticket.user_id"/>
                                 </td>
                                 <td t-if="groupby != 'stage'" class="text-end align-middle lh-1">
@@ -163,7 +163,7 @@
                                     </h6>
                                         <div class="o_portal_contact_details d-flex flex-column gap-1">
                                             <div class="d-flex justify-content-start align-items-center gap-2">
-                                                <img class="o_avatar o_portal_contact_img rounded" t-att-src="image_data_uri(ticket.user_id.avatar_1024)" alt="Contact"/>
+                                                <img class="o_avatar o_portal_contact_img rounded" t-att-src="image_data_uri(ticket.user_id.avatar_128)" alt="Contact"/>
                                                 <h6 class="mb-0" t-out="ticket.user_id.name"></h6>
                                             </div>
                                         </div>
@@ -174,7 +174,7 @@
                                     </h6>
                                     <div class="o_portal_contact_details d-flex flex-column gap-1">
                                         <div class="d-flex justify-content-start align-items-center gap-2">
-                                            <img class="o_avatar o_portal_contact_img rounded" t-att-src="image_data_uri(ticket.partner_id.avatar_1024)" alt="Contact"/>
+                                            <img class="o_avatar o_portal_contact_img rounded" t-att-src="image_data_uri(ticket.partner_id.avatar_128)" alt="Contact"/>
                                             <h6 class="mb-0" t-out="ticket.partner_id.name"></h6>
                                         </div>
                                         <div>

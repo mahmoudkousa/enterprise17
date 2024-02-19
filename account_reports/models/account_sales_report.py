@@ -109,7 +109,7 @@ class ECSalesReportCustomHandler(models.AbstractModel):
         other_country_ids = tuple(set(country_ids) - {self.env.company.account_fiscal_country_id.id})
         options.setdefault('forced_domain', []).append(('partner_id.country_id', 'in', other_country_ids))
 
-        report._init_options_journals(options, previous_options=previous_options, additional_journals_domain=[('type', '=', 'sale')])
+        report._init_options_journals(options, previous_options=previous_options)
 
         self._enable_export_buttons_for_common_vat_groups_in_branches(options)
 

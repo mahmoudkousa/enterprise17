@@ -92,16 +92,18 @@
                         <field name="resources_on_leave" widget="many2many_tags" readonly="1"/>
                     </div>
                     <div class="oe_title mb-3">
-                        <label for="name"/>
+                        <label for="name" string="Booking Name"/>
                         <h1>
-                            <field name="name" placeholder="e.g. Booking for Mark" required="True"/>
+                            <field name="name" placeholder='e.g. "John Doe - Tennis Court Booking"' required="True"/>
                         </h1>
                     </div>
 
                     <group>
                         <group colspan="2">
                             <field name="partner_ids" widget="many2many_tags_avatar"
-                                   placeholder="Select attendees..." context="{'force_email':True}"
+                                   placeholder="Select attendees..."
+                                   options="{'no_quick_create': True}"
+                                   context="{'form_view_ref': 'base.view_partner_simple_form'}"
                                    class="oe_inline o_required_modifier o_field_highlight"  colspan="2"/>
                         </group>
                         <group>
@@ -112,21 +114,22 @@
                                 <field name="duration" widget="float_time" string="Duration" class="oe_inline"/>
                                 <span> hours</span>
                             </div>
-                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="user_id" widget="many2one_avatar_user" options="{'no_create': True}"/>
                         </group>
                         <group>
-                            <field name="appointment_type_id"/>
+                            <field name="appointment_type_id" options="{'no_create': True}"/>
                             <field name="appointment_type_manage_capacity" invisible="1"/>
                             <field name="appointment_type_schedule_based_on" invisible="1"/>
-                            <field name="appointment_resource_id" string="Resource"
+                            <field name="appointment_resource_id" string="Resource" options="{'no_create': True}"
                                    invisible="not appointment_type_id or appointment_type_schedule_based_on != 'resources'"
                                    domain="[('appointment_type_ids', 'in', appointment_type_id)]"/>
                             <div invisible="not appointment_resource_id or not appointment_type_manage_capacity or appointment_type_schedule_based_on != 'resources'" colspan="2">
                                 <label for="resource_total_capacity_reserved" class="me-5"/>
-                                <field name="resource_total_capacity_reserved" string="Total Reserved" class="oe_inline" invisible="1"/>
+                                <field name="resource_total_capacity_reserved" string="Total Reserved" class="oe_inline"/>
                                 <span>people</span>
                             </div>
                         </group>
+                        <field name="description" placeholder="Extra Comments..."/>
                     </group>
                 </sheet>
             </form>
@@ -138,7 +141,7 @@
         <field name="model">calendar.event</field>
         <field name="arch" type="xml">
             <gantt class="o_appointment_ressource_booking_gantt"
-                create="1" delete="1" plan="1"
+                create="1" delete="1" plan="0"
                 date_start="start"
                 date_stop="stop"
                 default_group_by="appointment_resource_id"
@@ -176,7 +179,8 @@
                                 <li t-if="gantt_pill_contact_phone"><strong>Phone: </strong><t t-out="gantt_pill_contact_phone"/></li>
                                 <li t-if="gantt_pill_contact_email"><strong>Email: </strong><t t-out="gantt_pill_contact_email"/></li>
                                 <br/>
-                                <strong>Booking Details</strong>
+                                <strong t-if="appointment_type_id">Booking Details</strong>
+                                <strong t-else="">Event Details</strong>
                             </t>
                             <li t-if="appointment_type_manage_capacity"><strong>Booked for: </strong> <t t-out="resource_total_capacity_reserved"/></li>
                             <li t-if="appointment_type_id"><strong>Type: </strong> <t t-out="appointment_type_id[1]"/></li>
@@ -197,7 +201,7 @@
         <field name="mode">primary</field>
         <field name="arch" type="xml">
             <gantt position="attributes">
-                <attribute name="default_group_by">user_id</attribute>
+                <attribute name="default_group_by">partner_ids</attribute>
             </gantt>
         </field>
     </record>
@@ -231,8 +235,7 @@
             (0, 0, {'view_mode': 'tree', 'view_id': ref('appointment.calendar_event_view_tree_booking')}),
         ]"/>
         <field name="view_mode">gantt,tree,form</field>
-        <field name="context">{'appointment_booking_gantt_domain': [('appointment_type_id.schedule_based_on', '=', 'users'), ('user_id', '!=', False)],
-                               'appointment_default_add_organizer_to_attendees': True,
+        <field name="context">{'appointment_default_add_organizer_to_attendees': True,
                                'default_partner_ids': []}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">

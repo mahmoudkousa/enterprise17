@@ -292,12 +292,12 @@ class TestFetchmailServer(TestL10nClEdiCommon):
             ('code', '=', '34'),
             ('country_id.code', '=', 'CL')
         ])
-        with patch('logging.Logger.error') as logger:
+        with patch('logging.Logger.warning') as logger:
             self.env['fetchmail.server']._process_incoming_customer_claim(
                 self.company_data['company'].id, att_content, att_name, origin_type='incoming_acknowledge')
             logger.assert_called_with(
-                'Move not found with partner: %s, name: %s, l10n_latam_document_type: %s, company_id: %s' % (
-                    self.partner_sii.id, 'FNA 000254', l10n_latam_document_type.id, self.company_data['company'].id))
+                'Move not found with partner: %s, document_number: %s, l10n_latam_document_type: %s, company_id: %s',
+                    self.partner_sii.id, '254', l10n_latam_document_type.id, self.company_data['company'].id)
 
     def test_process_incoming_customer_claim_acknowledge(self):
         l10n_latam_document_type = self.env['l10n_latam.document.type'].search([

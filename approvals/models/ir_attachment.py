@@ -13,7 +13,7 @@ class IrAttachment(models.Model):
             Prevent attachment deletion for an approval request
             that is in the approved, refused or cancel state.
         """
-        approval_request_ids = [attachment.res_id for attachment in self if attachment.res_model == 'approval.request']
+        approval_request_ids = [attachment.res_id for attachment in self if attachment.res_model == 'approval.request' and not attachment.res_field]
         if not approval_request_ids:
             return
         approval_requests = self.env['approval.request'].browse(approval_request_ids)

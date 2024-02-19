@@ -176,6 +176,9 @@ QUnit.module("Views", (hooks) => {
         });
 
         assert.containsOnce(target, "div.o_view_nocontent");
+        // Renderer is still displayed beside the no content helper
+        assert.containsOnce(target, ".o_cohort_renderer");
+        assert.containsN(target, ".o_content button", 3);
     });
 
     QUnit.test("no content helper after update", async function (assert) {
@@ -622,7 +625,7 @@ QUnit.module("Views", (hooks) => {
     );
 
     QUnit.test("rendering of a cohort view with comparison", async function (assert) {
-        assert.expect(29);
+        assert.expect(31);
 
         patchDate(2017, 7, 25, 1, 0, 0);
 
@@ -719,10 +722,10 @@ QUnit.module("Views", (hooks) => {
         await toggleMenuItemOption(target, "Date", "2017");
 
         verifyContents(
-            [],
+            ["Q4 2016", "Q3 2016"],
             "with comparison active, no data, no comparisonData (filter on 'last_year' + 'previous_period')"
         );
-        assert.containsNone(target, ".o_cohort_no_data");
+        assert.containsN(target, ".o_cohort_no_data", 2);
         assert.containsOnce(target, "div.o_view_nocontent");
     });
 

@@ -131,12 +131,12 @@ export const knowledgeCommandsService = {
             }
             // Extract identifier props from the breadcrumbs.
             breadcrumbs = getBreadcrumbsIdentifier(breadcrumbs);
-            // Only consider the beginning of the breadcrumbs sequence up to
-            // the length of the recorded breadcrumbs.
-            const slicedBreadcrumbs = breadcrumbs.slice(0, commandsRecordInfo.breadcrumbs.length);
-            if (JSON.stringify(commandsRecordInfo.breadcrumbs) !== JSON.stringify(slicedBreadcrumbs)) {
-                // If the start does not match (or if the recorded sequence is
-                // longer than the current one), unregister the recordInfo.
+            if (
+                breadcrumbs.length <= commandsRecordInfo.breadcrumbs.length ||
+                breadcrumbs[commandsRecordInfo.breadcrumbs.length - 1].jsId !== commandsRecordInfo.breadcrumbs.at(-1).jsId
+            ) {
+                // Unregister the recordInfo if the target controller does not
+                // match what was recorded.
                 setCommandsRecordInfo(null);
             }
         }

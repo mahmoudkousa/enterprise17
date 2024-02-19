@@ -19,6 +19,7 @@
                     <IMP_8 t-out="IMP['IMP_8']"/>
                     <IMP_9 t-out="IMP['IMP_9']"/>
                     <IMP_10 t-out="IMP['IMP_10']"/>
+                    <IMP_11 t-out="IMP['IMP_11']"/>
                 </IMP>
 
             </TIM>
@@ -28,8 +29,11 @@
                 <t t-set="tax" t-value="tax_details['tax_details_per_record'][line]['tax_details'][group]" />
                 <TII t-foreach="tax['group_tax_details']" t-as="group_tax_details">
                     <t t-set="IIM_2" t-value="abs(group_tax_details['tax_amount_currency'])"/>
-                    <t t-set="IIM_4" t-value="abs(group_tax_details['tax_amount_currency'] * 100 / 15) if tax['l10n_co_edi_type'].code == '05' else abs(group_tax_details['base_amount_currency'])"/>
+                    <t t-set="IIM_4" t-if="tax['l10n_co_edi_type'].code == '05'" t-value="abs(group_tax_details['tax_amount_currency'] * 100 / 15)"/>
+                    <t t-set="IIM_4" t-elif="tax['l10n_co_edi_type'].code == '34'" t-value="sum(line.product_id.volume * line.quantity for line in tax['records'])"/>
+                    <t t-set="IIM_4" t-else="" t-value="abs(group_tax_details['base_amount_currency'])"/>
                     <t t-set="IIM_6" t-value="'15' if tax['l10n_co_edi_type'].code == '05' else tax['tax'].amount"/>
+                    <t t-set="IIM_9" t-value="tax['tax'].amount if (tax['l10n_co_edi_type'].code != '34' or not IIM_2) else IIM_2 * 100 / IIM_4"/>
                     <TII_1 t-out="format_monetary(IIM_2, invoice.currency_id)"/>
                     <TII_2 t-out="invoice.currency_id.name"/>
                     <TII_3 t-out="'true' if tax['l10n_co_edi_type'].retention else 'false'"/>
@@ -42,9 +46,11 @@
                         <IIM_4 t-out="format_monetary(IIM_4, invoice.currency_id)"/>
                         <IIM_5 t-out="invoice.currency_id.name"/>
                         <t t-if="tax['tax'].amount_type == 'fixed'">
-                            <IIM_7 t-out="'1'"/>
-                            <IIM_8 t-out="'BO' if tax['l10n_co_edi_type'].code == '22' else '94'"/>
-                            <IIM_9 t-out="tax['tax'].amount"/>
+                            <IIM_7 t-out="IIM_4 if tax['l10n_co_edi_type'].code == '34' else '1'"/>
+                            <IIM_8 t-if="tax['l10n_co_edi_type'].code == '22'" t-out="'BO'"/>
+                            <IIM_8 t-elif="tax['l10n_co_edi_type'].code == '34'" t-out="'MLT'"/>
+                            <IIM_8 t-else="" t-out="'94'"/>
+                            <IIM_9 t-out="IIM_9"/>
                             <IIM_10 t-out="invoice.currency_id.name"/>
                         </t>
                         <t t-else="">
@@ -54,6 +60,7 @@
                             <IIM_9/>
                             <IIM_10/>
                         </t>
+                        <IIM_11 t-out="tax['l10n_co_edi_type'].name"/>
                     </IIM>
                 </TII>
             </t>
@@ -367,8 +374,8 @@
                     <ITE_6 t-out="invoice.currency_id.name"/>
                     <ITE_7 t-out="format_monetary(line.price_unit, invoice.currency_id)"/>
                     <ITE_8 t-out="invoice.currency_id.name"/>
-                    <ITE_10 t-out="(line.name or '')[:150]"/>
-                    <ITE_11 t-out="(line.name or '')[:150]"/>
+                    <ITE_10 t-out="line._l10n_co_edi_get_line_name()"/>
+                    <ITE_11 t-out="line._l10n_co_edi_get_line_name()"/>
                     <ITE_18 t-out="line.product_id.default_code or line.product_id.product_tmpl_id.default_code"/>
                     <ITE_19 t-out="format_monetary(line.price_subtotal, invoice.currency_id)"/>
                     <ITE_20 t-out="invoice.currency_id.name"/>

@@ -173,8 +173,8 @@ class ShipRocket:
                     'price': rate,
                     'courier_code': courier_code,
                     'warning_message': recommended_by and
-                                       _("Courier is - %s, recommended by %s!", courier_name, recommended_by) or
-                                       _("Courier is - %s", courier_name)
+                                       _("Courier (%s): %s", recommended_by, courier_name) or
+                                       _("Courier: %s", courier_name)
                 })
             else:
                 res.update({'error_found': _('Courier is not available for delivery!')})
@@ -205,12 +205,14 @@ class ShipRocket:
             else:
                 packages = self.carrier._get_packages_from_order(order, default_package)
 
+            dimensions = {}
+            if len(packages) == 1:
+                dimensions = {
+                    'length': packages[0].dimension['length'],
+                    'width': packages[0].dimension['width'],
+                    'height': packages[0].dimension['height']
+                }
             total_weight = sum(pack.weight for pack in packages)
-            dimensions = {
-                'length': sum(pack.dimension['length'] for pack in packages),
-                'width': sum(pack.dimension['width'] for pack in packages),
-                'height': sum(pack.dimension['height'] for pack in packages)
-            }
         weight_in_kg = self.carrier._shiprocket_convert_weight(total_weight)
         rate_dict = self._get_rate(shipper, recipient, weight_in_kg, dimensions)
         return rate_dict
@@ -420,26 +422,27 @@ class ShipRocket:
                 picking.message_post(body=self._shiprocket_get_error_message(order_response))
                 continue
             payload = order_response.get('payload')
+            if not payload:
+                picking.message_post(body=_('AWB assignment was unsuccessful: %s') % (self._shiprocket_get_error_message(order_response)))
+                continue
             res['all_pack'][delivery_package]['response'] = payload
-            if payload and payload.get('shipment_id') and payload.get('error_message') and \
-                    'Oops! Cannot reassign courier' in payload['error_message']:
+            if payload.get('shipment_id') and payload.get('error_message') and 'Oops! Cannot reassign courier' in payload['error_message']:
                 payload.pop('error_message')
                 res['all_pack'][delivery_package]['response']['warning_message'] = \
                     _("Same order is available in Shiprocket so label provided is the copy of existing one.")
-                label_response = self._generate_label(payload.get('shipment_id'))
+                label_response = self._generate_label(payload['shipment_id'])
                 res['all_pack'][delivery_package]['response']['label_url'] = label_response.get('label_url')
-            if order_response and payload and not payload.get('error_message') and not payload.get('awb_assign_error'):
+            if payload.get('shipment_id') and not payload.get('error_message') and not payload.get('awb_assign_error'):
                 res['tracking_numbers'].append(payload.get('awb_code'))
                 # To get exact_price
-                order_details = self._make_api_request('external/shipments/{}'.format(payload.get('shipment_id')),
-                                                       token=self._get_token())
+                order_details = self._make_api_request('external/shipments/{}'.format(payload['shipment_id']), token=self._get_token())
                 order_id = order_details.get('data').get('order_id')
                 if order_id:
                     res['order_ids'].append(str(order_id))
                 res['all_pack'][delivery_package]['order_details'] = order_details
                 res['exact_price'] += float(order_details.get('data', {}).get('charges', {}).get('freight_charges', '0.00'))
             else:
-                picking.message_post(body=('AWB assignment was unsuccessful: %s') % (self._shiprocket_get_error_message(order_response)))
+                picking.message_post(body=_('AWB assignment was unsuccessful: %s') % (self._shiprocket_get_error_message(order_response)))
         return res
 
     def _generate_label(self, shipment_id):

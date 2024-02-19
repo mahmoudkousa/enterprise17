@@ -27,5 +27,9 @@
             <field name="name">Print label</field>
             <field name="technical_name">print_label</field>
         </record>
+
+        <record id="base.group_user" model="res.groups">
+            <field name="implied_ids" eval="[(4, ref('mrp_workorder.group_mrp_wo_shop_floor'))]"/>
+        </record>
     </data>
 </odoo>

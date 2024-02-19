@@ -1,15 +1,33 @@
 import json
 from psycopg2.extras import Json
+from lxml import etree
 
 from odoo import Command
 from odoo.addons.base.models.ir_actions_report import IrActionsReport
 from odoo.addons.web_studio.controllers.main import WebStudioController
-from odoo.addons.web_studio.controllers.report import WebStudioReportController, get_report_view_copy
+from odoo.addons.web_studio.controllers.report import WebStudioReportController, get_report_view_copy, _get_and_write_studio_view
 from odoo.addons.web.controllers.report import ReportController
 from odoo.http import _request_stack, route
 from odoo.tests.common import HttpCase, TransactionCase
 from odoo.tests import tagged
 from odoo.tools import DotDict, mute_logger
+
+parserXML = etree.XMLParser(remove_blank_text=False)
+parserHTML = etree.HTMLParser(remove_blank_text=False)
+def html_to_xml_tree(stringHTML, body=True):
+    temp = etree.fromstring(stringHTML, parser=parserHTML)
+    if body:
+        temp = temp.getroottree().find("body")[0]
+    temp = etree.tostring(temp)
+    return etree.fromstring(temp, parser=parserXML)
+
+def _remove_oe_context(tree):
+    for node in tree.iter(etree.Element):
+        node.attrib.pop("oe-context", None)
+
+def get_combined_and_studio_arch(view):
+    studio_view = _get_and_write_studio_view(view)
+    return view.get_combined_arch(), studio_view.arch
 
 class TestReportEditor(TransactionCase):
 
@@ -289,10 +307,12 @@ class TestReportEditorUIUnit(HttpCase):
         self.assertTrue(self.main_view_document_xml_id.noupdate)
         self.assertTrue(self.report_xml_id.noupdate)
 
-        self.assertXMLEqual(self.main_view.arch, """
+        main_arch, studio_arch = get_combined_and_studio_arch(self.main_view)
+
+        self.assertXMLEqual(main_arch, """
             <t t-name="web_studio.test_report">
                <t t-call="web.html_container">
-                 <div class="">
+                 <div>
                    <p>edited with odoo editor</p>
                  </div>
                  <t t-foreach="docs" t-as="doc">
@@ -301,17 +321,43 @@ class TestReportEditorUIUnit(HttpCase):
                </t>
              </t>
         """)
+        self.assertXMLEqual(studio_arch, """
+        <data>
+           <xpath expr="/t[@t-name='web_studio.test_report']" position="replace" mode="inner">
+             <t t-call="web.html_container">
+               <div>
+                 <p>edited with odoo editor</p>
+               </div>
+               <t t-foreach="docs" t-as="doc">
+                 <t t-call="web_studio.test_report_document"/>
+               </t>
+             </t>
+           </xpath>
+         </data>
+        """)
 
+        doc_arch, studio_arch = get_combined_and_studio_arch(self.main_view_document)
          # Not sure about this one. Due to the absence of relevant branding
          # The entire view is replaced (case "entire_view" in report.py)
-        self.assertXMLEqual(self.main_view_document.arch, """
-            <t t-name="web_studio.test_report_document" class="">
+        self.assertXMLEqual(doc_arch, """
+            <t t-name="web_studio.test_report_document">
                <div>
                  <p t-field="doc.name"/>
                </div>
                <p>edited with odoo editor 2</p>
              </t>
         """)
+        self.assertXMLEqual(studio_arch, """
+        <data>
+          <xpath expr="/t[@t-name='web_studio.test_report_document']" position="replace" mode="inner">
+            <div>
+              <p t-field="doc.name"/>
+            </div>
+            <p>edited with odoo editor 2</p>
+          </xpath>
+        </data>
+        """)
+
         copied_view = get_report_view_copy(self.main_view_document)
         self.assertXMLEqual(original_main_view_doc_arch, copied_view.arch)
         self.assertEqual(copied_view.name, "web_studio_backup__web_studio.test_report_document")
@@ -476,6 +522,16 @@ class TestReportEditorUIUnit(HttpCase):
         self.start_tour(self.tour_url, "web_studio.test_report_reset_archs", login="admin")
         self.assertXMLEqual(self.main_view_document.arch, """<p>from file</p>""")
 
+    def test_report_reset_archs_studio_view(self):
+        self.authenticate("admin", "admin")
+        studio_view = _get_and_write_studio_view(self.main_view_document, {"arch": "<data/>"})
+        self.assertTrue(studio_view.active)
+        self.url_open("/web_studio/reset_report_archs",
+            data=json.dumps({"params": {"report_id": self.report.id}}),
+            headers={"Content-Type": "application/json"}
+        )
+        self.assertFalse(studio_view.active)
+
     def test_print_preview(self):
         self.start_tour(self.tour_url, "web_studio.test_print_preview", login="admin")
 
@@ -496,8 +552,9 @@ class TestReportEditorUIUnit(HttpCase):
         """
 
         self.start_tour(self.tour_url, "web_studio.test_table_rendering", login="admin")
-        self.assertXMLEqual(self.main_view_document.arch, """
-            <t t-name="web_studio.test_report_document" class="">
+        arch, _ = get_combined_and_studio_arch(self.main_view_document)
+        self.assertXMLEqual(arch, """
+            <t t-name="web_studio.test_report_document">
                <p>p edited with odooEditor</p>
                <table class="valid_table">
                  <tbody>
@@ -524,11 +581,14 @@ class TestReportEditorUIUnit(HttpCase):
             </t>
         """
 
-        self.start_tour(self.tour_url[:4] + '?debug=assets' + self.tour_url[4:], "web_studio.test_field_placeholder", login="admin")
-        self.assertXMLEqual(self.main_view.arch, """
+        url = self.tour_url.replace("/web", "/web?debug=assets")
+        self.start_tour(url, "web_studio.test_field_placeholder", login="admin")
+
+        arch, _ = get_combined_and_studio_arch(self.main_view)
+        self.assertXMLEqual(arch, """
             <t t-name="web_studio.test_report">
                <t t-call="web.html_container">
-                 <div class="">
+                 <div>
                    <p><br/>edited with odooEditor</p>
                  </div>
                  <t t-foreach="docs" t-as="doc">
@@ -537,8 +597,10 @@ class TestReportEditorUIUnit(HttpCase):
                </t>
              </t>
         """)
-        self.assertXMLEqual(self.main_view_document.arch, """
-            <t t-name="web_studio.test_report_document" class="">
+
+        arch, _ = get_combined_and_studio_arch(self.main_view_document)
+        self.assertXMLEqual(arch, """
+            <t t-name="web_studio.test_report_document">
                <div>
                  <p t-field="doc.name" title="Name"/>
                </div>
@@ -563,9 +625,13 @@ class TestReportEditorUIUnit(HttpCase):
         studio_views = self.env["ir.ui.view"].search([("key", "=ilike", "studio_customization.%")])
         self.start_tour(self.tour_url, "web_studio.test_add_field_blank_report", login="admin")
         new_view = self.env["ir.ui.view"].search([("key", "=ilike", "studio_customization.%"), ("id", "not in", studio_views.ids), ("name", "like", "document")])
-        self.assertXMLEqual(new_view.arch, """
-            <t t-name="studio_report_document" class="">
-                <div class="page"><span t-field="doc.function">some default value</span><br/>Custo</div>
+
+        new_view_arch, _ = get_combined_and_studio_arch(new_view)
+        self.assertXMLEqual(new_view_arch, """
+            <t t-name="studio_report_document">
+                <div class="page">
+                    <div class="oe_structure"><span t-field="doc.function">some default value</span>Custo</div>
+                </div>
             </t>
         """)
 
@@ -585,17 +651,20 @@ class TestReportEditorUIUnit(HttpCase):
         }
         self.main_view_document.update_field_translations("arch_db", translations)
         self.start_tour(self.tour_url, "web_studio.test_edition_without_lang", login="admin")
-        self.assertXMLEqual(self.main_view_document.arch, """
-            <t t-name="web_studio.test_report_document" class="">
+
+        _, studio_arch = get_combined_and_studio_arch(self.main_view_document)
+
+        self.assertXMLEqual(studio_arch, """
+           <data><xpath expr="/t[@t-name='web_studio.test_report_document']" position="replace" mode="inner">
               <p>original term edited</p>
-            </t>
+            </xpath></data>
         """)
 
         new_translations = self.main_view_document.get_field_translations("arch_db")
         new_translations_values = {k["lang"]: k for k in new_translations[0]}
         self.assertEqual(
             new_translations_values["en_US"]["source"],
-            "original term edited"
+            "original term"
         )
         self.assertEqual(
             new_translations_values["en_US"]["value"],
@@ -603,10 +672,28 @@ class TestReportEditorUIUnit(HttpCase):
         )
         self.assertEqual(
             new_translations_values["fr_FR"]["source"],
-            "original term edited"
+            "original term"
         )
         self.assertEqual(
             new_translations_values["fr_FR"]["value"],
+            "translated term"
+        )
+        studio_translation = _get_and_write_studio_view(self.main_view_document).get_field_translations("arch_db")
+        studio_translation_values = {k["lang"]: k for k in studio_translation[0]}
+        self.assertEqual(
+            studio_translation_values["en_US"]["source"],
+            "original term edited"
+        )
+        self.assertEqual(
+            studio_translation_values["en_US"]["value"],
+            ""
+        )
+        self.assertEqual(
+            studio_translation_values["fr_FR"]["source"],
+            "original term edited"
+        )
+        self.assertEqual(
+            studio_translation_values["fr_FR"]["value"],
             "translated edited term"
         )
 
@@ -694,18 +781,21 @@ class TestReportEditorUIUnit(HttpCase):
 
         self.start_tour(self.tour_url, "web_studio.test_report_edition_binary_field", login="admin")
 
-        self.assertXMLEqual(self.main_view_document.arch, """
-            <t t-name="web_studio.test_report_document" class="">
+        arch, _ = get_combined_and_studio_arch(self.main_view_document)
+        self.assertXMLEqual(arch, """
+            <t t-name="web_studio.test_report_document">
                 <div><p t-field="doc.name"/></div>
                 <p><span t-field="doc.company_id.x_new_file">file default value</span><span t-field="doc.company_id.x_new_image" t-options-widget="\'image\'" t-options-qweb_img_raw_data="1">image default value</span><br/></p>
             </t>
         """)
 
     def test_report_edition_dynamic_table(self):
-        self.start_tour(self.tour_url, "web_studio.test_report_edition_dynamic_table", login="admin")
+        url = self.tour_url.replace("/web", "/web?debug=assets")
+        self.start_tour(url, "web_studio.test_report_edition_dynamic_table", login="admin")
 
-        self.assertXMLEqual(self.main_view_document.arch, """
-            <t t-name="web_studio.test_report_document" class="">
+        arch, _ = get_combined_and_studio_arch(self.main_view_document)
+        self.assertXMLEqual(arch, """
+            <t t-name="web_studio.test_report_document">
                 <div>
                     <p t-field="doc.name"/>
                 </div>
@@ -768,3 +858,375 @@ class TestReportEditorUIUnit(HttpCase):
         self.report.model = dummy.model
         self.report.name = "dummy test"
         self.start_tour(f"/web#action=studio&mode=editor&_action={self.testAction.id}&_tab=reports&menu_id={self.testMenu.id}", "web_studio.test_record_model_differs_from_action", login="admin")
+
+    def test_recursive_t_calls(self):
+        self.authenticate("admin", "admin")
+        self.main_view_document.arch = """
+             <t t-name="web_studio.test_report_document">
+                <div><p t-field="doc.name" /></div>
+                <p><br/></p>
+                <t t-call="web_studio.test_report_document"><div /></t>
+            </t>
+        """
+
+        response = self.url_open(
+            "/web_studio/get_report_qweb",
+            data=json.dumps({"params": {"report_id": self.report.id}}),
+            headers={"Content-Type": "application/json"}
+        )
+
+        qweb_html = response.json()["result"]
+        tree = html_to_xml_tree(qweb_html)
+        _remove_oe_context(tree)
+        tcall = tree.xpath("//t[@t-call='web_studio.test_report_document']")[0]
+        self.assertXMLEqual(etree.tostring(tcall), f"""
+           <t t-call="web_studio.test_report_document" ws-call-key="2" ws-view-id="{self.main_view.id}">
+             <t t-name="web_studio.test_report_document" ws-view-id="{self.main_view_document.id}">
+               <div>
+                 <p t-field="doc.name" oe-expression-readable="Name"/>
+               </div>
+               <p>
+                 <br/>
+               </p>
+               <t t-call="web_studio.test_report_document" ws-call-key="1" ws-view-id="{self.main_view_document.id}">
+                    <div/>
+               </t>
+             </t>
+           </t>
+        """)
+
+    def test_can_have_multiple_times_same_t_call(self):
+        self.authenticate("admin", "admin")
+        self.main_view.arch = """
+            <t t-name="web_studio.test_report">
+                <t t-call="web.html_container">
+                    <div>
+                    <t t-call="web_studio.test_report_document">
+                        <h1/>
+                    </t>
+                    <t t-call="web_studio.test_report_document">
+                        <h2/>
+                    </t>
+                    </div>
+                </t>
+            </t>
+        """
+        self.main_view_document.arch = """<t t-name="web_studio.test_report_document"><t t-out="0" /></t> """
+        response = self.url_open(
+            "/web_studio/get_report_qweb",
+            data=json.dumps({"params": {"report_id": self.report.id}}),
+            headers={"Content-Type": "application/json"}
+        )
+        qweb_html = response.json()["result"]
+        tree = html_to_xml_tree(qweb_html)
+        _remove_oe_context(tree)
+        tcall = tree.xpath("//t[@t-call='web_studio.test_report_document']")
+        self.assertEqual(len(tcall), 2)
+
+        self.assertXMLEqual(etree.tostring(tcall[0]), f"""
+         <t t-call="web_studio.test_report_document" ws-call-key="2" ws-view-id="{self.main_view.id}">
+           <t t-name="web_studio.test_report_document" ws-view-id="{self.main_view_document.id}">
+             <t oe-origin-t-out="0">
+                <t ws-view-id="{self.main_view.id}" ws-call-group-key="1" ws-call-key="2" ws-real-children="1">
+                  <h1/>
+                </t>
+             </t>
+           </t>
+         </t>
+        """)
+        self.assertXMLEqual(etree.tostring(tcall[1]), f"""
+        <t t-call="web_studio.test_report_document" ws-call-key="3" ws-view-id="{self.main_view.id}">
+           <t t-name="web_studio.test_report_document" ws-view-id="{self.main_view_document.id}">
+             <t oe-origin-t-out="0">
+               <t ws-view-id="{self.main_view.id}" ws-call-group-key="1" ws-call-key="3" ws-real-children="1">
+                 <h2/>
+               </t>
+             </t>
+           </t>
+         </t>
+        """)
+
+    def test_remove_branding_on_copy(self):
+        self.start_tour(self.tour_url, "web_studio.test_remove_branding_on_copy", login="admin")
+
+    def test_test_different_view_document_name(self):
+        self.main_view_document_xml_id.name = "test_report_document_1"
+        self.start_tour(self.tour_url, "web_studio.test_different_view_document_name", login="admin")
+
+    def test_formalize_qweb_client_t_call_structure(self):
+        self.authenticate("admin", "admin")
+        html_container = self.env["ir.ui.view"]._get("web.html_container")
+
+        tcalled_0 = self.env["ir.ui.view"].create({
+            'type': 'qweb',
+            'name': 'web_studio.t_call_0',
+            'key': 'web_studio.t_call_0',
+            'arch': """<t t-name="web_studio.t_call_0">
+                    <div class="call_0"><t t-out="0" /></div>
+                </t>"""
+        })
+
+        tcalled_1 = self.env["ir.ui.view"].create({
+            'type': 'qweb',
+            'name': 'web_studio.t_call_1',
+            'key': 'web_studio.t_call_1',
+            'arch': """<t t-name="web_studio.t_call_1">
+                <div class="call_1"><p> call one </p><t t-out="0" /></div>
+            </t>"""
+        })
+
+        self.main_view_document.arch = """
+                <t t-name="web_studio.test_report_document">
+                    <div>
+                        <t t-call="web_studio.t_call_0">
+                            <div>
+                                <p> call zero one </p>
+                                <t t-call="web_studio.t_call_1">
+                                    <p> call zero two </p>
+                                </t>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            """
+        response = self.url_open(
+            "/web_studio/get_report_qweb",
+            data=json.dumps({"params": {"report_id": self.report.id}}),
+            headers={"Content-Type": "application/json"}
+        )
+        qweb_html = response.json()["result"]
+        tree = html_to_xml_tree(qweb_html)
+        _remove_oe_context(tree)
+
+        verification_tree = etree.fromstring(
+        """<div id="wrapwrap" oe-context="{&quot;docs&quot;: {&quot;model&quot;: &quot;res.partner&quot;, &quot;name&quot;: &quot;Contact&quot;, &quot;in_foreach&quot;: false}, &quot;company&quot;: {&quot;model&quot;: &quot;res.company&quot;, &quot;name&quot;: &quot;Companies&quot;, &quot;in_foreach&quot;: false}}">
+           <main>
+             <t ws-was-t-out="1">
+               <t ws-view-id="{html_container.id}" ws-call-group-key="1" ws-call-key="1" ws-real-children="1">
+                 <t ws-was-t-out="1">
+                   <t ws-view-id="{main_view.id}" ws-call-group-key="1" ws-call-key="1" ws-real-children="1">
+                     <div>
+                       <p>
+                         <br/>
+                       </p>
+                     </div>
+                     <t t-foreach="docs" t-as="doc" oe-context="{&quot;docs&quot;: {&quot;model&quot;: &quot;res.partner&quot;, &quot;name&quot;: &quot;Contact&quot;, &quot;in_foreach&quot;: false}, &quot;company&quot;: {&quot;model&quot;: &quot;res.company&quot;, &quot;name&quot;: &quot;Companies&quot;, &quot;in_foreach&quot;: false}, &quot;doc&quot;: {&quot;model&quot;: &quot;res.partner&quot;, &quot;name&quot;: &quot;Contact&quot;, &quot;in_foreach&quot;: true}}">
+                       <t t-call="web_studio.test_report_document" ws-call-key="2" ws-view-id="{main_view.id}">
+                         <t t-name="web_studio.test_report_document" ws-view-id="{main_view_document.id}" oe-context="{&quot;docs&quot;: {&quot;model&quot;: &quot;res.partner&quot;, &quot;name&quot;: &quot;Contact&quot;, &quot;in_foreach&quot;: false}, &quot;company&quot;: {&quot;model&quot;: &quot;res.company&quot;, &quot;name&quot;: &quot;Companies&quot;, &quot;in_foreach&quot;: false}, &quot;doc&quot;: {&quot;model&quot;: &quot;res.partner&quot;, &quot;name&quot;: &quot;Contact&quot;, &quot;in_foreach&quot;: true}}">
+                           <div>
+                             <t t-call="web_studio.t_call_0" ws-call-key="1" ws-view-id="{main_view_document.id}">
+                               <t t-name="web_studio.t_call_0" ws-view-id="{tcalled_0.id}" oe-context="{&quot;docs&quot;: {&quot;model&quot;: &quot;res.partner&quot;, &quot;name&quot;: &quot;Contact&quot;, &quot;in_foreach&quot;: false}, &quot;company&quot;: {&quot;model&quot;: &quot;res.company&quot;, &quot;name&quot;: &quot;Companies&quot;, &quot;in_foreach&quot;: false}, &quot;doc&quot;: {&quot;model&quot;: &quot;res.partner&quot;, &quot;name&quot;: &quot;Contact&quot;, &quot;in_foreach&quot;: true}}">
+                                 <div class="call_0">
+                                   <t ws-was-t-out="1">
+                                     <t ws-view-id="{main_view_document.id}" ws-call-group-key="1" ws-call-key="1" ws-real-children="1">
+                                       <div>
+                                         <p> call zero one </p>
+                                         <t t-call="web_studio.t_call_1" ws-call-key="2" ws-view-id="{main_view_document.id}">
+                                           <t t-name="web_studio.t_call_1" ws-view-id="{tcalled_1.id}" oe-context="{&quot;docs&quot;: {&quot;model&quot;: &quot;res.partner&quot;, &quot;name&quot;: &quot;Contact&quot;, &quot;in_foreach&quot;: false}, &quot;company&quot;: {&quot;model&quot;: &quot;res.company&quot;, &quot;name&quot;: &quot;Companies&quot;, &quot;in_foreach&quot;: false}, &quot;doc&quot;: {&quot;model&quot;: &quot;res.partner&quot;, &quot;name&quot;: &quot;Contact&quot;, &quot;in_foreach&quot;: true}}">
+                                             <div class="call_1">
+                                               <p> call one </p>
+                                               <t ws-was-t-out="1">
+                                                 <t ws-view-id="{main_view_document.id}" ws-call-group-key="1" ws-call-key="2" ws-real-children="1">
+                                                   <p> call zero two </p>
+                                                 </t>
+                                               </t>
+                                             </div>
+                                           </t>
+                                         </t>
+                                       </div>
+                                     </t>
+                                   </t>
+                                 </div>
+                               </t>
+                             </t>
+                           </div>
+                         </t>
+                       </t>
+                     </t>
+                   </t>
+                 </t>
+               </t>
+             </t>
+           </main>
+         </div>""")
+        _remove_oe_context(verification_tree)
+
+        self.assertXMLEqual(
+            etree.tostring(tree),
+            etree.tounicode(tree).format(
+                main_view=self.main_view, main_view_document=self.main_view_document, tcalled_0=tcalled_0, tcalled_1=tcalled_1, html_container=html_container
+            )
+        )
+
+    def test_edit_main_arch(self):
+        self.env["ir.ui.view"].create({
+            'type': 'qweb',
+            'name': 'web_studio.t_call_0',
+            'key': 'web_studio.t_call_0',
+            'arch': """<t t-name="web_studio.t_call_0">
+                    <div class="call_0"><t t-out="0" /></div>
+                </t>"""
+        })
+
+        self.main_view_document.arch = """
+            <t t-name="web_studio.test_report_document">
+                <div class="outside-t-call">outside</div>
+                <t t-call="web_studio.t_call_0">
+                    <t t-set="somevar" t-value="'someValue'" />
+                    <div class="in-t-call">inside</div>
+                </t>
+            </t>
+        """
+
+        self.start_tour(self.tour_url, "web_studio.test_edit_main_arch", login="admin")
+
+        arch, studio_arch = get_combined_and_studio_arch(self.main_view_document)
+        self.assertXMLEqual(arch, """
+         <t t-name="web_studio.test_report_document">
+           <div class="added"/>
+           <div class="outside-t-call">outside</div>
+           <t t-call="web_studio.t_call_0">
+             <t t-set="somevar" t-value="'someValue'"/>
+             <div class="in-t-call">inside</div>
+           </t>
+         </t>
+        """)
+        self.assertXMLEqual(studio_arch, """
+        <data>
+           <xpath expr="/t[@t-name='web_studio.test_report_document']" position="replace" mode="inner">
+             <div class="added"/>
+             <div class="outside-t-call">outside</div>
+             <t t-call="web_studio.t_call_0">
+               <t t-set="somevar" t-value="'someValue'"/>
+               <div class="in-t-call">inside</div>
+             </t>
+           </xpath>
+         </data>
+        """)
+
+    def test_edit_in_t_call(self):
+        self.env["ir.ui.view"].create({
+            'type': 'qweb',
+            'name': 'web_studio.t_call_0',
+            'key': 'web_studio.t_call_0',
+            'arch': """<t t-name="web_studio.t_call_0">
+                    <div class="call_0"><t t-out="0" /></div>
+                </t>"""
+        })
+
+        self.main_view_document.arch = """
+            <t t-name="web_studio.test_report_document">
+                <div class="outside-t-call">outside</div>
+                <t t-call="web_studio.t_call_0">
+                    <t t-set="somevar" t-value="'someValue'" />
+                    <div class="in-t-call">inside</div>
+                </t>
+            </t>
+        """
+
+        self.start_tour(self.tour_url, "web_studio.test_edit_in_t_call", login="admin")
+
+        arch, studio_arch = get_combined_and_studio_arch(self.main_view_document)
+        self.assertXMLEqual(arch, """
+         <t t-name="web_studio.test_report_document">
+           <div class="outside-t-call">outside</div>
+           <t t-call="web_studio.t_call_0">
+             <t t-set="somevar" t-value="'someValue'"/>
+             <div class="added"/>
+             <div class="in-t-call">inside</div>
+           </t>
+         </t>
+        """)
+        self.assertXMLEqual(studio_arch, """
+        <data>
+           <xpath expr="/t[@t-name='web_studio.test_report_document']" position="replace" mode="inner">
+             <div class="outside-t-call">outside</div>
+             <t t-call="web_studio.t_call_0">
+               <t t-set="somevar" t-value="'someValue'"/>
+               <div class="added"/>
+               <div class="in-t-call">inside</div>
+             </t>
+           </xpath>
+         </data>
+        """)
+
+    def test_edit_main_and_in_t_call(self):
+        self.env["ir.ui.view"].create({
+            'type': 'qweb',
+            'name': 'web_studio.t_call_0',
+            'key': 'web_studio.t_call_0',
+            'arch': """<t t-name="web_studio.t_call_0">
+                    <div class="call_0"><t t-out="0" /></div>
+                </t>"""
+        })
+
+        self.main_view_document.arch = """
+            <t t-name="web_studio.test_report_document">
+                <div class="outside-t-call">outside</div>
+                <t t-call="web_studio.t_call_0">
+                    <t t-set="somevar" t-value="'someValue'" />
+                    <div class="in-t-call">inside</div>
+                </t>
+            </t>
+        """
+
+        self.start_tour(self.tour_url, "web_studio.test_edit_main_and_in_t_call", login="admin")
+
+        arch, studio_arch = get_combined_and_studio_arch(self.main_view_document)
+        self.assertXMLEqual(arch, """
+         <t t-name="web_studio.test_report_document">
+           <div class="added0"/>
+           <div class="outside-t-call">outside</div>
+           <t t-call="web_studio.t_call_0">
+             <t t-set="somevar" t-value="'someValue'"/>
+             <div class="added1"/>
+             <div class="in-t-call">inside</div>
+           </t>
+         </t>
+        """)
+        self.assertXMLEqual(studio_arch, """
+        <data>
+           <xpath expr="/t[@t-name='web_studio.test_report_document']" position="replace" mode="inner">
+             <div class="added0"/>
+             <div class="outside-t-call">outside</div>
+             <t t-call="web_studio.t_call_0">
+               <t t-set="somevar" t-value="'someValue'"/>
+               <div class="added1"/>
+               <div class="in-t-call">inside</div>
+             </t>
+           </xpath>
+         </data>
+        """)
+
+    def test_image_crop(self):
+        attach = self.env["ir.attachment"].create({
+            "name": "test image crop",
+            "datas": "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAF0lEQVR4nGJxKFrEwMDAxAAGgAAAAP//D+IBWx9K7TUAAAAASUVORK5CYII="
+        })
+        self.main_view_document.arch = f"""
+            <t t-name="test_main_doc">
+                <img class="myimg"
+                    data-original-id="{attach.id}"
+                    data-original-src="/web/image/{attach.id}"
+                    src="data:image/png;base64,{attach.datas.decode("utf-8")}"/>
+            </t>
+        """
+
+        self.start_tour(self.tour_url, "web_studio.test_image_crop", login="admin")
+
+    def test_add_non_searchable_field(self):
+        self.start_tour(self.tour_url, "web_studio.test_add_non_searchable_field", login="admin")
+        arch, _ = get_combined_and_studio_arch(self.main_view_document)
+        self.assertXMLEqual(arch, """
+            <t t-name="web_studio.test_report_document">
+                <div><p t-field="doc.name"/></div>
+                <p>
+                    <span
+                        t-field="doc.avatar_1024"
+                        t-options-widget="'image'"
+                        t-options-qweb_img_raw_data="1"
+                    >file default value</span>
+                    <br/>
+                </p>
+            </t>
+        """)

@@ -68,25 +68,25 @@ SPANISH_PROVINCES_REPORT_CODES = {
 }
 
 MOD_347_CUSTOM_ENGINES_DOMAINS = {
-    'l10n_es_mod347_threshold_insurance_bought': [
+    '_report_custom_engine_threshold_insurance_bought': [
         ('move_id.l10n_es_reports_mod347_invoice_type', '=', 'insurance'),
         ('move_id.move_type', 'in', ('in_invoice', 'in_refund')),
         ('account_type', '=', 'liability_payable'),
     ],
 
-    'l10n_es_mod347_threshold_regular_bought': [
+    '_report_custom_engine_threshold_regular_bought': [
         ('move_id.l10n_es_reports_mod347_invoice_type', '=', 'regular'),
         ('move_id.move_type', 'in', ('in_invoice', 'in_refund')),
         ('account_type', '=', 'liability_payable'),
     ],
 
-    'l10n_es_mod347_threshold_regular_sold': [
+    '_report_custom_engine_threshold_regular_sold': [
         ('move_id.l10n_es_reports_mod347_invoice_type', '=', 'regular'),
         ('move_id.move_type', 'in', ('out_invoice', 'out_refund')),
         ('account_type', '=', 'asset_receivable'),
     ],
 
-    'l10n_es_mod347_threshold_all_operations': [
+    '_report_custom_engine_threshold_all_operations': [
         ('move_id.l10n_es_reports_mod347_invoice_type', '!=', None),
         ('account_type', 'in', ('asset_receivable', 'liability_payable'))
     ],
@@ -831,19 +831,19 @@ class SpanishMod347TaxReportCustomHandler(models.AbstractModel):
         super()._append_boe_button(options, 347)
 
     def _report_custom_engine_threshold_insurance_bought(self, expressions, options, date_scope, current_groupby, next_groupby, offset=0, limit=None, warnings=None):
-        domain = MOD_347_CUSTOM_ENGINES_DOMAINS['l10n_es_mod347_threshold_insurance_bought']
+        domain = MOD_347_CUSTOM_ENGINES_DOMAINS['_report_custom_engine_threshold_insurance_bought']
         return self._custom_threshold_common(domain, expressions, options, date_scope, current_groupby, next_groupby, offset=offset, limit=limit)
 
     def _report_custom_engine_threshold_regular_bought(self, expressions, options, date_scope, current_groupby, next_groupby, offset=0, limit=None, warnings=None):
-        domain = MOD_347_CUSTOM_ENGINES_DOMAINS['l10n_es_mod347_threshold_regular_bought']
+        domain = MOD_347_CUSTOM_ENGINES_DOMAINS['_report_custom_engine_threshold_regular_bought']
         return self._custom_threshold_common(domain, expressions, options, date_scope, current_groupby, next_groupby, offset=offset, limit=limit)
 
     def _report_custom_engine_threshold_regular_sold(self, expressions, options, date_scope, current_groupby, next_groupby, offset=0, limit=None, warnings=None):
-        domain = MOD_347_CUSTOM_ENGINES_DOMAINS['l10n_es_mod347_threshold_regular_sold']
+        domain = MOD_347_CUSTOM_ENGINES_DOMAINS['_report_custom_engine_threshold_regular_sold']
         return self._custom_threshold_common(domain, expressions, options, date_scope, current_groupby, next_groupby, offset=offset, limit=limit)
 
     def _report_custom_engine_threshold_all_operations(self, expressions, options, date_scope, current_groupby, next_groupby, offset=0, limit=None, warnings=None):
-        domain = MOD_347_CUSTOM_ENGINES_DOMAINS['l10n_es_mod347_threshold_all_operations']
+        domain = MOD_347_CUSTOM_ENGINES_DOMAINS['_report_custom_engine_threshold_all_operations']
         return self._custom_threshold_common(domain, expressions, options, date_scope, current_groupby, next_groupby, offset=offset, limit=limit)
 
     def _custom_threshold_common(self, domain, expressions, options, date_scope, current_groupby, next_groupby, offset=0, limit=None):

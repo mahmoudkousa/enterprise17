@@ -270,8 +270,10 @@ QUnit.module("Studio Navbar > AppMenuEditor", (hooks) => {
         });
         assert.verifySteps(["/web/webclient/load_menus"]);
         await click(target, ".o_web_edit_menu");
+        assert.containsOnce(target, ".o_dialog");
         // open the dialog to edit the menu
         await click(target.querySelector(".o-web-studio-interactive-list-edit-item"));
+        assert.containsN(target, ".o_dialog", 2);
         assert.containsOnce(target, ".o_dialog .o_form_view");
 
         assert.verifySteps([
@@ -285,6 +287,7 @@ QUnit.module("Studio Navbar > AppMenuEditor", (hooks) => {
             "the edited menu should be App2"
         );
         await click(target, ".o_form_button_save");
+        assert.containsOnce(target, ".o_dialog");
         assert.verifySteps(["/web/webclient/load_menus"]);
 
         // delete the last menu

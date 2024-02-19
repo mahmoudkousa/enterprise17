@@ -47,10 +47,12 @@
                         <t t-set="unique" t-value="record.data.checksum ? record.data.checksum.slice(-8) : ''"/>
                         <img t-if="!record.isPdf()" class="o_preview_available o_documents_image_background"
                              t-on-click.stop.prevent="() => this.openPreview(record)"
+                             draggable="false"
                              t-attf-src="/documents/image/{{record.resId}}/{{size}}?unique={{unique}}"
                              t-att-title="record.data.name"/>
                         <img t-else="" class="o_preview_available o_documents_image_background"
                              t-on-click.stop.prevent="() => this.openPreview(record)"
+                             draggable="false"
                              t-attf-src="/documents/image/{{record.resId}}/{{size}}?field=thumbnail&amp;unique={{unique}}"
                              t-att-title="record.data.name"/>
                     </t>

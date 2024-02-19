@@ -425,6 +425,7 @@ export class DocumentsInspector extends Component {
     async onUnarchive() {
         const record = this.props.documents[0];
         await toggleArchive(record.model, record.resModel, this.resIds, false);
+        this.env.documentsView.bus.trigger("documents-close-preview");
         await this._reloadSearchModel();
     }
 
@@ -508,16 +509,14 @@ export class DocumentsInspector extends Component {
     }
 
     async removeTag(tag) {
-        const record = this.props.documents[0];
-        await record.data.tag_ids.forget({ resId: tag.id });
-        record.model.root.multiSave(record);
+        const resIds = this.props.documents.map((r) => r.resId);
+        await this.env.searchModel.updateRecordTagId(resIds, tag.id, 3);
     }
 
     async addTag(tag, { input }) {
-        const record = this.props.documents[0];
-        // tag.value is the tag id
-        await record.data.tag_ids.linkTo(tag.value, tag);
-        record.model.root.multiSave(record);
+        const resIds = this.props.documents.map((r) => r.resId);
+        await this.env.searchModel.updateRecordTagId(resIds, tag.value);
+
         input.focus();
     }
 

@@ -1651,6 +1651,23 @@ class PropertiesCase(TestPropertiesMixin):
             values = message.read(['attributes'])[0]['attributes'][0]
         self.assertEqual(values['value'], (tag.id, 'Test Tag'))
 
+    def test_properties_inherits(self):
+        email = self.env['test_new_api.emailmessage'].create({
+            'discussion': self.discussion_1.id,
+            'attributes': [{
+                'name': 'discussion_color_code',
+                'type': 'char',
+                'string': 'Color Code',
+                'default': 'blue',
+                'value': 'red',
+            }],
+        })
+
+        values = email.read(['attributes'])
+        self.assertEqual(values[0]['attributes'][0]['value'], 'red')
+        values = email.message.read(['attributes'])
+        self.assertEqual(values[0]['attributes'][0]['value'], 'red')
+
 
 class PropertiesSearchCase(TestPropertiesMixin):
     @classmethod
@@ -2013,6 +2030,11 @@ class PropertiesSearchCase(TestPropertiesMixin):
             for order in orders:
                 with self.assertRaises(UserError), self.assertQueryCount(0):
                     self.env['test_new_api.message'].search(domain=[], order=order)
+
+    @mute_logger('odoo.fields')
+    def test_properties_field_search(self):
+        with self.assertRaises(ValueError):
+            self.env['test_new_api.message'].search([('attributes', '=', '"Test"')])
 
 
 class PropertiesGroupByCase(TestPropertiesMixin):

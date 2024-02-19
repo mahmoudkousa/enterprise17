@@ -20,22 +20,20 @@
             <xpath expr="//*[name()='cfdi:Comprobante']" position="inside">
                 <t t-if="comercio_exterior">
                     <cfdi:Complemento xmlns:cfdi="http://www.sat.gob.mx/cfd/4">
-                        <cce11:ComercioExterior
-                            xmlns:cce11="http://www.sat.gob.mx/ComercioExterior11"
-                            Version="1.1"
-                            TipoOperacion="2"
+                        <cce20:ComercioExterior
+                            xmlns:cce20="http://www.sat.gob.mx/ComercioExterior20"
+                            Version="2.0"
                             ClaveDePedimento="A1"
                             t-att-CertificadoOrigen="comercio_exterior['certificado_origen']"
                             t-att-NumCertificadoOrigen="comercio_exterior['num_certificado_origen']"
                             t-att-NumeroExportadorConfiable="comercio_exterior['numero_exportador_confiable']"
                             t-att-Incoterm="comercio_exterior['incoterm']"
-                            Subdivision="0"
                             t-att-Observaciones="format_string(comercio_exterior['observaciones'], 300)"
                             t-att-TipoCambioUSD="format_float(comercio_exterior['tipo_cambio_usd'], precision=6)"
                             t-att-TotalUSD="format_float(comercio_exterior['total_usd'], precision=2)">
-                            <cce11:Emisor
+                            <cce20:Emisor
                                 t-att-Curp="comercio_exterior['emisor']['curp']">
-                                <cce11:Domicilio
+                                <cce20:Domicilio
                                     t-att-Calle="format_string(comercio_exterior['emisor']['calle'], 100)"
                                     t-att-NumeroExterior="format_string(comercio_exterior['emisor']['numero_exterior'], 100)"
                                     t-att-NumeroInterior="format_string(comercio_exterior['emisor']['numero_interior'], 100)"
@@ -45,10 +43,10 @@
                                     t-att-Estado="comercio_exterior['emisor']['estado']"
                                     t-att-Pais="comercio_exterior['emisor']['pais']"
                                     t-att-CodigoPostal="comercio_exterior['emisor']['codigo_postal']"/>
-                            </cce11:Emisor>
-                            <cce11:Receptor
+                            </cce20:Emisor>
+                            <cce20:Receptor
                                 t-att-NumRegIdTrib="comercio_exterior['receptor'].get('num_reg_id_trib')">
-                                <cce11:Domicilio
+                                <cce20:Domicilio
                                     t-att-Calle="format_string(comercio_exterior['receptor']['calle'], 100)"
                                     t-att-NumeroExterior="format_string(comercio_exterior['receptor']['numero_exterior'], 100)"
                                     t-att-NumeroInterior="format_string(comercio_exterior['receptor']['numero_interior'], 100)"
@@ -58,12 +56,12 @@
                                     t-att-Estado="comercio_exterior['receptor']['estado']"
                                     t-att-Pais="comercio_exterior['receptor']['pais']"
                                     t-att-CodigoPostal="comercio_exterior['receptor']['codigo_postal']"/>
-                            </cce11:Receptor>
+                            </cce20:Receptor>
                             <t t-if="comercio_exterior.get('destinario')">
-                                <cce11:Destinatario
+                                <cce20:Destinatario
                                     t-att-NumRegIdTrib="comercio_exterior['destinario'].get('num_reg_id_trib')"
                                     t-att-Nombre="comercio_exterior['destinario']['nombre']">
-                                    <cce11:Domicilio
+                                    <cce20:Domicilio
                                         t-att-Calle="format_string(comercio_exterior['destinario']['calle'], 100)"
                                         t-att-NumeroExterior="format_string(comercio_exterior['destinario']['numero_exterior'], 100)"
                                         t-att-NumeroInterior="format_string(comercio_exterior['destinario']['numero_interior'], 100)"
@@ -73,21 +71,21 @@
                                         t-att-Estado="comercio_exterior['destinario']['estado']"
                                         t-att-Pais="comercio_exterior['destinario']['pais']"
                                         t-att-CodigoPostal="comercio_exterior['destinario']['codigo_postal']"/>
-                                </cce11:Destinatario>
+                                </cce20:Destinatario>
                             </t>
-                            <cce11:Mercancias>
+                            <cce20:Mercancias>
                                 <t t-foreach="comercio_exterior['mercancia_list']" t-as="mercancia">
-                                    <cce11:Mercancia
+                                    <cce20:Mercancia
                                         t-att-NoIdentificacion="format_string(mercancia['no_identificacion'], 100)"
                                         t-att-FraccionArancelaria="mercancia['fraccion_arancelaria']"
                                         t-att-CantidadAduana="format_float(mercancia['cantidad_aduana'], precision=3)"
                                         t-att-UnidadAduana="mercancia['unidad_aduana']"
-                                        t-att-ValorUnitarioAduana="format_float(mercancia['valor_unitario_udana'], precision=2)"
-                                        t-att-ValorDolares="format_float(mercancia['valor_dolares'], precision=2)">
-                                    </cce11:Mercancia>
+                                        t-att-ValorUnitarioAduana="format_float(mercancia['valor_unitario_udana'], precision=6)"
+                                        t-att-ValorDolares="format_float(mercancia['valor_dolares'], precision=4)">
+                                    </cce20:Mercancia>
                                 </t>
-                            </cce11:Mercancias>
-                       </cce11:ComercioExterior>
+                            </cce20:Mercancias>
+                       </cce20:ComercioExterior>
                     </cfdi:Complemento>
                 </t>
             </xpath>

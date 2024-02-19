@@ -2,6 +2,8 @@
 /* global OdooDeviceUtility */
 
 import { uniqueId } from "@web/core/utils/functions";
+import { browser } from "@web/core/browser/browser";
+import { parseHash } from "@web/core/browser/router_service";
 
 var available = typeof OdooDeviceUtility !== 'undefined';
 var DeviceUtility;
@@ -64,8 +66,8 @@ plugins.forEach((plugin) => {
  */
 if (methods.hashChange) {
     var currentHash;
-    $(window).bind('hashchange', function (event) {
-        var hash = event.getState();
+    browser.addEventListener('hashchange', function () {
+        const hash = parseHash(browser.location.hash);
         if (JSON.stringify(currentHash) !== JSON.stringify(hash)) {
             methods.hashChange(hash);
         }

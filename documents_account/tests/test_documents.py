@@ -5,39 +5,41 @@ import base64
 from odoo.tests import Form
 
 from odoo.exceptions import UserError
-from odoo.tests.common import tagged, TransactionCase
+from odoo.tests.common import tagged
+from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
 GIF = b"R0lGODdhAQABAIAAAP///////ywAAAAAAQABAAACAkQBADs="
 TEXT = base64.b64encode(bytes("workflow bridge account", 'utf-8'))
 
 
 @tagged('post_install', '-at_install', 'test_document_bridge')
-class TestCaseDocumentsBridgeAccount(TransactionCase):
+class TestCaseDocumentsBridgeAccount(AccountTestInvoicingCommon):
 
-    def setUp(self):
-        super(TestCaseDocumentsBridgeAccount, self).setUp()
-        self.folder_a = self.env['documents.folder'].create({
+    @classmethod
+    def setUpClass(cls, chart_template_ref=None):
+        super().setUpClass(chart_template_ref=chart_template_ref)
+        cls.folder_a = cls.env['documents.folder'].create({
             'name': 'folder A',
         })
-        self.folder_a_a = self.env['documents.folder'].create({
+        cls.folder_a_a = cls.env['documents.folder'].create({
             'name': 'folder A - A',
-            'parent_folder_id': self.folder_a.id,
+            'parent_folder_id': cls.folder_a.id,
         })
-        self.document_txt = self.env['documents.document'].create({
+        cls.document_txt = cls.env['documents.document'].create({
             'datas': TEXT,
             'name': 'file.txt',
             'mimetype': 'text/plain',
-            'folder_id': self.folder_a_a.id,
+            'folder_id': cls.folder_a_a.id,
         })
-        self.document_gif = self.env['documents.document'].create({
+        cls.document_gif = cls.env['documents.document'].create({
             'datas': GIF,
             'name': 'file.gif',
             'mimetype': 'image/gif',
-            'folder_id': self.folder_a.id,
+            'folder_id': cls.folder_a.id,
         })
 
-        self.workflow_rule_vendor_bill = self.env['documents.workflow.rule'].create({
-            'domain_folder_id': self.folder_a.id,
+        cls.workflow_rule_vendor_bill = cls.env['documents.workflow.rule'].create({
+            'domain_folder_id': cls.folder_a.id,
             'name': 'workflow rule create vendor bill on f_a',
             'create_model': 'account.move.in_invoice',
         })
@@ -210,6 +212,7 @@ class TestCaseDocumentsBridgeAccount(TransactionCase):
 
     def test_workflow_create_misc_entry(self):
         misc_entry_rule = self.env.ref('documents_account.misc_entry_rule')
+        misc_entry_rule.journal_id = misc_entry_rule.suitable_journal_ids[0]
         misc_entry_action = misc_entry_rule.apply_actions([self.document_txt.id, self.document_gif.id])
         move = self.env['account.move'].browse(self.document_txt.res_id)
         self.assertEqual(misc_entry_action.get('res_model'), 'account.move')
@@ -240,7 +243,9 @@ class TestCaseDocumentsBridgeAccount(TransactionCase):
         self.assertTrue(move.journal_id in vendor_receipt_rule.suitable_journal_ids)
 
     def test_workflow_rule_form_journal(self):
-        with Form(self.env.ref('documents_account.vendor_bill_rule_financial')) as rule:
+        rule_financial = self.env.ref('documents_account.vendor_bill_rule_financial')
+        rule_financial.journal_id = rule_financial.suitable_journal_ids[0]
+        with Form(rule_financial) as rule:
             # our accounting action has a journal_id
             self.assertTrue(rule.journal_id)
 

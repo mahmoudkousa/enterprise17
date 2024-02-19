@@ -10,17 +10,18 @@ from uuid import uuid4
 from unittest.mock import patch
 
 from odoo.tests.common import HttpCase, tagged, get_db_name
+from odoo.addons.base.tests.common import HttpCaseWithUserDemo
 from odoo.tools import config, mute_logger
 
 
 @tagged("-at_install", "post_install")
-class MobileRoutesTest(HttpCase):
+class MobileRoutesTest(HttpCaseWithUserDemo):
     """
     This test suite is used to request the routes used by the mobile applications (Android & iOS)
     """
 
     def setUp(self):
-        super(MobileRoutesTest, self).setUp()
+        super().setUp()
         self.headers = {
             "Content-Type": "application/json",
         }
@@ -135,6 +136,7 @@ class MobileRoutesTest(HttpCase):
         This request is used to retrieve the user's picture
         """
         self.authenticate("demo", "demo")
+        self.user_demo.image_1920 = b'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNgYGAAAAAEAAH2FzhVAAAAAElFTkSuQmCC'
         response = self.url_open("/web/image?model=res.users&field=image_medium&id=%s" % self.session.uid)
         self.assertEqual(response.status_code, 200)
         avatar = Image.open(BytesIO(response.content))

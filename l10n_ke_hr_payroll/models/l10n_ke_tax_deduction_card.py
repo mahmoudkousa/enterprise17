@@ -72,6 +72,7 @@ class L10nKeTaxDeductionCard(models.Model):
                     'insurance_relief': 0,
                     'paye_tax': 0,
                 } for i in range(13)],  # one line per month + one line stating the total
+                'year': int(self.year),
             } for employee in employees
         }
 

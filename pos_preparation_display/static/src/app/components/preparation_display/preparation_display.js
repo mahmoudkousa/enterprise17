@@ -2,6 +2,7 @@
 import { Category } from "@pos_preparation_display/app/components/category/category";
 import { Stages } from "@pos_preparation_display/app/components/stages/stages";
 import { Order } from "@pos_preparation_display/app/components/order/order";
+import { MainComponentsContainer } from "@web/core/main_components_container";
 import { usePreparationDisplay } from "@pos_preparation_display/app/preparation_display_service";
 import { Component, onPatched, useState } from "@odoo/owl";
 
@@ -15,7 +16,7 @@ export class PreparationDisplay extends Component {
         this.onNextPatch = new Set();
         this.state = useState({
             isMenuOpened: false,
-        })
+        });
 
         onPatched(() => {
             for (const cb of this.onNextPatch) {
@@ -86,5 +87,5 @@ export class PreparationDisplay extends Component {
     }
 }
 
-PreparationDisplay.components = { Category, Stages, Order };
+PreparationDisplay.components = { Category, Stages, Order, MainComponentsContainer };
 PreparationDisplay.template = `pos_preparation_display.PreparationDisplay`;

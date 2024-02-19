@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from odoo.addons.account_accountant.tests.test_bank_rec_widget_common import TestBankRecWidgetCommon
-from odoo.exceptions import UserError
 from odoo.tests import tagged
 from odoo.tools import html2plaintext
 from odoo import fields, Command
@@ -8,6 +7,7 @@ from odoo import fields, Command
 from freezegun import freeze_time
 from unittest.mock import patch
 import re
+
 
 @tagged('post_install', '-at_install')
 class TestBankRecWidget(TestBankRecWidgetCommon):
@@ -59,6 +59,18 @@ class TestBankRecWidget(TestBankRecWidgetCommon):
         })
         self.assertEqual(st_line._retrieve_partner(), self.env['res.partner'])
 
+    def test_retrieve_partner_from_account_number_in_other_company(self):
+        st_line = self._create_st_line(1000.0, partner_id=None, account_number="014 474 8555")
+        self.env['res.partner.bank'].create({
+            'acc_number': '0144748555',
+            'partner_id': self.partner_a.id,
+        })
+
+        # Bank account is owned by another company.
+        new_company = self.env['res.company'].create({'name': "test_retrieve_partner_from_account_number_in_other_company"})
+        self.partner_a.company_id = new_company
+        self.assertEqual(st_line._retrieve_partner(), self.env['res.partner'])
+
     def test_retrieve_partner_from_partner_name(self):
         """ Ensure the partner having a name fitting exactly the 'partner_name' is retrieved first.
         This test create two partners that will be ordered in the lexicographic order when performing
@@ -76,6 +88,29 @@ class TestBankRecWidget(TestBankRecWidgetCommon):
 
         st_line = self._create_st_line(1000.0, partner_id=None, partner_name="Turlututu")
         self.assertEqual(st_line._retrieve_partner(), partner_b)
+
+    def test_retrieve_partner_suggested_account_from_rank(self):
+        """ Ensure a retrieved partner is proposing his receivable/payable according his customer/supplier rank. """
+        partner = self.env['res.partner'].create({'name': "turlututu"})
+        rec_account_id = partner.property_account_receivable_id.id
+        pay_account_id = partner.property_account_payable_id.id
+
+        st_line = self._create_st_line(1000.0, partner_id=None, partner_name="turlututu")
+        liq_account_id = st_line.journal_id.default_account_id.id
+        wizard = self.env['bank.rec.widget'].with_context(default_st_line_id=st_line.id).new({})
+        self.assertRecordValues(wizard.line_ids, [
+            # pylint: disable=C0326
+            {'flag': 'liquidity',     'account_id': liq_account_id, 'balance': 1000.0},
+            {'flag': 'auto_balance',  'account_id': rec_account_id, 'balance': -1000.0},
+        ])
+
+        partner._increase_rank('supplier_rank', 1)
+        wizard = self.env['bank.rec.widget'].with_context(default_st_line_id=st_line.id).new({})
+        self.assertRecordValues(wizard.line_ids, [
+            # pylint: disable=C0326
+            {'flag': 'liquidity',     'account_id': liq_account_id, 'balance': 1000.0},
+            {'flag': 'auto_balance',  'account_id': pay_account_id, 'balance': -1000.0},
+        ])
 
     def test_res_partner_bank_find_create_when_archived(self):
         """ Test we don't get the "The combination Account Number/Partner must be unique." error with archived
@@ -460,6 +495,118 @@ class TestBankRecWidget(TestBankRecWidgetCommon):
             {'account_id': inv_line_3.account_id.id,    'amount_currency': 0.0, 'currency_id': foreign_currency.id, 'balance': 100.0,   'reconciled': True},
             {'account_id': income_exchange_account.id,  'amount_currency': 0.0, 'currency_id': foreign_currency.id, 'balance': -100.0,  'reconciled': False},
         ])
+
+    def test_validation_foreign_curr_st_line_comp_curr_payment_partial_exchange_difference(self):
+        comp_curr = self.env.company.currency_id
+        foreign_curr = self.currency_data['currency']
+
+        st_line = self._create_st_line(
+            650.0,
+            date='2017-01-01',
+            foreign_currency_id=foreign_curr.id,
+            amount_currency=800,
+        )
+
+        payment = self.env['account.payment'].create({
+            'partner_id': self.partner_a.id,
+            'payment_type': 'inbound',
+            'partner_type': 'customer',
+            'date': '2017-01-01',
+            'amount': 725.0,
+        })
+        payment.action_post()
+        pay_line, _counterpart_lines, _writeoff_lines = payment._seek_for_lines()
+
+        wizard = self.env['bank.rec.widget'].with_context(default_st_line_id=st_line.id).new({})
+        wizard._action_add_new_amls(pay_line)
+
+        self.assertRecordValues(wizard.line_ids, [
+            # pylint: disable=C0326
+            {'flag': 'liquidity',       'amount_currency': 650.0,       'currency_id': comp_curr.id,        'balance': 650.0},
+            {'flag': 'new_aml',         'amount_currency': -650.0,      'currency_id': comp_curr.id,        'balance': -650.0},
+        ])
+
+        # Switch to a full reconciliation.
+        line = wizard.line_ids.filtered(lambda x: x.flag == 'new_aml')
+        wizard._js_action_mount_line_in_edit(line.index)
+        wizard._js_action_apply_line_suggestion(line.index)
+
+        # 725 * 800 / 650 = 892.308
+        self.assertRecordValues(wizard.line_ids, [
+            # pylint: disable=C0326
+            {'flag': 'liquidity',       'amount_currency': 650.0,       'currency_id': comp_curr.id,        'balance': 650.0},
+            {'flag': 'new_aml',         'amount_currency': -725.0,      'currency_id': comp_curr.id,        'balance': -725.0},
+            {'flag': 'auto_balance',    'amount_currency': 92.308,      'currency_id': foreign_curr.id,     'balance': 75.0},
+        ])
+
+        # Switch to a partial reconciliation.
+        wizard._js_action_apply_line_suggestion(line.index)
+
+        self.assertRecordValues(wizard.line_ids, [
+            # pylint: disable=C0326
+            {'flag': 'liquidity',       'amount_currency': 650.0,       'currency_id': comp_curr.id,        'balance': 650.0},
+            {'flag': 'new_aml',         'amount_currency': -650.0,      'currency_id': comp_curr.id,        'balance': -650.0},
+        ])
+
+        wizard._action_validate()
+        self.assertRecordValues(pay_line, [{'amount_residual': 75.0}])
+
+    def test_validation_remove_exchange_difference(self):
+        """ Test the case when the foreign currency is missing on the statement line.
+        In that case, the user can remove the exchange difference in order to fully reconcile both items without additional
+        write-off/exchange difference.
+        """
+        # 1200.0 comp_curr = 2400.0 foreign_curr in 2017 (rate 1:2)
+        st_line = self._create_st_line(
+            1200.0,
+            date='2017-01-01',
+        )
+        # 1200.0 comp_curr = 3600.0 foreign_curr in 2016 (rate 1:3)
+        inv_line = self._create_invoice_line(
+            'out_invoice',
+            currency_id=self.currency_data['currency'].id,
+            invoice_date='2016-01-01',
+            invoice_line_ids=[{'price_unit': 3600.0}],
+        )
+
+        wizard = self.env['bank.rec.widget'].with_context(default_st_line_id=st_line.id).new({})
+        wizard._action_add_new_amls(inv_line)
+        self.assertRecordValues(wizard.line_ids, [
+            # pylint: disable=C0326
+            {'flag': 'liquidity',       'amount_currency': 1200.0,      'currency_id': self.company_data['currency'].id,    'balance': 1200.0},
+            {'flag': 'new_aml',         'amount_currency': -2400.0,     'currency_id': self.currency_data['currency'].id,   'balance': -800.0},
+            {'flag': 'exchange_diff',   'amount_currency': 0.0,         'currency_id': self.currency_data['currency'].id,   'balance': -400.0},
+        ])
+        self.assertRecordValues(wizard, [{'state': 'valid'}])
+
+        # Remove the partial.
+        line_index = wizard.line_ids.filtered(lambda x: x.flag == 'new_aml').index
+        wizard._js_action_mount_line_in_edit(line_index)
+        wizard._js_action_apply_line_suggestion(line_index)
+        self.assertRecordValues(wizard.line_ids, [
+            # pylint: disable=C0326
+            {'flag': 'liquidity',       'amount_currency': 1200.0,      'currency_id': self.company_data['currency'].id,    'balance': 1200.0},
+            {'flag': 'new_aml',         'amount_currency': -3600.0,     'currency_id': self.currency_data['currency'].id,   'balance': -1200.0},
+            {'flag': 'exchange_diff',   'amount_currency': 0.0,         'currency_id': self.currency_data['currency'].id,   'balance': -600.0},
+            {'flag': 'auto_balance',    'amount_currency': 600.0,       'currency_id': self.company_data['currency'].id,    'balance': 600.0},
+        ])
+
+        exchange_diff_index = wizard.line_ids.filtered(lambda x: x.flag == 'exchange_diff').index
+        wizard._js_action_remove_line(exchange_diff_index)
+        self.assertRecordValues(wizard.line_ids, [
+            # pylint: disable=C0326
+            {'flag': 'liquidity',       'amount_currency': 1200.0,      'currency_id': self.company_data['currency'].id,    'balance': 1200.0},
+            {'flag': 'new_aml',         'amount_currency': -3600.0,     'currency_id': self.currency_data['currency'].id,   'balance': -1200.0},
+        ])
+
+        wizard._action_validate()
+        self.assertRecordValues(st_line.line_ids, [
+            # pylint: disable=C0326
+            {'account_id': st_line.journal_id.default_account_id.id,    'amount_currency': 1200.0,      'currency_id': self.company_data['currency'].id,    'balance': 1200.0,   'reconciled': False},
+            {'account_id': inv_line.account_id.id,                      'amount_currency': -3600.0,     'currency_id': self.currency_data['currency'].id,   'balance': -1200.0,  'reconciled': True},
+        ])
+        self.assertRecordValues(st_line, [{'is_reconciled': True}])
+        self.assertRecordValues(inv_line.move_id, [{'payment_state': 'paid'}])
 
     def test_validation_new_aml_one_foreign_currency_on_st_line(self):
         income_exchange_account = self.env.company.income_currency_exchange_account_id
@@ -2546,3 +2693,53 @@ class TestBankRecWidget(TestBankRecWidgetCommon):
         # Check that context keys are not propagated
         action = amls_list[0].action_open_business_doc()
         self.assertFalse(action['context'].get('preferred_aml_value'))
+
+    @freeze_time('2023-12-25')
+    def test_analtyic_distribution_model_exchange_diff_line(self):
+        """Test that the analytic distribution model is present on the exchange diff line."""
+        expense_exchange_account = self.env.company.expense_currency_exchange_account_id
+        analytic_plan = self.env['account.analytic.plan'].create({
+            'name': 'Plan 1',
+            'default_applicability': 'unavailable',
+        })
+        analytic_account_1 = self.env['account.analytic.account'].create({'name': 'Account 1', 'plan_id': analytic_plan.id})
+        analytic_account_2 = self.env['account.analytic.account'].create({'name': 'Account 1', 'plan_id': analytic_plan.id})
+        distribution_model = self.env['account.analytic.distribution.model'].create({
+            'account_prefix': expense_exchange_account.code,
+            'partner_id': self.partner_a.id,
+            'analytic_distribution': {analytic_account_1.id: 100},
+        })
+
+        # 1200.0 comp_curr = 3600.0 foreign_curr in 2016 (rate 1:3)
+        st_line = self._create_st_line(
+            1200.0,
+            date='2016-01-01',
+        )
+        # 1800.0 comp_curr = 3600.0 foreign_curr in 2017 (rate 1:2)
+        inv_line = self._create_invoice_line(
+            'out_invoice',
+            currency_id=self.currency_data['currency'].id,
+            invoice_date='2017-01-01',
+            invoice_line_ids=[{'price_unit': 3600.0}],
+        )
+
+        wizard = self.env['bank.rec.widget'].with_context(default_st_line_id=st_line.id).new({})
+        wizard._action_add_new_amls(inv_line)
+        self.assertRecordValues(wizard.line_ids, [
+            # pylint: disable=C0326
+            {'flag': 'liquidity',     'amount_currency': 1200.0,  'currency_id': self.company_data['currency'].id,  'balance': 1200.0,  'analytic_distribution': False},
+            {'flag': 'new_aml',       'amount_currency': -3600.0, 'currency_id': self.currency_data['currency'].id, 'balance': -1800.0, 'analytic_distribution': False},
+            {'flag': 'exchange_diff', 'amount_currency': 0.0,     'currency_id': self.currency_data['currency'].id, 'balance': 600.0,   'analytic_distribution': distribution_model.analytic_distribution},
+        ])
+
+        # Test that the analytic distribution is kept on the creation of the exchange diff move
+        new_distribution = {**distribution_model.analytic_distribution, str(analytic_account_2.id): 100}
+
+        line = wizard.line_ids.filtered(lambda x: x.flag == 'exchange_diff')
+        line.analytic_distribution = new_distribution
+        wizard._action_validate()
+
+        self.assertRecordValues(inv_line.matched_credit_ids.exchange_move_id.line_ids, [
+            {'analytic_distribution': False},
+            {'analytic_distribution': new_distribution},
+        ])

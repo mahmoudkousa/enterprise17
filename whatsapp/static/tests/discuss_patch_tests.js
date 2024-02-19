@@ -3,6 +3,7 @@
 import { startServer } from "@bus/../tests/helpers/mock_python_environment";
 
 import { start } from "@mail/../tests/helpers/test_utils";
+import { patchUiSize, SIZES } from "@mail/../tests/helpers/patch_ui_size";
 
 import { contains, click } from "@web/../tests/utils";
 
@@ -37,4 +38,14 @@ QUnit.test("Invite users into whatsapp channel", async () => {
     await click(".o-discuss-ChannelInvitation-selectable");
     await click("button[title='Invite']:enabled");
     await contains(".o_mail_notification", { text: "invited WhatsApp User to the channel" });
+});
+
+QUnit.test("Mobile has WhatsApp category", async () => {
+    const pyEnv = await startServer();
+    patchUiSize({ size: SIZES.SM });
+    pyEnv["discuss.channel"].create({ name: "WhatsApp 1", channel_type: "whatsapp" });
+    const { openDiscuss } = await start();
+    await openDiscuss();
+    await click(".o-mail-MessagingMenu-navbar button", { text: "WhatsApp" });
+    await contains(".o-mail-NotificationItem", { text: "WhatsApp 1" });
 });

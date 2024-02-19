@@ -12,6 +12,12 @@ class SocialPostTwitter(models.Model):
     def _compute_stream_posts_count(self):
         super()._compute_stream_posts_count()
 
+    @api.depends('state')
+    def _compute_twitter_post_limit_message(self):
+        self.twitter_post_limit_message = False
+        self.is_twitter_post_limit_exceed = False
+        super(SocialPostTwitter, self - self.filtered(lambda post: post.state in ['posting', 'posted']))._compute_twitter_post_limit_message()
+
     def _get_stream_post_domain(self):
         domain = super()._get_stream_post_domain()
         twitter_tweet_ids = [twitter_tweet_id for twitter_tweet_id in self.live_post_ids.mapped('twitter_tweet_id') if twitter_tweet_id]

@@ -29,7 +29,10 @@ class Task(models.Model):
                 res.append({'names': names, 'leaves': leave_dict})
             return res
 
-        assigned_tasks = self.filtered(
+        # Avoid NewIds issue by browsing for self.ids.
+        tasks = self.with_context(prefetch_fields=False).browse(self.ids)
+        tasks.fetch(['user_ids', 'project_id', 'planned_date_begin', 'date_deadline', 'state'])
+        assigned_tasks = tasks.filtered(
             lambda t: t.user_ids.employee_id
             and t.project_id
             and t.planned_date_begin
@@ -97,7 +100,7 @@ class Task(models.Model):
             ('project_id', '!=', False),
             ('planned_date_begin', '!=', False),
             ('date_deadline', '!=', False),
-            ('state', 'not in', list(CLOSED_STATES)),
+            ('state', 'in', self.OPEN_STATES),
         ])
         if not tasks:
             return []

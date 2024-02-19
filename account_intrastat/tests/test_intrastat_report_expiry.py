@@ -103,8 +103,8 @@ class IntrastatExpiryReportTest(TestAccountReportsCommon):
             date_to=fields.Date.from_string('2022-01-31'),
             default_options={'country_format': 'code'},
         )
-        warnings = {}
-        lines = report._get_lines(options, warnings=warnings)
+        report_information = report.get_report_information(options)
+        lines, warnings = report_information['lines'], report_information['warnings']
         self.assertLinesValues(
             # pylint: disable=C0326
             lines,
@@ -144,8 +144,8 @@ class IntrastatExpiryReportTest(TestAccountReportsCommon):
             date_to=fields.Date.from_string('2022-01-31'),
             default_options={'country_format': 'code'},
         )
-        warnings = {}
-        lines = report._get_lines(options, warnings=warnings)
+        report_information = report.get_report_information(options)
+        lines, warnings = report_information['lines'], report_information['warnings']
         self.assertLinesValues(
             # pylint: disable=C0326
             lines,

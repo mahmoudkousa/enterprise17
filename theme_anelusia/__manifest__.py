@@ -7,6 +7,7 @@
     'version': '2.1.0',
     'depends': ['theme_common'],
     'data': [
+        'data/generate_primary_template.xml',
         'data/ir_asset.xml',
         'views/images_content.xml',
         'views/images_library.xml',
@@ -48,6 +49,8 @@
     'configurator_snippets': {
         'homepage': ['s_text_cover', 's_images_wall', 's_color_blocks_2', 's_references',
                      's_media_list', 's_company_team', 's_call_to_action'],
+        # TODO In master, remove unused templates instead.
+        '_': ['s_comparisons'],
     },
     'license': 'LGPL-3',
     'live_test_url': 'https://theme-anelusia.odoo.com',

@@ -9,6 +9,7 @@ class TestQualityMrpCommon(common.TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.env.ref('base.group_user').write({'implied_ids': [(4, cls.env.ref('stock.group_production_lot').id)]})
 
         cls.product_uom_id = cls.env.ref('uom.product_uom_unit').id
         cls.product = cls.env['product.product'].create({

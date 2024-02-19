@@ -69,20 +69,7 @@ class AccountMove(models.Model):
 
     def _l10n_cl_edi_post_validation(self):
         if self.l10n_latam_document_type_id._is_doc_type_export():
-            msgs = []
-            if not self.l10n_cl_customs_sale_mode and self.l10n_cl_customs_service_indicator not in ['3', '4', '5']:
-                msgs.append(_('a payment term and a customs sale mode'))
-            if not self.l10n_cl_customs_transport_type:
-                msgs.append(_('a transport type'))
             if self.currency_id == self.company_id.currency_id:
-                msgs.append(_('a different currency than %s', self.company_id.currency_id.name))
-            if not self.invoice_incoterm_id and self.l10n_cl_customs_service_indicator not in ['3', '4', '5']:
-                msgs.append(_('an Incoterm'))
-            if not (self.l10n_cl_port_origin_id and self.l10n_cl_port_destination_id) and \
-                    self.l10n_cl_customs_service_indicator != '4':
-                msgs.append(_('ports of Origin and Destination'))
-            if self.l10n_cl_customs_quantity_of_packages <= 0 and self.l10n_cl_customs_service_indicator in [False, '5']:
-                msgs.append(_('the number of packages when exporting goods'))
-            if msgs:
-                raise UserError(_('You must set %s on invoice %s', ', '.join(msgs), self._get_move_display_name()))
+                raise UserError(_('You must set a different currency than %s on invoice %s',
+                    self.company_id.currency_id.name, self._get_move_display_name()))
         return super()._l10n_cl_edi_post_validation()

@@ -1,31 +1,32 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # 	* account_intrastat
-#
+# 
 # Translators:
-# oscaryuu, 2022
-# Martin Trigaux, 2022
-# Manel Fernandez Ramirez <manelfera@outlook.com>, 2022
-# marcescu, 2022
-# Jonatan Gk, 2022
-# Ivan Espinola, 2022
-# jabiri7, 2022
+# oscaryuu, 2023
+# Martin Trigaux, 2023
+# Albert Parera, 2023
+# Manel Fernandez Ramirez <manelfera@outlook.com>, 2023
+# marcescu, 2023
+# Óscar Fonseca <tecnico@pyming.com>, 2023
+# Josep Anton Belchi, 2023
+# jabiri7, 2023
 # Quim - eccit <quim@eccit.com>, 2023
-# Óscar Fonseca <tecnico@extreme-micro.com>, 2023
-# jabelchi, 2023
-#
+# Jonatan Gk, 2023
+# Ivan Espinola, 2023
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 16.0+e\n"
+"Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-16 16:02+0000\n"
-"PO-Revision-Date: 2022-09-22 05:45+0000\n"
-"Last-Translator: jabelchi, 2023\n"
+"POT-Creation-Date: 2024-01-05 13:46+0000\n"
+"PO-Revision-Date: 2023-10-26 23:10+0000\n"
+"Last-Translator: Ivan Espinola, 2023\n"
 "Language-Team: Catalan (https://app.transifex.com/odoo/teams/41243/ca/)\n"
-"Language: ca\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
+"Language: ca\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: account_intrastat
@@ -82,14 +83,14 @@ msgstr "Per tipus"
 
 #. module: account_intrastat
 #. odoo-javascript
-#: code:addons/account_intrastat/static/src/components/account_report.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
 #, python-format
 msgid "Check the expired"
 msgstr "Comprova els vençuts"
 
 #. module: account_intrastat
 #. odoo-javascript
-#: code:addons/account_intrastat/static/src/components/account_report.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
 #, python-format
 msgid "Check the premature"
 msgstr "Comprova el prematur"
@@ -126,7 +127,7 @@ msgstr "País de l'empresa"
 #. module: account_intrastat
 #: model:ir.model,name:account_intrastat.model_res_config_settings
 msgid "Config Settings"
-msgstr "Ajustos de configuració"
+msgstr "Paràmetres de configuració"
 
 #. module: account_intrastat
 #: model:account.report.column,name:account_intrastat.intrastat_report_column_country_code
@@ -166,7 +167,7 @@ msgstr "Despatx"
 
 #. module: account_intrastat
 #. odoo-javascript
-#: code:addons/account_intrastat/static/src/components/filters/filter_intrastat_options.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/filters/filter_intrastat_options.xml:0
 #, python-format
 msgid "Extended Mode"
 msgstr "Mode estès"
@@ -270,15 +271,22 @@ msgid "Journal Item"
 msgstr "Apunt comptable"
 
 #. module: account_intrastat
+#: model:ir.model,name:account_intrastat.model_product_template
+msgid ""
+"Model adding the necessary fields to products to use with Pricer electronic "
+"tags"
+msgstr ""
+
+#. module: account_intrastat
 #. odoo-javascript
-#: code:addons/account_intrastat/static/src/components/filters/filter_intrastat_partner.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/filters/filter_intrastat_partner.xml:0
 #, python-format
 msgid "Only with VAT numbers"
 msgstr "Sólament amb NIFs"
 
 #. module: account_intrastat
 #. odoo-javascript
-#: code:addons/account_intrastat/static/src/components/filters/filter_intrastat_options.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/filters/filter_intrastat_options.xml:0
 #, python-format
 msgid "Options:"
 msgstr ""
@@ -287,7 +295,7 @@ msgstr ""
 #: model:account.report.column,name:account_intrastat.intrastat_report_column_product_origin_country
 #: model_terms:ir.ui.view,arch_db:account_intrastat.report_invoice_document_intrastat_2019
 msgid "Origin"
-msgstr "Orígen"
+msgstr "Origen"
 
 #. module: account_intrastat
 #: model:account.report.column,name:account_intrastat.intrastat_report_column_partner_vat
@@ -296,13 +304,12 @@ msgstr "NIF del partner"
 
 #. module: account_intrastat
 #. odoo-javascript
-#: code:addons/account_intrastat/static/src/components/filters/filter_intrastat_partner.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/filters/filter_intrastat_partner.xml:0
 #, python-format
 msgid "Partners:"
-msgstr ""
+msgstr "Partners:"
 
 #. module: account_intrastat
-#: model:ir.model,name:account_intrastat.model_product_template
 #: model_terms:ir.ui.view,arch_db:account_intrastat.product_product_tree_view_account_intrastat
 #: model_terms:ir.ui.view,arch_db:account_intrastat.product_product_tree_view_account_intrastat_weight
 msgid "Product"
@@ -316,7 +323,7 @@ msgstr "País del producte"
 #. module: account_intrastat
 #: model:ir.model,name:account_intrastat.model_product_product
 msgid "Product Variant"
-msgstr "Variants de producte"
+msgstr "Variant de producte"
 
 #. module: account_intrastat
 #: model:ir.model.fields.selection,name:account_intrastat.selection__account_intrastat_code__type__region
@@ -331,28 +338,30 @@ msgstr "Codi de regió"
 
 #. module: account_intrastat
 #. odoo-javascript
-#: code:addons/account_intrastat/static/src/components/account_report.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
 #, python-format
 msgid "Some lines have expired intrastat"
 msgstr "Algunes línies han expirat intrastat"
 
 #. module: account_intrastat
 #. odoo-javascript
-#: code:addons/account_intrastat/static/src/components/account_report.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
 #, python-format
 msgid "Some lines have premature intrastat"
 msgstr "Algunes línies tenen intrastat prematur"
 
 #. module: account_intrastat
 #. odoo-javascript
-#: code:addons/account_intrastat/static/src/components/account_report.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
 #, python-format
 msgid "Some lines have undefined"
 msgstr "Algunes línies no estan definides"
 
 #. module: account_intrastat
 #. odoo-javascript
-#: code:addons/account_intrastat/static/src/components/account_report.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
 #, python-format
 msgid "Some products have undefined"
 msgstr "Alguns productes no estan definits"
@@ -427,7 +436,7 @@ msgstr "El triplet code/type/country_id ha de ser únic."
 
 #. module: account_intrastat
 #. odoo-javascript
-#: code:addons/account_intrastat/static/src/components/filters/filter_intrastat_type.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/filters/filter_intrastat_type.xml:0
 #, python-format
 msgid "Types:"
 msgstr ""
@@ -475,7 +484,7 @@ msgstr "ce/el"
 
 #. module: account_intrastat
 #. odoo-javascript
-#: code:addons/account_intrastat/static/src/components/account_report.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
 #, python-format
 msgid "commodity codes"
 msgstr "codis bàsics"
@@ -572,14 +581,21 @@ msgstr "producte"
 
 #. module: account_intrastat
 #. odoo-javascript
-#: code:addons/account_intrastat/static/src/components/account_report.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
+#, python-format
+msgid "product commodity codes"
+msgstr ""
+
+#. module: account_intrastat
+#. odoo-javascript
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
 #, python-format
 msgid "product's commodity codes"
 msgstr "codis bàsics del producte"
 
 #. module: account_intrastat
 #. odoo-javascript
-#: code:addons/account_intrastat/static/src/components/account_report.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
 #, python-format
 msgid "supplementary units"
 msgstr "unitats addicionals"
@@ -591,21 +607,24 @@ msgstr "t. CO2"
 
 #. module: account_intrastat
 #. odoo-javascript
-#: code:addons/account_intrastat/static/src/components/account_report.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
 #, python-format
 msgid "transaction codes"
 msgstr "codis de transacció"
 
 #. module: account_intrastat
 #. odoo-javascript
-#: code:addons/account_intrastat/static/src/components/account_report.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
 #, python-format
 msgid "weights"
 msgstr "pesos"
 
 #. module: account_intrastat
 #. odoo-javascript
-#: code:addons/account_intrastat/static/src/components/account_report.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
+#: code:addons/account_intrastat/static/src/components/intrastat_report/warnings.xml:0
 #, python-format
 msgid "when they are required."
 msgstr "quan siguin necessàries."

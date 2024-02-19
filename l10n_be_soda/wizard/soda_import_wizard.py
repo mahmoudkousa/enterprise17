@@ -38,7 +38,7 @@ class SodaImportWizard(models.TransientModel):
             )
             wizard.soda_account_mapping_ids = [Command.set(soda_account_mappings.ids)]
 
-    def action_save_and_import(self):
+    def _action_save_and_import(self):
         # We find all mapping lines where there's no account set
         empty_mappings = self.soda_account_mapping_ids.filtered(lambda m: not m.account_id)
         if empty_mappings:
@@ -81,6 +81,7 @@ class SodaImportWizard(models.TransientModel):
                 'move_type': 'entry',
                 'journal_id': self.journal_id.id,
                 'ref': ref,
+                'date': soda_file['date'],
                 'line_ids': [Command.create({
                     'name': entry['name'] or soda_account_mapping[entry['code']]['name'],
                     'account_id': soda_account_mapping[entry['code']]['account_id'],
@@ -93,7 +94,10 @@ class SodaImportWizard(models.TransientModel):
             move.message_post(attachment_ids=[attachment.id])
             attachment.write({'res_model': 'account.move', 'res_id': move.id})
             moves += move
+        return moves
 
+    def action_save_and_import(self):
+        moves = self._action_save_and_import()
         action_vals = {
             'res_model': 'account.move',
             'type': 'ir.actions.act_window',

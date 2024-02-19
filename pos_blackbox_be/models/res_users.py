@@ -1,5 +1,4 @@
 from odoo import models, fields, api
-from odoo.addons.base.models import res_users as ru
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
 
@@ -45,24 +44,26 @@ class ResUser(models.Model):
 
     @api.model_create_multi
     def create(self, values):
-        filtered_values = {
-            field: ("********" if field in ru.USER_PRIVATE_FIELDS else value)
-            for field, value in values.items()
-        }
-        self.env["pos_blackbox_be.log"].sudo().create(
-            filtered_values, "create", self._name, values.get("login")
-        )
+        for value_dict in values:
+            filtered_values = {
+                field: ("********" if field in self._get_invalidation_fields() else value)
+                for field, value in value_dict.items()
+            }
+
+            self.env["pos_blackbox_be.log"].sudo().create(
+                filtered_values, "create", self._name, value_dict.get("name")
+            )
 
         return super(ResUser, self).create(values)
 
     def write(self, values):
         filtered_values = {
-            field: ("********" if field in ru.USER_PRIVATE_FIELDS else value)
+            field: ("********" if field in self._get_invalidation_fields() else value)
             for field, value in values.items()
         }
         for user in self:
             self.env["pos_blackbox_be.log"].sudo().create(
-                filtered_values, "modify", user._name, user.login
+                filtered_values, "modify", user._name, user.name
             )
 
         return super(ResUser, self).write(values)
@@ -70,7 +71,7 @@ class ResUser(models.Model):
     def unlink(self):
         for user in self:
             self.env["pos_blackbox_be.log"].sudo().create(
-                {}, "delete", user._name, user.login
+                {}, "delete", user._name, user.name
             )
 
         return super(ResUser, self).unlink()

@@ -1,9 +1,9 @@
 /** @odoo-module */
 
-import { browser } from "@web/core/browser/browser";
 import { Domain } from "@web/core/domain";
 import { registry } from "@web/core/registry";
 import { ormService } from "@web/core/orm_service";
+import { contains } from "@web/../tests/utils";
 import { serializeDateTime, serializeDate, deserializeDate } from "@web/core/l10n/dates";
 import {
     click,
@@ -11,7 +11,6 @@ import {
     getFixture,
     getNodesTextContent,
     nextTick,
-    patchWithCleanup,
     triggerEvent,
     clickOpenM2ODropdown,
     selectDropdownItem,
@@ -892,13 +891,13 @@ QUnit.module("Views", (hooks) => {
         assert.deepEqual(getRowWithTimerRunningOrNot(), [false, true, false, false, false]);
         assert.strictEqual(
             target.querySelector(".timesheet-timer .o_field_widget[name=project_id] input").value,
-            "P1",
+            "Webocalypse Now",
             "project_id in the timer header should be the one in the first row"
         );
         assert.strictEqual(
             target.querySelector(".timesheet-timer .o_field_widget[name=task_id] input").value,
-            "BS task",
-            "task_id in the timer header should be the one in the first row (BS task is expected)"
+            "Another BS task",
+            "task_id in the timer header should be the one in the first row (Another BS task is expected)"
         );
         assert.strictEqual(
             target.querySelector(".timesheet-timer .o_field_widget[name=name] input").value,
@@ -1015,10 +1014,6 @@ QUnit.module("Views", (hooks) => {
                 context: { group_by: ["project_id", "task_id"] },
             });
 
-            patchWithCleanup(browser, {
-                setTimeout: (fn) => fn(),
-                clearTimeout: () => {},
-            });
             const columnTotalEls = target.querySelectorAll(".o_grid_column_total");
             const columnTotalWithBarchartTotalTitle = {
                 danger: [],
@@ -1083,10 +1078,9 @@ QUnit.module("Views", (hooks) => {
             );
             await nextTick();
             await triggerEvent(columnTotalEl, "", "mouseover");
-            assert.containsOnce(
-                target,
-                ".o_grid_bar_chart_container.o_grid_highlighted .o_grid_bar_chart_overtime",
-                "The overtime of the total column hovered should be visible"
+            // The overtime of the total column hovered should be visible
+            await contains(
+                ".o_grid_bar_chart_container.o_grid_highlighted .o_grid_bar_chart_overtime"
             );
 
             const overTimeColor = ["text-danger","text-warning","text-danger","text-danger"];
@@ -1174,7 +1168,7 @@ QUnit.module("Views", (hooks) => {
             "The row title with the timer running should not contain a task name."
         );
 
-        await clickOpenM2ODropdown(target, "task_id");
+        await click(target, ".o_field_task_with_hours[name=task_id] input");
         await click(target.querySelector("div[name='task_id'] li > a"), "");
 
         assert.containsOnce(
@@ -1256,7 +1250,7 @@ QUnit.module("Views", (hooks) => {
             });
             await nextTick();
             assert.containsOnce(target, ".btn_start_timer", "No timer should be running.");
-            const gridTimerButton = target.querySelector(".btn_timer_line[data-hotkey='A']");
+            const gridTimerButton = target.querySelector('button.btn_timer_line');
             const gridTimerButtonContainer = gridTimerButton.closest(".o_grid_highlightable");
             assert.strictEqual(
                 target.querySelector(
@@ -1273,8 +1267,8 @@ QUnit.module("Views", (hooks) => {
             );
             assert.containsOnce(
                 target,
-                ".btn_timer_line.btn-danger[data-hotkey='A']",
-                "The row with the running timer should be the one with the 'A' letter in the GridTimerButton"
+                "button.btn_timer_line.btn-danger",
+                "The row with the running timer should be the one with the 'a' letter in the GridTimerButton"
             );
 
             await triggerEvent(document.activeElement, "", "keydown", { key: "a" });
@@ -1339,7 +1333,7 @@ QUnit.module("Views", (hooks) => {
             });
 
             assert.containsOnce(target, ".btn_start_timer", "No timer should be running.");
-            const gridTimerButton = target.querySelector(".btn_timer_line[data-hotkey='A']");
+            const gridTimerButton = target.querySelector('button.btn_timer_line');
             const gridTimerButtonContainer = gridTimerButton.closest(".o_grid_highlightable");
             assert.strictEqual(
                 target.querySelector(
@@ -1356,8 +1350,8 @@ QUnit.module("Views", (hooks) => {
             );
             assert.containsOnce(
                 target,
-                ".btn_timer_line.btn-danger[data-hotkey='A']",
-                "The row with the running timer should be the one with the 'A' letter in the GridTimerButton"
+                ".o_grid_row_timer.o_grid_highlightable[data-row='1']",
+                "The row with the running timer should be the one with the 'a' letter in the GridTimerButton"
             );
             await triggerEvent(document.activeElement, "", "keydown", { key: "b" });
             assert.containsNone(target, ".btn_start_timer", "A timer should be running");
@@ -1368,8 +1362,8 @@ QUnit.module("Views", (hooks) => {
             );
             assert.containsOnce(
                 target,
-                ".btn_timer_line.btn-danger[data-hotkey='B']",
-                "The row with the running timer should be the one with the 'B' letter in the GridTimerButton"
+                ".o_grid_row_timer.o_grid_highlightable[data-row='2']",
+                "The row with the running timer should be the one with the 'b' letter in the GridTimerButton"
             );
             assert.strictEqual(
                 target.querySelector(
@@ -1465,7 +1459,7 @@ QUnit.module("Views", (hooks) => {
             await click(target, ".btn_start_timer");
             await clickOpenM2ODropdown(target, "project_id");
             await click(target.querySelector("div[name='project_id'] li > a"), "");
-            await clickOpenM2ODropdown(target, "task_id");
+            await click(target, ".o_field_task_with_hours[name=task_id] input");
             target.querySelector(".o_field_widget[name=task_id] input").focus();
             await editInput(target, ".o_field_widget[name=task_id] input", "a new task");
             await click(target, ".o_field_widget[name=task_id] input");
@@ -1483,4 +1477,83 @@ QUnit.module("Views", (hooks) => {
             );
         }
     );
+
+    QUnit.test("Switch view with GroupBy and start the timer", async function (assert) {
+        serverData.views["analytic.line,1,kanban"] =
+            `<kanban js_class="timesheet_timer_kanban">
+                <templates>
+                    <field name="name"/>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <field name="employee_id"/>
+                            <field name="project_id"/>
+                            <field name="task_id"/>
+                            <field name="date"/>
+                            <field name="display_timer"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>`;
+
+        const { openView } = await start({
+            serverData,
+            async mockRPC(route, { method }) {
+                switch (method) {
+                    case "get_running_timer":
+                        return { step_timer: 30 };
+                    case "action_start_new_timesheet_timer":
+                        return false;
+                    case "get_daily_working_hours":
+                        return {};
+                    case "get_server_time":
+                        return serializeDateTime(DateTime.now());
+                    default:
+                        return timesheetGridSetup.mockTimesheetGridRPC(...arguments);
+                }
+            }
+        });
+
+        await openView({
+            res_model: "analytic.line",
+            views: [[false, "grid"], [false, "kanban"]],
+            context: { group_by: ["project_id", "task_id"] },
+        });
+        await nextTick();
+        await click(target, ".o_switch_view.o_kanban");
+        await nextTick();
+        await click(target, ".btn_start_timer");
+        assert.containsNone(
+            target,
+            "button.btn_start_timer",
+            "Timer should be running"
+        );
+    });
+
+    QUnit.test("Total cell bg color", async function (assert) {
+        const { openView } = await start({
+            serverData,
+            async mockRPC(route, args) {
+                if (args.method === "get_running_timer") {
+                    return {
+                        step_timer: 30,
+                    };
+                } else if (args.method === "get_daily_working_hours") {
+                    assert.strictEqual(args.model, "hr.employee");
+                    return {
+                        "2017-01-24": 4,
+                        "2017-01-25": 4,
+                    };
+                };
+                return timesheetGridSetup.mockTimesheetGridRPC(route, args);
+            },
+        });
+
+        await openView({
+            res_model: "analytic.line",
+            views: [[false, "grid"]],
+            context: { group_by: ["project_id", "task_id"] },
+        });
+
+        assert.containsOnce(target, ".o_grid_highlightable.text-bg-warning", "total should be an overtime (10 > 8)");
+    });
 });

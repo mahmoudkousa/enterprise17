@@ -13,13 +13,9 @@ class DashboardSelectorPanel extends SpreadsheetSelectorPanel {
      * @returns {Promise<void>}
      */
     async _fetchSpreadsheets() {
-        const domain = [];
-        if (this.currentSearch !== "") {
-            domain.push(["name", "ilike", this.currentSearch]);
-        }
         const { offset, limit } = this.state.pagerProps;
         this.state.spreadsheets = await this.keepLast.add(
-            this.orm.searchRead("spreadsheet.dashboard", domain, ["name", "thumbnail"], {
+            this.orm.searchRead("spreadsheet.dashboard", this.domain, ["name", "thumbnail"], {
                 offset,
                 limit,
             })
@@ -32,7 +28,7 @@ class DashboardSelectorPanel extends SpreadsheetSelectorPanel {
      * @returns {Promise<number>}
      */
     async _fetchPagerTotal() {
-        return this.orm.searchCount("spreadsheet.dashboard", []);
+        return this.orm.searchCount("spreadsheet.dashboard", this.domain);
     }
 
     /**

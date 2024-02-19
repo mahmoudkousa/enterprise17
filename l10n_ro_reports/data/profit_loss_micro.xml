@@ -21,14 +21,14 @@
                 <field name="code">RO_PNL_micro_1_01</field>
                 <field name="groupby">account_id</field>
                 <field name="foldable" eval="True"/>
-                <field name="domain_formula">-sum([ '|', '&amp;', ('debit', '&gt;', 0.0), ('account_id.code', '=like', '7411%'), '|', ('account_id.code', '=like', '701%'), '|', ('account_id.code', '=like', '702%'), '|', ('account_id.code', '=like', '703%'), '|', ('account_id.code', '=like', '704%'), '|', ('account_id.code', '=like', '705%'), '|', ('account_id.code', '=like', '706%'), '|', ('account_id.code', '=like', '707%'), '|', ('account_id.code', '=like', '708%'), ('account_id.code', '=like', '709%'), ])</field>
+                <field name="account_codes_formula">-7411D - 701 - 702 - 703 - 704 - 705 - 706 - 707 - 708 - 709</field>
             </record>
             <record id="account_financial_report_ro_pnl_micro_2_02" model="account.report.line">
                 <field name="name">2. Other incomes | 02</field>
                 <field name="code">RO_PNL_micro_2_02</field>
                 <field name="groupby">account_id</field>
                 <field name="foldable" eval="True"/>
-                <field name="domain_formula">-sum([ '|', '&amp;', ('credit', '&gt;', 0.0), ('account_id.code', '=like', '7411%'), '|', ('account_id.code', '=like', '711%'), '|', ('account_id.code', '=like', '712%'), '|', ('account_id.code', '=like', '721%'), '|', ('account_id.code', '=like', '722%'), '|', ('account_id.code', '=like', '725%'), '|', ('account_id.code', '=like', '751%'), '|', ('account_id.code', '=like', '755%'), '|', ('account_id.code', '=like', '758%'), '|', ('account_id.code', '=like', '761%'), '|', ('account_id.code', '=like', '762%'), '|', ('account_id.code', '=like', '764%'), '|', ('account_id.code', '=like', '765%'), '|', ('account_id.code', '=like', '766%'), '|', ('account_id.code', '=like', '767%'), '|', ('account_id.code', '=like', '768%'), ('account_id.code', '=like', '7815%'), ])</field>
+                <field name="account_codes_formula">-7411C - 741\(7411) - 711 - 712 - 721 - 722 - 725 - 751 - 755 - 758 - 761 - 762 - 764 - 765 - 766 - 767 - 768 - 7815</field>
             </record>
             <record id="account_financial_report_ro_pnl_micro_3_03" model="account.report.line">
                 <field name="name">3. Cost of raw materials and consumables | 03</field>
@@ -40,7 +40,7 @@
                     <record id="account_financial_report_ro_pnl_micro_3_03_balance" model="account.report.expression">
                         <field name="label">balance</field>
                         <field name="engine">account_codes</field>
-                        <field name="formula">602 + 601 + 609</field>
+                        <field name="formula">602 + 601 + 6091</field>
                         <field name="green_on_positive" eval="False"/>
                     </record>
                 </field>
@@ -65,7 +65,7 @@
                 <field name="code">RO_PNL_micro_5_05</field>
                 <field name="groupby">account_id</field>
                 <field name="foldable" eval="True"/>
-                <field name="domain_formula">sum([ '|', ('account_id.code', '=like', '654%'), '|', ('account_id.code', '=like', '681%'), '|', ('account_id.code', '=like', '686%'), '|', ('account_id.code', '=like', '754%'), '|', ('account_id.code', '=like', '7812%'), '|', ('account_id.code', '=like', '7813'), '|', ('account_id.code', '=like', '7814'), '|', ('account_id.code', '=like', '7818'), ('account_id.code', '=like', '786%'), ])</field>
+                <field name="account_codes_formula">654 + 681 + 686 + 754 + 7812 + 7813 + 7814 + 7818 + 786</field>
             </record>
             <record id="account_financial_report_ro_pnl_micro_6_06" model="account.report.line">
                 <field name="name">6. Other expenses | 06</field>
@@ -77,7 +77,7 @@
                     <record id="account_financial_report_ro_pnl_micro_6_06_balance" model="account.report.expression">
                         <field name="label">balance</field>
                         <field name="engine">account_codes</field>
-                        <field name="formula">635 + 605 + 607 + 614 + 651 + 613 + 663 + 608 + 652 + 667 + 655 + 658 + 668 + 603 + 612 + 609\(6091) + 62\(620,629) + 611 + 664 + 606 + 604 + 666 + 615</field>
+                        <field name="formula">635 + 605 + 607 + 614 + 651 + 613 + 663 + 608 + 652 + 667 + 655 + 658 + 668 + 603 + 612 + 609\(6091) + 62\(620,629) + 611 + 664 + 665 + 606 + 604 + 666 + 615</field>
                         <field name="green_on_positive" eval="False"/>
                     </record>
                 </field>

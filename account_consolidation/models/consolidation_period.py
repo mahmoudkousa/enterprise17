@@ -553,6 +553,7 @@ class ConsolidationCompanyPeriod(models.Model):
         ('equity', 'Equity'),
         ('none', 'Not consolidated')], default='full', required=True)
     exclude_journal_ids = fields.Many2many('account.journal', string="Exclude Journals")
+    conversion_rate = fields.Float(compute='_compute_conversion_rate')
 
     # COMPUTEDS
     @api.depends('currency_chart_id', 'currency_company_id')
@@ -562,6 +563,14 @@ class ConsolidationCompanyPeriod(models.Model):
         """
         for record in self:
             record.currencies_are_different = record.currency_chart_id != record.currency_company_id
+
+    @api.depends('chart_id.rate_ids.rate')
+    @api.depends_context('date', 'company_id', 'chart_id')
+    def _compute_conversion_rate(self):
+        date = self.env.context.get('date') or fields.Date.context_today(self)
+        company_id = self.env.context.get('company_id')
+        chart_id = self.env.context.get('chart_id')
+        self.conversion_rate = self.env['consolidation.rate'].get_rate_for(date, company_id, chart_id)
 
     # ORM OVERRIDES
     @api.depends('company_name', 'date_company_begin', 'date_company_end', 'period_id')
@@ -668,8 +677,7 @@ class ConsolidationCompanyPeriod(models.Model):
         :rtype: float
         """
         self.ensure_one()
-        rate = self.env['consolidation.rate'].get_rate_for(move_line.date, self.company_id.id,
-                                                                         self.chart_id.id)
+        rate = self.with_context(date=move_line.date, company_id=self.company_id.id, chart_id=self.chart_id.id).conversion_rate
         if rate:
             amount = move_line.balance * rate
         else:

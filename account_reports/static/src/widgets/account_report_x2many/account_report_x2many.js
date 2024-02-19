@@ -40,6 +40,8 @@ export class AccountReportListRenderer extends ListRenderer {
             elements: "li.draggable",
             nest: true,
             nestInterval: 10,
+            onDragStart: (ctx) => this.onDragStart(ctx),
+            onDragEnd: () => this.onDragEnd(),
             onDrop: (ctx) => this.onDrop(ctx),
         });
     }
@@ -90,6 +92,39 @@ export class AccountReportListRenderer extends ListRenderer {
         }
 
         return tree;
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    // Placeholder
+    //------------------------------------------------------------------------------------------------------------------
+    onDragStart(ctx) {
+        function sanitize(element) {
+            if (element.nodeName === 'LI') {
+                ["data-record_index", "data-record_id", "data-descendants_count"].forEach((attribute) => {
+                    element.removeAttribute(attribute);
+                });
+
+                element.classList.remove("draggable");
+            }
+
+            Array.from(element.childNodes).forEach((child) => {
+                sanitize(child);
+            });
+        }
+
+        const placeholder = ctx.element.cloneNode(true);
+
+        placeholder.removeAttribute("style");
+        placeholder.classList.replace("o_dragged", "o_dragged_placeholder");
+
+        sanitize(placeholder);
+
+        document.querySelector(".o_nested_sortable_placeholder").after(placeholder);
+    }
+
+    onDragEnd() {
+        // Clear placeholder
+        document.querySelector(".o_dragged_placeholder").remove();
     }
 
     //------------------------------------------------------------------------------------------------------------------

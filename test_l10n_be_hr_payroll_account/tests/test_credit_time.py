@@ -14,6 +14,10 @@ class TestCreditTime(AccountTestInvoicingCommon):
     def setUpClass(cls, chart_template_ref='be_comp'):
         super().setUpClass(chart_template_ref=chart_template_ref)
 
+        cls.env.company.partner_id.tz = "Europe/Brussels"
+        cls.env['resource.calendar'].search([]).tz = "Europe/Brussels"
+        cls.env.user.tz = "Europe/Brussels"
+
         cls.company_data['company'].country_id = cls.env.ref('base.be')
 
         cls.env.company.resource_calendar_id = cls.env['resource.calendar'].create({
@@ -41,6 +45,7 @@ class TestCreditTime(AccountTestInvoicingCommon):
             ],
         })
         cls.classic_38h_calendar = cls.env.company.resource_calendar_id
+        cls.env.ref('hr_contract.structure_type_employee_cp200').default_resource_calendar_id = cls.classic_38h_calendar
 
         cls.employee = cls.env['hr.employee'].create({
             'name': 'My Credit Time Employee',

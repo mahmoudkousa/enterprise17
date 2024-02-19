@@ -21,7 +21,10 @@ patch(PlanningGanttRenderer.prototype, {
     },
     getSelectCreateDialogProps() {
         const props = super.getSelectCreateDialogProps(...arguments);
+        this.model.addSpecialKeys(props.context);
         Object.assign(props.context, {
+            default_start_datetime: props.context.start_datetime,
+            default_end_datetime: props.context.end_datetime,
             search_default_group_by_resource: false,
             search_default_group_by_role: false,
             search_default_role_id: props.context.role_id || false,
@@ -30,7 +33,6 @@ patch(PlanningGanttRenderer.prototype, {
             search_default_sale_order_id:
             props.context.planning_gantt_active_sale_order_id || null,
         });
-        this.model.addSpecialKeys(props.context);
         return props;
     },
     openPlanDialogCallback(result) {

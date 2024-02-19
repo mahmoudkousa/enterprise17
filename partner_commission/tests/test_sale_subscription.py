@@ -8,8 +8,14 @@ from odoo.addons.partner_commission.tests.setup import TestCommissionsSetup
 from odoo import fields
 
 
-@tagged('commission_subscription')
+@tagged('commission_subscription', 'post_install', '-at_install')
 class TestSaleSubscription(TestCommissionsSetup):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.env.ref('base.group_user').write({"implied_ids": [(4, cls.env.ref('sale_management.group_sale_order_template').id)]})
+
     def test_referrer_commission_plan_changed(self):
         """When the referrer's commission plan changes, its new commission plan should be set on the subscription,
         unless commission_plan_frozen is checked."""
@@ -209,6 +215,11 @@ class TestSaleSubscription(TestCommissionsSetup):
         form.partner_id = self.customer
         form.referrer_id = self.referrer
         form.sale_order_template_id = self.template_yearly
+        # Subscription plan is defined by the product and pricing
+        with form.order_line.new() as line:
+            line.name = self.worker.name
+            line.product_id = self.worker
+            line.product_uom_qty = 1
         form.commission_plan_frozen = True
         form.commission_plan_id = self.silver_plan
         sub_A = form.save()
@@ -223,6 +234,11 @@ class TestSaleSubscription(TestCommissionsSetup):
         form.partner_id = self.customer
         form.referrer_id = self.referrer
         form.sale_order_template_id = self.template_yearly
+        # Subscription plan is defined by the product and pricing
+        with form.order_line.new() as line:
+            line.name = self.worker.name
+            line.product_id = self.worker
+            line.product_uom_qty = 1
         form.commission_plan_frozen = True
         form.commission_plan_id = self.silver_plan
         form.commission_plan_frozen = False
@@ -238,6 +254,11 @@ class TestSaleSubscription(TestCommissionsSetup):
         form.partner_id = self.customer
         form.referrer_id = self.referrer
         form.sale_order_template_id = self.template_yearly
+        # Subscription plan is defined by the product and pricing
+        with form.order_line.new() as line:
+            line.name = self.worker.name
+            line.product_id = self.worker
+            line.product_uom_qty = 1
         form.commission_plan_frozen = True
         sub_C = form.save()
         sub_C.action_confirm()

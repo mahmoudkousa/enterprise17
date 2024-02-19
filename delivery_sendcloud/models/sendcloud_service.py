@@ -263,7 +263,7 @@ class SendCloud:
     def _send_request(self, endpoint, method='get', data=None, params=None, route=BASE_URL):
 
         url = url_join(route, endpoint)
-        self.logger(f'{url}\n{method}\n{data}', f'sendcloud request {endpoint}')
+        self.logger(f'{url}\n{method}\n{data}\n{params}', f'sendcloud request {endpoint}')
         if method not in ['get', 'post']:
             raise Exception(f'Unhandled request method {method}')
         try:
@@ -323,6 +323,8 @@ class SendCloud:
             raise UserError(_('%(partner_name)s email required', partner_name=partner.name))
         if not all([partner.street, partner.city, partner.zip, partner.country_id]):
             raise UserError(_('The %s address needs to have the street, city, zip, and country', partner.name))
+        if (partner.street and len(partner.street) > 75) or (partner.street2 and len(partner.street2) > 75):
+            raise UserError(_('Each address line can only contain a maximum of 75 characters. You can split the address into multiple lines to try to avoid this limitation.'))
 
     def _validate_shipping_product_max_weight(self, shipping_product_id, fresh_max_weight):
         if shipping_product_id.max_weight != fresh_max_weight:
@@ -570,7 +572,8 @@ class SendCloud:
             currency_name = picking.company_id.currency_id.name
 
         parcel_common = {
-            'name': to_partner_id.name,
+            'name': to_partner_id.name[:75],
+            'company_name': to_partner_id.commercial_company_name[:50] if to_partner_id.commercial_company_name else '',
             'address': to_partner_id.street,
             'address_2': to_partner_id.street2 or '',
             'house_number': self._get_house_number(to_partner_id.street),
@@ -600,7 +603,8 @@ class SendCloud:
             # we only use from_partner_id in case sender_id is false
             self._validate_partner_details(from_partner_id)
             parcel_common.update({
-                'from_name': from_partner_id.name,
+                'from_name': from_partner_id.name[:75],
+                'from_company_name': from_partner_id.commercial_company_name[:50] if from_partner_id.commercial_company_name else '',
                 'from_house_number': self._get_house_number(from_partner_id.street),
                 'from_address_1': from_partner_id.street or '',
                 'from_address_2': from_partner_id.street2 or '',

@@ -35,7 +35,7 @@
                             <record id="l10n_pl_small_bs_assets_a_balance" model="account.report.expression">
                                 <field name="label">balance</field>
                                 <field name="engine">aggregation</field>
-                                <field name="formula">pl_small_assets_a_1.balance + pl_small_assets_a_2.balance + pl_small_assets_a_3.balance + pl_small_assets_a_4.balance + pl_small_assets_a_5.balance</field>
+                                <field name="formula">pl_small_assets_a_1.balance + pl_small_assets_a_2.balance + pl_small_assets_a_3.balance + pl_small_assets_a_5.balance</field>
                                 <field name="date_scope">normal</field>
                             </record>
                         </field>
@@ -76,54 +76,50 @@
                                 </field>
                             </record>
                             <record id="l10n_pl_small_bs_assets_a_3" model="account.report.line">
-                                <field name="name">III. Long-term receivables</field>
+                                <field name="name">III. Long-term investments</field>
                                 <field name="code">pl_small_assets_a_3</field>
-                                <field name="groupby">account_id</field>
-                                <field name="foldable" eval="True"/>
-                                <field name="account_codes_formula">06</field>
-                            </record>
-                            <record id="l10n_pl_small_bs_assets_a_4" model="account.report.line">
-                                <field name="name">IV. Long-term investments</field>
-                                <field name="code">pl_small_assets_a_4</field>
+                                <field name="account_codes_formula" eval="False"/>
+                                <field name="groupby" eval="False"/>
+                                <field name="foldable" eval="False"/>
                                 <field name="expression_ids">
-                                    <record id="l10n_pl_small_bs_assets_a_4_balance" model="account.report.expression">
+                                    <record id="l10n_pl_small_bs_assets_a_3_balance" model="account.report.expression">
                                         <field name="label">balance</field>
                                         <field name="engine">aggregation</field>
-                                        <field name="formula">pl_small_assets_a_4_1.balance + pl_small_assets_a_4_2.balance + pl_small_assets_a_4_3.balance</field>
+                                        <field name="formula">pl_small_assets_a_3_1.balance + pl_small_assets_a_3_2.balance + pl_small_assets_a_3_3.balance</field>
                                         <field name="date_scope">normal</field>
                                     </record>
                                 </field>
                                 <field name="children_ids">
-                                    <record id="l10n_pl_small_bs_assets_a_4_1" model="account.report.line">
+                                    <record id="l10n_pl_small_bs_assets_a_3_1" model="account.report.line">
                                         <field name="name">- real estate</field>
-                                        <field name="code">pl_small_assets_a_4_1</field>
+                                        <field name="code">pl_small_assets_a_3_1</field>
                                         <field name="groupby">account_id</field>
                                         <field name="foldable" eval="True"/>
-                                        <field name="account_codes_formula">04.01 + 07.030.1</field>
+                                        <field name="account_codes_formula">03.000.6 + 07.030.1</field>
                                     </record>
-                                    <record id="l10n_pl_small_bs_assets_a_4_2" model="account.report.line">
+                                    <record id="l10n_pl_small_bs_assets_a_3_2" model="account.report.line">
                                         <field name="name">- long-term financial assets</field>
-                                        <field name="code">pl_small_assets_a_4_2</field>
+                                        <field name="code">pl_small_assets_a_3_2</field>
                                         <field name="groupby">account_id</field>
                                         <field name="foldable" eval="True"/>
-                                        <field name="account_codes_formula">03\(03.09) + 09</field>
+                                        <field name="account_codes_formula">03\(03.00) + 03.000.1 + 03.000.2 + 03.000.3 + 03.000.4</field>
                                     </record>
-                                    <record id="l10n_pl_small_bs_assets_a_4_3" model="account.report.line">
+                                    <record id="l10n_pl_small_bs_assets_a_3_3" model="account.report.line">
                                         <field name="name">- other</field>
-                                        <field name="code">pl_small_assets_a_4_3</field>
+                                        <field name="code">pl_small_assets_a_3_3</field>
                                         <field name="groupby">account_id</field>
                                         <field name="hide_if_zero" eval="True"/>
                                         <field name="foldable" eval="True"/>
-                                        <field name="account_codes_formula">03.09 + 04.02 + 07.030.2</field>
+                                        <field name="account_codes_formula">03.000.5 + 03.000.7 + 07.030.2</field>
                                     </record>
                                 </field>
                             </record>
                             <record id="l10n_pl_small_bs_assets_a_5" model="account.report.line">
-                                <field name="name">V. Long-term accruals</field>
+                                <field name="name">IV. Long-term accruals</field>
                                 <field name="code">pl_small_assets_a_5</field>
                                 <field name="groupby">account_id</field>
                                 <field name="foldable" eval="True"/>
-                                <field name="account_codes_formula">05</field>
+                                <field name="account_codes_formula">03.000.8 + 03.000.9</field>
                             </record>
                         </field>
                     </record>
@@ -144,7 +140,7 @@
                                 <field name="code">pl_small_assets_b_1</field>
                                 <field name="groupby">account_id</field>
                                 <field name="foldable" eval="True"/>
-                                <field name="account_codes_formula">60 + 62 + 3\(30.03,30.04,30.07)</field>
+                                <field name="account_codes_formula">60 + 62 + 3\(30.000.3,30.000.4,30.000.7)</field>
                             </record>
                             <record id="l10n_pl_small_bs_assets_b_2" model="account.report.line">
                                 <field name="name">II. Short-term receivables</field>
@@ -163,7 +159,7 @@
                                         <field name="code">pl_small_assets_b_2_a</field>
                                         <field name="groupby">account_id</field>
                                         <field name="foldable" eval="True"/>
-                                        <field name="account_codes_formula">20.00 + 30.03</field>
+                                        <field name="account_codes_formula">20.00\(20.000.3) + 30.000.3</field>
                                     </record>
                                     <record id="l10n_pl_small_bs_assets_b_2_b" model="account.report.line">
                                         <field name="name">b) other</field>
@@ -171,7 +167,7 @@
                                         <field name="groupby">account_id</field>
                                         <field name="hide_if_zero" eval="True"/>
                                         <field name="foldable" eval="True"/>
-                                        <field name="account_codes_formula">22.02 + 24.06 + 29.01 + 29.03 + 30.04 + 30.07 + 64.01 + 65.01</field>
+                                        <field name="account_codes_formula">22.01 + 24.090.1 + 29.00 + 29.02 + 30.000.4 + 30.000.7 + 64.000.1 + 65.000.1</field>
                                     </record>
                                 </field>
                             </record>
@@ -204,7 +200,7 @@
                                                 <field name="code">pl_small_assets_b_3_a_1</field>
                                                 <field name="groupby">account_id</field>
                                                 <field name="foldable" eval="True"/>
-                                                <field name="account_codes_formula">1\(18)</field>
+                                                <field name="account_codes_formula">1\(14.000.2)</field>
                                             </record>
                                             <record id="l10n_pl_small_bs_assets_b_3_a_2" model="account.report.line">
                                                 <field name="name">- other</field>
@@ -212,7 +208,7 @@
                                                 <field name="groupby">account_id</field>
                                                 <field name="hide_if_zero" eval="True"/>
                                                 <field name="foldable" eval="True"/>
-                                                <field name="account_codes_formula">24.010.2 + 24.020.1 + 24.07 + 24.08 + 24.09</field>
+                                                <field name="account_codes_formula">24.010.2 + 24.020.1 + 24.090.2 + 24.090.3 + 24.090.9</field>
                                             </record>
                                         </field>
                                     </record>
@@ -223,7 +219,7 @@
                                 <field name="code">pl_small_assets_b_4</field>
                                 <field name="groupby">account_id</field>
                                 <field name="foldable" eval="True"/>
-                                <field name="account_codes_formula">18</field>
+                                <field name="account_codes_formula">14.000.2</field>
                             </record>
                         </field>
                     </record>
@@ -232,14 +228,14 @@
                         <field name="code">pl_small_assets_c</field>
                         <field name="groupby">account_id</field>
                         <field name="foldable" eval="True"/>
-                        <field name="account_codes_formula">80.12</field>
+                        <field name="account_codes_formula">80.000.2</field>
                     </record>
                     <record id="l10n_pl_small_bs_assets_d" model="account.report.line">
                         <field name="name">D. Owned shares</field>
                         <field name="code">pl_small_assets_d</field>
                         <field name="groupby">account_id</field>
                         <field name="foldable" eval="True"/>
-                        <field name="account_codes_formula">80.13</field>
+                        <field name="account_codes_formula">80.000.3</field>
                     </record>
                 </field>
             </record>
@@ -273,28 +269,28 @@
                                 <field name="code">pl_small_passives_a_1</field>
                                 <field name="groupby">account_id</field>
                                 <field name="foldable" eval="True"/>
-                                <field name="account_codes_formula">-80.0</field>
+                                <field name="account_codes_formula">-80.000.1</field>
                             </record>
                             <record id="l10n_pl_small_bs_passives_a_2" model="account.report.line">
                                 <field name="name">II. Supplementary capital (fund)</field>
                                 <field name="code">pl_small_passives_a_2</field>
                                 <field name="groupby">account_id</field>
                                 <field name="foldable" eval="True"/>
-                                <field name="account_codes_formula">-81.1 - 81.4</field>
+                                <field name="account_codes_formula">-81.01 - 81.04</field>
                             </record>
                             <record id="l10n_pl_small_bs_passives_a_3" model="account.report.line">
                                 <field name="name">III. Capital (fund) from revaluation</field>
                                 <field name="code">pl_small_passives_a_3</field>
                                 <field name="groupby">account_id</field>
                                 <field name="foldable" eval="True"/>
-                                <field name="account_codes_formula">-81.3</field>
+                                <field name="account_codes_formula">-81.03</field>
                             </record>
                             <record id="l10n_pl_small_bs_passives_a_4" model="account.report.line">
                                 <field name="name">IV. Other reserve capitals (funds)</field>
                                 <field name="code">pl_small_passives_a_4</field>
                                 <field name="groupby">account_id</field>
                                 <field name="foldable" eval="True"/>
-                                <field name="account_codes_formula">-81.2</field>
+                                <field name="account_codes_formula">-81.02</field>
                             </record>
                             <record id="l10n_pl_small_bs_passives_a_5" model="account.report.line">
                                 <field name="name">V. Previous years earnings (loss)</field>
@@ -307,20 +303,20 @@
                                 <field name="name">VI. Net profit (loss)</field>
                                 <field name="code">pl_small_passives_a_6</field>
                                 <field name="expression_ids">
-                                    <record id="l10n_pl_small_bs_passives_a_6_balance_account_codes" model="account.report.expression">
+                                    <record id="l10n_pl_small_bs_passives_a_6_balance_account_codes" model="account.report.expression"> <!-- Current year earnings ? -->
                                         <field name="label">balance_account_codes</field>
                                         <field name="engine">account_codes</field>
                                         <field name="formula">-86</field>
                                         <field name="date_scope">normal</field>
                                     </record>
-                                    <record id="l10n_pl_small_bs_passives_a_6_balance_aggregate" model="account.report.expression">
+                                    <record id="l10n_pl_small_bs_passives_a_6_balance_aggregate" model="account.report.expression"> <!-- Current year allocated earnings ? -->
                                         <field name="label">balance_aggregate</field>
                                         <field name="engine">aggregation</field>
                                         <field name="formula">pl_small_pl_j.balance</field>
                                         <field name="subformula">cross_report</field>
                                         <field name="date_scope">from_fiscalyear</field>
                                     </record>
-                                    <record id="l10n_pl_small_bs_passives_a_6_balance_unallocated" model="account.report.expression">
+                                    <record id="l10n_pl_small_bs_passives_a_6_balance_unallocated" model="account.report.expression"> <!-- Previous year unallocated earnings ? -->
                                         <field name="label">balance_unallocated</field>
                                         <field name="engine">domain</field>
                                         <field name="formula" eval="[
@@ -346,7 +342,7 @@
                                 <field name="code">pl_small_passives_a_7</field>
                                 <field name="groupby">account_id</field>
                                 <field name="foldable" eval="True"/>
-                                <field name="account_codes_formula">-80.19</field>
+                                <field name="account_codes_formula">-80.000.4</field>
                             </record>
                         </field>
                     </record>
@@ -393,7 +389,7 @@
                                         <field name="code">pl_small_passives_b_3_a</field>
                                         <field name="groupby">account_id</field>
                                         <field name="foldable" eval="True"/>
-                                        <field name="account_codes_formula">- 23.02 - 20.01 - 22\(22.02)</field>
+                                        <field name="account_codes_formula">- 23.000.2 - 20.000.3 - 22\(22.01)</field>
                                     </record>
                                     <record id="l10n_pl_small_bs_passives_b_3_b" model="account.report.line">
                                         <field name="name">b) on account of deliveries and services</field>
@@ -415,7 +411,7 @@
                                         <field name="groupby">account_id</field>
                                         <field name="hide_if_zero" eval="True"/>
                                         <field name="foldable" eval="True"/>
-                                        <field name="account_codes_formula">-23\(23.02) - 24.03 - 24.05 - 24.020.2 - 28 - 29.02 - 64.02 - 65.02</field>
+                                        <field name="account_codes_formula">-23\(23.000.2) - 24.03 - 24.05 - 24.020.2 - 28 - 29.01 - 64.01 - 65.01</field>
                                     </record>
                                 </field>
                             </record>

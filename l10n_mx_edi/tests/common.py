@@ -65,15 +65,32 @@ class TestMxEdiCommon(AccountTestInvoicingCommon):
         cls.tax_0_exento = cls.tax_0.copy()
         cls.tax_0_exento.l10n_mx_factor_type = 'Exento'
         cls.tax_8 = cls.env["account.chart.template"].ref('tax17')
-        cls.tax_8_ieps = cls.tax_8.copy(default={'l10n_mx_tax_type': 'ieps'})
-        cls.tax_10_negative = cls.env['account.tax'].create({
-            'name': 'tax_10_negative',
-            'amount_type': 'percent',
-            'amount': -10,
-            'type_tax_use': 'sale',
-            'l10n_mx_factor_type': 'Tasa',
-            'l10n_mx_tax_type': 'iva',
-        })
+        cls.tax_8_ieps = cls.env["account.chart.template"].ref('ieps_8_sale')
+        cls.tax_53_ieps = cls.env["account.chart.template"].ref('ieps_53_sale')
+        cls.tax_10_ret_isr = cls.env["account.chart.template"].ref('tax3')
+        cls.tax_10_ret_isr.type_tax_use = 'sale'
+        cls.tax_10_67_ret = cls.env["account.chart.template"].ref('tax8')
+        cls.tax_10_67_ret.type_tax_use = 'sale'
+        cls.existing_taxes_combinations_to_test = [
+            # pylint: disable=bad-whitespace
+            # Line 1                                                Line 2                  Line 3
+            (cls.env['account.tax'],),
+            (cls.tax_0_exento,                                      cls.tax_0),
+            (cls.tax_0_exento,                                      cls.tax_16),
+            (cls.tax_0,                                             cls.tax_16),
+            (cls.tax_0_exento,                                      cls.tax_0,              cls.tax_16),
+            (cls.tax_0_exento,),
+            (cls.tax_0,),
+            (cls.tax_16 + cls.tax_10_ret_isr + cls.tax_10_67_ret,),
+            (cls.tax_8_ieps + cls.tax_0,),
+            (cls.tax_53_ieps + cls.tax_16,),
+        ]
+
+        # TODO: Temporary fix awaiting:
+        # - https://github.com/odoo/odoo/pull/142972
+        # - https://github.com/odoo/enterprise/pull/51286
+        (cls.tax_8_ieps + cls.tax_53_ieps).l10n_mx_tax_type = 'ieps'
+        cls.tax_10_ret_isr.l10n_mx_tax_type = 'isr'
 
         cls.product = cls._create_product()
 

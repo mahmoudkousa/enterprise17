@@ -42,16 +42,13 @@ registry.category("web_tour.tours").add('helpdesk_tour', {
 }, {
     trigger: ".o-mail-Chatter-topbar button:contains(Send message)",
     extra_trigger: '.o_form_view',
-    content: markup(_t("Use the chatter to <b>send emails</b> and communicate efficiently with your customers. \
-    Add new people to the followers' list to make them aware of the progress of this ticket.")),
+    content: markup(_t("Use the chatter to <b>send emails</b> and communicate efficiently with your customers. Add new people to the followers' list to make them aware of the progress of this ticket.")),
     width: 350,
     position: "bottom",
 }, {
     trigger: "button:contains(Log note)",
     extra_trigger: '.o_form_view',
-    content: markup(_t("<b>Log notes</b> for internal communications (you will only notify the persons you specifically tag). \
-    Use <b>@ mentions</b> to ping a colleague \
-    or <b># mentions</b> to contact a group of people.")),
+    content: markup(_t("<b>Log notes</b> for internal communications (you will only notify the persons you specifically tag). Use <b>@ mentions</b> to ping a colleague or <b># mentions</b> to contact a group of people.")),
     width: 350,
     position: "bottom"
 }, {

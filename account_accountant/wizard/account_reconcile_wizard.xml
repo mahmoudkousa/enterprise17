@@ -11,6 +11,8 @@
                 <field name="single_currency_mode" invisible="1"/>
                 <field name="is_write_off_required" invisible="1"/>
                 <field name="is_transfer_required" invisible="1"/>
+                <field name="display_allow_partials" invisible="1"/>
+
                 <div class="alert alert-warning" role="alert" invisible="not is_transfer_required">
                     <field name="transfer_warning_message"/>
                 </div>
@@ -27,7 +29,7 @@
                 </div>
                 <group>
                     <group>
-                        <field name="allow_partials"/>
+                        <field name="allow_partials" invisible="not display_allow_partials"/>
                     </group>
                     <group invisible="allow_partials">
                         <label for="amount_currency"/>

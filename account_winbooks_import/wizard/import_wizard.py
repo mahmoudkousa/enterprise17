@@ -364,7 +364,6 @@ class WinbooksImportWizard(models.TransientModel):
 
         move_data_list = []
         pdf_file_list = []
-        reconcile_number_set = set()
         for key, val in grouped.items():
             journal_id = self.env['account.journal'].browse(journal_data.get(key[1]))
             bookyear = int(key[3], 36)
@@ -420,7 +419,7 @@ class WinbooksImportWizard(models.TransientModel):
                     'balance': balance,
                     'amount_currency': amount_currency,
                     'amount_residual_currency': amount_currency,
-                    'winbooks_matching_number': matching_number,
+                    'matching_number': matching_number and f"I{matching_number}",
                     'winbooks_line_id': rec['DOCORDER'],
                 }
                 if currency:
@@ -436,8 +435,6 @@ class WinbooksImportWizard(models.TransientModel):
                     elif rec.get('DBKTYPE') in (PURCHASE_CODE, CREDIT_NOTE_SALE_CODE):
                         line_data['price_unit'] = amount_currency
 
-                if matching_number:
-                    reconcile_number_set.add(matching_number)
                 if rec.get('AMOUNTEUR'):
                     move_amount_total = round(move_amount_total, 2) + round(rec.get('AMOUNTEUR'), 2)
                 move_line_data_list.append((0, 0, line_data))
@@ -539,11 +536,10 @@ class WinbooksImportWizard(models.TransientModel):
 
         _logger.info("Creating moves")
         move_ids = self.env['account.move'].with_context(skip_invoice_sync=True).create(move_data_list)
-        move_ids._post()
         _logger.info("Creating attachments")
+        attachment_data_list = []
         for move, pdf_files in zip(move_ids, pdf_file_list):
             if pdf_files:
-                attachment_ids = []
                 for name, fd in pdf_files.items():
                     attachment_data = {
                         'name': name.split('/')[-1],
@@ -553,31 +549,8 @@ class WinbooksImportWizard(models.TransientModel):
                         'res_id': move.id,
                         'res_name': move.name
                     }
-                    attachment_ids.append(IrAttachment.create(attachment_data))
-                move.message_post(attachments=attachment_ids)
-        _logger.info("Reconcile")
-        for matching_number in reconcile_number_set:
-            lines = self.env['account.move.line'].search([('winbooks_matching_number', '=', matching_number), ('reconciled', '=', False)])
-            try:
-                lines.with_context(no_exchange_difference=True).reconcile()
-            except UserError as ue:
-                if len(lines.account_id) > 1:
-                    _logger.warning(
-                        'Winbooks matching number %s uses multiple accounts: %s. '
-                        'Lines with that number have not been reconciled in Odoo.',
-                        matching_number,
-                        ', '.join(lines.mapped('account_id.display_name')),
-                    )
-                elif not lines.account_id.reconcile:
-                    _logger.info(
-                        "%s %s has reconciled lines, changing the config",
-                        lines.account_id.code,
-                        lines.account_id.name,
-                    )
-                    lines.account_id.reconcile = True
-                    lines.with_context(no_exchange_difference=True).reconcile()
-                else:
-                    raise ue
+                    attachment_data_list.append(attachment_data)
+        self.env['ir.attachment'].create(attachment_data_list)
         return {f"{m.date.year}_{m.ref}" : m for m in move_ids}
 
     def _import_analytic_account(self, dbf_records):

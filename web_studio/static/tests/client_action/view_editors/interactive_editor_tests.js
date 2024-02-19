@@ -1294,5 +1294,71 @@ QUnit.module("View Editors", () => {
                 );
             }
         );
+
+        QUnit.test("field selection when editing a suboption", async function (assert) {
+            let editCount = 0;
+
+            patchWithCleanup(charField, {
+                supportedOptions: [
+                    {
+                        label: "Fake super option",
+                        name: "fake_super_option",
+                        type: "boolean",
+                    },
+                    {
+                        label: "Suboption",
+                        name: "suboption",
+                        type: "field",
+                    },
+                ],
+            });
+            patchWithCleanup(COMPUTED_DISPLAY_OPTIONS, {
+                suboption: {
+                    superOption: "fake_super_option",
+                    getInvisible: (value) => !value,
+                },
+            });
+
+            const arch = `<form><group>
+                <field name="display_name"/>
+            </group></form>`;
+            await createViewEditor({
+                type: "form",
+                serverData,
+                resModel: "coucou",
+                arch,
+                mockRPC: function (route, args) {
+                    if (route === "/web_studio/edit_view") {
+                        editCount++;
+                        if (editCount === 1) {
+                            const newArch =
+                                "<form><group><field name='display_name' options='{\"fake_super_option\":True}'/></group></form>";
+                            return createMockViewResult(serverData, "form", newArch, "coucou");
+                        }
+                    }
+                },
+            });
+
+            await click(target.querySelector('[name="display_name"]').parentElement);
+            assert.containsN(
+                target,
+                ".o_web_studio_property",
+                9,
+                "9 options are available in the sidebar"
+            );
+
+            await click(target.querySelector("input[id=fake_super_option]"));
+            assert.containsN(
+                target,
+                ".o_web_studio_property",
+                10,
+                "10 options are available in the sidebar"
+            );
+            assert.containsOnce(
+                target,
+                ".o_web_studio_property_suboption .o_select_menu",
+                "a selectmenu is displayed for the field selection"
+            );
+        });
     });
 });

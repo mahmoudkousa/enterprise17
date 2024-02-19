@@ -228,7 +228,7 @@ class SaleOrderLine(models.Model):
         res = super()._prepare_invoice_line(**optional_values)
         if self.display_type:
             return res
-        elif self.recurring_invoice or self.order_id.subscription_state == '7_upsell':
+        elif self.order_id.plan_id and (self.recurring_invoice or self.order_id.subscription_state == '7_upsell'):
             description = "%s - %s" % (self.name, self.order_id.plan_id.billing_period_display)
             lang_code = self.order_id.partner_id.lang
             if self.order_id.subscription_state == '7_upsell':

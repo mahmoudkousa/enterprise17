@@ -22,7 +22,6 @@ Allows users to easily export accounting data that can be imported to a 3rd part
     ],
     "demo": [
         "demo/res_partner_demo.xml",
-        "demo/account_move_demo.xml",
     ],
     "license": "OEEL-1",
     "auto_install": True,

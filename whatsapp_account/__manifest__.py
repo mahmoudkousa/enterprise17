@@ -2,7 +2,7 @@
 
 {
     'name': 'Whatsapp Accounting',
-    'category': 'Hidden/Tools',
+    'category': 'WhatsApp',
     'description': """This module Integrates Accounting with WhatsApp""",
     'depends': ['account', 'whatsapp'],
     'data': [

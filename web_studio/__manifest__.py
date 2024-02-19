@@ -48,6 +48,7 @@ Note: Only the admin user is allowed to make those customizations.
     'license': 'OEEL-1',
     'assets': {
         'web.assets_backend': [
+            'web_studio/static/src/color_scheme_service_patch.js',
             'web_studio/static/src/systray_item/**/*.js',
             'web_studio/static/src/studio_service.js',
             'web_studio/static/src/utils.js',

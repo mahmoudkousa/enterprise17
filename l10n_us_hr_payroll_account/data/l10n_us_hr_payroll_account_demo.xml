@@ -6,5 +6,11 @@
             <value>generic_coa</value>
             <value model="res.company" eval="obj().env.ref('l10n_us_hr_payroll.res_company_us')"/>
         </function>
+        <function model="account.chart.template" name="try_loading"
+            context="{'bypass_payment_method_ids_forbidden_change': True}">
+            <value eval="[]"/>
+            <value>generic_coa</value>
+            <value model="res.company" eval="obj().env.ref('base.main_company')"/>
+        </function>
     </data>
 </odoo>

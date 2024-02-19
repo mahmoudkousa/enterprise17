@@ -32,7 +32,7 @@ export class PivotDetailsSidePanel extends Component {
                 this.dataSource.getFormattedGroupBy(fieldName)
             ),
             measures: definition.measures.map((measure) =>
-                this.dataSource.getGroupByDisplayLabel("measure", measure)
+                this.dataSource.getMeasureDisplayName(measure)
             ),
             sortedColumn: definition.sortedColumn,
         };
@@ -48,10 +48,7 @@ export class PivotDetailsSidePanel extends Component {
     formatSort() {
         const sortedColumn = this.pivotDefinition.sortedColumn;
         const order = sortedColumn.order === "asc" ? _t("ascending") : _t("descending");
-        const measureDisplayName = this.dataSource.getGroupByDisplayLabel(
-            "measure",
-            sortedColumn.measure
-        );
+        const measureDisplayName = this.dataSource.getMeasureDisplayName(sortedColumn.measure);
         return `${measureDisplayName} (${order})`;
     }
 

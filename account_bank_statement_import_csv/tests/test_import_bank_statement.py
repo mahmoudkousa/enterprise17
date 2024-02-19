@@ -2,6 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo import fields
+from odoo.exceptions import UserError
 from odoo.tests import tagged
 from odoo.tools import file_open
 
@@ -9,7 +10,7 @@ from odoo.tools import file_open
 @tagged('post_install', '-at_install')
 class TestAccountBankStatementImportCSV(AccountTestInvoicingCommon):
 
-    def test_csv_file_import(self):
+    def _import_file(self, csv_file_path):
         # Create a bank account and journal corresponding to the CSV file (same currency and account number)
         bank_journal = self.env['account.journal'].create({
             'name': 'Bank 123456',
@@ -20,7 +21,6 @@ class TestAccountBankStatementImportCSV(AccountTestInvoicingCommon):
         })
 
         # Use an import wizard to process the file
-        csv_file_path = 'account_bank_statement_import_csv/test_csv_file/test_csv.csv'
         with file_open(csv_file_path, 'rb') as csv_file:
             action = bank_journal.create_document_from_attachment(self.env['ir.attachment'].create({
                 'mimetype': 'text/csv',
@@ -46,6 +46,9 @@ class TestAccountBankStatementImportCSV(AccountTestInvoicingCommon):
         }
         import_wizard_fields = ['date', False, 'payment_ref', 'amount', 'balance']
         import_wizard.execute_import(import_wizard_fields, [], import_wizard_options, dryrun=False)
+
+    def test_csv_file_import(self):
+        self._import_file('account_bank_statement_import_csv/test_csv_file/test_csv.csv')
 
         # Check the imported bank statement
         imported_statement = self.env['account.bank.statement'].search([('company_id', '=', self.env.company.id)])
@@ -75,3 +78,7 @@ class TestAccountBankStatementImportCSV(AccountTestInvoicingCommon):
             {'date': fields.Date.from_string('2015-02-04'), 'amount': -204.23,  'payment_ref': 'DEBIT CARD 6906"02/04 GROUPON INC 877-788-7858 IL'},
             {'date': fields.Date.from_string('2015-02-05'), 'amount': 9518.40,  'payment_ref': 'ACH CREDIT"MERCHE-SOLUTIONS-MERCH DEP'},
         ])
+
+    def test_csv_file_import_non_ordered(self):
+        with self.assertRaises(UserError):
+            self._import_file('account_bank_statement_import_csv/test_csv_file/test_csv_non_sorted.csv')

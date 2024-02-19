@@ -15,7 +15,7 @@ class ProjectTask(models.Model):
         domain="[('res_model', '=', 'project.task'), '|', ('company_ids', '=', False), ('company_ids', 'in', company_id)]",
         group_expand='_group_expand_worksheet_template_id',
         help="Create templates for each type of intervention you have and customize their content with your own custom fields.")
-    worksheet_count = fields.Integer(compute='_compute_worksheet_count')
+    worksheet_count = fields.Integer(compute='_compute_worksheet_count', compute_sudo=True)
     worksheet_color = fields.Integer(related='worksheet_template_id.color')
     display_sign_report_primary = fields.Boolean(compute='_compute_display_sign_report_buttons')
     display_sign_report_secondary = fields.Boolean(compute='_compute_display_sign_report_buttons')
@@ -104,13 +104,10 @@ class ProjectTask(models.Model):
 
     @api.depends('worksheet_template_id')
     def _compute_worksheet_count(self):
-        is_portal_user = self.env.user.share
         for record in self:
             worksheet_count = 0
             if record.worksheet_template_id:
                 Worksheet = self.env[record.worksheet_template_id.sudo().model_id.model]
-                if is_portal_user:
-                    Worksheet = Worksheet.sudo()
                 worksheet_count = Worksheet.search_count([('x_project_task_id', '=', record.id)])
             record.worksheet_count = worksheet_count
 

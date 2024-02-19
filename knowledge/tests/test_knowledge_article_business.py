@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import json
+
+from datetime import datetime
+from lxml import html
+from unittest.mock import patch
+from urllib import parse
+
 from odoo import exceptions
 from odoo.addons.knowledge.tests.common import KnowledgeCommonWData
 from odoo.tests.common import tagged, users
@@ -681,6 +688,16 @@ class TestKnowledgeArticleBusiness(KnowledgeCommonBusinessCase):
         self.assertFalse(workspace_children[0].parent_id)
         self.assertEqual(workspace_children.root_article_id, workspace_children[0])
 
+        workspace_child_item = self.env['knowledge.article'].create({
+            'name': 'Article Item Child',
+            'parent_id': article_workspace.id,
+            'is_article_item': True
+        }).with_env(self.env)
+
+        with self.assertRaises(exceptions.ValidationError):
+            workspace_children[0].move_to(parent_id=workspace_child_item.id)
+
+
     @mute_logger('odoo.addons.base.models.ir_rule')
     @users('employee')
     def test_article_move_to_shared(self):
@@ -739,10 +756,24 @@ class TestKnowledgeArticleBusiness(KnowledgeCommonBusinessCase):
     @users('employee')
     def test_article_sort_for_user(self):
         """ Testing the sort + custom info returned by get_user_sorted_articles """
-        self.workspace_children.write({
+        # Freeze time for the database cursor
+        before = datetime(2023, 10, 5, 2, 30, 30)
+        self.patch(self.env.cr, 'now', lambda: before)
+        # Add workspace_children as favorite for some users to test the ordering
+        # by `favorite_count` and change their name so that they don't match the
+        # test query
+        self.workspace_children[0].write({
+            'name': 'Pg Child1',
             'favorite_ids': [
                 (0, 0, {'user_id': user.id})
                 for user in self.user_admin + self.user_employee2 + self.user_employee_manager
+            ],
+        })
+        self.workspace_children[1].write({
+            'name': 'Pg Child2',
+            'favorite_ids': [
+                (0, 0, {'user_id': user.id})
+                for user in self.user_admin + self.user_employee2
             ],
         })
 
@@ -750,50 +781,116 @@ class TestKnowledgeArticleBusiness(KnowledgeCommonBusinessCase):
         workspace_children = self.workspace_children.with_env(self.env)
         wkspace_grandchildren = self.wkspace_grandchildren.with_env(self.env)
         wkspace_grandgrandchildren = self.wkspace_grandgrandchildren.with_env(self.env)
-        (article_workspace + workspace_children[1] + wkspace_grandchildren[2]).action_toggle_favorite()
+        (wkspace_grandchildren[2] + wkspace_grandgrandchildren[1]).action_toggle_favorite()
+
+        # Artificially alter `write_date` for each article to test the ordering
+        # by that field.
+        before_articles = (
+            self.article_workspace + self.workspace_children +
+            self.wkspace_grandchildren[1:3] + self.wkspace_grandgrandchildren
+        )
+        for article in before_articles:
+            article.write({
+                'name': article.name + " time traveled"
+            })
+        # One article was written on later than the others.
+        after = datetime(2023, 10, 5, 2, 30, 31)
+        with patch.object(self.env.cr, 'now', lambda: after):
+            self.wkspace_grandchildren[0].write({
+                'name': self.wkspace_grandchildren[0].name + " time traveled"
+            })
+            self.wkspace_grandchildren[0].invalidate_recordset()
 
         # ensure initial values
-        self.assertTrue(article_workspace.is_user_favorite)
-        self.assertEqual(article_workspace.favorite_count, 2)
-        self.assertEqual(article_workspace.user_favorite_sequence, 1)
+        self.assertFalse(article_workspace.is_user_favorite)
+        self.assertEqual(article_workspace.favorite_count, 1)
+        self.assertEqual(article_workspace.user_favorite_sequence, -1)
         self.assertFalse(workspace_children[0].is_user_favorite)
         self.assertEqual(workspace_children[0].favorite_count, 3)
         self.assertEqual(workspace_children[0].user_favorite_sequence, -1)
-        self.assertTrue(workspace_children[1].is_user_favorite)
-        self.assertEqual(workspace_children[1].favorite_count, 4)
-        self.assertEqual(workspace_children[1].user_favorite_sequence, 2)
+        self.assertFalse(workspace_children[1].is_user_favorite)
+        self.assertEqual(workspace_children[1].favorite_count, 2)
+        self.assertEqual(workspace_children[1].user_favorite_sequence, -1)
         self.assertTrue(wkspace_grandchildren[2].is_user_favorite)
         self.assertEqual(wkspace_grandchildren[2].favorite_count, 1)
-        self.assertEqual(wkspace_grandchildren[2].user_favorite_sequence, 3)
-        for other in wkspace_grandchildren[0:2] + wkspace_grandgrandchildren:
+        self.assertEqual(wkspace_grandchildren[2].user_favorite_sequence, 1)
+        self.assertTrue(wkspace_grandgrandchildren[1].is_user_favorite)
+        self.assertEqual(wkspace_grandgrandchildren[1].favorite_count, 1)
+        self.assertEqual(wkspace_grandgrandchildren[1].user_favorite_sequence, 2)
+        for other in wkspace_grandchildren[0:2] + wkspace_grandgrandchildren[0]:
             self.assertFalse(other.is_user_favorite)
             self.assertEqual(other.favorite_count, 0)
             self.assertEqual(other.user_favorite_sequence, -1)
+        for before_article in before_articles:
+            self.assertEqual(before_article.write_date, before)
+        self.assertEqual(wkspace_grandchildren[0].write_date, after)
 
         # search also includes descendants of articles having the term in their name
-        result = self.env['knowledge.article'].get_user_sorted_articles('laygroun', limit=4)
-        expected = self.article_workspace + self.workspace_children[1] + self.workspace_children[0] + self.wkspace_grandchildren[2]
+        # verify that the search is case insensitive
+        result = self.env['knowledge.article'].get_user_sorted_articles('playgroun', limit=4)
+        expected = self.article_workspace + self.wkspace_grandchildren[2] + self.wkspace_grandgrandchildren[1] + self.workspace_children[0]
         found_ids = [a['id'] for a in result]
         self.assertEqual(found_ids, expected.ids)
+
         # check returned result once (just to be sure)
         workspace_info = next(article_result for article_result in result if article_result['id'] == article_workspace.id)
-        self.assertTrue(workspace_info['is_user_favorite'], article_workspace.name)
+        self.assertFalse(workspace_info['is_user_favorite'], article_workspace.name)
         self.assertFalse(workspace_info['icon'])
-        self.assertEqual(workspace_info['favorite_count'], 2)
+        self.assertEqual(workspace_info['favorite_count'], 1)
         self.assertEqual(workspace_info['name'], article_workspace.name)
         self.assertEqual(workspace_info['root_article_id'], (article_workspace.id, f'📄 {article_workspace.name}'))
 
         # test with bigger limit, both favorites and unfavorites
+        # result ordering explanation:
+        # article_workspace VS wkspace_grandchildren[2]
+        # -> checks [match query] prevails over [is_user_favorite=True]
+        # wkspace_grandchildren[2] VS wkspace_grandgrandchildren[1]
+        # -> checks [favorite_sequence ASC] prevails over [id DESC]
+        # wkspace_grandgrandchildren[1] VS workspace_children[1]
+        # -> checks [is_user_favorite=True] prevails over [favorite_count DESC]
+        # workspace_children[0] VS workspace_children[1]
+        # -> checks [favorite_count DESC] prevails over [id DESC]
+        # workspace_children[1] VS wkspace_grandchildren[0]
+        # -> checks [favorite_count DESC] prevails over [write_date DESC]
+        # wkspace_grandchildren[0] VS wkspace_grandgrandchildren[0]
+        # -> checks [write_date DESC] prevails over [id DESC]
+        # wkspace_grandgrandchildren[0] VS wkspace_grandchildren[1]
+        # -> checks [id DESC] is true (proving all previous DESC or ASC assumptions)
         result = self.env['knowledge.article'].get_user_sorted_articles('laygroun', limit=10)
-        expected = self.article_workspace + self.workspace_children[1] + self.workspace_children[0] + \
-                   self.wkspace_grandchildren[2] + self.wkspace_grandgrandchildren[1] + self.wkspace_grandgrandchildren[0] + \
-                   self.wkspace_grandchildren[1] + self.wkspace_grandchildren[0]
+        expected = self.article_workspace + self.wkspace_grandchildren[2] + self.wkspace_grandgrandchildren[1] + \
+                   self.workspace_children[0] + self.workspace_children[1] + self.wkspace_grandchildren[0] + \
+                   self.wkspace_grandgrandchildren[0] + self.wkspace_grandchildren[1]
         self.assertEqual([a['id'] for a in result], expected.ids)
 
         # test corner case: search with less than favorite, sequence might not be taken into account
         result = self.env['knowledge.article'].get_user_sorted_articles('laygroun', limit=1)
         self.assertEqual([a['id'] for a in result], self.article_workspace.ids)
 
+        # change the visibility for tested articles
+        article_workspace.write({
+            'is_article_visible_by_everyone': False
+        })
+        # add the search query in the name of the first favorite to
+        # demonstrate the visibility impact on ordering
+        wkspace_grandchildren[2].write({
+            'name': 'Playground grand children 2'
+        })
+        # ensure that the write_date of wkspace_grandchildren[0] was not
+        # overwritten by a compute method during the previous searches
+        with patch.object(self.env.cr, 'now', lambda: after):
+            self.wkspace_grandchildren[0].write({
+                'name': self.wkspace_grandchildren[0].name + " time traveled"
+            })
+            self.wkspace_grandchildren[0].invalidate_recordset()
+        # test ordering with hidden_mode = True
+        # result ordering explanation:
+        # article_workspace VS wkspace_grandchildren[2]
+        # -> checks [parent_id = False] prevails over [is_user_favorite=True]
+        result = self.env['knowledge.article'].get_user_sorted_articles('layground', limit=10, hidden_mode=True)
+        expected = self.article_workspace + self.wkspace_grandchildren[2] + self.wkspace_grandgrandchildren[1] + \
+                   self.workspace_children[0] + self.workspace_children[1] + self.wkspace_grandchildren[0] + \
+                   self.wkspace_grandgrandchildren[0] + self.wkspace_grandchildren[1]
+        self.assertEqual([a['id'] for a in result], expected.ids)
 
 @tagged('knowledge_internals', 'knowledge_management')
 class TestKnowledgeArticleCopy(KnowledgeCommonBusinessCase):
@@ -887,6 +984,121 @@ class TestKnowledgeArticleCopy(KnowledgeCommonBusinessCase):
         self.assertFalse(new_article.child_ids)
         self.assertFalse(new_article.parent_id)
 
+    def test_article_make_private_copy_having_embedded_views_of_article_items(self):
+        """ When the user copies an article, the system should copy the body
+            of the original article and update the ID references stored within
+            it so that the embedded views listing the article items of the original
+            article now list the article items of the copy. This test will check
+            that the ID references have been updated in the body of the new article. """
+        article = self.env['knowledge.article'].create({
+            'name': 'Hello'
+        })
+
+        def render_embedded_view(behavior_props):
+            return '''
+                <div class="o_knowledge_behavior_anchor o_knowledge_behavior_type_embedded_view"
+                    data-oe-protected="true"
+                    data-behavior-props="%s"/>
+            ''' % (parse.quote(json.dumps(behavior_props)))
+
+        article.write({
+            'body': (
+                '<p>Hello world</p>' +
+                render_embedded_view({
+                    'action_xml_id': 'knowledge.knowledge_article_item_action',
+                    'display_name': 'Kanban',
+                    'view_type': 'kanban',
+                    'context': {
+                        'active_id': article.id,
+                        'default_parent_id': article.id,
+                        'default_icon': '📄',
+                        'default_is_article_item': True,
+                    }
+                }) +
+                render_embedded_view({
+                    'action_xml_id': 'knowledge.knowledge_article_item_action',
+                    'display_name': 'List',
+                    'view_type': 'list',
+                    'context': {
+                        'active_id': article.id,
+                        'default_parent_id': article.id,
+                        'default_icon': '📄',
+                        'default_is_article_item': True,
+                    }
+                }) +
+                render_embedded_view({
+                    'action_xml_id': 'knowledge.knowledge_article_action',
+                    'display_name': 'Articles',
+                    'view_type': 'list',
+                    'context': {
+                        'search_default_filter_trashed': 1,
+                    }
+                })
+            )
+        })
+
+        expected_view_types = [
+            'kanban',
+            'list',
+            'list'
+        ]
+        expected_contexts = [{
+            'active_id': article.id,
+            'default_parent_id': article.id,
+            'default_icon': '📄',
+            'default_is_article_item': True,
+        }, {
+            'active_id': article.id,
+            'default_parent_id': article.id,
+            'default_icon': '📄',
+            'default_is_article_item': True,
+        }, {
+            'search_default_filter_trashed': 1,
+        }]
+
+        fragment = html.fragment_fromstring(article.body, create_parent=True)
+        embedded_views = [embedded_view for embedded_view in fragment.findall('.//*[@data-behavior-props]') \
+            if 'o_knowledge_behavior_type_embedded_view' in embedded_view.get('class')]
+
+        # Check that the original article contains the embedded views we want
+        self.assertEqual(len(embedded_views), 3)
+        for (embedded_view, expected_view_type, expected_context) in zip(embedded_views, expected_view_types, expected_contexts):
+            behavior_props = json.loads(parse.unquote(embedded_view.get('data-behavior-props', {})))
+            self.assertEqual(behavior_props['view_type'], expected_view_type)
+            self.assertEqual(behavior_props['context'], expected_context)
+
+        # Copy the article
+        new_article = article.action_make_private_copy()
+
+        expected_contexts = [{
+            'active_id': new_article.id,
+            'default_parent_id': new_article.id,
+            'default_icon': '📄',
+            'default_is_article_item': True,
+        }, {
+            'active_id': new_article.id,
+            'default_parent_id': new_article.id,
+            'default_icon': '📄',
+            'default_is_article_item': True,
+        }, {
+            'search_default_filter_trashed': 1,
+        }]
+
+        fragment = html.fragment_fromstring(new_article.body, create_parent=True)
+        embedded_views = [embedded_view for embedded_view in fragment.findall('.//*[@data-behavior-props]') \
+            if 'o_knowledge_behavior_type_embedded_view' in embedded_view.get('class')]
+
+        # Check that the context of the embedded views stored in the body of the
+        # newly created article have properly been updated: The embedded views
+        # listing the article items of the original article should now list the
+        # article items of the copy.
+
+        self.assertEqual(len(embedded_views), 3)
+        for (embedded_view, expected_view_type, expected_context) in zip(embedded_views, expected_view_types, expected_contexts):
+            behavior_props = json.loads(parse.unquote(embedded_view.get('data-behavior-props', {})))
+            self.assertEqual(behavior_props['view_type'], expected_view_type)
+            self.assertEqual(behavior_props['context'], expected_context)
+
     @mute_logger('odoo.addons.base.models.ir_model', 'odoo.addons.base.models.ir_rule')
     @users('employee')
     def test_copy(self):
@@ -949,6 +1161,20 @@ class TestKnowledgeArticleRemoval(KnowledgeCommonBusinessCase):
     def test_archive(self):
         """ Testing archive that should also archive children. """
         self._test_archive(test_trash=False)
+
+    def test_archive_unactive_article(self):
+        """ Checking that an unactive article can be archived. """
+        article = self.env['knowledge.article'].create({'name': 'Article'})
+        self.assertTrue(article.active)
+        self.assertFalse(article.to_delete)
+
+        article.action_archive()
+        self.assertFalse(article.active)
+        self.assertFalse(article.to_delete)
+
+        article.action_send_to_trash()
+        self.assertFalse(article.active)
+        self.assertTrue(article.to_delete)
 
     def _test_archive(self, test_trash=False):
         archive_method_name = 'action_send_to_trash' if test_trash else 'action_archive'
@@ -1121,6 +1347,68 @@ class TestKnowledgeArticleRemoval(KnowledgeCommonBusinessCase):
                                msg="ACLs: unlink is not accessible to employees"):
             article_workspace.unlink()
 
+
+    @users('employee')
+    def test_unarchive_article_having_inaccessible_parent(self):
+        """ Check that the user can restore an article whose parent is inaccessible. """
+
+        parent_article = self.env['knowledge.article'].sudo().create({
+            'active': False,
+            'to_delete': True,
+            'name': 'Parent article',
+            'internal_permission': 'write',
+            'article_member_ids': [
+                (0, 0, {
+                    'partner_id': self.env.user.partner_id.id,
+                    'permission': 'none'
+                }),
+                (0, 0, {
+                    'partner_id': self.customer.id,
+                    'permission': 'read'
+                }),
+            ]
+        }).with_user(self.env.user)
+
+        child_article = self.env['knowledge.article'].sudo().create({
+            'active': False,
+            'to_delete': True,
+            'name': 'Child article',
+            'parent_id': parent_article.id,
+            'article_member_ids': [
+                (0, 0, {
+                    'partner_id': self.env.user.partner_id.id,
+                    'permission': 'write'
+                }),
+            ]
+        }).with_user(self.env.user)
+
+        # Check the access rights:
+        with self.assertRaises(exceptions.AccessError):
+            parent_article.check_access_rule('read')
+        child_article.check_access_rule('write')
+
+        # Unarchive the child article:
+        child_article.action_unarchive()
+
+        # When the parent article is in the trash, the child article should be
+        # detached from its parent so that it will not be deleted when the parent
+        # article is deleted.
+
+        self.assertTrue(child_article.active)
+        self.assertFalse(child_article.to_delete)
+        self.assertFalse(child_article.parent_id)
+        self.assertFalse(child_article.is_desynchronized)
+        self.assertMembers(child_article, 'write', {
+            self.env.user.partner_id: 'write',
+            self.customer: 'read'
+        })
+
+        self.assertFalse(parent_article.active)
+        self.assertTrue(parent_article.to_delete)
+        self.assertMembers(parent_article, 'write', {
+            self.env.user.partner_id: 'none',
+            self.customer: 'read'
+        })
 
 @tagged('post_install', '-at_install', 'knowledge_internals', 'knowledge_management')
 class TestKnowledgeShare(KnowledgeCommonWData):

@@ -15,6 +15,11 @@ export class Softphone {
     numpad = {
         isOpen: false,
         value: "",
+        selection: {
+            start: 0,
+            end: 0,
+            direction: "none",
+        },
     };
     searchBarInputValue = "";
     selectedCorrespondence;

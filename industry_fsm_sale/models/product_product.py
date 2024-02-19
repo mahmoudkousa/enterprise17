@@ -145,7 +145,7 @@ class ProductProduct(models.Model):
         wizard_product_lot = self.action_assign_serial(from_onchange=True)
         if wizard_product_lot:
             return wizard_product_lot
-        self.fsm_quantity = float_round(quantity, precision_rounding=self.uom_id.rounding)
+        self.fsm_quantity = float_round(quantity or 0, precision_rounding=self.uom_id.rounding)
         return True
 
     # Is override by fsm_stock to manage lot

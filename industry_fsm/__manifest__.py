@@ -46,6 +46,9 @@ Adds the following options:
         'web.assets_frontend': [
             'industry_fsm/static/src/js/tours/**/*',
         ],
+        'web.qunit_suite_tests': [
+            'industry_fsm/static/tests/**/*.js',
+        ],
         'web.assets_tests': [
             'industry_fsm/static/tests/tours/**/*',
         ],

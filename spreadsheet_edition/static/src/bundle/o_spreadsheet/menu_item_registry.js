@@ -117,41 +117,52 @@ topbarMenuRegistry.addChild("data_sources_data", ["data"], (env) => {
         ]);
 });
 
-topbarMenuRegistry.addChild("insert_pivot", ["data"], {
+const insertPivotMenu = {
     name: _t("Insert pivot"),
     sequence: 1020,
     icon: "o-spreadsheet-Icon.INSERT_PIVOT",
     isVisible: (env) => env.model.getters.getPivotIds().length,
-});
+};
 
-topbarMenuRegistry.addChild("reinsert_pivot", ["data", "insert_pivot"], {
+const reInsertPivotMenu = {
     id: "reinsert_pivot",
     name: _t("Re-insert pivot"),
     sequence: 1,
     children: [REINSERT_PIVOT_CHILDREN],
     isVisible: (env) => env.model.getters.getPivotIds().length,
-});
-topbarMenuRegistry.addChild("insert_pivot_cell", ["data", "insert_pivot"], {
+};
+
+const insertPivotCellMenu = {
     id: "insert_pivot_cell",
     name: _t("Insert pivot cell"),
     sequence: 2,
     children: [INSERT_PIVOT_CELL_CHILDREN],
     isVisible: (env) => env.model.getters.getPivotIds().length,
-});
+};
 
-topbarMenuRegistry.addChild("reinsert_list", ["data"], {
+const reInsertListMenu = {
     id: "reinsert_list",
     name: _t("Re-insert list"),
     sequence: 1021,
     children: [REINSERT_LIST_CHILDREN],
     isVisible: (env) => env.model.getters.getListIds().length,
     icon: "o-spreadsheet-Icon.INSERT_LIST",
-});
+};
 
-topbarMenuRegistry.addChild("print", ["file"], {
+const printMenu = {
     name: _t("Print"),
     sequence: 60,
     isVisible: (env) => env.print,
     execute: (env) => env.print(),
     icon: "o-spreadsheet-Icon.PRINT",
-});
+};
+
+topbarMenuRegistry.addChild("print", ["file"], printMenu);
+
+topbarMenuRegistry.addChild("insert_pivot", ["insert"], insertPivotMenu);
+topbarMenuRegistry.addChild("reinsert_pivot", ["insert", "insert_pivot"], reInsertPivotMenu);
+topbarMenuRegistry.addChild("insert_pivot_cell", ["insert", "insert_pivot"], insertPivotCellMenu);
+topbarMenuRegistry.addChild("reinsert_list", ["insert"], reInsertListMenu);
+
+topbarMenuRegistry.addChild("insert_pivot", ["data"], insertPivotMenu);
+topbarMenuRegistry.addChild("reinsert_list", ["data"], reInsertListMenu);

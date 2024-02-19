@@ -106,9 +106,12 @@ class WorkflowActionRule(models.Model):
                     }
         elif self.link_model:
             # Throw a warning if the user does not have access to the model.
-            self.env[self.link_model.model].check_access_rights('write')
+            link_model_sudo = self.link_model.sudo()
+            self.env[link_model_sudo.model].check_access_rights('write')
             context['default_is_readonly_model'] = True
-            context['default_model_id'] = self.link_model.id
+            context['default_model_id'] = link_model_sudo.id
+            first_valid_id = self.env[link_model_sudo.model].search([], limit=1).id
+            context['default_resource_ref'] = f'{link_model_sudo.model},{first_valid_id}'
 
         link_to_record_action = {
                 'name': _('Choose a record to link'),

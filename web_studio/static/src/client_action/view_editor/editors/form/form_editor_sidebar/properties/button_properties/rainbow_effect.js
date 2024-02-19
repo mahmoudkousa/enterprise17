@@ -24,10 +24,10 @@ export class RainbowEffect extends Component {
     }
     get choices() {
         return [
-            ["fast", _t("Fast")],
-            ["medium", _t("Medium")],
-            ["slow", _t("Slow")],
-            ["no", _t("None")],
+            { label:  _t("Fast"), value: "fast" },
+            { label:  _t("Medium"), value: "medium" },
+            { label:  _t("Slow"), value: "slow" },
+            { label:  _t("None"), value: "no" },
         ];
     }
     get rainbowEffect() {
@@ -48,5 +48,10 @@ export class RainbowEffect extends Component {
             effect[name] = value;
         }
         this.props.onChange(effect, "effect");
+    }
+    toggleRainbowMan() {
+        const effect = this.rainbowEffect;
+        const newValue = effect ? "False" : "{}";
+        this.props.onChange(newValue, "effect");
     }
 }

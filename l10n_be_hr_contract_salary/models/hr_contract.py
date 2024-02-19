@@ -136,7 +136,7 @@ class HrContract(models.Model):
     def _get_description_company_car_total_depreciated_cost(self, new_value=None):
         benefit = self.env.ref('l10n_be_hr_contract_salary.l10n_be_transport_company_car')
         description = benefit.description or ""
-        if new_value is None or not new_value:
+        if not new_value:
             if self.car_id:
                 new_value = 'old-%s' % self.car_id.id
             elif self.new_car_model_id:
@@ -158,6 +158,32 @@ class HrContract(models.Model):
 
         car_elements = self._get_company_car_description_values(vehicle, is_new)
         description += Markup('<ul>%s</ul>') % Markup().join([Markup('<li>%s: %s</li>') % (key, value) for key, value in car_elements.items() if value])
+        return description
+
+    def _get_description_company_bike_depreciated_cost(self, new_value):
+        benefit = self.env.ref('l10n_be_hr_contract_salary.l10n_be_transport_company_bike')
+        description = benefit.description or ""
+        if not new_value:
+            if self.bike_id:
+                new_value = 'old-%s' % self.bike_id.id
+            else:
+                return description
+        bike_option, bike_id = new_value.split('-')
+        if bike_option == "new":
+            bike = self.env['fleet.vehicle.model'].with_company(self.company_id).sudo().browse(int(bike_id))
+        else:
+            bike = self.env['fleet.vehicle'].with_company(self.company_id).sudo().browse(int(bike_id))
+
+        bike_elements = {
+            'Monthly Cost': _("%s € (Rent)", bike.total_depreciated_cost if bike_option == "old" else bike.default_total_depreciated_cost),
+            'Electric Assistance': _("Yes") if bike.electric_assistance else _("No"),
+            'Color': bike.color,
+            'Bike Frame Type': bike.frame_type if bike_option == "old" else False,
+            'Frame Size (cm)': bike.frame_size if bike_option == "old" else False,
+        }
+
+        description += Markup('<ul>%s</ul>') % Markup().join(Markup('<li>%s: %s</li>') % (key, value) for key, value in bike_elements.items() if value)
+
         return description
 
     def _get_company_car_description_values(self, vehicle_id, is_new):

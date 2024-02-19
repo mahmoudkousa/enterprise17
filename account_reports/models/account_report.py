@@ -25,6 +25,7 @@ from odoo.tools.float_utils import float_round
 from odoo.tools.misc import formatLang, format_date, xlsxwriter
 from odoo.tools.safe_eval import expr_eval, safe_eval
 from odoo.models import check_method_name
+from itertools import groupby
 
 _logger = logging.getLogger(__name__)
 
@@ -71,9 +72,9 @@ class AccountReport(models.Model):
     def _validate_custom_handler_model(self):
         for report in self:
             if report.custom_handler_model_id:
-                custom_handler_model = self.env['account.report.custom.handler']
+                custom_handler_model = self.env.registry['account.report.custom.handler']
                 current_model = self.env[report.custom_handler_model_name]
-                if not isinstance(current_model, type(custom_handler_model)):
+                if not isinstance(current_model, custom_handler_model):
                     raise ValidationError(_(
                         "Field 'Custom Handler Model' can only reference records inheriting from [%s].",
                         custom_handler_model._name
@@ -178,7 +179,7 @@ class AccountReport(models.Model):
 
         report_companies = self.env['res.company'].browse(self.get_report_company_ids(options))
         per_company_map = {}
-        for company in report_companies.parent_ids:
+        for company in report_companies.sudo().parent_ids:
             per_company_map[company.id] = ({
                 'available_journals': self.env['account.journal'],
                 'available_journal_groups': self.env['account.journal.group'],
@@ -911,7 +912,7 @@ class AccountReport(models.Model):
 
         def compute_group_totals(line, group=None):
             return [
-                hierarchy_total + (column.get('no_format') or 0.0)
+                hierarchy_total + (column.get('no_format') or 0.0) if isinstance(hierarchy_total, float) else hierarchy_total
                 for hierarchy_total, column
                 in zip(hierarchy[group]['totals'], line['columns'])
             ]
@@ -963,7 +964,7 @@ class AccountReport(models.Model):
         def create_hierarchy_dict():
             return defaultdict(lambda: {
                 'lines': [],
-                'totals': [0.0 for column in options['columns']],
+                'totals': [('' if column.get('figure_type') == 'string' else 0.0) for column in options['columns']],
                 'child_groups': self.env['account.group'],
             })
 
@@ -1212,6 +1213,35 @@ class AccountReport(models.Model):
             or any(expression.figure_type and expression.figure_type != 'monetary' for expression in self.line_ids.expression_ids)
         )
 
+    ####################################################
+    # OPTIONS: ROUNDING UNIT
+    ####################################################
+    def _init_options_rounding_unit(self, options, previous_options=None):
+        default = 'decimals'
+
+        if previous_options:
+            options['rounding_unit'] = previous_options.get('rounding_unit', default)
+        else:
+            options['rounding_unit'] = default
+
+        options['rounding_unit_names'] = self._get_rounding_unit_names()
+
+    def _get_rounding_unit_names(self):
+        currency_symbol = self.env.company.currency_id.symbol
+        rounding_unit_names = [
+            ('decimals', '.%s' % currency_symbol),
+            ('units', '%s' % currency_symbol),
+            ('thousands', 'K%s' % currency_symbol),
+            ('millions', 'M%s' % currency_symbol),
+        ]
+
+        # We want to add 'lakhs' for Indian Rupee
+        if (self.env.company.currency_id == self.env.ref('base.INR')):
+            # We want it between 'thousands' and 'millions'
+            rounding_unit_names.insert(3, ('lakhs', 'L%s' % currency_symbol))
+
+        return dict(rounding_unit_names)
+
     # ####################################################
     # OPTIONS: ALL ENTRIES
     ####################################################
@@ -1270,7 +1300,7 @@ class AccountReport(models.Model):
     def _init_options_search_bar(self, options, previous_options=None):
         if self.search_bar:
             options['search_bar'] = True
-            if previous_options and 'filter_search_bar' in previous_options:
+            if 'default_filter_accounts' not in self._context and previous_options and 'filter_search_bar' in previous_options:
                 options['filter_search_bar'] = previous_options['filter_search_bar']
 
     ####################################################
@@ -1489,7 +1519,7 @@ class AccountReport(models.Model):
         allowed_country_variant_ids = {}
         all_variants = self._get_variants(options['variants_source_id'])
         for variant in all_variants.filtered(lambda x: x._is_available_for(options)):
-            if not self.root_report_id and variant != self: # Non-route reports don't reroute the variant when computing their options
+            if not self.root_report_id and variant != self and variant.active: # Non-route reports don't reroute the variant when computing their options
                 allowed_variant_ids.add(variant.id)
                 if variant.country_id:
                     allowed_country_variant_ids.setdefault(variant.country_id.id, []).append(variant.id)
@@ -1575,6 +1605,20 @@ class AccountReport(models.Model):
         custom_handler_model = self._get_custom_handler_model()
         if custom_handler_model:
             self.env[custom_handler_model]._custom_options_initializer(self, options, previous_options)
+
+    ####################################################
+    # OPTIONS: INTEGER ROUNDING
+    ####################################################
+    def _custom_options_add_integer_rounding(self, options, integer_rounding, previous_options=None):
+        """ Helper function to be called in a _custom_options_initializer by reports needing to use the integer_rounding feature.
+        This was introduced as an improvement in stable and will become a proper _init_options in master, together with a new field on the report.
+        """
+        options['integer_rounding'] = integer_rounding
+        if options.get('export_mode') == 'file':
+            options['integer_rounding_enabled'] = True
+        else:
+            options['integer_rounding_enabled'] = (previous_options or {}).get('integer_rounding_enabled', True)
+        return options
 
     ####################################################
     # OPTIONS: CORE
@@ -1949,8 +1993,9 @@ class AccountReport(models.Model):
         if record_id is None:
             raise UserError(_("'Open General Ledger' caret option is only available form report lines targetting accounts."))
 
-        account_line_id = self._get_generic_line_id('account.account', record_id)
-        gl_options = self.env.ref('account_reports.general_ledger_report').get_options(options)
+        general_ledger = self.env.ref('account_reports.general_ledger_report')
+        account_line_id = general_ledger._get_generic_line_id('account.account', record_id)
+        gl_options = general_ledger.get_options(options)
         gl_options['unfolded_lines'] = [account_line_id]
 
         action_vals = self.env['ir.actions.actions']._for_xml_id('account_reports.action_account_report_general_ledger')
@@ -2057,7 +2102,6 @@ class AccountReport(models.Model):
             # Inject all the dynamic lines whose sequence is inferior to the next static line to add
             while dynamic_lines and line.sequence > dynamic_lines[0][0]:
                 lines.append(dynamic_lines.pop(0)[1])
-
             parent_generic_id = line_cache[line.parent_id]['id'] if line.parent_id else None # The parent line has necessarily been treated in a previous iteration
             line_dict = self._get_static_line_dict(options, line, all_column_groups_expression_totals, parent_id=parent_generic_id)
             line_cache[line] = line_dict
@@ -2137,6 +2181,29 @@ class AccountReport(models.Model):
 
         return lines
 
+    @api.model
+    def format_column_values(self, options, lines):
+        self._format_column_values(options, lines, force_format=True)
+
+        return lines
+
+    def _format_column_values(self, options, line_dict_list, force_format=False):
+        for line_dict in line_dict_list:
+            for column_dict in line_dict['columns']:
+                if 'name' in column_dict and not force_format:
+                    # Columns which have already received a name are assumed to be already formatted; nothing needs to be done for them.
+                    # This gives additional flexibility to custom reports, if needed.
+                    continue
+
+                column_dict['name'] = self.format_value(
+                    options,
+                    column_dict['no_format'],
+                    currency=column_dict['currency'],
+                    blank_if_zero=column_dict['blank_if_zero'],
+                    figure_type=column_dict['figure_type'],
+                    digits=column_dict['digits']
+                )
+
     def _generate_common_warnings(self, options, warnings):
         # Display a warning if we're displaying only the data of the current company, but it's also part of a tax unit
         if options.get('available_tax_units') and options['tax_unit'] == 'company_only':
@@ -2144,9 +2211,10 @@ class AccountReport(models.Model):
 
         # Check whether there are unposted entries for the selected period or not (if the report allows it)
         if options.get('date') and options.get('all_entries') is not None:
-            date_to = options['date'].get('date_to') or options['date'].get('date') or fields.Date.today()
-            period_domain = [('state', '=', 'draft'), ('date', '<=', date_to)]
-            if self.env['account.move'].search_count(period_domain):
+            if self.env['account.move'].search_count(
+                [('state', '=', 'draft'), ('date', '<=', options['date']['date_to'])],
+                limit=1,
+            ):
                 warnings['account_reports.common_warning_draft_in_period'] = {}
 
     def _fully_unfold_lines_if_needed(self, lines, options):
@@ -2232,7 +2300,7 @@ class AccountReport(models.Model):
                 figure_type = expression.figure_type or col_expression_to_figure_type.get(expression.label) or 'none'
                 expressions_detail[engine_label].append((
                     expression.label,
-                    {'formula': expression.formula, 'subformula': expression.subformula, 'value': self.format_value(options, column_group_totals[expression]['value'], figure_type=figure_type, blank_if_zero=False)}
+                    {'formula': expression.formula, 'subformula': expression.subformula, 'value': self._format_value(options, column_group_totals[expression]['value'], figure_type=figure_type, blank_if_zero=False)}
                 ))
 
             # Sort results so that they can be rendered nicely in the UI
@@ -2268,7 +2336,7 @@ class AccountReport(models.Model):
             carryover_expr_label = '_carryover_%s' % column_expr_label
             carryover_value = target_line_res_dict.get(carryover_expr_label, {}).get('value', 0)
             if self.env.company.currency_id.compare_amounts(0, carryover_value) != 0:
-                info_popup_data['carryover'] = self.format_value(options, carryover_value, figure_type='monetary')
+                info_popup_data['carryover'] = self._format_value(options, carryover_value, figure_type='monetary')
 
                 carryover_expression = line_expressions_map[carryover_expr_label]
                 if carryover_expression.carryover_target:
@@ -2277,7 +2345,7 @@ class AccountReport(models.Model):
 
             applied_carryover_value = target_line_res_dict.get('_applied_carryover_%s' % column_expr_label, {}).get('value', 0)
             if self.env.company.currency_id.compare_amounts(0, applied_carryover_value) != 0:
-                info_popup_data['applied_carryover'] = self.format_value(options, applied_carryover_value, figure_type='monetary')
+                info_popup_data['applied_carryover'] = self._format_value(options, applied_carryover_value, figure_type='monetary')
                 info_popup_data['allow_carryover_audit'] = self.user_has_groups('base.group_no_one')
                 info_popup_data['expression_id'] = line_expressions_map['_applied_carryover_%s' % column_expr_label]['id']
                 info_popup_data['column_group_key'] = column_data['column_group_key']
@@ -2358,6 +2426,9 @@ class AccountReport(models.Model):
             'auditable': col_value is not None and column_expression.auditable,
             'blank_if_zero': blank_if_zero,
             'column_group_key': col_data.get('column_group_key'),
+            'currency': currency,
+            'currency_symbol': self.env.company.currency_id.symbol if options.get('multi_currency') else None,
+            'digits': digits,
             'expression_label': col_data.get('expression_label'),
             'figure_type': figure_type,
             'green_on_positive': column_expression.green_on_positive,
@@ -2367,7 +2438,7 @@ class AccountReport(models.Model):
                 and figure_type in ('float', 'integer', 'monetary')
                 and self.is_zero(col_value, currency=currency, figure_type=figure_type, digits=digits)
             ),
-            'name': self.format_value(options, col_value, currency=currency, blank_if_zero=blank_if_zero, figure_type=figure_type, digits=digits),
+            'name': self._format_value(options, col_value, currency=currency, blank_if_zero=blank_if_zero, figure_type=figure_type, digits=digits),
             'no_format': col_value,
             'report_line_id': report_line_id,
             'sortable': col_data.get('sortable', False),
@@ -2580,12 +2651,31 @@ class AccountReport(models.Model):
                             raise UserError(subformula_error_format)
                         expression_has_sublines = result.get('has_sublines')
 
+                    if column_group_options.get('integer_rounding_enabled'):
+                        in_monetary_column = any(
+                            col['expression_label'] == expression.label
+                            for col in column_group_options['columns']
+                            if col['figure_type'] in ('monetary', 'monetary_without_symbol')
+                        )
+
+                        if (in_monetary_column and not expression.figure_type) or expression.figure_type in ('monetary', 'monetary_without_symbol'):
+                            expression_value = float_round(expression_value, precision_digits=0, rounding_method=column_group_options['integer_rounding'])
+
                     expression_result = {
                         'value': expression_value,
                         'has_sublines': expression_has_sublines,
                     }
 
                     if expression.report_line_id.report_id == self:
+                        if expression in column_group_expression_totals:
+                            # This can happen because of a cross report aggregation referencing an expression of its own report,
+                            # but forcing a different date_scope onto it. This case is not supported for now ; splitting the aggregation can be
+                            # used as a workaround.
+                            raise UserError(_(
+                                "Expression labelled '%s' of line '%s' is being overwritten when computing the current report. "
+                                "Make sure the cross-report aggregations of this report only reference terms belonging to other reports.",
+                                expression.label, expression.report_line_id.name
+                            ))
                         column_group_expression_totals[expression] = expression_result
                     elif cross_report_expression_totals is not None:
                         # Entering this else means this expression needs to be evaluated because of a cross_report aggregation
@@ -2780,6 +2870,9 @@ class AccountReport(models.Model):
                     else:
                         expression_result = self._aggregation_apply_bounds(column_group_options, expression.subformula, formula_result)
 
+                    if column_group_options.get('integer_rounding_enabled'):
+                        expression_result = float_round(expression_result, precision_digits=0, rounding_method=column_group_options['integer_rounding'])
+
                     # Store result
                     standardized_expression_scope = self._standardize_date_scope_for_date_range(expression.date_scope)
                     if (forced_date_scope == standardized_expression_scope or not forced_date_scope) and expression.report_line_id.report_id == self:
@@ -2899,9 +2992,11 @@ class AccountReport(models.Model):
 
         :param limit: The SQL limit to apply when computing these expressions' result.
 
-        :return: Two cases are possible:
-            - if we're not computing a groupby: the result will a dict(formula, expressions)
-
+        :return: The result might have two different formats depending on the situation:
+            - if we're computing a groupby: {(formula, expressions): [(grouping_key, {'result': value, 'has_sublines': boolean}), ...], ...}
+            - if we're not: {(formula, expressions): {'result': value, 'has_sublines': boolean}, ...}
+            'result' key is the default; different engines might use one or multiple other keys instead, depending of the subformulas they allow
+            (e.g. 'sum', 'sum_if_pos', ...)
         """
         engine_function_name = f'_compute_formula_batch_with_engine_{formula_engine}'
         return getattr(self, engine_function_name)(
@@ -2970,11 +3065,10 @@ class AccountReport(models.Model):
 
             formula = query_res['formula']
             rslt_dict = {'result': query_res['balance'], 'has_sublines': query_res['aml_count'] > 0}
-            for formula_expr in formulas_dict[formula]:
-                if current_groupby:
-                    rslt[(formula, formula_expr)].append((query_res['grouping_key'], rslt_dict))
-                else:
-                    rslt[(formula, formula_expr)] = rslt_dict
+            if current_groupby:
+                rslt[(formula, formulas_dict[formula])].append((query_res['grouping_key'], rslt_dict))
+            else:
+                rslt[(formula, formulas_dict[formula])] = rslt_dict
 
         return rslt
 
@@ -3456,7 +3550,8 @@ class AccountReport(models.Model):
                     options = report.with_context(allowed_company_ids=[company.id]).get_options(previous_options)
                     options_dict[report] = options
 
-                default_expr_by_report[report].append(expr)
+                if report._is_available_for(options_dict[report]):
+                    default_expr_by_report[report].append(expr)
 
         external_values_create_vals = []
         for report, report_default_expressions in default_expr_by_report.items():
@@ -3623,8 +3718,9 @@ class AccountReport(models.Model):
                     ORDER BY date DESC
                     LIMIT 1
                 """, where_params)
-                record_ids = self._cr.fetchone()[0]
-                external_values_domain = [('id', 'in', record_ids)]
+                record_ids = self._cr.fetchone()
+                if record_ids:
+                    external_values_domain = [('id', 'in', record_ids[0])]
 
             return {
                 'name': _("Manual values"),
@@ -3678,8 +3774,12 @@ class AccountReport(models.Model):
             if expression_domain is None:
                 continue
 
-            audit_or_domains = audit_or_domains_per_date_scope.setdefault(expression_to_audit.date_scope, [])
-            audit_or_domains.append(expression_domain)
+            date_scope = expression.date_scope if expression.subformula == 'cross_report' else expression_to_audit.date_scope
+            audit_or_domains = audit_or_domains_per_date_scope.setdefault(date_scope, [])
+            audit_or_domains.append(osv.expression.AND([
+                expression_domain,
+                groupby_domain,
+            ]))
 
         if audit_or_domains_per_date_scope:
             domain = osv.expression.OR([
@@ -4208,6 +4308,7 @@ class AccountReport(models.Model):
             'report': {
                 'company_name': self.env.company.name,
                 'company_country_code': self.env.company.country_code,
+                'company_currency_symbol': self.env.company.currency_id.symbol,
                 'name': self.name,
                 'root_report_id': self.root_report_id,
             }
@@ -4571,7 +4672,13 @@ class AccountReport(models.Model):
         return matched_prefix
 
     @api.model
-    def format_value(self, options, value, currency=False, blank_if_zero=False, figure_type=None, digits=1):
+    def format_value(self, options, value, currency=None, blank_if_zero=False, figure_type=None, digits=1):
+        currency_id = currency.id if currency else None
+        currency = self.env['res.currency'].browse(currency_id)
+
+        return self._format_value(options=options, value=value, currency=currency, blank_if_zero=blank_if_zero, figure_type=figure_type, digits=digits)
+
+    def _format_value(self, options, value, currency=None, blank_if_zero=False, figure_type=None, digits=1):
         """ Formats a value for display in a report (not especially numerical). figure_type provides the type of formatting we want.
         """
         if value is None:
@@ -4594,7 +4701,7 @@ class AccountReport(models.Model):
             currency = None
             digits = 0
         elif figure_type == 'boolean':
-            return bool(value)
+            return _("Yes") if bool(value) else _("No")
         elif figure_type in ('date', 'datetime'):
             return format_date(self.env, value)
         else:
@@ -4609,7 +4716,7 @@ class AccountReport(models.Model):
         if self._context.get('no_format'):
             return value
 
-        formatted_amount = formatLang(self.env, value, currency_obj=currency, digits=digits)
+        formatted_amount = formatLang(self.env, value, digits=digits, currency_obj=currency, rounding_method='HALF-UP', rounding_unit=options.get('rounding_unit'))
 
         if figure_type == 'percentage':
             return f"{formatted_amount}%"
@@ -4660,36 +4767,56 @@ class AccountReport(models.Model):
         else:
             reports_to_print = self
 
-        bodies = []
-        max_col_number = 0
+        reports_options = []
         for report in reports_to_print:
-            report_options = report.get_options(previous_options={**print_options, 'selected_section_id': report.id})
+            reports_options.append(report.get_options(previous_options={**print_options, 'selected_section_id': report.id}))
 
-            max_col_number = max(max_col_number, len(report_options['columns']) * len(report_options['column_groups']))
-
-            bodies.append(report._get_pdf_export_html(
-                report_options,
-                report._filter_out_folded_children(report._get_lines(report_options)),
-                additional_context={'base_url': base_url}
-            ))
+        grouped_reports_by_format = groupby(
+            zip(reports_to_print, reports_options),
+            key=lambda report: len(report[1]['columns']) > 5
+        )
 
         footer = self.env['ir.actions.report']._render_template("account_reports.internal_layout", values=rcontext)
         footer = self.env['ir.actions.report']._render_template("web.minimal_layout", values=dict(rcontext, subst=True, body=markupsafe.Markup(footer.decode())))
 
-        file_content = self.env['ir.actions.report']._run_wkhtmltopdf(
-            bodies,
-            footer=footer.decode(),
-            landscape=max_col_number > 5,
-            specific_paperformat_args={
-                'data-report-margin-top': 10,
-                'data-report-header-spacing': 10,
-                'data-report-margin-bottom': 15,
-            }
-        )
+        action_report = self.env['ir.actions.report']
+        files_stream = []
+        for is_landscape, reports_with_options in grouped_reports_by_format:
+            bodies = []
+
+            for report, report_options in reports_with_options:
+                bodies.append(report._get_pdf_export_html(
+                    report_options,
+                    report._filter_out_folded_children(report._get_lines(report_options)),
+                    additional_context={'base_url': base_url}
+                ))
+
+            files_stream.append(
+                io.BytesIO(action_report._run_wkhtmltopdf(
+                    bodies,
+                    footer=footer.decode(),
+                    landscape=is_landscape,
+                    specific_paperformat_args={
+                        'data-report-margin-top': 10,
+                        'data-report-header-spacing': 10,
+                        'data-report-margin-bottom': 15,
+                    }
+                )
+            ))
+
+        if len(files_stream) > 1:
+            result_stream = action_report._merge_pdfs(files_stream)
+            result = result_stream.getvalue()
+            # Close the different stream
+            result_stream.close()
+            for file_stream in files_stream:
+                file_stream.close()
+        else:
+            result = files_stream[0].read()
 
         return {
             'file_name': self.get_default_report_filename(options, 'pdf'),
-            'file_content': file_content,
+            'file_content': result,
             'file_type': 'pdf',
         }
 
@@ -4767,9 +4894,13 @@ class AccountReport(models.Model):
         else:
             reports_to_print = self
 
+        reports_options = []
         for report in reports_to_print:
             report_options = report.get_options(previous_options={**print_options, 'selected_section_id': report.id})
+            reports_options.append(report_options)
             report._inject_report_into_xlsx_sheet(report_options, workbook, workbook.add_worksheet(report.name[:31]))
+
+        self._add_options_xlsx_sheet(workbook, reports_options)
 
         workbook.close()
         output.seek(0)
@@ -4803,13 +4934,31 @@ class AccountReport(models.Model):
         level_3_col1_total_style = workbook.add_format({'font_name': 'Arial', 'bold': True, 'font_size': 12, 'font_color': '#666666', 'indent': 1})
         level_3_style = workbook.add_format({'font_name': 'Arial', 'font_size': 12, 'font_color': '#666666'})
 
-        #Set the first column width to 50
-        sheet.set_column(0, 0, 50)
-
-        y_offset = 0
-        x_offset = 1 # 1 and not 0 to leave space for the line name
         print_mode_self = self.with_context(no_format=True)
         lines = self._filter_out_folded_children(print_mode_self._get_lines(options))
+
+        # For reports with lines generated for accounts, the account name and codes are shown in a single column.
+        # To help user post-process the report if they need, we should in such a case split the account name and code in two columns.
+        account_lines_split_names = {}
+        for line in lines:
+            line_model = self._get_model_info_from_id(line['id'])[0]
+            if line_model == 'account.account':
+                # Reuse the _split_code_name to split the name and code in two values.
+                account_lines_split_names[line['id']] = self.env['account.account']._split_code_name(line['name'])
+
+        # Set the first column width to 50.
+        # If we have account lines and split the name and code in two columns, we will also set the second column.
+        if len(account_lines_split_names) > 0:
+            sheet.set_column(0, 0, 11)
+            sheet.set_column(1, 1, 50)
+        else:
+            sheet.set_column(0, 0, 50)
+
+        original_x_offset = 1 if len(account_lines_split_names) > 0 else 0
+
+        y_offset = 0
+        # 1 and not 0 to leave space for the line name. original_x_offset allows making place for the code column if needed.
+        x_offset = original_x_offset + 1
 
         # Add headers.
         # For this, iterate in the same way as done in main_table_header template
@@ -4822,14 +4971,14 @@ class AccountReport(models.Model):
             if options['show_growth_comparison']:
                 write_with_colspan(sheet, x_offset, y_offset, '%', 1, title_style)
             y_offset += 1
-            x_offset = 1
+            x_offset = original_x_offset + 1
 
         for subheader in column_headers_render_data['custom_subheaders']:
             colspan = subheader.get('colspan', 1)
             write_with_colspan(sheet, x_offset, y_offset, subheader.get('name', ''), colspan, title_style)
             x_offset += colspan
         y_offset += 1
-        x_offset = 1
+        x_offset = original_x_offset + 1
 
         for column in options['columns']:
             colspan = column.get('colspan', 1)
@@ -4863,23 +5012,152 @@ class AccountReport(models.Model):
                 style = default_style
                 col1_style = default_col1_style
 
-            #write the first column, with a specific style to manage the indentation
-            cell_type, cell_value = self._get_cell_type_value(lines[y])
-            if cell_type == 'date':
-                sheet.write_datetime(y + y_offset, 0, cell_value, date_default_col1_style)
+            # write the first column, with a specific style to manage the indentation
+            x_offset = original_x_offset + 1
+            if lines[y]['id'] in account_lines_split_names:
+                code, name = account_lines_split_names[lines[y]['id']]
+                sheet.write(y + y_offset, x_offset - 2, code, col1_style)
+                sheet.write(y + y_offset, x_offset - 1, name, col1_style)
             else:
-                sheet.write(y + y_offset, 0, cell_value, col1_style)
+                if lines[y].get('parent_id') and lines[y]['parent_id'] in account_lines_split_names:
+                    sheet.write(y + y_offset, x_offset - 2, account_lines_split_names[lines[y]['parent_id']][0], col1_style)
+                cell_type, cell_value = self._get_cell_type_value(lines[y])
+                if cell_type == 'date':
+                    sheet.write_datetime(y + y_offset, x_offset - 1, cell_value, date_default_col1_style)
+                else:
+                    sheet.write(y + y_offset, x_offset - 1, cell_value, col1_style)
 
             #write all the remaining cells
             columns = lines[y]['columns']
             if options['show_growth_comparison'] and 'growth_comparison_data' in lines[y]:
                 columns += [lines[y].get('growth_comparison_data')]
-            for x, column in enumerate(columns, start=1):
+            for x, column in enumerate(columns, start=x_offset):
                 cell_type, cell_value = self._get_cell_type_value(column)
                 if cell_type == 'date':
                     sheet.write_datetime(y + y_offset, x + lines[y].get('colspan', 1) - 1, cell_value, date_default_style)
                 else:
                     sheet.write(y + y_offset, x + lines[y].get('colspan', 1) - 1, cell_value, style)
+
+    def _add_options_xlsx_sheet(self, workbook, options_list):
+        """Adds a new sheet for xlsx report exports with a summary of all filters and options activated at the moment of the export."""
+        filters_sheet = workbook.add_worksheet(_("Filters"))
+        # Set first and second column widths.
+        filters_sheet.set_column(0, 0, 20)
+        filters_sheet.set_column(1, 1, 50)
+        name_style = workbook.add_format({'font_name': 'Arial', 'bold': True, 'bottom': 2})
+        y_offset = 0
+
+        if len(options_list) == 1:
+            self.env['account.report'].browse(options_list[0]['report_id'])._inject_report_options_into_xlsx_sheet(options_list[0], filters_sheet, y_offset)
+            return
+
+        # Find uncommon keys
+        options_sets = list(map(set, options_list))
+        common_keys = set.intersection(*options_sets)
+        all_keys = set.union(*options_sets)
+        uncommon_options_keys = all_keys - common_keys
+        # Try to find the common filter values between all reports to avoid duplication.
+        common_options_values = {}
+        for key in common_keys:
+            first_value = options_list[0][key]
+            if all(options[key] == first_value for options in options_list[1:]):
+                common_options_values[key] = first_value
+            else:
+                uncommon_options_keys.add(key)
+
+        # Write common options to the sheet.
+        filters_sheet.write(y_offset, 0, _("All"), name_style)
+        y_offset += 1
+        y_offset = self._inject_report_options_into_xlsx_sheet(common_options_values, filters_sheet, y_offset)
+
+        for report_options in options_list:
+            report = self.env['account.report'].browse(report_options['report_id'])
+
+            filters_sheet.write(y_offset, 0, _("%s", report.name), name_style)
+            y_offset += 1
+            new_offset = report._inject_report_options_into_xlsx_sheet(report_options, filters_sheet, y_offset, uncommon_options_keys)
+
+            if y_offset == new_offset:
+                y_offset -= 1
+                # Clear the report name's cell since it didn't add any data to the xlsx.
+                filters_sheet.write(y_offset, 0, " ")
+            else:
+                y_offset = new_offset
+
+    def _inject_report_options_into_xlsx_sheet(self, options, sheet, y_offset, options_to_print=None):
+        """
+        Injects the report options into the filters sheet.
+
+        :param options: Dictionary containing report options.
+        :param sheet: XLSX sheet to inject options into.
+        :param y_offset: Offset for the vertical position in the sheet.
+        :param options_to_print: Optional list of names to print. If not provided, all printable options will be included.
+        """
+        def write_filter_lines(filter_title, filter_lines, y_offset):
+            sheet.write(y_offset, 0, filter_title)
+            for line in filter_lines:
+                sheet.write(y_offset, 1, line)
+                y_offset += 1
+            return y_offset
+
+        def should_print_option(option_key):
+            """Check if the option should be printed based on options_to_print."""
+            return not options_to_print or option_key in options_to_print
+
+        # Company
+        if should_print_option('companies'):
+            companies = options['companies']
+            title = _("Companies") if len(companies) > 1 else _("Company")
+            lines = [company['name'] for company in companies]
+            y_offset = write_filter_lines(title, lines, y_offset)
+
+        # Journals
+        if should_print_option('journals') and (journals := options.get('journals')):
+            journal_titles = [journal.get('title') for journal in journals if journal.get('selected')]
+            if journal_titles:
+                y_offset = write_filter_lines(_("Journals"), journal_titles, y_offset)
+
+        # Partners
+        if should_print_option('selected_partner_ids') and (partner_names := options.get('selected_partner_ids')):
+            y_offset = write_filter_lines(_("Partners"), partner_names, y_offset)
+
+        # Partner categories
+        if should_print_option('selected_partner_categories') and (partner_categories := options.get('selected_partner_categories')):
+            y_offset = write_filter_lines(_("Partner Categories"), partner_categories, y_offset)
+
+        # Horizontal groups
+        if should_print_option('selected_horizontal_group_id') and (group_id := options.get('selected_horizontal_group_id')):
+            for horizontal_group in options['available_horizontal_groups']:
+                if horizontal_group['id'] == group_id:
+                    filter_name = horizontal_group['name']
+                    y_offset = write_filter_lines(_("Horizontal Group"), [filter_name], y_offset)
+                    break
+
+        # Currency
+        if should_print_option('company_currency') and options.get('company_currency'):
+            y_offset = write_filter_lines(_("Company Currency"), [options['company_currency']['currency_name']], y_offset)
+
+        # Filters
+        if should_print_option('aml_ir_filters'):
+            if options.get('aml_ir_filters') and any(opt['selected'] for opt in options['aml_ir_filters']):
+                filter_names = [opt['name'] for opt in options['aml_ir_filters'] if opt['selected']]
+                y_offset = write_filter_lines(_("Filters"), filter_names, y_offset)
+
+        # Extra options
+        # Array of tuples for the extra options: (name, option_key, condition)
+        extra_options = [
+            (_("With Draft Entries"), 'all_entries', self.filter_show_draft),
+            (_("Only Show Unreconciled Entries"), 'unreconciled', self.filter_unreconciled),
+            (_("Including Analytic Simulations"), 'include_analytic_without_aml', True)
+        ]
+        filter_names = [
+            name for name, option_key, condition in extra_options
+            if (not options_to_print or option_key in options_to_print) and condition and options.get(option_key)
+        ]
+        if filter_names:
+            y_offset = write_filter_lines(_("Options"), filter_names, y_offset)
+
+        return y_offset
 
     def _get_cell_type_value(self, cell):
         if 'date' not in cell.get('class', '') or not cell.get('name'):
@@ -5043,12 +5321,12 @@ class AccountReport(models.Model):
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         worksheet = workbook.add_worksheet(_('Accounts coverage'))
-        worksheet.set_column(0, 0, 15)
+        worksheet.set_column(0, 0, 20)
         worksheet.set_column(1, 1, 75)
         worksheet.set_column(2, 2, 80)
         worksheet.freeze_panes(1, 0)
 
-        headers = [_("Account Code"), _("Error message"), _("Report lines mentioning the account code"), '#FFFFFF']
+        headers = [_("Account Code / Tag"), _("Error message"), _("Report lines mentioning the account code"), '#FFFFFF']
         lines = [headers] + self._generate_accounts_coverage_report_xlsx_lines()
         for i, line in enumerate(lines):
             worksheet.write_row(i, 0, line[:-1], workbook.add_format({'bg_color': line[-1]}))
@@ -5061,7 +5339,7 @@ class AccountReport(models.Model):
         return {
             "type": "ir.actions.act_url",
             "url": f"/web/content/{attachment_id.id}",
-            "target": "self",
+            "target": "download",
         }
 
     def _generate_accounts_coverage_report_xlsx_lines(self):
@@ -5072,13 +5350,27 @@ class AccountReport(models.Model):
         - an account is reported in multiple lines of the report (orange)
         - an account is reported in a line of the report but does not exist in the Chart of Accounts (yellow)
         """
+        def get_account_domain(prefix):
+            # Helper function to get the right domain to find the account
+            # This function verifies if we have to look for a tag or if we have
+            # to look for an account code.
+            if tag_matching := ACCOUNT_CODES_ENGINE_TAG_ID_PREFIX_REGEX.match(prefix):
+                if tag_matching['ref']:
+                    account_tag_id = self.env['ir.model.data']._xmlid_to_res_id(tag_matching['ref'])
+                else:
+                    account_tag_id = int(tag_matching['id'])
+                return 'tag_ids', 'in', (account_tag_id,)
+            else:
+                return 'code', '=like', f'{prefix}%'
+
         self.ensure_one()
 
         all_reported_accounts = self.env["account.account"]  # All accounts mentioned in the report (including those reported without using the account code)
         accounts_by_expressions = {}    # {expression_id: account.account objects}
         reported_account_codes = []     # [{'prefix': ..., 'balance': ..., 'exclude': ..., 'line': ...}, ...]
-        non_reported_codes = set()      # codes that exist in the CoA but are not reported in the report
         non_existing_codes = defaultdict(lambda: self.env["account.report.line"])  # {non_existing_account_code: {lines_with_that_code,}}
+        lines_per_non_linked_tag = defaultdict(lambda: self.env['account.report.line'])
+        lines_using_bad_operator_per_tag = defaultdict(lambda: self.env['account.report.line'])
         candidate_duplicate_codes = defaultdict(lambda: self.env["account.report.line"])  # {candidate_duplicate_account_code: {lines_with_that_code,}}
         duplicate_codes = defaultdict(lambda: self.env["account.report.line"])  # {verified duplicate_account_code: {lines_with_that_code,}}
         duplicate_codes_same_line = defaultdict(lambda: self.env["account.report.line"])  # {duplicate_account_code: {line_with_that_code_multiple_times,}}
@@ -5086,6 +5378,9 @@ class AccountReport(models.Model):
             *self.env['account.account']._check_company_domain(self.env.company),
             ('deprecated', '=', False),
         ]
+
+        # tag_ids already linked to an account - avoid several search_count to know if the tag is used or not
+        tag_ids_linked_to_account = set(self.env['account.account'].search([('tag_ids', '!=', False)]).tag_ids.ids)
 
         expressions = self.line_ids.expression_ids._expand_aggregations()
         for i, expr in enumerate(expressions):
@@ -5103,8 +5398,21 @@ class AccountReport(models.Model):
                             continue
                         operand[0] = operand[0].replace('account_id.', '')
                         # Check that the code exists in the CoA
-                        if operand[0] == 'code' and not self.env["account.account"].search([operand]):
+                        if operand[0] == 'code' and not self.env["account.account"].search_count([operand]):
                             non_existing_codes[operand[2]] |= expr.report_line_id
+                        elif operand[0] == 'tag_ids':
+                            tag_ids = operand[2]
+                            if not isinstance(tag_ids, (list, tuple, set)):
+                                tag_ids = [tag_ids]
+
+                            if operand[1] in ('=', 'in'):
+                                tag_ids_to_browse = [tag_id for tag_id in tag_ids if tag_id in tag_ids_linked_to_account]
+                                for tag in self.env['account.account.tag'].browse(tag_ids_to_browse):
+                                    lines_per_non_linked_tag[f'{tag.name} ({tag.id})'] |= expr.report_line_id
+                            else:
+                                for tag in self.env['account.account.tag'].browse(tag_ids):
+                                    lines_using_bad_operator_per_tag[f'{tag.name} ({tag.id}) - Operator: {operand[1]}'] |= expr.report_line_id
+
                     accounts_domain.append(operand)
                 reported_accounts += self.env['account.account'].search(accounts_domain)
             elif expr.engine == "account_codes":
@@ -5113,8 +5421,7 @@ class AccountReport(models.Model):
                     if not token:
                         continue
                     token_match = ACCOUNT_CODES_ENGINE_TERM_REGEX.match(token)
-                    # tag selectors on account_codes engine are not supported for now ; this will come later (probably not in stable)
-                    if not token_match or ACCOUNT_CODES_ENGINE_TAG_ID_PREFIX_REGEX.match(token_match['prefix']):
+                    if not token_match:
                         continue
 
                     parsed_token = token_match.groupdict()
@@ -5124,26 +5431,30 @@ class AccountReport(models.Model):
                         'exclude': parsed_token['excluded_prefixes'].split(',') if parsed_token['excluded_prefixes'] else [],
                         'line': expr.report_line_id,
                     })
+
                 for account_code in account_codes:
                     reported_account_codes.append(account_code)
-                    excl_tuples = [("code", "=like", excl_code + "%") for excl_code in account_code['exclude']]
+                    exclude_domain_accounts = [get_account_domain(exclude_code) for exclude_code in account_code['exclude']]
                     reported_accounts += self.env["account.account"].search([
                         *common_account_domain,
-                        ("code", "=like", account_code['prefix'] + "%"),
-                        *[excl_domain for excl_tuple in excl_tuples for excl_domain in ("!", excl_tuple)],
+                        get_account_domain(account_code['prefix']),
+                        *[excl_domain for excl_tuple in exclude_domain_accounts for excl_domain in ("!", excl_tuple)],
                     ])
-                    # Check that the code exists in the CoA
-                    if not self.env["account.account"].search([
-                        *common_account_domain,
-                        ('code', '=like', account_code['prefix'] + '%')
-                    ]):
-                        non_existing_codes[account_code['prefix']] |= account_code['line']
-                    for account_code_exclude in account_code['exclude']:
-                        if not self.env["account.account"].search([
+
+                    # Check that the code exists in the CoA or that the tag is linked to an account
+                    prefixes_to_check = [account_code['prefix']] + account_code['exclude']
+                    for prefix_to_check in prefixes_to_check:
+                        account_domain = get_account_domain(prefix_to_check)
+                        if not self.env["account.account"].search_count([
                             *common_account_domain,
-                            ('code', '=like', account_code_exclude + '%')
+                            account_domain,
                         ]):
-                            non_existing_codes[account_code_exclude] |= account_code['line']
+                            # Identify if we're working with account codes or account tags
+                            if account_domain[0] == 'code':
+                                non_existing_codes[prefix_to_check] |= account_code['line']
+                            elif account_domain[0] == 'tag_ids':
+                                lines_per_non_linked_tag[prefix_to_check] |= account_code['line']
+
             all_reported_accounts |= reported_accounts
             accounts_by_expressions[expr.id] = reported_accounts
 
@@ -5186,13 +5497,15 @@ class AccountReport(models.Model):
                 *common_account_domain,
                 ('account_type', 'not in', ("off_balance", "income", "income_other", "expense", "expense_depreciation", "expense_direct_cost"))
             ])
-        for account_in_coa in accounts_in_coa:
-            if account_in_coa not in all_reported_accounts:
-                non_reported_codes.add(account_in_coa.code)
+
+        # Compute codes that exist in the CoA but are not reported in the report
+        non_reported_codes = set((accounts_in_coa - all_reported_accounts).mapped('code'))
 
         # Create the lines that will be displayed in the xlsx
         all_reported_codes = sorted(set(all_reported_accounts.mapped("code")) | non_reported_codes | non_existing_codes.keys())
         errors_trie = self._get_accounts_coverage_report_errors_trie(all_reported_codes, non_reported_codes, duplicate_codes, duplicate_codes_same_line, non_existing_codes)
+        errors_trie['children'].update(**self._get_account_tag_coverage_report_errors_trie(lines_per_non_linked_tag, lines_using_bad_operator_per_tag))  # Add tags that are not linked to an account
+
         errors_trie = self._regroup_accounts_coverage_report_errors_trie(errors_trie)
         return self._get_accounts_coverage_report_coverage_lines("", errors_trie)
 
@@ -5241,6 +5554,7 @@ class AccountReport(models.Model):
                 errors.add("NON_EXISTING")
             else:
                 errors.add("NONE")
+
             for j in range(1, len(reported_code) + 1):
                 current_trie = current_trie["children"].setdefault(reported_code[:j], {
                     "children": {},
@@ -5248,6 +5562,29 @@ class AccountReport(models.Model):
                     "errors": errors
                 })
         return errors_trie
+
+    @api.model
+    def _get_account_tag_coverage_report_errors_trie(self, lines_per_non_linked_tag, lines_per_bad_operator_tag):
+        """ As we don't want to make a hierarchy for tags, we use a specific
+            function to handle tags.
+        """
+        errors = {
+            non_linked_tag: {
+                'children': {},
+                'lines': line,
+                'errors': {'NON_LINKED'},
+            }
+            for non_linked_tag, line in lines_per_non_linked_tag.items()
+        }
+        errors.update({
+            bad_operator_tag: {
+                'children': {},
+                'lines': line,
+                'errors': {'BAD_OPERATOR'},
+            }
+            for bad_operator_tag, line in lines_per_bad_operator_tag.items()
+        })
+        return errors
 
     def _regroup_accounts_coverage_report_errors_trie(self, trie):
         """
@@ -5295,6 +5632,14 @@ class AccountReport(models.Model):
                 "msg": _("This account is reported in a line of the report but does not exist in the Chart of Accounts"),
                 "color": "#FFBF00"
             },
+            "NON_LINKED": {
+                "msg": _("This tag is reported in a line of the report but is not linked to any account of the Chart of Accounts"),
+                "color": "#FFBF00",
+            },
+            "BAD_OPERATOR": {
+                "msg": _("The used operator is not supported for this expression."),
+                "color": "#FFBF00",
+            }
         }
         if coverage_lines is None:
             coverage_lines = []

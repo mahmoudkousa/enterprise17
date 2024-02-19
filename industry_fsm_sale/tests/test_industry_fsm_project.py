@@ -171,3 +171,21 @@ class TestIndustryFsmProject(TestFsmFlowSaleCommon):
         )[0]
         projects_to_make_billable += non_billable_projects
         self.assertEqual(projects_to_make_billable, Project, "No fsm project should be fetched to make them billable.")
+
+    def test_quotation_creation_from_task(self):
+        project = self.env['project.project'].create({
+            'name': 'Extra Quotation Project',
+            'partner_id': self.partner_1.id,
+            'allow_billable': True,
+            'allow_quotations': True,
+        })
+        task = self.env['project.task'].create({
+            'name': 'Task',
+            'project_id': project.id,
+            'partner_id': self.partner_1.id,
+        })
+        quotation_context = task.action_fsm_create_quotation()['context']
+        quotation = self.env['sale.order'].with_context(quotation_context).create({})
+        self.assertTrue(quotation.company_id, 'the company on the sales order must be set')
+        self.assertEqual(quotation.task_id, task)
+        self.assertEqual(quotation.partner_id, task.partner_id)

@@ -99,9 +99,15 @@ export const RentingMixin = {
         const [startDate] = ($product || this.$el).find("input[name=renting_start_date]");
         const [endDate] = ($product || this.$el).find("input[name=renting_end_date]");
         if (startDate || endDate) {
+            let startDateValue = this._getDateFromInputOrDefault(startDate, "startDate", "start_date");
+            let endDateValue = this._getDateFromInputOrDefault(endDate, "endDate", "end_date");
+            if (startDateValue && endDateValue && !this._isDurationWithHours()) {
+                startDateValue = startDateValue.startOf('day');
+                endDateValue = endDateValue.endOf('day');
+            }
             return {
-                start_date: this._getDateFromInputOrDefault(startDate, "startDate", "start_date"),
-                end_date: this._getDateFromInputOrDefault(endDate, "endDate", "end_date"),
+                start_date: startDateValue,
+                end_date: endDateValue,
             };
         }
         return {};

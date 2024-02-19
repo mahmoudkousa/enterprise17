@@ -1,16 +1,23 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import base64
+
 from .sign_request_common import SignRequestCommon
 import odoo.tests
 
-from odoo.tools.misc import mute_logger
+from odoo.tools.misc import mute_logger, file_open
 from odoo.tools.translate import WEB_TRANSLATION_COMMENT
 
 
 @odoo.tests.tagged('-at_install', 'post_install')
 class TestUi(odoo.tests.HttpCase, SignRequestCommon):
     def test_ui(self):
+        # If not enabled (like in demo data), landing on res.config will try
+        # to disable module_sale_quotation_builder and raise an issue
+        group_order_template = self.env.ref('sale_management.group_sale_order_template', raise_if_not_found=False)
+        if group_order_template:
+            self.env.ref('base.group_user').write({"implied_ids": [(4, group_order_template.id)]})
         self.start_tour("/web", 'sign_widgets_tour', login='admin')
 
         self.start_tour("/web", 'shared_sign_request_tour', login='admin')
@@ -51,6 +58,13 @@ class TestUi(odoo.tests.HttpCase, SignRequestCommon):
             'width': 0.200,
             'height': 0.050,
         })
+        with file_open('sign/static/demo/signature.png', "rb") as f:
+            img_content = base64.b64encode(f.read())
+
+        self.env.ref('base.user_admin').write({
+            'name': 'Mitchell Admin',
+            'sign_signature': img_content,
+        })
         self.start_tour("/web", 'test_sign_flow_tour', login='admin')
 
     def test_template_edition(self):
@@ -62,9 +76,13 @@ class TestUi(odoo.tests.HttpCase, SignRequestCommon):
         self.start_tour("/web", "sign_template_creation_tour", login="admin")
 
         self.assertEqual(blank_template.name, 'filled_template', 'The tour should have changed the template name')
-        self.assertEqual(len(blank_template.sign_item_ids), 2)
+        self.assertEqual(len(blank_template.sign_item_ids), 4)
         self.assertEqual(blank_template.responsible_count, 2)
-        self.assertEqual(set(blank_template.sign_item_ids.mapped("type_id.item_type")), set(["text", "signature"]))
+        self.assertEqual(set(blank_template.sign_item_ids.mapped("type_id.item_type")), {"text", "signature", "selection"})
+        selection_sign_item = blank_template.sign_item_ids.filtered(lambda item: item.type_id.item_type == 'selection')
+        self.assertEqual(len(selection_sign_item.option_ids), 1)
+        self.assertEqual(selection_sign_item.option_ids[0].value, "option")
+        self.assertEqual(set(blank_template.sign_item_ids.mapped("name")), set(["Name", "Signature", "placeholder", "Selection"]))
 
     def test_report_modal(self):
         self.start_tour("/web", "sign_report_modal_tour", login="admin")

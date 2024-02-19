@@ -2,19 +2,31 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from datetime import date
+from freezegun import freeze_time
 
 from odoo import Command
 from odoo.tests.common import TransactionCase
-from odoo.tests import tagged
+
 
 class TestPayrollCommon(TransactionCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestPayrollCommon, cls).setUpClass()
-
+      super(TestPayrollCommon, cls).setUpClass()
+      with freeze_time('2023-01-01'):
         today = date.today()
-        cls.belgian_company = cls.env.ref('l10n_be_hr_payroll.res_company_be')
+        cls.belgian_company = cls.env['res.company'].create({
+            'name': 'My Belgian Company - Test',
+            'country_id': cls.env.ref('base.be').id,
+            'currency_id': cls.env.ref('base.EUR').id,
+            'l10n_be_company_number': '0477472701',
+            'l10n_be_revenue_code': '1293',
+            'street': 'Rue du Paradis',
+            'zip': '6870',
+            'city': 'Eghezee',
+            'vat': 'BE0897223670',
+            'phone': '061928374',
+        })
 
         cls.env.user.company_ids |= cls.belgian_company
         cls.env = cls.env(context=dict(cls.env.context, allowed_company_ids=cls.belgian_company.ids))

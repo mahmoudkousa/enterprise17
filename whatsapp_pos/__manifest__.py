@@ -2,7 +2,7 @@
 
 {
     'name': 'WhatsApp-POS',
-    'category': 'Hidden/Tools',
+    'category': 'WhatsApp',
     'description': """This module integrates POS with WhatsApp""",
     'depends': ['point_of_sale', 'whatsapp'],
     'data': [

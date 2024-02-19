@@ -11,12 +11,14 @@ from odoo.addons.l10n_be_codabox.const import get_error_msg, get_iap_endpoint
 class ResCompany(models.Model):
     _inherit = "res.company"
 
-    l10n_be_codabox_fiduciary_vat = fields.Char(string="Fiduciary VAT", compute="_compute_l10n_be_codabox_fiduciary_vat", store=True, readonly=False)
+    l10n_be_codabox_fiduciary_vat = fields.Char(string="Fiduciary VAT", readonly=False)
     l10n_be_codabox_iap_token = fields.Char(string="IAP Access Token")
-    l10n_be_codabox_is_connected = fields.Boolean(string="Codabox Is Connected")
+    l10n_be_codabox_is_connected = fields.Boolean(string="CodaBox Is Connected")
     l10n_be_codabox_soda_journal = fields.Many2one("account.journal", string="Journal in which SODA's will be imported", domain="[('type', '=', 'bank')]")
 
-    @api.depends("account_representative_id.vat")
+    # TODO: fix in master by adding account_report module in manifest and changing
+    # l10n_be_codabox_fiduciary_vat to a computed field using this method.
+    # because the account_representative_id field is defined in account_report module
     def _compute_l10n_be_codabox_fiduciary_vat(self):
         for company in self:
             fidu_vat = re.sub("[^0-9]", "", company.account_representative_id.vat or "")
@@ -45,7 +47,7 @@ class ResCompany(models.Model):
         params = {
             "db_uuid": self.env["ir.config_parameter"].sudo().get_param("database.uuid"),
             "company_vat": re.sub("[^0-9]", "", self.vat),
-            "fidu_vat": re.sub("[^0-9]", "", self.l10n_be_codabox_fiduciary_vat),
+            "fidu_vat": re.sub("[^0-9]", "", self.l10n_be_codabox_fiduciary_vat or ""),
             "iap_token": self.l10n_be_codabox_iap_token,
             "callback_url": self.get_base_url(),
         }
@@ -55,9 +57,9 @@ class ResCompany(models.Model):
             if result.get("iap_token"):
                 self.l10n_be_codabox_iap_token = result["iap_token"]
             url = result.get("confirmation_url")
-            if url != self.get_base_url():  # Redirect user to Codabox website to confirm the connection
+            if url != self.get_base_url():  # Redirect user to CodaBox website to confirm the connection
                 return {
-                    "name": _("Codabox"),
+                    "name": _("CodaBox"),
                     "type": "ir.actions.act_url",
                     "url": url,
                     "target": "self",
@@ -69,7 +71,7 @@ class ResCompany(models.Model):
         self._l10n_be_codabox_verify_prerequisites()
         params = {
             "db_uuid": self.env["ir.config_parameter"].sudo().get_param("database.uuid"),
-            "fidu_vat": re.sub("[^0-9]", "", self.l10n_be_codabox_fiduciary_vat),
+            "fidu_vat": re.sub("[^0-9]", "", self.l10n_be_codabox_fiduciary_vat or ""),
             "company_vat": re.sub("[^0-9]", "", self.vat),
             "iap_token": self.l10n_be_codabox_iap_token or "",
         }

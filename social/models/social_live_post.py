@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import logging
 import requests
 
 from odoo import api, fields, models
+
+_logger = logging.getLogger(__name__)
 
 
 class SocialLivePost(models.Model):
@@ -84,8 +87,8 @@ class SocialLivePost(models.Model):
         # and/or a slow response from their side
         try:
             self.env['social.live.post']._refresh_statistics()
-        except requests.exceptions.ReadTimeout:
-            pass
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            _logger.warning("Failed to refresh the live post statistics.", exc_info=True)
 
     def _refresh_statistics(self):
         """ Every social module should override this method.

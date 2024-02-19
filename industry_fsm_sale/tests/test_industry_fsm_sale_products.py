@@ -48,3 +48,6 @@ class TestFsmSaleProducts(HttpCase, TestFsmFlowCommon):
 
     def test_industry_fsm_sale_products_tour(self):
         self.start_tour("/web", 'industry_fsm_sale_products_tour', login="admin")
+
+    def test_industry_fsm_sale_quantity_products_tour(self):
+        self.start_tour("/web", 'industry_fsm_sale_quantity_products_tour', login="admin")

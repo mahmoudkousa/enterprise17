@@ -4,7 +4,7 @@
         https://www.ato.gov.au/
         https://oac.chris21.com/OAC_ichrisp/Help/ichrisUG/646250.htm
     -->
-    <!-- the 3 following rules take advantage of the fact that any variable declared in the compute function 
+    <!-- the 3 following rules take advantage of the fact that any variable declared in the compute function
     is added to the global dictionnary. Because we need to separate taxable and non-taxable components of the
     ETP payment, the variables are calculated once but used in different rules.-->
     <record id="l10n_au_termination_etp_gross" model="hr.salary.rule">
@@ -64,7 +64,7 @@ result = -etp_withholding
         <field name="sequence">54</field>
         <field name="amount_select">code</field>
         <field name="amount_python_compute">
-leave_amount, leave_withholding, leave_loading_withholding = payslip._l10n_au_compute_unused_leaves_withhold(year_slips)
+leave_amount, _, _ = payslip._l10n_au_compute_unused_leaves_withhold(year_slips)
 result = leave_amount
         </field>
         <field name="struct_id" ref="l10n_au_hr_payroll.hr_payroll_structure_au_termination"/>
@@ -77,6 +77,7 @@ result = leave_amount
         <field name="sequence">55</field>
         <field name="amount_select">code</field>
         <field name="amount_python_compute">
+_, leave_withholding, _ = payslip._l10n_au_compute_unused_leaves_withhold(year_slips)
 result = -leave_withholding
         </field>
         <field name="struct_id" ref="l10n_au_hr_payroll.hr_payroll_structure_au_termination"/>

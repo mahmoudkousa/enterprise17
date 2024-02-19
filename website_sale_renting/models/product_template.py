@@ -1,7 +1,9 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from math import ceil
+from pytz import timezone, UTC
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -160,8 +162,24 @@ class ProductTemplate(models.Model):
         if start_date or end_date:
             return start_date, end_date
 
-        default_date = self._get_default_start_date()
-        return default_date, self._get_default_end_date(default_date, duration, unit)
+        default_start_dt = self._get_default_start_date()
+        if unit == 'hour':
+            default_end_dt = self._get_default_end_date(default_start_dt, duration, unit)
+        else:
+            # If unit in day, week, month, take into account the entire day.
+            # 21st + 1 day --> from 21st 00:00:00 to 22nd 23:59:59
+            default_start_dt = datetime.combine(default_start_dt.date(), datetime.min.time())
+            # remove a second to avoid adding a day (from date point of view)
+            default_end_dt = self._get_default_end_date(default_start_dt + relativedelta(seconds=-1), duration, unit)
+            # Consider the timezone if frontend request
+            # Return the UTC value according to the client
+            # because the frontend will convert values according to its timezone
+            # (and without conversion, we risk changing day).
+            if request and request.is_frontend and request.httprequest.cookies.get('tz'):
+                client_tz = timezone(request.httprequest.cookies['tz'])
+                default_start_dt = client_tz.localize(default_start_dt).astimezone(UTC)
+                default_end_dt = client_tz.localize(default_end_dt).astimezone(UTC)
+        return default_start_dt, default_end_dt
 
     @api.model
     def _get_default_start_date(self):

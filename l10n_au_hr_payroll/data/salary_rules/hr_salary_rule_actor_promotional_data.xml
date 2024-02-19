@@ -5,7 +5,7 @@
         https://oac.chris21.com/OAC_ichrisp/Help/ichrisUG/646250.htm
     -->
     <!-- actors for promotional activity  -->
-    <record id="l10n_au_withholding_actors_structure_3_promo" model="hr.salary.rule">
+    <record id="l10n_au_withholding_structure_3_promo" model="hr.salary.rule">
         <field name="category_id" ref="l10n_au_hr_payroll.rule_category_net_withholding"/>
         <field name="name">PAYG Withholding</field>
         <field name="code">WITHHOLD</field>
@@ -28,6 +28,18 @@ else:
         result_rate = params["normal"]
 result = categories['GROSS']
 result_rate *= -1
+        </field>
+        <field name="struct_id" ref="l10n_au_hr_payroll.hr_payroll_structure_au_actor_promotional"/>
+    </record>
+
+    <record id="l10n_au_withholding_net_structure_3_promo" model="hr.salary.rule">
+        <field name="category_id" ref="l10n_au_hr_payroll.rule_category_net_withholding"/>
+        <field name="name">Total Withholding Amount</field>
+        <field name="code">WITHHOLD.TOTAL</field>
+        <field name="sequence">160</field>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute">
+result = categories['WITHHOLD'] + min(-categories['WITHHOLD'], categories["WITHHOLD.OFFSET"])
         </field>
         <field name="struct_id" ref="l10n_au_hr_payroll.hr_payroll_structure_au_actor_promotional"/>
     </record>

@@ -84,9 +84,11 @@ patch(BarcodePickingModel.prototype, {
     },
 
     _getCommands() {
-        return Object.assign(super._getCommands(), {
-            'O-BTN.record-components': this._actionRecordComponents.bind(this),
-        });
+        const commands = super._getCommands();
+        if (!this.isDone) {
+            commands['O-BTN.record-components'] = this._actionRecordComponents.bind(this);
+        }
+        return commands;
     },
 
     async _updateLineQty(line, args) {

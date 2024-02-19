@@ -14,13 +14,19 @@ class TagsCategories(models.Model):
             res['folder_id'] = self.env.context.get('documents_project_folder')
         return res
 
+    def _get_facet_domain(self, domain):
+        if 'documents_project_folder' not in self.env.context:
+            return None
+        folder_id = self.env.context.get('documents_project_folder')
+        return expression.AND([
+            domain,
+            [('folder_id', '=', folder_id)],
+        ])
+
     @api.model
     def _name_search(self, name, domain=None, operator='ilike', limit=None, order=None):
-        domain = domain or []
-        if 'documents_project_folder' in self.env.context:
-            folder_id = self.env.context.get('documents_project_folder')
-            domain = expression.AND([
-                domain,
-                [('folder_id', '=', folder_id)]
-            ])
-        return super()._name_search(name, domain, operator, limit, order)
+        return super()._name_search(name, self._get_facet_domain(domain), operator, limit, order)
+
+    @api.model
+    def search_read(self, domain=None, fields=None, offset=0, limit=None, order=None, **read_kwargs):
+        return super().search_read(self._get_facet_domain(domain), fields, offset, limit, order, **read_kwargs)

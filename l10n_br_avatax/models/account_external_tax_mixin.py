@@ -87,7 +87,10 @@ class AccountExternalTaxMixinL10nBR(models.AbstractModel):
             if not product:
                 errors.append(_('- A product is required on each line when using Avatax.'))
             elif product.detailed_type == 'service':
-                errors.append(_('- Avatax only supports consumable products. %s is a service product.', product.display_name))
+                errors.append(_(
+                    '- Avatax only supports consumable products. %s is a service product. Please change the Fiscal Position or the product.',
+                    product.display_name
+                ))
             elif not product.l10n_br_ncm_code_id:
                 errors.append(_('- Please configure a Mercosul NCM Code on %s.', product.display_name))
             elif line['lineAmount'] < 0:
@@ -121,7 +124,8 @@ class AccountExternalTaxMixinL10nBR(models.AbstractModel):
             'itemDescriptor': {
                 'description': product.display_name or '',
                 'cest': product.l10n_br_cest_code or '',
-                'hsCode': product.l10n_br_ncm_code_id.code,
+                # The periods in the code work during tax calculation, but not EDI. Removing them works in both.
+                'hsCode': (product.l10n_br_ncm_code_id.code or '').replace('.', ''),
                 'source': product.l10n_br_source_origin or '',
                 'productType': product.l10n_br_sped_type or '',
             },
@@ -196,6 +200,14 @@ class AccountExternalTaxMixinL10nBR(models.AbstractModel):
             for record, transaction in transactions.items()
         }
 
+    def _l10n_br_get_partner_type(self, partner):
+        if partner.country_code not in ('BR', False):
+            return 'foreign'
+        elif partner.is_company:
+            return 'business'
+        else:
+            return 'individual'
+
     def _l10n_br_get_calculate_payload(self):
         """ Returns the full payload containing one record to be used in a /transactions API call. """
         self.ensure_one()
@@ -223,13 +235,6 @@ class AccountExternalTaxMixinL10nBR(models.AbstractModel):
         self._l10n_br_remove_temp_values_lines(lines)
         self._l10n_br_repr_amounts(lines)
 
-        if partner.country_code not in ('BR', False):
-            customer_type = 'foreign'
-        elif partner.is_company:
-            customer_type = 'business'
-        else:
-            customer_type = 'individual'
-
         simplifiedTaxesSettings = {}
         if company.l10n_br_tax_regime == 'simplified':
             simplifiedTaxesSettings = {'pCredSN': self.company_id.l10n_br_icms_rate}
@@ -245,7 +250,7 @@ class AccountExternalTaxMixinL10nBR(models.AbstractModel):
                 **self._l10n_br_get_invoice_refs(),
                 'locations': {
                     'entity': {  # the customer
-                        'type': customer_type,
+                        'type': self._l10n_br_get_partner_type(partner),
                         'activitySector': {
                             'code': partner.l10n_br_activity_sector,
                         },
@@ -354,7 +359,7 @@ class AccountExternalTaxMixinL10nBR(models.AbstractModel):
                 record_id = line_result['lineCode']
                 record = self.env[self._l10n_br_line_model_name()].browse(int(record_id))
                 details[record] = {}
-                details[record]['total'] = line_result['lineNetFigure']
+                details[record]['total'] = line_result['lineNetFigure'] - line_result['lineTaxedDiscount']
                 details[record]['tax_amount'] = 0
                 details[record]['tax_ids'] = self.env['account.tax']
                 for detail in line_result['taxDetails']:

@@ -278,6 +278,10 @@ patch(Wysiwyg.prototype, {
                 this._notifyNewBehavior(articleLinkBlock, restoreSelection);
             },
             parentArticleId: this.options.recordInfo.res_model === 'knowledge.article' ? this.options.recordInfo.res_id : undefined
+        }, {
+            onClose: () => {
+                restoreSelection();
+            }
         });
     },
     /**
@@ -315,6 +319,7 @@ patch(Wysiwyg.prototype, {
             action_help: actionWindow.act_window?.help,
         });
         this._notifyNewBehavior(embeddedViewBlock, restoreSelection);
+        this.env.model.root.update({'full_width': true});
     },
     /**
      * Inserts a video in the editor
@@ -369,6 +374,9 @@ patch(Wysiwyg.prototype, {
             };
             return insertedNodes;
         });
+        if (behaviorBlueprint.classList.contains('o_knowledge_behavior_type_embedded_view')) {
+            this.env.model.root.update({'full_width': true});
+        }
     },
     /**
      * Notify a new @see FileBehavior when selecting a file in a
@@ -419,6 +427,10 @@ patch(Wysiwyg.prototype, {
                 }, {
                     itemCalendarProps,
                 });
+            }
+        }, {
+            onClose: () => {
+                restoreSelection();
             }
         });
     },

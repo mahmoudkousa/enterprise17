@@ -22,7 +22,7 @@ export class UseAsAttachmentMacro extends AbstractMacro {
                 this.validatePage();
                 const el = this.getFirstVisibleElement('.o-mail-Chatter-attachFiles:not([disabled])', (matchEl) => {
                     // Wait for the attachments to be loaded by the chatter.
-                    const attachmentsCountEl = matchEl.querySelector('span');
+                    const attachmentsCountEl = matchEl.querySelector('sup');
                     return attachmentsCountEl && Number.parseInt(attachmentsCountEl.textContent) > 0;
                 });
                 if (el) {

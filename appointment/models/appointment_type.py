@@ -83,11 +83,16 @@ class AppointmentType(models.Model):
         ('time_auto_assign', 'Select Time then auto-assign')],
         string="Assignment Method", default="resource_time", required=True,
         help="How users and resources will be assigned to meetings customers book on your website.")
+    # Technical field to hide "time_resource" when "users" are selected as this option is currently not supported
+    user_assign_method = fields.Selection([
+        ('resource_time', 'Pick User/Resource then Time'),
+        ('time_auto_assign', 'Select Time then auto-assign')],
+        compute="_compute_user_assign_method", inverse='_inverse_user_assign_method',
+        help="How users and resources will be assigned to meetings customers book on your website.")
     avatars_display = fields.Selection(
         [('hide', 'No Picture'), ('show', 'Show Pictures')],
         string='Front-End Display', compute='_compute_avatars_display', readonly=False, store=True,
-        help="""This option toggles the display of avatars of the staff members or resources during the frontend appointment process.
-        When choosing amongst several possibilities, a selection screen will also be used, if website is installed.""")
+        help="""Display the Users'/Resources' picture on the Website.""")
     category = fields.Selection([
         ('recurring', 'Recurring'),
         ('punctual', 'Punctual'),
@@ -140,6 +145,7 @@ class AppointmentType(models.Model):
         compute="_compute_resource_ids", store=True, readonly=False)
     resource_count = fields.Integer('# Resources', compute='_compute_resource_info')
     resource_manual_confirmation = fields.Boolean("Manual Confirmation",
+        compute="_compute_resource_manual_confirmation", store=True, readonly=False,
         help="""Do not automatically accept meetings created from the appointment once the total capacity
             reserved for a slot exceeds the percentage chosen. The appointment is still considered as reserved for
             the slots availability.""")
@@ -277,10 +283,29 @@ class AppointmentType(models.Model):
             if appointment_type.schedule_based_on == 'users':
                 appointment_type.resource_manage_capacity = False
 
+    @api.depends('schedule_based_on')
+    def _compute_resource_manual_confirmation(self):
+        for appointment_type in self:
+            if appointment_type.schedule_based_on == 'users':
+                appointment_type.resource_manual_confirmation = False
+
     @api.depends('staff_user_ids')
     def _compute_staff_user_count(self):
         for record in self:
             record.staff_user_count = len(record.staff_user_ids)
+
+    @api.depends('assign_method', 'schedule_based_on')
+    def _compute_user_assign_method(self):
+        for appointment_type in self:
+            if appointment_type.assign_method != 'time_resource':
+                appointment_type.user_assign_method = appointment_type.assign_method
+            elif appointment_type.schedule_based_on == 'users':
+                appointment_type.user_assign_method = 'resource_time'
+
+    def _inverse_user_assign_method(self):
+        for appointment_type in self:
+            if appointment_type.user_assign_method:
+                appointment_type.assign_method = appointment_type.user_assign_method
 
     @api.constrains('category', 'start_datetime', 'end_datetime')
     def _check_appointment_category_time_boundaries(self):
@@ -300,8 +325,8 @@ class AppointmentType(models.Model):
     def _check_staff_user_configuration(self):
         anytime_appointments = self.search([('category', '=', 'anytime')])
         for appointment_type in self.filtered(lambda appt: appt.schedule_based_on == "users"):
-            if appointment_type.category not in ['punctual', 'recurring'] and len(appointment_type.staff_user_ids) != 1:
-                raise ValidationError(_("This category of appointment type should only have one user but got %s users", len(appointment_type.staff_user_ids)))
+            if appointment_type.category == 'anytime' and len(appointment_type.staff_user_ids) != 1:
+                raise ValidationError(_("Anytime appointment types should only have one user but got %s users", len(appointment_type.staff_user_ids)))
             invalid_restricted_users = appointment_type.slot_ids.restrict_to_user_ids - appointment_type.staff_user_ids
             if invalid_restricted_users:
                 raise ValidationError(_("The following users are in restricted slots but they are not part of the available staff: %s", ", ".join(invalid_restricted_users.mapped('name'))))
@@ -379,6 +404,7 @@ class AppointmentType(models.Model):
         action['context'].update({
             'default_scale': self._get_gantt_scale(),
             'default_appointment_type_id': self.id,
+            'default_duration': self.appointment_duration,
             'default_partner_ids': [],
             'search_default_appointment_type_id': self.id,
             'default_mode': "month" if nbr_appointments_week_later else "week",
@@ -528,7 +554,7 @@ class AppointmentType(models.Model):
         """
         self.ensure_one()
         default_state = 'accepted'
-        if self.resource_manual_confirmation:
+        if self.schedule_based_on == 'resources' and self.resource_manual_confirmation:
             bookings_data = self.env['appointment.booking.line'].sudo()._read_group([
                 ('appointment_type_id', '=', self.id),
                 ('event_start', '<', datetime.combine(stop_dt, time.max)),
@@ -598,9 +624,8 @@ class AppointmentType(models.Model):
             )
             # Adapt local start to not append slot in the past from ref
             # Using ref_start to consider or not the min schedule hours at the beginning of first slot
-            if local_start.date() == ref_tz_apt_type.date():
-                while local_start < ref_start:
-                    local_start += relativedelta(hours=self.appointment_duration)
+            while local_start < ref_start:
+                local_start += relativedelta(hours=self.appointment_duration)
 
             local_end = local_start + relativedelta(hours=self.appointment_duration)
             # localized end time for the entire slot on that day
@@ -716,7 +741,10 @@ class AppointmentType(models.Model):
         if not reference_date:
             reference_date = now
 
-        requested_tz = pytz.timezone(timezone)
+        try:
+            requested_tz = pytz.timezone(timezone)
+        except pytz.UnknownTimeZoneError:
+            requested_tz = self.appointment_tz
 
         appointment_duration_days = self.max_schedule_days
         unique_slots = self.slot_ids.filtered(lambda slot: slot.slot_type == 'unique')
@@ -730,8 +758,7 @@ class AppointmentType(models.Model):
             last_day = requested_tz.fromutc(reference_date + relativedelta(days=appointment_duration_days))
         elif self.category == 'punctual':
             # Punctual appointment type, the first day is the start_datetime if it is in the future, else the first day is now
-            reference_date = self.start_datetime if self.start_datetime > now else now
-            first_day = requested_tz.fromutc(reference_date)
+            first_day = requested_tz.fromutc(self.start_datetime if self.start_datetime > now else now)
             last_day = requested_tz.fromutc(self.end_datetime)
         else:
             # Recurring appointment type
@@ -756,11 +783,16 @@ class AppointmentType(models.Model):
             return []
         if filter_resources and not valid_resources:
             return []
+        # Used to check availabilities for the whole last day as _slot_generate will return all slots on that date.
+        last_day_end_of_day = datetime.combine(
+            last_day.astimezone(pytz.timezone(self.appointment_tz)),
+            time.max
+        )
         if self.schedule_based_on == 'users':
             self._slots_fill_users_availability(
                 slots,
                 first_day.astimezone(pytz.UTC),
-                last_day.astimezone(pytz.UTC),
+                last_day_end_of_day.astimezone(pytz.UTC),
                 valid_users,
             )
             slot_field_label = 'staff_user_id'
@@ -768,7 +800,7 @@ class AppointmentType(models.Model):
             self._slots_fill_resources_availability(
                 slots,
                 first_day.astimezone(pytz.UTC),
-                last_day.astimezone(pytz.UTC),
+                last_day_end_of_day.astimezone(pytz.UTC),
                 valid_resources,
                 asked_capacity,
             )
@@ -894,7 +926,7 @@ class AppointmentType(models.Model):
                 continue
             if slot['slot'].slot_type == 'recurring' and self_sudo.appointment_duration != duration:
                 continue
-            if slot['slot'].slot_type == 'unique' and slot['slot'].duration != duration:
+            if slot['slot'].slot_type == 'unique' and slot['slot'].duration != round(duration, 2):
                 continue
             return True
         return False
@@ -953,7 +985,8 @@ class AppointmentType(models.Model):
             'description': description,
             'duration': duration,
             'location': self.location,
-            'name': _('%s with %s', self.name, name),
+            'name': _('%(attendee_name)s - %(appointment_name)s Booking',
+                        attendee_name=name, appointment_name=self.name),
             'partner_ids': [Command.link(pid) for pid in (partners | guests).ids],
             'start': fields.Datetime.to_string(start),
             'start_date': fields.Datetime.to_string(start),

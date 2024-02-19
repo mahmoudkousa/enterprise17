@@ -291,7 +291,11 @@
                         t-att-title="pill.displayName"
                         t-attf-style="height: {{ totalRow.factor * pill.aggregateValue }}%;"
                     >
-                        <span class="o_gantt_consolidated_pill_title bg-view text-truncate px-1 mb-1" t-esc="pill.displayName" />
+                        <span
+                            class="o_gantt_consolidated_pill_title bg-view text-truncate px-1 mb-1"
+                            t-att-class="{ 'o_gantt_consolidated_pill_small': this.isPillSmall(pill) }"
+                            t-esc="pill.displayName"
+                        />
                     </div>
                 </div>
             </t>

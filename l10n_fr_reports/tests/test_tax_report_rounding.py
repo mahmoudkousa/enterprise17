@@ -118,7 +118,7 @@ class TestFrenchFiscalRounding(TestAccountReportsCommon):
         options = self._generate_options(self.report, '2021-05-01', '2021-05-31')
         report_lines = self.report._get_lines(options)
         carryover_line, = [line for line in report_lines if line['columns'][0]['report_line_id'] == carryover_line_id]
-        self.assertEqual(24.69, carryover_line['columns'][0]['no_format'])
+        self.assertEqual(25.00, carryover_line['columns'][0]['no_format'])
 
         # Suppress the pdf output
         with patch.object(type(move), '_get_vat_report_attachments', autospec=True, side_effect=lambda *args, **kwargs: []):

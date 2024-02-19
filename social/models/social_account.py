@@ -5,6 +5,7 @@ from odoo import _, models, fields, api
 from odoo.http import request
 
 import logging
+import requests
 
 _logger = logging.getLogger(__name__)
 
@@ -140,7 +141,13 @@ class SocialAccount(models.Model):
     def refresh_statistics(self):
         """ Will re-compute the statistics of all active accounts. """
         all_accounts = self.env['social.account'].search([('has_account_stats', '=', True)]).sudo()
-        all_accounts._compute_statistics()
+        # As computing the statistics is a recurring task, we ignore occasional "read timeouts"
+        # from the third-party services, as it would most likely mean a temporary slow connection
+        # and/or a slow response from their side.
+        try:
+            all_accounts._compute_statistics()
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            _logger.warning("Failed to refresh social account statistics.", exc_info=True)
         return [{
             'id': account.id,
             'name': account.name,

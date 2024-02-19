@@ -49,6 +49,22 @@
                         </p>
                     </div>
                 </t>
+                <t t-if="['DK', 'LT', 'LU', 'NO', 'RO'].includes(countryCode)">
+                    <div class="saft-import pt-4">
+                        <h2 class="text-primary">
+                            SAF-T
+                        </h2>
+                        <p>
+                            Most accounting software in Europe support exporting SAF-T file for audit purposes.
+                            Use the
+                            <a class="fw-bold" href="#" t-on-click.prevent="() => this._openModuleInstallation('account_saft_import')">
+                                SAF-T Import module
+                            </a>
+                            to import the SAF-T file. <br/>
+                            We will setup your charts of accounts and the history of journal entries, that will stay in draft.
+                        </p>
+                    </div>
+                </t>
                 <t t-if="countryCode === 'SE'">
                     <div class="sie-import pt-4">
                         <h2 class="text-odoo">

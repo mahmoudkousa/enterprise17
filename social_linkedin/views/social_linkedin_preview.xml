@@ -3,7 +3,8 @@
 <data>
     <template id="linkedin_preview" t-name="LinkedIn Preview">
         <div class="o_social_preview o_social_linkedin_preview">
-            <div class="shadow-sm bg-white px-3 py-4 overflow-hidden border rounded">
+            <div t-attf-class="shadow-sm bg-white px-3 overflow-hidden border rounded
+                #{'pt-4' if link_preview else 'py-4'}">
                 <div class="o_social_preview_header d-flex align-content-between my-3">
                     <span class="o_social_preview_icon_wrapper overflow-hidden me-2">
                         <i class="fa fa-linkedin text-white fa-2x"/>
@@ -25,10 +26,18 @@
                                 +<t t-esc="len(image_urls) - 2"/>
                             </div>
                         </a>
-                        <img t-elif="image_url_index &lt; 2" t-att-src="image_url" alt="Post Image"  />
+                        <a t-elif="image_url_index &lt; 2" class="w-100"
+                            t-att-href="link_preview.get('url')" target="_blank">
+                            <img t-att-src="image_url" alt="Post Image"  />
+                        </a>
                     </t>
                 </div>
             </div>
+            <a t-if="link_preview" class="o_social_linkedin_preview_article w-100 py-3 px-4 d-block text-dark"
+                t-att-href="link_preview.get('url')" target="_blank">
+                <div t-if="link_preview.get('title')" class="fw-bold" t-out="link_preview['title']"/>
+                <small t-if="link_preview.get('url')" t-out="link_preview['url']"/>
+            </a>
         </div>
     </template>
 </data>

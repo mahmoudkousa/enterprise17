@@ -674,6 +674,7 @@ class SIEExportWizard(models.TransientModel):
          LEFT JOIN account_account AS account
                 ON aml.account_id = account.id
              WHERE aml.company_id = %s
+               AND aml.parent_state != 'cancel'
           GROUP BY account.code,
                    aml.date,
                    aml.ref

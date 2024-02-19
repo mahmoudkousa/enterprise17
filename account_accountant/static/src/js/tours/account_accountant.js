@@ -29,9 +29,9 @@
 
     registry.category("web_tour.tours").add('account_accountant_tour', {
             rainbowManMessage: function({ isTourConsumed }) {
-                var message = _t('<strong><b>Good job!</b> You went through all steps of this tour.</strong>');
+                var message = markup(_t('<strong><b>Good job!</b> You went through all steps of this tour.</strong>'));
                 if (!isTourConsumed('account_tour')) {
-                    message += _t('<br>See how to manage your customer invoices in the <b>Customers/Invoices</b> menu');
+                    message += markup(_t('<br>See how to manage your customer invoices in the <b>Customers/Invoices</b> menu'));
                 }
                 return markup(message);
             },

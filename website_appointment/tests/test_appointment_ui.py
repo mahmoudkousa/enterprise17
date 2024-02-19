@@ -8,6 +8,11 @@ from odoo.tests import tagged
 @tagged('appointment_ui', '-at_install', 'post_install')
 class WebsiteAppointmentUITest(AppointmentCommon):
 
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.env.user.tz = "Europe/Brussels"
+
     def _create_invite_test_data(self):
         super()._create_invite_test_data()
         self.all_apts += self.env['appointment.type'].create({

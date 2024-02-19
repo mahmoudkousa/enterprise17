@@ -34,10 +34,18 @@ export class SpreadsheetAction extends AbstractSpreadsheetAction {
     async _fetchData() {
         const record = await super._fetchData();
         if (this.params.convert_from_template) {
+            const convertedData = await convertFromSpreadsheetTemplate(
+                this.env,
+                record.data,
+                record.revisions
+            );
+            // reset the spreadsheet data to the data converted from the template
+            await this.orm.write("documents.document", [this.resId], {
+                spreadsheet_data: JSON.stringify(convertedData),
+            });
             return {
                 ...record,
-                data: await convertFromSpreadsheetTemplate(this.env, record.data, record.revisions),
-                snapshot_requested: true,
+                data: convertedData,
                 revisions: [],
             };
         }

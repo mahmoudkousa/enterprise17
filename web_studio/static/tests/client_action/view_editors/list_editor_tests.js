@@ -2252,8 +2252,16 @@ QUnit.module(
                     return { add: (message) => assert.step(`notification: ${message}`) };
                 },
             };
-
             registry.category("services").add("notification", notificationService, { force: true });
+            registry.category("services").add("error", { start() {} });
+
+            const handler = (ev) => {
+                assert.strictEqual(ev.reason.message, "Boom");
+                assert.step("error");
+                ev.preventDefault();
+            };
+            window.addEventListener("unhandledrejection", handler);
+            registerCleanup(() => window.removeEventListener("unhandledrejection", handler));
 
             let triggerError = true;
             await createViewEditor({
@@ -2288,6 +2296,7 @@ QUnit.module(
             assert.verifySteps([
                 "edit_view",
                 "notification: This operation caused an error, probably because a xpath was broken",
+                "error",
             ]);
 
             assert.containsOnce(
@@ -2453,6 +2462,31 @@ QUnit.module(
                 "1 record\t\tA very good product"
             );
             assert.verifySteps(["web_search_read"]);
+        });
+
+        QUnit.test("List readonly attribute should not set force_save", async function (assert) {
+            assert.expect(2);
+            const changeArch = makeArchChanger();
+
+            const arch = '<tree><field name="display_name"/></tree>';
+            await createViewEditor({
+                serverData,
+                type: "list",
+                resModel: "coucou",
+                arch: arch,
+                mockRPC: function (route, args) {
+                    if (route === "/web_studio/edit_view") {
+                        assert.strictEqual(args.operations[0].new_attrs.readonly, "True");
+                        assert.notOk("force_save" in args.operations[0].new_attrs);
+                        changeArch(args.view_id, arch);
+                    }
+                },
+            });
+
+            await click(
+                target.querySelector(".o_web_studio_list_view_editor [name='display_name']")
+            );
+            await click(target, ".o_web_studio_sidebar input#readonly");
         });
     }
 );

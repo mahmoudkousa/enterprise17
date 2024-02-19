@@ -13,15 +13,21 @@ class HelpdeskWebsite(TransactionCase):
         MENU_LABEL_HELP = "Help"
         TEAM_NAME_1 = "team_name_1"
         TEAM_NAME_2 = "team_name_2"
-        # we use website_id=2 to not do our test with the default "Customer Care" team into the test
+        # we use a new website to not do our test with the default "Customer Care" team into the test
+        website = self.env['website'].create({
+            'name': 'My Website Test',
+            'domain': '',
+            'sequence': 20,
+        })
+
         team_1, team_2 = self.env['helpdesk.team'].create([{
             'name': TEAM_NAME_1,
-            'website_id': 2,
+            'website_id': website.id,
             'use_website_helpdesk_form': True,
             'is_published': True,
         }, {
             'name': TEAM_NAME_2,
-            'website_id': 2,
+            'website_id': website.id,
         }])
         self.assertEqual(team_1.website_menu_id.name, MENU_LABEL_HELP, "The default team website label should be 'Help'")
         with Form(team_2) as team_2_form:

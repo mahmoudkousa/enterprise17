@@ -13,13 +13,18 @@ function fail(errorMessage) {
     throw new TourError(errorMessage);
 }
 
-const SHEETNAME = "Partner Spreadsheet Test";
+const SHEETNAME = "Res Partner Test Spreadsheet";
 registry.category("web_tour.tours").add("spreadsheet_open_pivot_sheet", {
     test: true,
     steps: () => [
         {
             trigger: '.o_app[data-menu-xmlid="documents.menu_root"]',
             content: "Open document app",
+            run: "click",
+        },
+        {
+            trigger: 'li[title="Test folder"] header',
+            content: "Open the test folder",
             run: "click",
         },
         {
@@ -57,7 +62,7 @@ registry.category("web_tour.tours").add("spreadsheet_open_pivot_sheet", {
                 assert(
                     Boolean(
                         pivot.querySelector(
-                            'div.o_multi_record_selector span.badge[title="Azure Interior"]'
+                            'div.o_multi_record_selector span.badge[title="AdminDude"]'
                         )
                     ),
                     true,
@@ -71,7 +76,7 @@ registry.category("web_tour.tours").add("spreadsheet_open_pivot_sheet", {
             content: "Check filter values",
             run: function () {
                 const defaultFilterValue = document.querySelectorAll(
-                    'div.o_multi_record_selector span.badge[title="Azure Interior"]'
+                    'div.o_multi_record_selector span.badge[title="AdminDude"]'
                 );
                 assert(
                     defaultFilterValue.length,
@@ -80,14 +85,14 @@ registry.category("web_tour.tours").add("spreadsheet_open_pivot_sheet", {
                 );
                 assert(
                     document.querySelector(".o_side_panel_related_model input").value,
-                    "Contact",
+                    "User",
                     "Wrong model selected"
                 );
 
                 const fieldsValue = document.querySelector(
                     "div.o_model_field_selector_value span.o_model_field_selector_chain_part"
                 );
-                assert(fieldsValue.textContent.trim(), "Related Company");
+                assert(fieldsValue.textContent.trim(), "Users");
             },
         },
         {

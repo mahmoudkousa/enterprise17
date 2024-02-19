@@ -11,7 +11,7 @@ import { useHotkey } from "@web/core/hotkeys/hotkey_hook";
 import { getDefaultConfig } from "@web/views/view";
 import { _t } from "@web/core/l10n/translation";
 
-import { Component, useState, useSubEnv, useChildSubEnv, onWillStart } from "@odoo/owl";
+import { Component, useState, useSubEnv, useChildSubEnv, onWillStart, useEffect } from "@odoo/owl";
 
 export class TemplateDialog extends Component {
     setup() {
@@ -23,6 +23,9 @@ export class TemplateDialog extends Component {
 
         this.data = this.env.dialogData;
         useHotkey("escape", () => this.data.close());
+        useHotkey("Enter", async () => {
+            await this._createSpreadsheet();
+        });
 
         this.dialogTitle = _t("Create a Spreadsheet or select a Template");
         this.limit = 9;
@@ -73,6 +76,10 @@ export class TemplateDialog extends Component {
             });
             await this._fetchTemplates();
         });
+
+        useEffect(() => {
+            this.state.offset = 0;
+        }, () => [this.model.searchDomain]);
     }
 
     /**

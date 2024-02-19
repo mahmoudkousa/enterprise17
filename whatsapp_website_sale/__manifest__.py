@@ -2,7 +2,7 @@
 
 {
     'name': 'WhatsApp-eCommerce',
-    'category': 'Hidden/Tools',
+    'category': 'WhatsApp',
     'summary': 'This module integrates website sale with WhatsApp',
     'description': """This module integrates website sale with WhatsApp""",
     'depends': ['website_sale', 'whatsapp'],

@@ -20,7 +20,7 @@ publicWidget.registry.websiteSaleDelivery.include({
             );
             boldMsg.classList.add('d-block');
             this.warning.prepend(boldMsg);
-            this.warning.classList.add('alert-warning', 'p-3', 'm-1', 'd-none');
+            this.warning.classList.add('alert-warning', 'p-3', 'm-1', 'd-none', 'ups-warning');
 
             this.paymentMethodsContainer = document.querySelector('#payment_method');
             this.paymentMethodsContainer.querySelector(
@@ -65,14 +65,12 @@ publicWidget.registry.websiteSaleDelivery.include({
 
         const input = ev.currentTarget.querySelector('input');
         let atLeastOneOptionAvailable = false;
-        // Jquery because the button does not behave nicely with vanilla dataset.
-        let $payButton = $('button[name="o_payment_submit_button"]');
         for (let option of this.paymentOptions) {
             if (option.dataset.providerCode === "custom" &&
                 option.dataset.providerCustomMode === "cash_on_delivery" &&
                 (input.dataset.deliveryType !== 'ups' || !input.dataset.upsCod)) {
                     if (option.checked) { // The payment option was selected.
-                        $payButton.attr('disabled', true); // Reset the submit button.
+                        this._disablePayButton(); // Reset the submit button.
                     }
                     this._setEnablePaymentOption(option, false);
             } else {
@@ -84,13 +82,13 @@ publicWidget.registry.websiteSaleDelivery.include({
             }
         }
 
-        let disabledReasons = $payButton.data('disabled_reasons') || {};
-        disabledReasons.noOptionAvailableCOD = false;
-
         if (!atLeastOneOptionAvailable) {
             this.warning.classList.remove('d-none');
-            disabledReasons.noOptionAvailableCOD = true;
+            this._disablePayButton();
         }
-        $payButton.data('disabled_reasons', disabledReasons);
+        else {
+            this._enableButton();
+        }
     }
+
 });

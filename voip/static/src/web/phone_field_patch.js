@@ -32,7 +32,7 @@ patch(PhoneField.prototype, {
         const phoneType = ev.target.closest(".o_field_phone").getAttribute("name");
         const { record } = this.props;
         this.userAgent.makeCall({
-            phone_number: phoneType === "mobile" ? record.data.mobile : record.data.phone,
+            phone_number: record.data[phoneType],
             res_id: record.resId,
             res_model: record.resModel,
         });

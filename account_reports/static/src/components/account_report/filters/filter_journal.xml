@@ -8,17 +8,13 @@
 
             <t t-foreach="controller.options.journals" t-as="journal" t-key="journal_index">
                 <t t-if="journal.id === 'divider'">
-                    <div class="dropdown-divider"/>
-
-                    <DropdownItem>
-                        <t t-esc="journal.name"/>
-                     </DropdownItem>
-
-                    <div class="dropdown-divider"/>
+                    <div class="dropdown-header">
+                        <t t-out="journal.name"/>
+                    </div>
                 </t>
                 <t t-elif="['account.journal', 'account.journal.group'].includes(journal.model)">
                     <DropdownItem
-                        class="{ 'selected': journal.selected }"
+                        class="{ 'selected': journal.selected, 'ps-4': true }"
                         onSelected="() => this.filterJournal(journal)"
                     >
                         <t t-esc="journal.name"/>

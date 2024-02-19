@@ -73,7 +73,8 @@ class TestPeriodDuplication(TestCommonPlanning):
                 10/19/2020 08:00 (CET) -> 10/19/2020 17:00
         """
         employee = self.employee_joseph
-        self.env['planning.slot'].with_context(tz='Europe/Brussels').action_copy_previous_week('2020-10-26 00:00:00', [['start_datetime', '<=', '2020-10-25 23:59:59'], ['end_datetime', '>=', '2020-10-18 00:00:00']])
+        employee.tz = 'Europe/Brussels'
+        self.env['planning.slot'].action_copy_previous_week('2020-10-26 00:00:00', [['start_datetime', '<=', '2020-10-25 23:59:59'], ['end_datetime', '>=', '2020-10-18 00:00:00']])
 
         duplicated_slots = self.env['planning.slot'].search([
             ('employee_id', '=', employee.id),

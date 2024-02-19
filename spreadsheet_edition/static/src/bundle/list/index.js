@@ -34,7 +34,7 @@ cellMenuRegistry.add("listing_properties", {
     },
     isVisible: (env) => {
         const position = env.model.getters.getActivePosition();
-        return env.model.getters.getListIdFromPosition(position) !== undefined;
+        return env.model.getters.isExistingList(env.model.getters.getListIdFromPosition(position));
     },
-    icon: "o-spreadsheet-Icon.SEE_RECORDS",
+    icon: "o-spreadsheet-Icon.ODOO_LIST",
 });

@@ -12,6 +12,10 @@ class TestWebsiteSaleTaxCloud(HttpCase):
 
     def setUp(self):
         super().setUp()
+        self.env.company.country_id = self.env.ref('base.us')
+        self.env['account.tax.group'].create(
+            {'name': 'Test Tax Group', 'company_id': self.env.company.id}
+        )
 
         self.acquirer = self.env.ref('payment.payment_provider_transfer')
         self.payment_method_id = self.env.ref('payment.payment_method_unknown').id

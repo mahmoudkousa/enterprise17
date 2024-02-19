@@ -19,7 +19,7 @@ class FsmDateWidget extends DateTimeField {
     }
     get className() {
         const date = new Date();
-        const widgetcolor = this.props.record.data.planned_date_end < date && this.props.record.data.stage_id[1] !== 'Done' ? 'oe_kanban_text_red' : '';
+        const widgetcolor = this.props.record.data.date_deadline < date && this.props.record.data.stage_id[1] !== 'Done' ? 'oe_kanban_text_red' : '';
         return widgetcolor;
     }
 }

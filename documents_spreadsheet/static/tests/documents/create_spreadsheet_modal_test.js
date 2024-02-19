@@ -13,6 +13,7 @@ import {
     getFixture,
     click,
     patchWithCleanup,
+    nextTick,
 } from "@web/../tests/helpers/utils";
 import { getBasicData } from "@spreadsheet/../tests/utils/data";
 
@@ -302,6 +303,15 @@ QUnit.module(
             await triggerEvent(dialog.querySelectorAll(".o-template-image")[0], null, "focus");
             await triggerEvent(dialog.querySelectorAll(".o-template-image")[0], null, "dblclick");
             assert.verifySteps(["action_open_new_spreadsheet", "redirect"]);
+
+            // ### With enter key
+            await click(menu, ".o_documents_kanban_spreadsheet");
+            dialog = document.querySelector(".o-spreadsheet-templates-dialog");
+            await triggerEvent(dialog.querySelectorAll(".o-template-image")[0], null, "focus");
+            await triggerEvent(dialog.querySelectorAll(".o-template-image")[0], null, "keydown", {
+                key: "Enter",
+            });
+            assert.verifySteps(["action_open_new_spreadsheet", "redirect"]);
         });
         QUnit.test("Context is transmitted when creating spreadsheet", async function (assert) {
             const serverData = await getDocumentBasicData({
@@ -383,6 +393,85 @@ QUnit.module(
             await triggerEvent(dialog.querySelectorAll(".o-template-image")[1], null, "focus");
             await triggerEvent(dialog.querySelectorAll(".o-template-image")[1], null, "dblclick");
             assert.verifySteps(["action_create_spreadsheet", "redirect"]);
+
+            // ### With enter key
+            await click(menu, ".o_documents_kanban_spreadsheet");
+            dialog = document.querySelector(".o-spreadsheet-templates-dialog");
+            await triggerEvent(dialog.querySelectorAll(".o-template-image")[1], null, "focus");
+            await triggerEvent(dialog.querySelectorAll(".o-template-image")[1], null, "keydown", {
+                key: "Enter",
+            });
+            assert.verifySteps(["action_create_spreadsheet", "redirect"]);
         });
+
+        QUnit.test(
+            "The workspace selection should not display Trash workspace",
+            async function (assert) {
+                await initTestEnvWithKanban();
+                const menu = target.querySelector(
+                    ".o_control_panel .btn-group:not(.o_control_panel_collapsed_create .btn-group)"
+                );
+                await click(target, ".o_search_panel_category_value:nth-of-type(1) header");
+                await click(menu, ".dropdown-toggle");
+                await click(menu, ".o_documents_kanban_spreadsheet");
+                const selection = target.querySelector(".o-spreadsheet-templates-dialog select");
+                assert.notOk(
+                    [...selection.options].find((option) => option.value === "TRASH"),
+                    "Trash workspace should not be present in the selection"
+                );
+            }
+        );
+
+        QUnit.test(
+            "Offset reset to zero after searching for template in template dialog",
+            async function (assert) {
+                const mockRPC = async function (route, args) {
+                    if (
+                        args.method === "web_search_read" &&
+                        args.model === "spreadsheet.template"
+                    ) {
+                        assert.step(
+                            JSON.stringify({
+                                offset: args.kwargs.offset,
+                                limit: args.kwargs.limit,
+                            })
+                        );
+                    }
+                };
+
+                await initTestEnvWithKanban({ additionalTemplates: TEST_TEMPLATES, mockRPC });
+
+                const menu = target.querySelector(".o_control_panel .d-xl-inline-flex .btn-group");
+                await click(menu, ".dropdown-toggle");
+                await click(menu, ".o_documents_kanban_spreadsheet");
+                const dialog = document.querySelector(".o-spreadsheet-templates-dialog");
+
+                assert.equal(
+                    dialog.querySelectorAll(".o-template:not(.o-template-ghost-item)").length,
+                    10
+                );
+                await click(dialog.querySelector(".o_pager_next"));
+                assert.verifySteps([
+                    JSON.stringify({ offset: 0, limit: 9 }),
+                    JSON.stringify({ offset: 9, limit: 9 }),
+                ]);
+
+                const searchInput = dialog.querySelector(".o_searchview_input");
+                await editInput(searchInput, null, "Template 1");
+                await triggerEvent(searchInput, null, "keydown", { key: "Enter" });
+                await nextTick();
+
+                assert.equal(
+                    dialog.querySelectorAll(".o-template:not(.o-template-ghost-item)").length,
+                    5
+                ); // Blank template, Template 1, Template 10, Template 11, Template 12
+                assert.verifySteps([JSON.stringify({ offset: 0, limit: 9 })]);
+                assert.strictEqual(
+                    target.querySelector(".o_pager_value").textContent,
+                    "1-4",
+                    "Pager should be reset to 1-4 after searching for a template"
+                );
+            }
+        );
     }
 );

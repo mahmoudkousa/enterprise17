@@ -3,6 +3,7 @@
 from odoo import api, models, fields, _
 from odoo.exceptions import UserError
 
+import textwrap
 
 DESCRIPTION_CREDIT_CODE = [
     ("1", "Devolución parcial de los bienes y/o no aceptación parcial del servicio"),
@@ -160,3 +161,11 @@ class AccountMoveLine(models.Model):
             '001': '10',
         }
         return value.get(product_code, '')
+
+    def _l10n_co_edi_get_line_name(self):
+        """
+        Ensure the text we use for electronic communications follows
+        Carvajal specifications
+        """
+        self.ensure_one()
+        return textwrap.shorten(self.name or '', 300)

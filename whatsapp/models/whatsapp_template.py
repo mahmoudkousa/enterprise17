@@ -42,20 +42,35 @@ class WhatsAppTemplate(models.Model):
             ('allowed_company_ids', 'in', self.env.companies.ids)], limit=1)
         return first_account.id if first_account else False
 
+    @api.model
+    def _get_model_selection(self):
+        """ Available models are all models, as even transient models could have
+        templates associated (e.g. payment.link.wizard) """
+        return [
+            (model.model, model.name)
+            for model in self.env['ir.model'].sudo().search([])
+        ]
+
     name = fields.Char(string="Name", tracking=True)
     template_name = fields.Char(string="Template Name", compute='_compute_template_name', readonly=False, store=True)
     sequence = fields.Integer(required=True, default=0)
     active = fields.Boolean(default=True)
 
-    wa_account_id = fields.Many2one(comodel_name='whatsapp.account', string="Account", default=_get_default_wa_account_id)
+    wa_account_id = fields.Many2one(
+        comodel_name='whatsapp.account', string="Account", default=_get_default_wa_account_id,
+        ondelete="cascade")
     wa_template_uid = fields.Char(string="WhatsApp Template ID", copy=False)
     error_msg = fields.Char(string="Error Message")
 
-    model_id = fields.Many2one(comodel_name='ir.model', string='Applies to', ondelete='cascade', default=lambda self: self.env.ref('base.model_res_partner'),
-                               help="Model on which the Server action for sending WhatsApp will be created.", required=True, tracking=True)
+    model_id = fields.Many2one(
+        string='Applies to', comodel_name='ir.model',
+        default=lambda self: self.env['ir.model']._get_id('res.partner'),
+        ondelete='cascade', required=True, store=True,
+        tracking=1)
     model = fields.Char(
-        string='Related Document Model', related='model_id.model',
-        index=True, precompute=True, store=True, readonly=True)
+        string='Related Document Model',
+        related='model_id.model',
+        precompute=True, store=True, readonly=True)
     phone_field = fields.Char(
         string='Phone Field', compute='_compute_phone_field',
         precompute=True, readonly=False, required=True, store=True)
@@ -118,11 +133,33 @@ class WhatsAppTemplate(models.Model):
             if len(header_variables) > 1 or (header_variables and header_variables[0] != '{{1}}'):
                 raise ValidationError(_("Header text can only contain a single {{variable}}."))
 
-    @api.constrains('phone_field')
+    @api.constrains('phone_field', 'model')
     def _check_phone_field(self):
+        is_system = self.user_has_groups('base.group_system')
         for tmpl in self.filtered('phone_field'):
-            if tmpl.phone_field not in COMMON_WHATSAPP_PHONE_SAFE_FIELDS:
-                raise AccessError(_("You are not allowed to use %r in Phone Field, contact your administrator to configure it.", tmpl.phone_field))
+            model = self.env[tmpl.model]
+            if not is_system:
+                if not model.check_access_rights('read', raise_exception=False):
+                    model_description = self.env['ir.model']._get(tmpl.model).display_name
+                    raise AccessError(
+                        _("You can not select field of %(model)s.", model=model_description)
+                    )
+                safe_fields = set(COMMON_WHATSAPP_PHONE_SAFE_FIELDS)
+                if hasattr(model, '_wa_get_safe_phone_fields'):
+                    safe_fields |= set(model._wa_get_safe_phone_fields())
+                if tmpl.phone_field not in safe_fields:
+                    raise AccessError(
+                        _("You are not allowed to use %(field)s in phone field, contact your administrator to configure it.",
+                          field=tmpl.phone_field)
+                    )
+            try:
+                model._find_value_from_field_path(tmpl.phone_field)
+            except UserError as err:
+                raise ValidationError(
+                    _("'%(field)s' does not seem to be a valid field path on %(model)s",
+                      field=tmpl.phone_field,
+                      model=tmpl.model)
+                ) from err
 
     @api.constrains('header_attachment_ids', 'header_type')
     def _check_header_attachment_ids(self):
@@ -132,7 +169,7 @@ class WhatsAppTemplate(models.Model):
                 raise ValidationError(_('You may only use one header attachment for each template'))
             if tmpl.header_type not in ['image', 'video', 'document']:
                 raise ValidationError(_("Only templates using media header types may have header documents"))
-            if not any(tmpl.header_attachment_ids.mimetype in mimetypes for mimetypes in self.env['whatsapp.message']._SUPPORTED_ATTACHMENT_TYPE.values()):
+            if not any(tmpl.header_attachment_ids.mimetype in mimetypes for mimetypes in self.env['whatsapp.message']._SUPPORTED_ATTACHMENT_TYPE[tmpl.header_type]):
                 raise ValidationError(_("File type %(file_type)s not supported for header type %(header_type)s",
                                         file_type=tmpl.header_attachment_ids.mimetype, header_type=tmpl.header_type))
         for tmpl in self - templates_with_attachments:
@@ -158,12 +195,12 @@ class WhatsAppTemplate(models.Model):
             free_text_variables = variables.filtered(lambda variable: variable.field_type == 'free_text')
             if len(free_text_variables) > 10:
                 raise ValidationError(_('Only 10 free text is allowed in body of template'))
+
             variable_indices = sorted(var._extract_variable_index() for var in variables)
             if len(variable_indices) > 0 and (variable_indices[0] != 1 or variable_indices[-1] != len(variables)):
-                missing = 1
-                if len(variables) > 1:
-                    missing = next(index for index in range(1, len(variables))
-                                   if variable_indices[index - 1] + 1 != variable_indices[index]) + 1
+                missing = next(
+                    (index for index in range(1, len(variables)) if variable_indices[index - 1] + 1 != variable_indices[index]),
+                    0) + 1
                 raise ValidationError(_('Body variables should start at 1 and not skip any number, missing %d', missing))
 
     @api.constrains('header_type', 'variable_ids')
@@ -204,6 +241,12 @@ class WhatsAppTemplate(models.Model):
             if template.status == 'draft' and not template.wa_template_uid:
                 template.template_name = re.sub(r'\W+', '_', slugify(template.name or ''))
 
+    @api.depends('model')
+    def _compute_model_id(self):
+        self.filtered(lambda tpl: not tpl.model).model_id = False
+        for template in self.filtered('model'):
+            template.model_id = self.env['ir.model']._get_id(template.model)
+
     @api.depends('header_type', 'header_text', 'body')
     def _compute_variable_ids(self):
         """compute template variable according to header text, body and buttons"""
@@ -230,8 +273,8 @@ class WhatsAppTemplate(models.Model):
                         {'name': 'latitude', 'line_type': 'location', 'wa_template_id': tmpl.id},
                         {'name': 'longitude', 'line_type': 'location', 'wa_template_id': tmpl.id}
                     ]
-                else:
-                    to_delete += [i.id for i in existing_header_location_variables]
+            else:
+                to_delete += existing_header_location_variables.ids
 
             # body
             existing_body_variables = tmpl.variable_ids.filtered(lambda line: line.line_type == 'body')
@@ -283,6 +326,10 @@ class WhatsAppTemplate(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        for vals in vals_list:
+            # stable backward compatible change  for model fields
+            if vals.get('model_id'):
+                vals['model'] = self.env['ir.model'].sudo().browse(vals[('model_id')]).model
         records = super().create(vals_list)
         # the model of the variable might have been changed with x2many commands
         records.variable_ids._check_field_name()
@@ -291,9 +338,13 @@ class WhatsAppTemplate(models.Model):
         return records
 
     def write(self, vals):
+        if vals.get("model_id"):
+            vals["model"] = self.env['ir.model'].sudo().browse(vals["model_id"]).model
         res = super().write(vals)
-        # model / variables might have been changed
-        self.variable_ids._check_field_name()
+        # Model change: explicitly check for field access. Other changes at variable
+        # level are checked by '_check_field_name' constraint.
+        if 'model_id' in vals:
+            self.variable_ids._check_field_name()
         return res
 
     def copy(self, default=None):
@@ -304,9 +355,13 @@ class WhatsAppTemplate(models.Model):
             default['template_name'] = f'{self.template_name}_copy'
         return super().copy(default)
 
+    @api.depends('name', 'wa_account_id')
     def _compute_display_name(self):
         for template in self:
-            template.display_name = "%s [%s]" % (template.name, template.wa_account_id.name)
+            template.display_name = _('%(template_name)s [%(account_name)s]',
+                                        template_name=template.name,
+                                        account_name=template.wa_account_id.name
+                                    ) if template.wa_account_id.name else template.name
 
     #===================================================================
     #                 Register template to whatsapp
@@ -363,6 +418,9 @@ class WhatsAppTemplate(models.Model):
             return None
         return {'type': 'FOOTER', 'text': self.footer_text}
 
+    def _get_sample_record(self):
+        return self.env[self.model].search([], limit=1)
+
     def button_submit_template(self):
         """Register template to WhatsApp Business Account """
         self.ensure_one()
@@ -370,7 +428,7 @@ class WhatsAppTemplate(models.Model):
         attachment = False
         if self.header_type in ('image', 'video', 'document'):
             if self.header_type == 'document' and self.report_id:
-                record = self.env[self.model].search([], limit=1)
+                record = self._get_sample_record()
                 if not record:
                     raise ValidationError(_("There is no record for preparing demo pdf in model %(model)s", model=self.model_id.name))
                 attachment = self._generate_attachment_from_report(record)
@@ -554,7 +612,7 @@ class WhatsAppTemplate(models.Model):
         header = []
         header_type = self.header_type
         if header_type == 'text' and template_variables_value.get('header-{{1}}'):
-            value = free_text_json.get('header_text') or template_variables_value.get('header-{{1}}') or ' '
+            value = (free_text_json or {}).get('header_text') or template_variables_value.get('header-{{1}}') or ' '
             header = {
                 'type': 'header',
                 'parameters': [{'type': 'text', 'text': value}]
@@ -663,26 +721,29 @@ class WhatsAppTemplate(models.Model):
 
     def button_create_action(self):
         """ Create action for sending WhatsApp template message in model defined in template. It will be used in bulk sending"""
-        ActWindow = self.env['ir.actions.act_window']
-        view = self.env.ref('whatsapp.whatsapp_composer_view_form')
-        for tmpl in self:
-            action = ActWindow.sudo().search([('res_model', '=', 'whatsapp.composer'), ('binding_model_id', '=', tmpl.model_id.id)])
-            if not action:
-                ActWindow.create({
-                    'name': _('WhatsApp Message'),
-                    'type': 'ir.actions.act_window',
-                    'res_model': 'whatsapp.composer',
-                    'view_mode': 'form',
-                    'view_id': view.id,
-                    'target': 'new',
-                    'binding_model_id': tmpl.model_id.id,
-                })
+        self.check_access_rule('write')
+        actions = self.env['ir.actions.act_window'].sudo().search([
+            ('res_model', '=', 'whatsapp.composer'),
+            ('binding_model_id', 'in', self.model_id.ids)
+        ])
+        self.env['ir.actions.act_window'].sudo().create([
+            {
+                'binding_model_id': model.id,
+                'name': _('WhatsApp Message'),
+                'res_model': 'whatsapp.composer',
+                'target': 'new',
+                'type': 'ir.actions.act_window',
+                'view_mode': 'form',
+            }
+            for model in (self.model_id - actions.binding_model_id)
+        ])
 
     def button_delete_action(self):
-        ActWindow = self.env['ir.actions.act_window']
-        for tmpl in self:
-            action = ActWindow.sudo().search([('res_model', '=', 'whatsapp.composer'), ('binding_model_id', '=', tmpl.model_id.id)])
-            action.unlink()
+        self.check_access_rule('write')
+        self.env['ir.actions.act_window'].sudo().search([
+            ('res_model', '=', 'whatsapp.composer'),
+            ('binding_model_id', 'in', self.model_id.ids)
+        ]).unlink()
 
     def _generate_attachment_from_report(self, record=False):
         """Create attachment from report if relevant"""
@@ -716,10 +777,10 @@ class WhatsAppTemplate(models.Model):
             ```monospace``` -> <code>monospace</code>
         """
         formatted_body = str(plaintext2html(body_html))  # stringify for regex
-        formatted_body = re.sub(r'\*(.*)\*', '<b>\\1</b>', formatted_body)
-        formatted_body = re.sub(r'_(.*)_', '<i>\\1</i>', formatted_body)
-        formatted_body = re.sub(r'~(.*)~', '<s>\\1</s>', formatted_body)
-        formatted_body = re.sub(r'```(.*)```', '<code>\\1</code>', formatted_body)
+        formatted_body = re.sub(r'\*(.*?)\*', r'<b>\1</b>', formatted_body)
+        formatted_body = re.sub(r'_(.*?)_', r'<i>\1</i>', formatted_body)
+        formatted_body = re.sub(r'~(.*?)~', r'<s>\1</s>', formatted_body)
+        formatted_body = re.sub(r'```(.*?)```', r'<code>\1</code>', formatted_body)
         return Markup(formatted_body)
 
     def _get_formatted_body(self, demo_fallback=False, variable_values=None):
@@ -747,6 +808,11 @@ class WhatsAppTemplate(models.Model):
     # ------------------------------------------------------------
     # TOOLS
     # ------------------------------------------------------------
+
+    @api.model
+    def _can_use_whatsapp(self, model_name):
+        return self.env.user.has_group('whatsapp.group_whatsapp_admin') or \
+            bool(self._find_default_for_model(model_name))
 
     @api.model
     def _find_default_for_model(self, model_name):

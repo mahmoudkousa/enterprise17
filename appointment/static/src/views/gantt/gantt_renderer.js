@@ -4,6 +4,7 @@ import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
 import { GanttRenderer } from "@web_gantt/gantt_renderer";
 import { AppointmentBookingGanttPopover } from "@appointment/views/gantt/gantt_popover";
+import { patch } from "@web/core/utils/patch";
 const { DateTime } = luxon;
 
 export class AppointmentBookingGanttRenderer extends GanttRenderer {
@@ -23,10 +24,27 @@ export class AppointmentBookingGanttRenderer extends GanttRenderer {
 
     /**
      * @override
+     * If multiple columns have been selected, remove the default duration from the context so that
+     * the stop matches the end of the selection instead of being redefined to match the appointment duration.
+     */
+    onCreate(rowId, columnStart, columnStop) {
+        const { start, stop } = this.getColumnStartStop(columnStart, columnStop);
+        const context = this.model.getDialogContext({rowId, start, stop, withDefault: true});
+        if (columnStart != columnStop){
+            delete context['default_duration'];
+        }
+        this.props.create(context);
+    }
+
+    /**
+     * @override
      */
     enrichPill(pill) {
         const enrichedPill = super.enrichPill(pill);
         const { record } = pill;
+        if (!record.appointment_type_id) {
+            return enrichedPill;
+        }
         const now = DateTime.now()
         // see o-colors-complete for array of colors to index into
         let color = false;
@@ -42,6 +60,32 @@ export class AppointmentBookingGanttRenderer extends GanttRenderer {
         }
         return enrichedPill;
     }
+    /**
+     * Once the rows are filled in, grey out the pills on rows
+     * where the partner is not the organizer for user appointments
+     *
+     * This needs to be done separately as we cannot identify which row
+     * a pill is associated to until this step.
+     *
+     * @override
+     */
+    computeDerivedParams() {
+        const result = super.computeDerivedParams();
+        if (
+            !this.model.metaData.groupedBy ||
+            this.model.metaData.groupedBy.at(-1) !== "partner_ids"
+        ) {
+            return result;
+        }
+        for (const row of this.rows) {
+            for (const pill of row.pills) {
+                if (row.resId !== pill.record.partner_id[0]) {
+                    pill.className += " o_appointment_booking_gantt_color_grey";
+                }
+            }
+        }
+        return result;
+    }
 
     /**
      * Display 'Add Leaves' action button if grouping by appointment resources.
@@ -50,9 +94,38 @@ export class AppointmentBookingGanttRenderer extends GanttRenderer {
         return !!(this.model.metaData.groupedBy && this.model.metaData.groupedBy[0] === 'appointment_resource_id');
     }
 
+    /**
+     * Patch the flow so that we will have access to the id of the partner
+     * in the row the user originally clicked when writing to reschedule, as originId.
+     *
+     * @override
+     */
+    async dragPillDrop({ pill, cell, diff }) {
+        let unpatch = null;
+        if (this.model.metaData.groupedBy && this.model.metaData.groupedBy[0] === "partner_ids") {
+            const originResId = this.rows.find((row) => {
+                return row.pills.some(
+                    (rowPill) => rowPill.id === this.pills[pill.dataset.pillId].id,
+                );
+            })?.resId;
+            unpatch = patch(this.model, {
+                getSchedule() {
+                    const schedule = super.getSchedule(...arguments);
+                    schedule.originId = originResId;
+                    return schedule;
+                },
+            });
+        }
+        const ret = super.dragPillDrop(...arguments);
+        if (unpatch) {
+            unpatch();
+        }
+        return ret;
+    }
+
     async onClickAddLeave() {
         this.env.services.action.doAction({
-            name: _t("Add a Leave"),
+            name: _t("Add Closing Day(s)"),
             type: "ir.actions.act_window",
             res_model: "appointment.manage.leaves",
             view_mode: "form",
@@ -110,6 +183,7 @@ export class AppointmentBookingGanttRenderer extends GanttRenderer {
                     }],
                 ).then(() => this.model.fetchData());
             },
+            appointmentTypeId: record.appointment_type_id,
             attendedState,
             title: popoverValues[0].name || this.getDisplayName(pill),
             context: {

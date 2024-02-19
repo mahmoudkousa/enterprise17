@@ -54,3 +54,7 @@ class HrPayroll(Controller):
         ]
 
         return request.make_response(merged_pdf, headers=pdfhttpheaders)
+
+    @route(["/get_payroll_warnings"], type="json", auth='user')
+    def get_payroll_warning_data(self):
+        return request.env['hr.payslip']._get_dashboard_warnings()

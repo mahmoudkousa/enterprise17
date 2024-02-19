@@ -68,5 +68,8 @@ Features:
             'sale_subscription/static/src/js/portal_subscription.js',
             'sale_subscription/static/src/xml/*.xml',
         ],
+        'web.assets_tests': [
+            'sale_subscription/static/src/js/tours/test_sale_subscription_portal.js',
+        ],
     }
 }

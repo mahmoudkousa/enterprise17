@@ -132,42 +132,6 @@
             <t t-call="sale_subscription.subscription_portal_sidebar"/>
         </t>
 
-        <div id="sale_order_communication" position="before">
-            <!-- ======  Change Payment Method ====== -->
-            <div t-if="sale_order.subscription_state in ['3_progress', '6_churn']" role="dialog" class="modal fade" id="payment_managing">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <header class="modal-header">
-                            <h4 class="modal-title">Manage Payment Method</h4>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </header>
-                        <main class="modal-body">
-                            <!-- ======  Manage Payment methods ====== -->
-                            <div t-if="providers_sudo" id="payment_method" class="text-start">
-                                <t t-call="payment.form">
-                                    <t t-set="assign_token_route"
-                                       t-value="'/my/subscriptions/assign_token/' + str(sale_order.id)"/>
-                                    <t t-set="landing_route"
-                                       t-value="sale_order.get_portal_url() + '&amp;message=Your payment method has been changed for this subscription.&amp;message_class=alert-success'"/>
-                                </t>
-                            </div>
-                            <div t-else="">
-                                <div class="alert alert-warning">
-                                    <b>No suitable payment method could be found.</b><br/>
-                                    If you believe that is an error, please contact the website administrator.
-                                </div>
-                                <a role="button" class="btn-link"
-                                   groups="base.group_system"
-                                   t-attf-href="/web#action=#{payment_action_id}">
-                                    <i class="oi oi-arrow-right"></i> Add payment providers
-                                </a>
-                            </div>
-                        </main>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div id="portal_sale_content" position="before">
             <t t-set="upsell_url" t-value="sale_order._get_upsell_portal_url()"/>
             <t t-set="renewal_url" t-value="sale_order._get_renewal_portal_url()"/>
@@ -197,34 +161,27 @@
             </div>
         </div>
 
-        <span id="transaction_info" position="replace">
-            <div t-if="message and message != 'sign_ok'" t-att-class="'alert ' + message_class" role="alert">
-                <p t-out="message"/>
-            </div>
-            <div t-if="sale_order.get_portal_last_transaction().state == 'pending'">
-                <div class="alert alert-primary m-1">
-                    <span>
-                        Your payment made on the <span t-field="sale_order.get_portal_last_transaction().last_state_change"/> is pending.
-                        Your subscription will be renewed as soon as it is confirmed.<br/>
-                        Don't hesitate to <a href="#discussion">contact us</a> if there is a problem or an emergency.
-                    </span>
-                </div>
-            </div>
-        </span>
-
         <span id="sale_info_title" position="replace">
             <span id="sale_info_title">
-                <h5 class="mb-1">
+                <h4 class="mb-1">
                     Subscription Information
-                </h5>
-                <hr class="my-0"/>
+                </h4>
+                <hr class="mt-1 mb-2"/>
             </span>
         </span>
 
         <tbody id="sale_info_table" position="replace">
             <tbody style="white-space:nowrap">
+                <tr t-if="sale_order._has_to_be_signed() or sale_order._has_to_be_paid()">
+                    <th class="ps-0 pb-0">Date:</th>
+                    <td class="w-100 pb-0 text-wrap"><span t-field="sale_order.date_order" t-options='{"widget": "date"}'/></td>
+                </tr>
+                <tr t-if="sale_order._has_to_be_signed() or sale_order._has_to_be_paid()">
+                    <th class="ps-0 pb-0">Expiration Date:</th>
+                    <td class="w-100 pb-0 text-wrap"><span t-field="sale_order.validity_date" t-options='{"widget": "date"}'/></td>
+                </tr>
                 <tr t-if="sale_order.plan_id">
-                    <th class="text-end pb-0">Recurring Plan:</th>
+                    <th class="ps-0 pb-0">Recurring Plan:</th>
                     <td class="w-100 pb-0 text-wrap"><span t-field="sale_order.sudo().plan_id.name"/></td>
                     <td>
                         <a role="button" class="link-primary" data-bs-toggle="modal" data-bs-target="#wc-modal-change-plan" href="#"
@@ -234,29 +191,23 @@
                     </td>
                 </tr>
                 <tr t-if="sale_order.client_order_ref">
-                    <th class="text-end pb-0">Reference:</th>
+                    <th class="ps-0 pb-0">Reference:</th>
                     <td class="w-100 pb-0 text-wrap"><span t-field="sale_order.client_order_ref"/></td>
                 </tr>
-                <tr t-if="sale_order.end_date">
-                    <th class="text-end pb-0">Valid Until:</th>
-                    <td class="w-100 pb-0"><span t-field="sale_order.end_date"/></td>
+                <tr t-if="sale_order.subscription_state == '3_progress'">
+                    <th class="ps-0 pb-0">Next Billing Date:</th>
+                    <td class="w-100 pb-0"><span t-field="sale_order.next_invoice_date"/></td>
                 </tr>
                 <tr t-if="sale_order.start_date">
-                    <th class="text-end pb-0">Start Date:</th>
+                    <th class="ps-0 pb-0">Start Date:</th>
                     <td class="w-100 pb-0"><span t-field="sale_order.start_date"/></td>
                 </tr>
-                <tr t-if="sale_order.subscription_state == '3_progress'">
-                    <th class="text-end pb-0">Next Billing Date:</th>
-                    <td class="w-100 pb-0"><span t-field="sale_order.next_invoice_date"/></td>
+                <tr t-if="sale_order.end_date">
+                    <th class="ps-0 pb-0">Valid Until:</th>
+                    <td class="pb-0"><span t-field="sale_order.end_date"/></td>
                 </tr>
             </tbody>
         </tbody>
-
-        <h3 id="details_title" position="replace">
-            <h3 id="details_title">
-                Plan Details
-            </h3>
-        </h3>
 
         <!-- ======  Subscription closed ====== -->
         <div id="content" position="inside">
@@ -278,7 +229,7 @@
                         </div>
                     </div>
                     <div>
-                        <hr class="my-0"/>
+                        <hr class="mt-1 mb-2"/>
                         <t t-call="payment.form">
                             <t t-set="landing_route" t-value="sale_order.get_portal_url()"/>
                         </t>
@@ -377,7 +328,7 @@
                             <h6><small class="text-muted">Subscription Manager:</small></h6>
                             <div class="o_portal_contact_details d-flex flex-column gap-2">
                                 <div class="d-flex justify-content-start align-items-center gap-2">
-                                    <img class="o_avatar o_portal_contact_img rounded" t-att-src="image_data_uri(sale_order.user_id.avatar_1024)" alt="Contact"/>
+                                    <img class="o_avatar o_portal_contact_img rounded" t-att-src="image_data_uri(sale_order.user_id.avatar_128)" alt="Contact"/>
                                     <div>
                                         <h6 class="mb-0" t-out="sale_order.user_id.name"/>
                                         <a href="#discussion" class="d-flex align-items-center gap-2 small fw-bold">Send message</a>
@@ -472,11 +423,11 @@
     <template id="sale_order_portal_content_inherit" inherit_id="sale.sale_order_portal_content">
         <tbody id="sale_info_table" position="inside">
             <tr t-if="sale_order.subscription_id">
-                <th class="text-end pb-0">Subscription:</th>
+                <th class="ps-0 pb-0">Subscription:</th>
                 <td class="w-100 pb-0 text-wrap"><a t-att-href="sale_order.subscription_id.get_portal_url()"><span t-field="sale_order.subscription_id.name"/></a></td>
             </tr>
             <tr t-if="sale_order.plan_id">
-                <th class="text-end pb-0">Recurring Plan:</th>
+                <th class="ps-0 pb-0">Recurring Plan:</th>
                 <td class="w-100 pb-0 text-wrap"><span t-field="sale_order.plan_id.sudo().name"/></td>
             </tr>
         </tbody>

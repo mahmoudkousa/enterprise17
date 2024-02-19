@@ -8,6 +8,7 @@ import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_d
 import { Dialog } from "@web/core/dialog/dialog";
 import { useHotkey } from "@web/core/hotkeys/hotkey_hook";
 import { _t } from "@web/core/l10n/translation";
+import { useActiveElement } from "@web/core/ui/ui_service";
 import { uniqueId } from "@web/core/utils/functions";
 import { useService } from "@web/core/utils/hooks";
 
@@ -34,6 +35,9 @@ export class PdfManager extends Component {
 
     setup() {
         this.root = useRef("root");
+        //setting the active element allows restricting the command palette to the context of this Component
+        //this is necessary because this Component is a modal in disguise but does not properly override "Dialog"
+        useActiveElement("root");
         this.pageViewer = useRef("pageViewer");
         this.selectionBox = useRef("selectionBox");
         this.addFileInput = useRef("addFileInput");

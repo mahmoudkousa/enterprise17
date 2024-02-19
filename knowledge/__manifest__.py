@@ -13,7 +13,8 @@
         'mail',
         'portal',
         'web_unsplash',
-        'web_hierarchy'
+        'web_hierarchy',
+        'web_map',
     ],
     'data': [
         'data/article_templates.xml',
@@ -82,7 +83,7 @@
         'web.qunit_suite_tests': [
             'knowledge/static/tests/knowledge_form_view_tests.js',
             'knowledge/static/tests/form_controller_patch_tests.js',
-            'knowledge/static/tests/knowledge_external_embeds_hotkeys.js',
+            'knowledge/static/tests/knowledge_external_embeds_tests.js',
             'knowledge/static/tests/knowledge_form_view_tests.js',
             'knowledge/static/tests/knowledge_behaviors_upgrade_tests.js',
             'knowledge/static/tests/knowledge_wysiwyg_collaboration_tests.js',

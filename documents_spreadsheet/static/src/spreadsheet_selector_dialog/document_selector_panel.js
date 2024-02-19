@@ -2,6 +2,7 @@
 
 import { _t } from "@web/core/l10n/translation";
 import { patch } from "@web/core/utils/patch";
+import { Domain } from "@web/core/domain";
 import { SpreadsheetSelectorDialog } from "@spreadsheet_edition/assets/components/spreadsheet_selector_dialog/spreadsheet_selector_dialog";
 import { SpreadsheetSelectorPanel } from "@spreadsheet_edition/assets/components/spreadsheet_selector_dialog/spreadsheet_selector_panel";
 
@@ -18,13 +19,9 @@ export class DocumentsSelectorPanel extends SpreadsheetSelectorPanel {
      * @returns {Promise<void>}
      */
     async _fetchSpreadsheets() {
-        const domain = [];
-        if (this.currentSearch !== "") {
-            domain.push(["name", "ilike", this.currentSearch]);
-        }
         const { offset, limit } = this.state.pagerProps;
         this.state.spreadsheets = await this.keepLast.add(
-            this.orm.call("documents.document", "get_spreadsheets_to_display", [domain], {
+            this.orm.call("documents.document", "get_spreadsheets_to_display", [this.domain], {
                 offset,
                 limit,
             })
@@ -36,9 +33,10 @@ export class DocumentsSelectorPanel extends SpreadsheetSelectorPanel {
      * @returns {Promise<number>}
      */
     async _fetchPagerTotal() {
-        return this.orm.call("documents.document", "search_count", [
-            [["handler", "=", "spreadsheet"]],
-        ]);
+        return this.orm.searchCount(
+            "documents.document",
+            Domain.and([this.domain, [["handler", "=", "spreadsheet"]]]).toList()
+        );
     }
 
     _getOpenSpreadsheetAction() {

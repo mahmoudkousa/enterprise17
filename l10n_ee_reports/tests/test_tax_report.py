@@ -29,13 +29,13 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
 
         cls.taxes = {
             # Purchase Taxes
-            'vat_in_20_g': cls.env['account.tax'].search([
-                    ('name', '=', '20% G'),
+            'vat_in_22_g': cls.env['account.tax'].search([
+                    ('name', '=', '22% G'),
                     ('type_tax_use', '=', 'purchase'),
                     ('company_id', '=', cls.company_data['company'].id)
                 ], limit=1),
-            'vat_in_20_partial': cls.env['account.tax'].with_context(active_test=False).search([
-                    ('name', '=', '20% S'),
+            'vat_in_22_partial': cls.env['account.tax'].with_context(active_test=False).search([
+                    ('name', '=', '22% S'),
                     ('type_tax_use', '=', 'purchase'),
                     ('company_id', '=', cls.company_data['company'].id)
                 ], limit=1),
@@ -55,27 +55,27 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                     ('company_id', '=', cls.company_data['company'].id)
                 ], limit=1),
             'vat_in_0_eu_g': cls.env['account.tax'].search([
-                    ('name', '=', '0% EU G 20%'),
+                    ('name', '=', '0% EU G 22%'),
                     ('type_tax_use', '=', 'purchase'),
                     ('company_id', '=', cls.company_data['company'].id)
                 ], limit=1),
             'vat_in_0_eu_s': cls.env['account.tax'].search([
-                    ('name', '=', '0% EU S 20%'),
+                    ('name', '=', '0% EU S 22%'),
                     ('type_tax_use', '=', 'purchase'),
                     ('company_id', '=', cls.company_data['company'].id)
                 ], limit=1),
-            'vat_in_20_car': cls.env['account.tax'].search([
-                    ('name', '=', '20% Car'),
+            'vat_in_22_car': cls.env['account.tax'].search([
+                    ('name', '=', '22% Car'),
                     ('type_tax_use', '=', 'purchase'),
                     ('company_id', '=', cls.company_data['company'].id)
                 ], limit=1),
-            'vat_in_20_car_part': cls.env['account.tax'].with_context(active_test=False).search([
-                    ('name', '=', '20% Car 50%'),
+            'vat_in_22_car_part': cls.env['account.tax'].with_context(active_test=False).search([
+                    ('name', '=', '22% Car 50%'),
                     ('type_tax_use', '=', 'purchase'),
                     ('company_id', '=', cls.company_data['company'].id)
                 ], limit=1),
-            'vat_in_20_assets': cls.env['account.tax'].with_context(active_test=False).search([
-                    ('name', '=', '20% Fixed Assets'),
+            'vat_in_22_assets': cls.env['account.tax'].with_context(active_test=False).search([
+                    ('name', '=', '22% Fixed Assets'),
                     ('type_tax_use', '=', 'purchase'),
                     ('company_id', '=', cls.company_data['company'].id)
                 ], limit=1),
@@ -84,19 +84,20 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                     ('type_tax_use', '=', 'purchase'),
                     ('company_id', '=', cls.company_data['company'].id)
                 ], limit=1),
-            'vat_in_20_imp_kms_38': cls.env['account.tax'].with_context(active_test=False).search([
-                    ('name', '=', '20% EX KMS §38'),
+            'vat_in_22_imp_kms_38': cls.env['account.tax'].with_context(active_test=False).search([
+                    ('name', '=', '22% EX KMS §38'),
                     ('type_tax_use', '=', 'purchase'),
                     ('company_id', '=', cls.company_data['company'].id)
                 ], limit=1),
             'vat_in_0_kms_41_1': cls.env['account.tax'].with_context(active_test=False).search([
-                    ('name', '=', '0% KMS §41¹'),
+                    ('name', '=', '22% KMS §41¹'),
                     ('type_tax_use', '=', 'purchase'),
+                    ('amount', '=', 22),
                     ('company_id', '=', cls.company_data['company'].id)
                 ], limit=1),
             # Sales Taxes
-            'vat_out_20_g': cls.env['account.tax'].search([
-                    ('name', '=', '20% G'),
+            'vat_out_22_g': cls.env['account.tax'].search([
+                    ('name', '=', '22% G'),
                     ('type_tax_use', '=', 'sale'),
                     ('company_id', '=', cls.company_data['company'].id)
                 ], limit=1),
@@ -146,12 +147,13 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                     ('company_id', '=', cls.company_data['company'].id)
                 ], limit=1),
             'vat_out_0_kms_41_1': cls.env['account.tax'].with_context(active_test=False).search([
-                    ('name', '=', '0% KMS §41¹'),
+                    ('name', '=', '22% KMS §41¹'),
                     ('type_tax_use', '=', 'sale'),
+                    ('amount', '=', 22),
                     ('company_id', '=', cls.company_data['company'].id)
                 ], limit=1),
         }
-        cls.taxes['vat_in_20_partial'].l10n_ee_kmd_inf_code = '11'
+        cls.taxes['vat_in_22_partial'].l10n_ee_kmd_inf_code = '11'
 
     @classmethod
     def setup_company_data(cls, company_name, chart_template=None, **kwargs):
@@ -177,7 +179,7 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                     'quantity': 1.0,
                     'name': 'PT1',
                     'price_unit': 500,
-                    'tax_ids': self.taxes['vat_in_20_g'].ids,
+                    'tax_ids': self.taxes['vat_in_22_g'].ids,
                 }),
             ],
         })
@@ -195,7 +197,7 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                     'quantity': 1.0,
                     'name': 'PT1',
                     'price_unit': 500,
-                    'tax_ids': self.taxes['vat_in_20_partial'].ids,
+                    'tax_ids': self.taxes['vat_in_22_partial'].ids,
                 }),
                 (0, 0, {
                     'quantity': 1.0,
@@ -228,20 +230,21 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                 <year>2023</year>
                 <month>1</month>
                 <declarationType>1</declarationType>
+                <version>KMD4</version>
                 <declarationBody>
                     <noSales>true</noSales>
                     <noPurchases>false</noPurchases>
                     <sumPerPartnerSales>false</sumPerPartnerSales>
                     <sumPerPartnerPurchases>false</sumPerPartnerPurchases>
-                    <inputVatTotal>237.00</inputVatTotal>
+                    <inputVatTotal>257.00</inputVatTotal>
                 </declarationBody>
                 <purchasesAnnex>
                     <purchaseLine>
                         <sellerName>Partner EE 2</sellerName>
                         <invoiceNumber>INV002</invoiceNumber>
                         <invoiceDate>2023-01-13</invoiceDate>
-                        <invoiceSumVat>1287.00</invoiceSumVat>
-                        <vatInPeriod>137.00</vatInPeriod>
+                        <invoiceSumVat>1297.00</invoiceSumVat>
+                        <vatInPeriod>147.00</vatInPeriod>
                         <comments>11</comments>
                     </purchaseLine>
                     <purchaseLine>
@@ -249,8 +252,8 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                         <sellerName>Partner EE 1</sellerName>
                         <invoiceNumber>INV001</invoiceNumber>
                         <invoiceDate>2023-01-11</invoiceDate>
-                        <invoiceSumVat>600.00</invoiceSumVat>
-                        <vatInPeriod>100.00</vatInPeriod>
+                        <invoiceSumVat>610.00</invoiceSumVat>
+                        <vatInPeriod>110.00</vatInPeriod>
                     </purchaseLine>
                 </purchasesAnnex>
             </vatDeclaration>
@@ -276,7 +279,7 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                     'quantity': 1.0,
                     'name': 'PT1',
                     'price_unit': 500,
-                    'tax_ids': self.taxes['vat_out_20_g'].ids,
+                    'tax_ids': self.taxes['vat_out_22_g'].ids,
                 }),
             ],
         }).action_post()
@@ -292,7 +295,7 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                     'quantity': 1.0,
                     'name': 'PT1',
                     'price_unit': 500,
-                    'tax_ids': self.taxes['vat_out_20_g'].ids,
+                    'tax_ids': self.taxes['vat_out_22_g'].ids,
                 }),
                 (0, 0, {
                     'quantity': 1.0,
@@ -324,12 +327,13 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                 <year>2023</year>
                 <month>1</month>
                 <declarationType>1</declarationType>
+                <version>KMD4</version>
                 <declarationBody>
                     <noSales>false</noSales>
                     <noPurchases>true</noPurchases>
                     <sumPerPartnerSales>false</sumPerPartnerSales>
                     <sumPerPartnerPurchases>false</sumPerPartnerPurchases>
-                    <transactions20>1000.00</transactions20>
+                    <transactions22>1000.00</transactions22>
                     <transactions9>300.00</transactions9>
                     <transactions5>200.00</transactions5>
                     <transactionsZeroVat>150.00</transactionsZeroVat>
@@ -340,7 +344,7 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                         <invoiceNumber>INV/2023/00002</invoiceNumber>
                         <invoiceDate>2023-01-13</invoiceDate>
                         <invoiceSum>1150.00</invoiceSum>
-                        <taxRate>20</taxRate>
+                        <taxRate>22</taxRate>
                         <sumForRateInPeriod>500.00</sumForRateInPeriod>
                         <comments>3</comments>
                     </saleLine>
@@ -368,7 +372,7 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                         <invoiceNumber>INV/2023/00001</invoiceNumber>
                         <invoiceDate>2023-01-11</invoiceDate>
                         <invoiceSum>500.00</invoiceSum>
-                        <taxRate>20</taxRate>
+                        <taxRate>22</taxRate>
                         <sumForRateInPeriod>500.00</sumForRateInPeriod>
                     </saleLine>
                 </salesAnnex>
@@ -396,7 +400,7 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                     'quantity': 1.0,
                     'name': 'PT1',
                     'price_unit': 500,
-                    'tax_ids': self.taxes['vat_in_20_g'].ids,
+                    'tax_ids': self.taxes['vat_in_22_g'].ids,
                 }),
             ],
         })
@@ -414,7 +418,7 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                     'quantity': 1.0,
                     'name': 'PT1',
                     'price_unit': 500,
-                    'tax_ids': self.taxes['vat_in_20_partial'].ids,
+                    'tax_ids': self.taxes['vat_in_22_partial'].ids,
                 }),
                 (0, 0, {
                     'quantity': 1.0,
@@ -462,19 +466,19 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                     'quantity': 1.0,
                     'name': 'PT3',
                     'price_unit': 600,
-                    'tax_ids': self.taxes['vat_in_20_car'].ids,
+                    'tax_ids': self.taxes['vat_in_22_car'].ids,
                 }),
                 (0, 0, {
                     'quantity': 1.0,
                     'name': 'PT4',
                     'price_unit': 500,
-                    'tax_ids': self.taxes['vat_in_20_car_part'].ids,
+                    'tax_ids': self.taxes['vat_in_22_car_part'].ids,
                 }),
                 (0, 0, {
                     'quantity': 1.0,
                     'name': 'PT5',
                     'price_unit': 400,
-                    'tax_ids': self.taxes['vat_in_20_assets'].ids,
+                    'tax_ids': self.taxes['vat_in_22_assets'].ids,
                 }),
                 (0, 0, {
                     'quantity': 1.0,
@@ -486,7 +490,7 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                     'quantity': 1.0,
                     'name': 'PT7',
                     'price_unit': 200,
-                    'tax_ids': self.taxes['vat_in_20_imp_kms_38'].ids,
+                    'tax_ids': self.taxes['vat_in_22_imp_kms_38'].ids,
                 }),
                 (0, 0, {
                     'quantity': 1.0,
@@ -498,7 +502,7 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
         })
         move.action_post()
 
-        self.env['account.move'].create({
+        move = self.env['account.move'].create({
             'move_type': 'out_invoice',
             'journal_id': self.company_data['default_journal_sale'].id,
             'partner_id': self.partner_ee_1.id,
@@ -509,10 +513,11 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                     'quantity': 1.0,
                     'name': 'PT1',
                     'price_unit': 500,
-                    'tax_ids': self.taxes['vat_out_20_g'].ids,
+                    'tax_ids': self.taxes['vat_out_22_g'].ids,
                 }),
             ],
-        }).action_post()
+        })
+        move.action_post()
 
         self.env['account.move'].create({
             'move_type': 'out_invoice',
@@ -525,7 +530,7 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                     'quantity': 1.0,
                     'name': 'PT1',
                     'price_unit': 500,
-                    'tax_ids': self.taxes['vat_out_20_g'].ids,
+                    'tax_ids': self.taxes['vat_out_22_g'].ids,
                 }),
                 (0, 0, {
                     'quantity': 1.0,
@@ -610,12 +615,13 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                 <year>2023</year>
                 <month>1</month>
                 <declarationType>1</declarationType>
+                <version>KMD4</version>
                 <declarationBody>
                     <noSales>false</noSales>
                     <noPurchases>false</noPurchases>
                     <sumPerPartnerSales>false</sumPerPartnerSales>
                     <sumPerPartnerPurchases>false</sumPerPartnerPurchases>
-                    <transactions20>2600.00</transactions20>
+                    <transactions22>2600.00</transactions22>
                     <transactions9>300.00</transactions9>
                     <transactions5>200.00</transactions5>
                     <transactionsZeroVat>3150.00</transactionsZeroVat>
@@ -623,11 +629,11 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                     <euSupplyGoodsZeroVat>800.00</euSupplyGoodsZeroVat>
                     <exportZeroVat>1100.00</exportZeroVat>
                     <salePassengersWithReturnVat>500.00</salePassengersWithReturnVat>
-                    <inputVatTotal>1147.00</inputVatTotal>
-                    <importVat>340.00</importVat>
-                    <fixedAssetsVat>80.00</fixedAssetsVat>
-                    <carsVat>120.00</carsVat>
-                    <carsPartialVat>50.00</carsPartialVat>
+                    <inputVatTotal>1228.00</inputVatTotal>
+                    <importVat>344.00</importVat>
+                    <fixedAssetsVat>88.00</fixedAssetsVat>
+                    <carsVat>132.00</carsVat>
+                    <carsPartialVat>55.00</carsPartialVat>
                     <euAcquisitionsGoodsAndServicesTotal>1500.00</euAcquisitionsGoodsAndServicesTotal>
                     <euAcquisitionsGoods>800.00</euAcquisitionsGoods>
                     <acquisitionOtherGoodsAndServicesTotal>100.00</acquisitionOtherGoodsAndServicesTotal>
@@ -641,7 +647,7 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                         <invoiceNumber>INV/2023/00002</invoiceNumber>
                         <invoiceDate>2023-01-13</invoiceDate>
                         <invoiceSum>1150.00</invoiceSum>
-                        <taxRate>20</taxRate>
+                        <taxRate>22</taxRate>
                         <sumForRateInPeriod>500.00</sumForRateInPeriod>
                         <comments>3</comments>
                     </saleLine>
@@ -669,7 +675,7 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                         <invoiceNumber>INV/2023/00001</invoiceNumber>
                         <invoiceDate>2023-01-11</invoiceDate>
                         <invoiceSum>500.00</invoiceSum>
-                        <taxRate>20</taxRate>
+                        <taxRate>22</taxRate>
                         <sumForRateInPeriod>500.00</sumForRateInPeriod>
                     </saleLine>
                 </salesAnnex>
@@ -678,8 +684,8 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                         <sellerName>Partner EE 2</sellerName>
                         <invoiceNumber>INV002</invoiceNumber>
                         <invoiceDate>2023-01-13</invoiceDate>
-                        <invoiceSumVat>1287.00</invoiceSumVat>
-                        <vatInPeriod>137.00</vatInPeriod>
+                        <invoiceSumVat>1297.00</invoiceSumVat>
+                        <vatInPeriod>147.00</vatInPeriod>
                         <comments>11</comments>
                     </purchaseLine>
                     <purchaseLine>
@@ -687,10 +693,98 @@ class EstonianTaxReportTest(AccountSalesReportCommon):
                         <sellerName>Partner EE 1</sellerName>
                         <invoiceNumber>INV001</invoiceNumber>
                         <invoiceDate>2023-01-11</invoiceDate>
-                        <invoiceSumVat>600.00</invoiceSumVat>
-                        <vatInPeriod>100.00</vatInPeriod>
+                        <invoiceSumVat>610.00</invoiceSumVat>
+                        <vatInPeriod>110.00</vatInPeriod>
                     </purchaseLine>
                 </purchasesAnnex>
+            </vatDeclaration>
+        """
+
+        actual_xml = self.env[report.custom_handler_model_name].export_to_xml(options)['file_content']
+
+        self.assertXmlTreeEqual(
+            self.get_xml_tree_from_string(actual_xml),
+            self.get_xml_tree_from_string(expected_xml)
+        )
+
+    @freeze_time('2023-02-01')
+    def test_special_code_single_tax(self):
+        """ Special code column (comments) should not appear when
+        there are only invoices with invoice lines with a single
+        tax
+        """
+        moves = self.env['account.move'].create([
+            {
+                'move_type': 'out_invoice',
+                'journal_id': self.company_data['default_journal_sale'].id,
+                'partner_id': self.partner_ee_1.id,
+                'invoice_date': '2023-01-11',
+                'date': '2023-01-11',
+                'invoice_line_ids': [
+                    (0, 0, {
+                        'quantity': 1.0,
+                        'name': 'PT1',
+                        'price_unit': 500,
+                        'tax_ids': self.taxes['vat_out_22_g'].ids,
+                    }),
+                ],
+            },
+            {
+                'move_type': 'out_invoice',
+                'journal_id': self.company_data['default_journal_sale'].id,
+                'partner_id': self.partner_ee_1.id,
+                'invoice_date': '2023-01-11',
+                'date': '2023-01-11',
+                'invoice_line_ids': [
+                    (0, 0, {
+                        'quantity': 1.0,
+                        'name': 'PT1',
+                        'price_unit': 500,
+                        'tax_ids': self.taxes['vat_out_9_g'].ids,
+                    }),
+                ],
+            },
+        ])
+
+        moves.action_post()
+
+        report = self.env.ref('l10n_ee.tax_report_vat')
+        options = report.get_options()
+        expected_xml = """
+            <vatDeclaration>
+            <taxPayerRegCode>12345678</taxPayerRegCode>
+            <year>2023</year>
+            <month>1</month>
+            <declarationType>1</declarationType>
+            <version>KMD4</version>
+            <declarationBody>
+                <noSales>false</noSales>
+                <noPurchases>true</noPurchases>
+                <sumPerPartnerSales>false</sumPerPartnerSales>
+                <sumPerPartnerPurchases>false</sumPerPartnerPurchases>
+                <transactions22>500.00</transactions22>
+                <transactions9>500.00</transactions9>
+            </declarationBody>
+            <salesAnnex>
+                <saleLine>
+                <buyerRegCode>98765432</buyerRegCode>
+                <buyerName>Partner EE 1</buyerName>
+                <invoiceNumber>INV/2023/00002</invoiceNumber>
+                <invoiceDate>2023-01-11</invoiceDate>
+                <invoiceSum>500.00</invoiceSum>
+                <taxRate>9</taxRate>
+                <sumForRateInPeriod>500.00</sumForRateInPeriod>
+                </saleLine>
+                <saleLine>
+                <buyerRegCode>98765432</buyerRegCode>
+                <buyerName>Partner EE 1</buyerName>
+                <invoiceNumber>INV/2023/00001</invoiceNumber>
+                <invoiceDate>2023-01-11</invoiceDate>
+                <invoiceSum>500.00</invoiceSum>
+                <taxRate>22</taxRate>
+                <sumForRateInPeriod>500.00</sumForRateInPeriod>
+                </saleLine>
+            </salesAnnex>
             </vatDeclaration>
         """
 

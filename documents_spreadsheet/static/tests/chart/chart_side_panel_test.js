@@ -6,6 +6,7 @@ import {
     triggerEvent,
     patchWithCleanup,
     nextTick,
+    editInput,
 } from "@web/../tests/helpers/utils";
 import { createBasicChart } from "@spreadsheet/../tests/utils/commands";
 import { createSpreadsheet } from "../spreadsheet_test_utils";
@@ -120,9 +121,7 @@ QUnit.module("documents_spreadsheet > chart side panel", { beforeEach }, () => {
         /** @type {HTMLInputElement} */
         const input = target.querySelector(".o-chart-title input");
         assert.strictEqual(model.getters.getChart(chartId).title, "Untitled");
-        input.value = "bla";
-        await triggerEvent(input, null, "input");
-        await triggerEvent(input, null, "change");
+        await editInput(input, null, "bla");
         assert.strictEqual(model.getters.getChart(chartId).title, "bla");
     });
 

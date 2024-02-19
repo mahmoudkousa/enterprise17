@@ -13,7 +13,7 @@ patch(PaymentScreen.prototype, {
     //@override
     async toggleIsToInvoice() {
         if (this.pos.company.country?.code === 'MX' && !this.currentOrder.is_to_invoice()) {
-            const { confirmed, payload } = await this.popup.add(AddInfoPopup);
+            const { confirmed, payload } = await this.popup.add(AddInfoPopup, { order: this.currentOrder });
             if (confirmed) {
                 this.currentOrder.l10n_mx_edi_cfdi_to_public = (payload.l10n_mx_edi_cfdi_to_public === true || payload.l10n_mx_edi_cfdi_to_public === '1');
                 this.currentOrder.l10n_mx_edi_usage = payload.l10n_mx_edi_usage;

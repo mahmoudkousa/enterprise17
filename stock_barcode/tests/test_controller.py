@@ -9,8 +9,9 @@ from odoo.tests import HttpCase, tagged
 class TestStockBarcodeController(HttpCase):
 
     def test_search_by_barcode_with_multiple_companies(self):
-        company_a = self.env.companies[0]
-        company_b = self.env.companies[1]
+        company_a = self.env.company
+        company_b = self.env['res.company'].create({'name': 'Test Company'})
+        self.env.ref('base.user_admin').company_ids = [(4, company_b.id)]
 
         products = [
             {'name': 'A1', 'barcode': 'abc1', 'company_id': False},
@@ -20,7 +21,6 @@ class TestStockBarcodeController(HttpCase):
         ]
 
         for product in products:
-            product.update({'default_code': 'fuck'})
             self.env['product.product'].create(product)
 
         expected_responses = {

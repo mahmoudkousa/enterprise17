@@ -7,16 +7,11 @@ patch(Order.prototype, {
     // For sending changes to printer see printChanges function.
     async sendChanges(cancelled) {
         await this.pos.sendDraftToServer();
-
-        const lastOrderPreparationChange = await this.env.services.orm.call(
+        await this.env.services.orm.call(
             "pos_preparation_display.order",
             "process_order",
             [this.server_id, cancelled]
         );
-        if (lastOrderPreparationChange) {
-            this.lastOrderPrepaChange = JSON.parse(lastOrderPreparationChange);
-        }
-
         return true;
     },
     setCustomerCount(count) {

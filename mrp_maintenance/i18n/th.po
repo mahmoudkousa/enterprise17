@@ -4,6 +4,7 @@
 # 
 # Translators:
 # Wil Odoo, 2023
+# Rasareeyar Lappiam, 2023
 # 
 msgid ""
 msgstr ""
@@ -11,7 +12,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-10-26 22:21+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Wil Odoo, 2023\n"
+"Last-Translator: Rasareeyar Lappiam, 2023\n"
 "Language-Team: Thai (https://app.transifex.com/odoo/teams/41243/th/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -62,7 +63,7 @@ msgstr "เพิ่มคำขอการซ่อมบำรุงใหม
 #. module: mrp_maintenance
 #: model:ir.model.fields,field_description:mrp_maintenance.field_maintenance_request__recurring_leaves_count
 msgid "Additional Leaves to Plan Ahead"
-msgstr ""
+msgstr "การลาเพิ่มเติมเพื่อวางแผนล่วงหน้า"
 
 #. module: mrp_maintenance
 #: model:ir.model.fields,field_description:mrp_maintenance.field_mrp_workcenter__message_attachment_count
@@ -78,7 +79,7 @@ msgstr "บล็อกศูนย์งาน"
 #: model:ir.model.fields,help:mrp_maintenance.field_maintenance_request__recurring_leaves_count
 msgid ""
 "Block the workcenter for this many time slots in the future in advance."
-msgstr ""
+msgstr "บล็อคศูนย์งานสำหรับช่วงเวลาต่างๆ เหล่านี้ไว้ล่วงหน้า"
 
 #. module: mrp_maintenance
 #: model:ir.model.fields,field_description:mrp_maintenance.field_maintenance_request__company_id
@@ -222,6 +223,8 @@ msgid ""
 "It won't be possible to plan work orders or other maintenances on this "
 "workcenter during this time."
 msgstr ""
+"จะไม่สามารถวางแผนใบสั่งงานหรือการบำรุงรักษาอื่นๆ "
+"ในศูนย์งานนี้ได้ในช่วงเวลานี้"
 
 #. module: mrp_maintenance
 #: model_terms:ir.ui.view,arch_db:mrp_maintenance.mrp_workcenter_view_form_inherit_maintenance
@@ -236,7 +239,7 @@ msgstr "วันที่ล้มเหลวล่าสุด"
 #. module: mrp_maintenance
 #: model:ir.model.fields,field_description:mrp_maintenance.field_maintenance_request__leave_ids
 msgid "Leaves"
-msgstr ""
+msgstr "การลางาน"
 
 #. module: mrp_maintenance
 #: model:ir.model.fields,field_description:mrp_maintenance.field_mrp_workcenter__mtbf
@@ -306,6 +309,8 @@ msgid ""
 "Manufacturing operations are processed at Work Centers. A Work Center can be composed of\n"
 "            workers and/or machines, they are used for costing, scheduling, capacity planning, etc."
 msgstr ""
+"การดำเนินการด้านการผลิตได้รับการประมวลผลที่ศูนย์งาน ศูนย์งานสามารถประกอบด้วย\n"
+"          ผู้ปฏิบัติงานและ/หรือเครื่องจักร ซึ่งใช้สำหรับการคิดต้นทุน การจัดกำหนดการ การวางแผนกำลังการผลิต และอื่นๆ"
 
 #. module: mrp_maintenance
 #: model_terms:ir.ui.view,arch_db:mrp_maintenance.mrp_workcenter_view_form_inherit_maintenance
@@ -422,14 +427,14 @@ msgstr "คำร้องขอ"
 #. module: mrp_maintenance
 #: model:ir.model.fields,field_description:mrp_maintenance.field_maintenance_stage__create_leaves
 msgid "Request Confirmed"
-msgstr ""
+msgstr "คำขอได้รับการยืนยันแล้ว"
 
 #. module: mrp_maintenance
 #. odoo-javascript
 #: code:addons/mrp_maintenance/static/src/components/menuPopup.xml:0
 #, python-format
 msgid "Request Maintenance"
-msgstr ""
+msgstr "ร้องขอการซ่อมบำรุง"
 
 #. module: mrp_maintenance
 #. odoo-python
@@ -481,7 +486,7 @@ msgstr "ช่างผู้ดูแลรักษา"
 #: code:addons/mrp_maintenance/static/src/components/maintenance_request_form_view.js:0
 #, python-format
 msgid "The maintenance request has successfully been created."
-msgstr ""
+msgstr "สร้างคำขอการซ่อมบำรุงสำเร็จแล้ว"
 
 #. module: mrp_maintenance
 #. odoo-python
@@ -491,18 +496,20 @@ msgid ""
 "The schedule has changed from %(desired_date)s to %(effective_date)s due to "
 "planned manufacturing orders."
 msgstr ""
+"กำหนดการมีการเปลี่ยนแปลงจาก %(desired_date)s เป็น %(effective_date)s "
+"เนื่องจากใบสั่งผลิตที่วางแผนไว้"
 
 #. module: mrp_maintenance
 #. odoo-python
 #: code:addons/mrp_maintenance/models/mrp_maintenance.py:0
 #, python-format
 msgid "The workcenter is missing for %s."
-msgstr ""
+msgstr "ศูนย์งานหายไปสำหรับ %s"
 
 #. module: mrp_maintenance
 #: model:ir.model.fields,help:mrp_maintenance.field_mrp_workcenter__effective_date
 msgid "This date will be used to compute the Mean Time Between Failure."
-msgstr ""
+msgstr "วันที่นี้จะถูกใช้ในการคำนวณเวลาเฉลี่ยระหว่างความล้มเหลว"
 
 #. module: mrp_maintenance
 #: model:ir.model.fields,help:mrp_maintenance.field_mrp_workcenter__activity_exception_decoration
@@ -525,6 +532,8 @@ msgid ""
 "When this box is unticked, and the maintenance is of the type 'Work Center', no leave is created on the respective work center when a maintenance request is created.\n"
 "If the box is ticked, the work center is automatically blocked for the listed duration, either at the specified date, or as soon as possible, if the work center is unavailable then."
 msgstr ""
+"เมื่อยกเลิกการทำเครื่องหมายที่ช่องนี้และการบำรุงรักษาเป็นประเภท 'ศูนย์งาน' จะไม่มีการลางานในศูนย์งานที่เกี่ยวข้องเมื่อมีการสร้างคำขอการบำรุงรักษา\n"
+"แต่ถ้าหากทำเครื่องหมายที่ช่องนี้ ศูนย์งานจะถูกบล็อคโดยอัตโนมัติตามระยะเวลาที่ระบุไว้ ไม่ว่าจะในวันที่ระบุ หรือโดยเร็วที่สุด หากศูนย์งานไม่พร้อมใช้งาน"
 
 #. module: mrp_maintenance
 #: model:ir.model,name:mrp_maintenance.model_mrp_workcenter

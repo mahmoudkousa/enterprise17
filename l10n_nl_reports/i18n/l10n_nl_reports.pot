@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 16.1alpha1+e\n"
+"Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-02 12:47+0000\n"
-"PO-Revision-Date: 2023-01-02 12:47+0000\n"
+"POT-Creation-Date: 2024-01-26 09:19+0000\n"
+"PO-Revision-Date: 2024-01-26 09:19+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -71,6 +71,18 @@ msgid "Cash at bank and in hand"
 msgstr ""
 
 #. module: l10n_nl_reports
+#: model:ir.model,name:l10n_nl_reports.model_res_company
+msgid "Companies"
+msgstr ""
+
+#. module: l10n_nl_reports
+#. odoo-python
+#: code:addons/l10n_nl_reports/models/account_general_ledger.py:0
+#, python-format
+msgid "Continue and skip country fields"
+msgstr ""
+
+#. module: l10n_nl_reports
 #: model:account.report.line,name:l10n_nl_reports.account_financial_report_pnl_pcost
 msgid "Cost"
 msgstr ""
@@ -82,15 +94,13 @@ msgid "Cost of sales"
 msgstr ""
 
 #. module: l10n_nl_reports
-#: code:addons/l10n_nl_reports/models/account_general_ledger.py:94
-#, python-format
-msgid "Continue and skip country fields"
+#: model:account.report.line,name:l10n_nl_reports.account_financial_report_bs_cred
+msgid "Creditors"
 msgstr ""
 
 #. module: l10n_nl_reports
-#: model:account.report.expression,report_line_name:l10n_nl_reports.account_financial_report_bs_cred_balance
-#: model:account.report.line,name:l10n_nl_reports.account_financial_report_bs_cred
-msgid "Creditors"
+#: model:account.report.line,name:l10n_nl_reports.account_financial_report_bs_sh_debt
+msgid "Current Liabilities"
 msgstr ""
 
 #. module: l10n_nl_reports
@@ -111,6 +121,11 @@ msgstr ""
 #. module: l10n_nl_reports
 #: model:account.report.line,name:l10n_nl_reports.account_financial_report_pnl_distr
 msgid "Distribution costs"
+msgstr ""
+
+#. module: l10n_nl_reports
+#: model:ir.model,name:l10n_nl_reports.model_l10n_nl_tax_report_handler
+msgid "Dutch Report Custom Handler"
 msgstr ""
 
 #. module: l10n_nl_reports
@@ -149,11 +164,6 @@ msgid "General expenses"
 msgstr ""
 
 #. module: l10n_nl_reports
-#: model:account.report.line,name:l10n_nl_reports.account_financial_report_pnl_gcost
-msgid "General management costs"
-msgstr ""
-
-#. module: l10n_nl_reports
 #: model:account.report.line,name:l10n_nl_reports.account_financial_report_pnl_profit
 msgid "Gross sales result"
 msgstr ""
@@ -179,11 +189,6 @@ msgid "Interest income"
 msgstr ""
 
 #. module: l10n_nl_reports
-#: model:account.report.line,name:l10n_nl_reports.account_financial_report_bs_sh_debt
-msgid "Kortlopende Schulden"
-msgstr ""
-
-#. module: l10n_nl_reports
 #: model:ir.model.fields,field_description:l10n_nl_reports.field_res_users__l10n_nl_report_xaf_userid
 msgid "L10N Nl Report Xaf Userid"
 msgstr ""
@@ -196,11 +201,6 @@ msgstr ""
 #. module: l10n_nl_reports
 #: model:account.report.line,name:l10n_nl_reports.account_financial_report_bs_legal_res
 msgid "Legal and Statutory Reserves"
-msgstr ""
-
-#. module: l10n_nl_reports
-#: model:ir.actions.server,name:l10n_nl_reports.ir_cron_load_xsd_file_ir_actions_server
-msgid "Load XSD File (Dutch reports)"
 msgstr ""
 
 #. module: l10n_nl_reports
@@ -336,14 +336,16 @@ msgid "Some fields must be specified on the company:"
 msgstr ""
 
 #. module: l10n_nl_reports
-#: code:addons/l10n_nl_reports/models/account_general_ledger.py:87
+#. odoo-python
+#: code:addons/l10n_nl_reports/models/account_general_ledger.py:0
 #, python-format
 msgid ""
 "Some partners are located in countries forbidden in dutch audit reports.\n"
-"Those countries are:\n\n"
+"Those countries are:\n"
+"\n"
 "%s\n"
-"If you continue, please note that the fields <country> and <taxRegistrationCountry> "
-"will be skipped in the report for those partners.\n\n"
+"If you continue, please note that the fields <country> and <taxRegistrationCountry> will be skipped in the report for those partners.\n"
+"\n"
 "Otherwise, please change the address of the partners located in those countries.\n"
 msgstr ""
 
@@ -355,6 +357,13 @@ msgstr ""
 #. module: l10n_nl_reports
 #: model:account.report.line,name:l10n_nl_reports.account_financial_report_pnl_taxes
 msgid "Taxes"
+msgstr ""
+
+#. module: l10n_nl_reports
+#. odoo-python
+#: code:addons/l10n_nl_reports/models/account_general_ledger.py:0
+#, python-format
+msgid "There is no data to export."
 msgstr ""
 
 #. module: l10n_nl_reports

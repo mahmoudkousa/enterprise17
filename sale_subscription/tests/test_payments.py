@@ -27,7 +27,7 @@ class TestSubscriptionPayments(PaymentCommon, TestSubscriptionCommon, MockEmail)
             self.subscription.write({
                 'partner_id': self.partner.id,
                 'company_id': self.company.id,
-                'payment_token_id': self.payment_method.id,
+                'payment_token_id': self.payment_token.id,
                 'sale_order_template_id': self.subscription_tmpl.id,
             })
             self.subscription._onchange_sale_order_template_id()
@@ -74,7 +74,7 @@ class TestSubscriptionPayments(PaymentCommon, TestSubscriptionCommon, MockEmail)
             self.assertTrue(all(failing_result), "The subscription are not flagged anymore")
             failing_result = [not res for res in failing_subs.mapped('is_batch')]
             self.assertTrue(all(failing_result), "The subscription are not flagged anymore")
-            failing_subs.payment_token_id = self.payment_method.id
+            failing_subs.payment_token_id = self.payment_token.id
             # Trigger the invoicing manually after fixing it
             failing_subs._create_recurring_invoice()
             vals = [sub.payment_exception for sub in failing_subs if sub.payment_exception]
@@ -99,7 +99,7 @@ class TestSubscriptionPayments(PaymentCommon, TestSubscriptionCommon, MockEmail)
             self.subscription.write({
                 'partner_id': self.partner.id,
                 'company_id': self.company.id,
-                'payment_token_id': self.payment_method.id,
+                'payment_token_id': self.payment_token.id,
                 'sale_order_template_id': subscription_tmpl.id,
             })
             self.subscription._onchange_sale_order_template_id()
@@ -221,19 +221,19 @@ class TestSubscriptionPayments(PaymentCommon, TestSubscriptionCommon, MockEmail)
 
     @mute_logger('odoo.addons.sale_subscription.models.sale_order')
     def test_exception_mail(self):
-        self.subscription.write({'payment_token_id': self.payment_method.id,
+        self.subscription.write({'payment_token_id': self.payment_token.id,
                                  'client_order_ref': 'Customer REF XXXXXXX'
         })
         self.subscription.action_confirm()
         with patch('odoo.addons.sale_subscription.models.sale_order.SaleOrder._do_payment', side_effect=Exception("Bad Token")), self.mock_mail_gateway():
             self.subscription._create_recurring_invoice()
         found_mail = self._find_mail_mail_wemail('accountman@test.com', 'sent', author=self.env.user.partner_id)
-        mail_body = "Error during renewal of contract [%s] Customer REF XXXXXXX (Payment not recorded)" % self.subscription.id
+        mail_body = "<p>Error during renewal of contract [%s] Customer REF XXXXXXX Payment not recorded</p><p>Bad Token</p>" % self.subscription.id
         self.assertEqual(found_mail.body_html, mail_body)
 
     @mute_logger('odoo.addons.sale_subscription.models.sale_order')
     def test_bad_payment_exception(self):
-        self.subscription.write({'payment_token_id': self.payment_method.id,
+        self.subscription.write({'payment_token_id': self.payment_token.id,
                                  'client_order_ref': 'Customer REF XXXXXXX'
         })
         self.subscription.action_confirm()
@@ -251,7 +251,7 @@ class TestSubscriptionPayments(PaymentCommon, TestSubscriptionCommon, MockEmail)
 
     @mute_logger('odoo.addons.sale_subscription.models.sale_order')
     def test_bad_payment_exception_post_success(self):
-        self.subscription.write({'payment_token_id': self.payment_method.id,
+        self.subscription.write({'payment_token_id': self.payment_token.id,
                                  'client_order_ref': 'Customer REF XXXXXXX'
         })
         self.subscription.action_confirm()
@@ -283,7 +283,7 @@ class TestSubscriptionPayments(PaymentCommon, TestSubscriptionCommon, MockEmail)
 
     @mute_logger('odoo.addons.sale_subscription.models.sale_order')
     def test_bad_payment_rejected(self):
-        self.subscription.write({'payment_token_id': self.payment_method.id,
+        self.subscription.write({'payment_token_id': self.payment_token.id,
                                  'client_order_ref': 'Customer REF XXXXXXX'
         })
         self.subscription.action_confirm()
@@ -301,7 +301,7 @@ class TestSubscriptionPayments(PaymentCommon, TestSubscriptionCommon, MockEmail)
         )
 
     def test_manual_invoice_with_token(self):
-        self.subscription.write({'payment_token_id': self.payment_method.id,
+        self.subscription.write({'payment_token_id': self.payment_token.id,
                                  'client_order_ref': 'Customer REF XXXXXXX'
         })
         with freeze_time("2021-01-03"):
@@ -543,3 +543,45 @@ class TestSubscriptionPayments(PaymentCommon, TestSubscriptionCommon, MockEmail)
         self.assertEqual(self.subscription.state, 'sale')
         self.assertEqual(len(self.subscription.invoice_ids), 1)
         self.assertEqual(self.subscription.invoice_ids.state, 'posted')
+
+    def test_manually_captured_payment_providers_not_allowed(self):
+        self.provider.capture_manually = True
+
+        compatible_providers = self.env['payment.provider'].sudo()._get_compatible_providers(
+            self.company.id, self.partner.id, self.amount, sale_order_id=self.subscription.id
+        )
+
+        self.assertNotIn(self.provider, compatible_providers)
+
+    def test_cancel_draft_invoice_unsuccessful_transaction(self):
+        """ Ensure that after an unsuccessful token payment is made, its draft invoice is canceled. """
+        with freeze_time("2024-01-23"):
+            subscription = self.env['sale.order'].create({
+                'partner_id': self.user_portal.partner_id.id,
+                'sale_order_template_id': self.subscription_tmpl.id,
+                'start_date': datetime.date(2024, 1, 15)
+            })
+            subscription._onchange_sale_order_template_id()
+            test_payment_token = self.env['payment.token'].create({
+                'payment_details': 'Test',
+                'partner_id': self.user_portal.partner_id.id,
+                'provider_id': self.dummy_provider.id,
+                'payment_method_id': self.payment_method_id,
+                'provider_ref': 'test'
+            })
+            payment_with_token = self.env['account.payment'].create({
+                'amount': subscription.amount_total,
+                'currency_id': subscription.currency_id.id,
+                'partner_id': self.user_portal.partner_id.id,
+                'payment_token_id': test_payment_token.id
+            })
+            transaction_ids = payment_with_token._create_payment_transaction()
+            subscription.write({'transaction_ids': [Command.set(transaction_ids.ids)]})
+            subscription.action_confirm()
+            subscription._create_invoices(final=True)
+            draft_invoice = subscription.order_line.invoice_lines.move_id.filtered(lambda am: am.state == 'draft')
+            transaction_ids._set_error("Payment declined!")
+            self.assertEqual(len(draft_invoice), 1, "A single draft invoice must be created after the payment was done.")
+            self.assertFalse(subscription.pending_transaction, "Subscription doesn't have pending transaction after unsuccessful payment.")
+            self.assertFalse(subscription.payment_token_id, "The payment token should not be saved after the unsuccessful payment.")
+            self.assertEqual(draft_invoice.state, "cancel", "Draft invoice must be canceled after unsuccessful payment.")

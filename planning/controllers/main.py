@@ -127,17 +127,18 @@ class ShiftController(http.Controller):
             default_view = 'timeGridWeek'
         else:
             default_view = 'dayGridMonth'
-        # Calculation of the minTime and maxTime values in timeGridDay and timeGridWeek
-        # We want to avoid displaying overly large hours range each day or hiding slots outside the
-        # normal working hours
-        attendances = employee_sudo.resource_calendar_id._work_intervals_batch(
-            pytz.utc.localize(planning_sudo.start_datetime),
-            pytz.utc.localize(planning_sudo.end_datetime),
-            resources=employee_sudo.resource_id, tz=employee_tz
-        )[employee_sudo.resource_id.id]
-        if attendances and attendances._items:
-            checkin_min = min(map(lambda a: a[0].hour, attendances._items))  # hour in the timezone of the employee
-            checkout_max = max(map(lambda a: a[1].hour, attendances._items))  # idem
+        if employee_sudo.resource_calendar_id.id:
+            # Calculation of the minTime and maxTime values in timeGridDay and timeGridWeek
+            # We want to avoid displaying overly large hours range each day or hiding slots outside the
+            # normal working hours
+            attendances = employee_sudo.resource_calendar_id._work_intervals_batch(
+                pytz.utc.localize(planning_sudo.start_datetime),
+                pytz.utc.localize(planning_sudo.end_datetime),
+                resources=employee_sudo.resource_id, tz=employee_tz
+            )[employee_sudo.resource_id.id]
+            if attendances and attendances._items:
+                checkin_min = min(map(lambda a: a[0].hour, attendances._items))  # hour in the timezone of the employee
+                checkout_max = max(map(lambda a: a[1].hour, attendances._items))  # idem
         # We calculate the earliest/latest hour of the slots. It is used in the weekview.
         if slots_start_datetime and slots_end_datetime:
             event_hour_min = min(map(lambda s: s.hour, slots_start_datetime)) # idem

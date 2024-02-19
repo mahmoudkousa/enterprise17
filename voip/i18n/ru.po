@@ -1,220 +1,323 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # 	* voip
-#
+# 
 # Translators:
-# Sergey Vilizhanin, 2022
-# Irina Fedulova <istartlin@gmail.com>, 2022
-# ILMIR <karamov@it-projects.info>, 2022
-# Максим Дронь <dronmax@gmail.com>, 2022
-# Gennady Marchenko <gennadym@gmail.com>, 2022
-# Collex100, 2022
-# Сергей Шебанин <sergey@shebanin.ru>, 2022
-# Martin Trigaux, 2022
-# Ivan Kropotkin <yelizariev@itpp.dev>, 2022
-#
+# alenafairy, 2023
+# ILMIR <karamov@it-projects.info>, 2023
+# Alena Vlasova, 2023
+# Sergey Vilizhanin, 2023
+# Сергей Шебанин <sergey@shebanin.ru>, 2023
+# Gennady Marchenko <gennadym@gmail.com>, 2023
+# Collex100, 2023
+# Martin Trigaux, 2023
+# Wil Odoo, 2024
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 16.0+e\n"
+"Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-16 16:01+0000\n"
-"PO-Revision-Date: 2022-09-22 05:49+0000\n"
-"Last-Translator: Ivan Kropotkin <yelizariev@itpp.dev>, 2022\n"
+"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"PO-Revision-Date: 2023-10-26 23:10+0000\n"
+"Last-Translator: Wil Odoo, 2024\n"
 "Language-Team: Russian (https://app.transifex.com/odoo/teams/41243/ru/)\n"
-"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
+"Language: ru\n"
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
 
 #. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_report__nbr
-msgid "# of Cases"
-msgstr "кол-во вопросов"
-
-#. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/dialing_panel.js:0
+#: code:addons/voip/static/src/core/call_model.js:0
 #, python-format
-msgid "%(number of missed calls)s missed calls"
-msgstr ""
+msgid "%(minutes)s min %(seconds)s sec"
+msgstr "%(minutes)s мин %(seconds)s сек"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/dialing_panel.js:0
+#: code:addons/voip/static/src/core/call_model.js:0
+#, python-format
+msgid "%(minutes)s minutes"
+msgstr "%(minutes)s минут"
+
+#. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/softphone/softphone.js:0
+#, python-format
+msgid "%(number)s missed calls"
+msgstr "%(number)s пропущенные звонки"
+
+#. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/core/call_model.js:0
+#, python-format
+msgid "%(seconds)s seconds"
+msgstr "%(seconds)s секунд"
+
+#. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/core/call_model.js:0
+#, python-format
+msgid "1 minute"
+msgstr "1 минута"
+
+#. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/softphone/softphone.js:0
 #, python-format
 msgid "1 missed call"
-msgstr ""
+msgstr "1 пропущенный звонок"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/dialing_panel.js:0
+#: code:addons/voip/static/src/core/call_model.js:0
+#, python-format
+msgid "1 second"
+msgstr "1 секунда"
+
+#. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/core/call_model.js:0
+#, python-format
+msgid "2 minutes"
+msgstr "2 минуты"
+
+#. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/softphone/softphone.js:0
 #, python-format
 msgid "2 missed calls"
-msgstr ""
+msgstr "2 пропущенных звонка"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/user_agent.js:0
+#: code:addons/voip/static/src/core/call_model.js:0
 #, python-format
-msgid "A hardware error occured while trying to access audio recording device. Please make sure your drivers are up to date and try again."
-msgstr ""
+msgid "2 seconds"
+msgstr "2 секунды"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/core/user_agent_service.js:0
 #, python-format
-msgid "Accept"
-msgstr "Принять"
+msgid ""
+"A hardware error has occurred while trying to access the audio recording "
+"device. Please ensure that your drivers are up to date and try again."
+msgstr ""
+"При попытке получить доступ к устройству записи звука произошла аппаратная "
+"ошибка. Пожалуйста, убедитесь, что ваши драйверы обновлены, и повторите "
+"попытку."
+
+#. module: voip
+#: model:ir.model,name:voip.model_voip_call
+msgid "A phone call handled using the VoIP application"
+msgstr "Телефонный звонок, обработанный с помощью приложения VoIP"
+
+#. module: voip
+#: model:ir.model.fields.selection,name:voip.selection__voip_call__state__aborted
+msgid "Aborted"
+msgstr "Отменено"
+
+#. module: voip
+#. odoo-python
+#: code:addons/voip/models/voip_call.py:0
+#, python-format
+msgid "Aborted call to %(phone_number)s"
+msgstr "Прерванный вызов на %(phone_number)s"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/softphone/correspondence_details.xml:0
 #: model:ir.model,name:voip.model_mail_activity
 #, python-format
 msgid "Activity"
-msgstr "Действие"
+msgstr "Активность"
+
+#. module: voip
+#: model:ir.model.fields,field_description:voip.field_voip_call__activity_name
+msgid "Activity Name"
+msgstr "Название мероприятия"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/components/call_queue_switch/call_queue_switch.js:0
+#: code:addons/voip/static/src/web/call_queue_switch.js:0
 #, python-format
 msgid "Add to Call Queue"
 msgstr "Добавить в очередь вызовов"
 
 #. module: voip
-#: model:ir.actions.server,name:voip.action_add_to_call_queue
-msgid "Add to call queue"
+#. odoo-javascript
+#: code:addons/voip/static/src/core/user_agent_service.js:0
+#, python-format
+msgid ""
+"An error occured involving the audio recording device (%(errorName)s):\n"
+"%(errorMessage)s"
 msgstr ""
+"Произошла ошибка, связанная с устройством записи звука (%(errorName)s):\n"
+"%(errorMessage)s"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/user_agent.js:0
+#: code:addons/voip/static/src/core/user_agent_service.js:0
 #, python-format
-msgid "An error occured involving the audio recording device (%(errorName)s):</br>%(errorMessage)s"
+msgid ""
+"An error occurred during the instantiation of the User Agent:\n"
+"\n"
+"%(error)s"
 msgstr ""
+"Во время создания агента пользователя произошла ошибка:\n"
+"\n"
+"%(error)s"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/user_agent_service.js:0
+#: code:addons/voip/static/src/core/user_agent_service.js:0
 #, python-format
-msgid "An error occurred during the instantiation of the User Agent:</br></br> %(error message)s"
+msgid ""
+"An error occurred trying to invite the following number: %(phoneNumber)s\n"
+"\n"
+"Error: %(error)s"
 msgstr ""
+"При попытке пригласить следующий номер произошла ошибка: %(phoneNumber)s\n"
+"\n"
+"Ошибка: %(error)s"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/user_agent.js:0
+#: code:addons/voip/static/src/softphone/activities_tab.js:0
 #, python-format
-msgid "Are you sure that you want to close this website? There's a call ongoing."
+msgid ""
+"Are you sure you want to delete this activity? It will be lost forever, "
+"which is quite a long time 😔"
 msgstr ""
+"Вы уверены, что хотите удалить эту активность? Она будет потеряна навсегда, "
+"а это довольно долгий срок 😔"
 
 #. module: voip
 #: model:ir.model.fields.selection,name:voip.selection__res_users_settings__how_to_call_on_mobile__ask
 msgid "Ask"
-msgstr ""
+msgstr "Спросить"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call.xml:0
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
-#, python-format
-msgid "Avatar"
-msgstr "Аватар"
-
-#. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/xml/dialing_panel.xml:0
+#: code:addons/voip/static/src/softphone/numpad.xml:0
 #, python-format
 msgid "Backspace"
 msgstr "Возврат"
 
 #. module: voip
-#. odoo-python
 #. odoo-javascript
+#. odoo-python
 #: code:addons/voip/models/voip_queue_mixin.py:0
-#: code:addons/voip/static/src/legacy/dialing_panel.js:0
-#: code:addons/voip/static/src/xml/dialing_panel.xml:0
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/softphone/correspondence_details.xml:0
+#: code:addons/voip/static/src/softphone/softphone.js:0
 #, python-format
 msgid "Call"
-msgstr "Звонок"
-
-#. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__call_date
-msgid "Call Date"
-msgstr "дата звонка"
-
-#. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__name
-msgid "Call Name"
-msgstr "Название звонка"
+msgstr "Позвонить"
 
 #. module: voip
 #. odoo-python
-#: code:addons/voip/models/voip_phonecall.py:0
+#: code:addons/voip/models/voip_call.py:0
 #, python-format
-msgid "Call duration: %(min)smin %(sec)ssec"
-msgstr ""
+msgid "Call from %(correspondent)s"
+msgstr "Звонок с %(correspondent)s"
+
+#. module: voip
+#. odoo-python
+#: code:addons/voip/models/voip_call.py:0
+#, python-format
+msgid "Call from %(phone_number)s"
+msgstr "Звонок с %(phone_number)s"
 
 #. module: voip
 #: model:ir.model.fields,field_description:voip.field_res_users__should_call_from_another_device
 #: model:ir.model.fields,field_description:voip.field_res_users_settings__should_call_from_another_device
 msgid "Call from another device"
-msgstr ""
+msgstr "Вызов с другого устройства"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/user_agent.js:0
+#: code:addons/voip/static/src/core/user_agent_service.js:0
 #, python-format
-msgid "Call rejected (reason: \"%(reasonPhrase)s\")"
-msgstr ""
+msgid "Call rejected (reason: “%(reasonPhrase)s”)"
+msgstr "Вызов отклонен (причина: \"%(reasonPhrase)s\")"
 
 #. module: voip
 #. odoo-python
-#: code:addons/voip/models/voip_phonecall.py:0
+#: code:addons/voip/models/voip_call.py:0
 #, python-format
-msgid "Call to %s"
-msgstr ""
+msgid "Call to %(correspondent)s"
+msgstr "Звонок на %(correspondent)s"
+
+#. module: voip
+#. odoo-python
+#: code:addons/voip/models/voip_call.py:0
+#, python-format
+msgid "Call to %(phone_number)s"
+msgstr "Звонок на %(phone_number)s"
+
+#. module: voip
+#: model:ir.model.fields.selection,name:voip.selection__voip_call__state__calling
+msgid "Calling"
+msgstr "Вызов"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/voip_service.js:0
+#: code:addons/voip/static/src/core/user_agent_service.js:0
 #, python-format
 msgid "Calling %(phone number)s"
-msgstr ""
+msgstr "Звоню %(phone number)s"
 
 #. module: voip
-#: model_terms:ir.ui.view,arch_db:voip.view_voip_case_phonecalls_filter
-msgid "Calls Date"
-msgstr "Дата звонков"
+#: model:ir.actions.act_window,name:voip.voip_call_view
+#: model_terms:ir.ui.view,arch_db:voip.voip_call_tree_view
+msgid "Calls"
+msgstr "Звонки"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/audio_input_device.js:0
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/mobile/devise_selection_dialog.xml:0
+#: code:addons/voip/static/src/softphone/correspondence_details.xml:0
 #, python-format
 msgid "Cancel"
-msgstr "Отмена"
+msgstr "Отменить"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call.xml:0
+#: code:addons/voip/static/src/softphone/activities_tab.xml:0
 #, python-format
 msgid "Cancel the activity"
-msgstr "завершить действие"
-
-#. module: voip
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall__state__cancel
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall_report__state__cancel
-msgid "Cancelled"
-msgstr "Отменено"
+msgstr "Отменить мероприятие"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/user_agent.js:0
+#: code:addons/voip/static/src/core/user_agent_service.js:0
 #, python-format
-msgid "Cannot access audio recording device. If you have denied access to your microphone, please grant it and try again. Otherwise, make sure this website runs over HTTPS and that your browser is not set to deny access to media devices."
+msgid ""
+"Cannot access audio recording device. If you have denied access to your "
+"microphone, please allow it and try again. Otherwise, make sure that this "
+"website is running over HTTPS and that your browser is not set to deny "
+"access to media devices."
 msgstr ""
+"Невозможно получить доступ к устройству записи звука. Если вам запрещен "
+"доступ к микрофону, разрешите его и повторите попытку. В противном случае "
+"убедитесь, что этот сайт работает по протоколу HTTPS и что в вашем браузере "
+"не установлен запрет на доступ к медиаустройствам."
+
+#. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/softphone/correspondence_details.xml:0
+#, python-format
+msgid "Change input device"
+msgstr "Изменение устройства ввода"
+
+#. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/mobile/devise_selection_dialog.xml:0
+#, python-format
+msgid "Choose a device:"
+msgstr "Выберите устройство:"
 
 #. module: voip
 #: model:ir.model.fields,help:voip.field_res_users__how_to_call_on_mobile
@@ -226,83 +329,96 @@ msgid ""
 "            • Ask: Always ask whether the softphone or the device's phone must be used\n"
 "        "
 msgstr ""
+"Выберите метод, который будет использоваться для совершения звонка при использовании мобильного приложения:\n"
+"            - VoIP: Всегда используйте софтфон Odoo\n"
+"            - Телефон устройства: Всегда использовать телефон устройства\n"
+"            - Спрашивать: Всегда спрашивать, следует ли использовать софтфон или телефон устройства\n"
+"        "
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/dialing_panel.js:0
-#, python-format
-msgid "Click to unblock"
-msgstr "Нажмите, чтобы разблокировать"
-
-#. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/xml/dialing_panel.xml:0
+#: code:addons/voip/static/src/softphone/softphone.xml:0
 #, python-format
 msgid "Close"
 msgstr "Закрыть"
 
 #. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/softphone/softphone.js:0
+#, python-format
+msgid "Close Numpad"
+msgstr "Закрыть Numpad"
+
+#. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/web/voip_systray_item.js:0
+#, python-format
+msgid "Close Softphone"
+msgstr "Закрыть софтфон"
+
+#. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/softphone/correspondence_details.xml:0
+#, python-format
+msgid "Close details"
+msgstr "Закрыть детали"
+
+#. module: voip
 #: model:ir.model,name:voip.model_res_config_settings
 msgid "Config Settings"
-msgstr "Конфигурационные настройки"
+msgstr "Параметры конфигурации"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/audio_input_device.js:0
+#: code:addons/voip/static/src/mobile/call_method_selection_dialog.xml:0
+#: code:addons/voip/static/src/mobile/devise_selection_dialog.xml:0
 #, python-format
 msgid "Confirm"
-msgstr ""
+msgstr "Подтвердить"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/user_agent_service.js:0
+#: code:addons/voip/static/src/core/user_agent_service.js:0
 #, python-format
 msgid "Connecting…"
-msgstr ""
+msgstr "Соединение…"
 
 #. module: voip
 #: model:ir.model,name:voip.model_res_partner
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__partner_id
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_report__partner_id
+#: model:ir.model.fields,field_description:voip.field_voip_call__partner_id
 msgid "Contact"
-msgstr "Контакт"
+msgstr "Контакты"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/dialing_panel.xml:0
+#: code:addons/voip/static/src/softphone/softphone.js:0
 #, python-format
 msgid "Contacts"
 msgstr "Контакты"
 
 #. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__create_uid
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_log_wizard__create_uid
+#. odoo-javascript
+#: code:addons/voip/static/src/softphone/contacts_tab.xml:0
+#, python-format
+msgid "Contacts with a phone number will be shown here."
+msgstr "Контакты с номером телефона будут показаны здесь."
+
+#. module: voip
+#: model:ir.model.fields,field_description:voip.field_voip_call__create_uid
 msgid "Created by"
-msgstr "Создал"
+msgstr "Создано"
 
 #. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__create_date
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_log_wizard__create_date
+#: model:ir.model.fields,field_description:voip.field_voip_call__create_date
 msgid "Created on"
-msgstr "Дата создания"
-
-#. module: voip
-#: model_terms:ir.ui.view,arch_db:voip.view_voip_case_phonecalls_filter
-msgid "Creation Date"
-msgstr "Дата создания"
+msgstr "Создано"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/softphone/correspondence_details.xml:0
 #, python-format
 msgid "Customer"
 msgstr "Клиент"
-
-#. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_report__call_date
-#: model_terms:ir.ui.view,arch_db:voip.view_voip_case_phonecalls_filter
-msgid "Date"
-msgstr "Дата"
 
 #. module: voip
 #: model:ir.model.fields.selection,name:voip.selection__res_config_settings__mode__demo
@@ -312,369 +428,281 @@ msgstr "Демо"
 #. module: voip
 #: model:ir.model.fields.selection,name:voip.selection__res_users_settings__how_to_call_on_mobile__phone
 msgid "Device's phone"
-msgstr ""
+msgstr "Телефон устройства"
 
 #. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__direction
+#: model:ir.model.fields,field_description:voip.field_voip_call__direction
 msgid "Direction"
 msgstr "Направление"
 
 #. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__display_name
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_log_wizard__display_name
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_report__display_name
+#: model:ir.model.fields,field_description:voip.field_voip_call__display_name
 msgid "Display Name"
 msgstr "Отображаемое имя"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/softphone/correspondence_details.xml:0
 #, python-format
-msgid "Document"
-msgstr "Документ"
-
-#. module: voip
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall_log_wizard__reschedule_option__no_reschedule
-msgid "Don't Reschedule"
-msgstr "Не перепланировать"
-
-#. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__date_deadline
-msgid "Due Date"
-msgstr "Срок исполнения"
-
-#. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__duration
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_report__duration
-msgid "Duration"
-msgstr "Длительность"
-
-#. module: voip
-#: model:ir.model.fields,help:voip.field_voip_phonecall__duration
-msgid "Duration in minutes."
-msgstr "Продолжительность в минутах."
+msgid "Documents"
+msgstr "Документы"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/softphone/correspondence_details.xml:0
 #, python-format
 msgid "Edit"
 msgstr "Редактировать"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/dialing_panel.js:0
+#: code:addons/voip/static/src/softphone/softphone.js:0
 #, python-format
 msgid "End Call"
-msgstr ""
+msgstr "Конец разговора"
+
+#. module: voip
+#: model:ir.model.fields,field_description:voip.field_voip_call__end_date
+msgid "End Date"
+msgstr "Дата окончания"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/softphone/transfer_popover.xml:0
 #, python-format
 msgid "Enter number or name"
-msgstr ""
+msgstr "Введите номер или имя"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/dialing_panel.xml:0
+#: code:addons/voip/static/src/softphone/numpad.xml:0
 #, python-format
-msgid "Enter the number..."
-msgstr "Ввод номера…"
+msgid "Enter the number…"
+msgstr "Введите номер.."
 
 #. module: voip
 #: model:ir.model.fields,field_description:voip.field_res_users__external_device_number
 #: model:ir.model.fields,field_description:voip.field_res_users_settings__external_device_number
 msgid "External device number"
-msgstr ""
+msgstr "Номер внешнего устройства"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/user_agent_service.js:0
+#: code:addons/voip/static/src/core/user_agent_service.js:0
 #, python-format
-msgid "Failed to start the user agent. The URL of the websocket server may be wrong. Please have an administrator verify the websocket server URL in the General Settings."
+msgid ""
+"Failed to load the SIP.js library:\n"
+"\n"
+"%(error)s"
 msgstr ""
-
-#. module: voip
-#: model:ir.model.fields,help:voip.field_voip_phonecall__sequence
-msgid "Gives the sequence order when displaying a list of Phonecalls."
-msgstr "Выдает порядок последовательности при отображении списка телефонных вызовов."
-
-#. module: voip
-#: model_terms:ir.ui.view,arch_db:voip.view_voip_case_phonecalls_filter
-msgid "Group By"
-msgstr "Группировка"
+"Не удалось загрузить библиотеку SIP.js:\n"
+"\n"
+"%(error)s"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/dialing_panel.xml:0
+#: code:addons/voip/static/src/softphone/softphone.xml:0
 #, python-format
 msgid "Hang up but keep call in queue"
-msgstr ""
+msgstr "Положите трубку, но сохраните звонок в очереди"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/softphone/activities_tab.js:0
 #, python-format
-msgid "Headphones"
-msgstr ""
-
-#. module: voip
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall__state__done
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall_report__state__done
-msgid "Held"
-msgstr "Произведен"
+msgid "Hold on!"
+msgstr "Стойте!"
 
 #. module: voip
 #: model:ir.model.fields,field_description:voip.field_res_users__how_to_call_on_mobile
 #: model:ir.model.fields,field_description:voip.field_res_users_settings__how_to_call_on_mobile
 msgid "How to place calls on mobile"
-msgstr ""
+msgstr "Как совершать звонки на мобильный"
 
 #. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__id
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_log_wizard__id
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_report__id
+#: model:ir.model.fields,field_description:voip.field_voip_call__id
 msgid "ID"
-msgstr "Идентификатор"
+msgstr "ID"
 
 #. module: voip
 #: model:ir.model.fields,help:voip.field_res_users__should_auto_reject_incoming_calls
 #: model:ir.model.fields,help:voip.field_res_users_settings__should_auto_reject_incoming_calls
 msgid "If enabled, incoming calls will be automatically declined in Odoo."
 msgstr ""
+"Если эта функция включена, входящие звонки будут автоматически отклоняться в"
+" Odoo."
 
 #. module: voip
 #: model:ir.model.fields,help:voip.field_res_users__should_call_from_another_device
 #: model:ir.model.fields,help:voip.field_res_users_settings__should_call_from_another_device
-msgid "If enabled, placing a call in Odoo will transfer the call to the \"External device number\". Use this option to place the call in Odoo but handle it from another device - e.g. your desk phone."
+msgid ""
+"If enabled, placing a call in Odoo will transfer the call to the \"External "
+"device number\". Use this option to place the call in Odoo but handle it "
+"from another device - e.g. your desk phone."
 msgstr ""
+"Если эта опция включена, при размещении звонка в Odoo он будет переведен на "
+"\"Номер внешнего устройства\". Используйте эту опцию, чтобы разместить "
+"звонок в Odoo, но обработать его с другого устройства - например, с вашего "
+"настольного телефона."
 
 #. module: voip
 #: model:ir.model.fields,help:voip.field_res_users__external_device_number
 #: model:ir.model.fields,help:voip.field_res_users_settings__external_device_number
-msgid "If the \"Call from another device\" option is enabled, calls placed in Odoo will be transfered to this phone number."
-msgstr ""
-
-#. module: voip
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall_log_wizard__reschedule_option__7d
-msgid "In 1 Week"
-msgstr "В неделю"
-
-#. module: voip
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall_log_wizard__reschedule_option__15d
-msgid "In 15 Day"
-msgstr "В 15 дней"
-
-#. module: voip
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall_log_wizard__reschedule_option__2m
-msgid "In 2 Months"
-msgstr "В 2 месяца"
-
-#. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__in_queue
-msgid "In Call Queue"
-msgstr "В очереди звонков"
-
-#. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
-#, python-format
-msgid "In call for:"
-msgstr ""
-
-#. module: voip
-#: model_terms:ir.actions.act_window,help:voip.voip_phonecall_view
 msgid ""
-"In order to follow up on the call, you can trigger a request for\n"
-"        another call, a meeting."
-msgstr "Чтобы проследить по звонку, вы можете запросить другой звонок, встреча."
+"If the \"Call from another device\" option is enabled, calls placed in Odoo "
+"will be transfered to this phone number."
+msgstr ""
+"Если опция \"Звонить с другого устройства\" включена, звонки, сделанные в "
+"Odoo, будут переводиться на этот номер телефона."
 
 #. module: voip
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall__direction__incoming
+#. odoo-javascript
+#: code:addons/voip/static/src/softphone/correspondence_details.js:0
+#, python-format
+msgid "In call for: %(minutes)s:%(seconds)s"
+msgstr "Призыв: %(minutes)s:%(seconds)s"
+
+#. module: voip
+#: model:ir.model.fields.selection,name:voip.selection__voip_call__direction__incoming
 msgid "Incoming"
-msgstr "Входящие"
-
-#. module: voip
-#. odoo-python
-#. odoo-javascript
-#: code:addons/voip/models/voip_phonecall.py:0
-#: code:addons/voip/static/src/legacy/user_agent.js:0
-#, python-format
-msgid "Incoming call from %s"
-msgstr ""
+msgstr "Входящий"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/user_agent.js:0
+#: code:addons/voip/static/src/softphone/call_invitation.xml:0
 #, python-format
-msgid "Incoming call from %s (%s)"
-msgstr ""
+msgid "Incoming call from…"
+msgstr "Входящий звонок от.."
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/mobile/device_selection_dialog.js:0
 #, python-format
-msgid "Incoming call from..."
-msgstr ""
-
-#. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/legacy/audio_input_device.js:0
-#, python-format
-msgid "Input/output audio settings"
-msgstr ""
+msgid "Input device selection"
+msgstr "Выбор устройства ввода"
 
 #. module: voip
 #: model:ir.model.fields,field_description:voip.field_res_partner__has_call_in_queue
 #: model:ir.model.fields,field_description:voip.field_res_users__has_call_in_queue
 #: model:ir.model.fields,field_description:voip.field_voip_queue_mixin__has_call_in_queue
 msgid "Is in the Call Queue"
-msgstr "Есть в очереди звонков"
-
-#. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/xml/dialing_panel.xml:0
-#, python-format
-msgid "Keypad"
-msgstr "клавиатура"
+msgstr "Находится в очереди вызовов"
 
 #. module: voip
 #: model:ir.model.fields,field_description:voip.field_res_users__last_seen_phone_call
 msgid "Last Seen Phone Call"
-msgstr ""
+msgstr "Последний телефонный звонок"
 
 #. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__write_uid
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_log_wizard__write_uid
+#: model:ir.model.fields,field_description:voip.field_voip_call__write_uid
 msgid "Last Updated by"
-msgstr "Последний раз обновил"
+msgstr "Последнее обновление"
 
 #. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__write_date
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_log_wizard__write_date
+#: model:ir.model.fields,field_description:voip.field_voip_call__write_date
 msgid "Last Updated on"
 msgstr "Последнее обновление"
 
 #. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__activity_id
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_log_wizard__activity_id
-msgid "Linked Activity"
-msgstr "связано действие"
-
-#. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__mail_message_id
-msgid "Linked Chatter Message"
-msgstr "Связано чата"
-
-#. module: voip
-#: model:ir.model.fields,field_description:voip.field_mail_activity__voip_phonecall_id
-msgid "Linked Voip Phonecall"
-msgstr "Связан звонок Voip"
-
-#. module: voip
-#: model_terms:ir.actions.act_window,help:voip.voip_phonecall_view
-msgid "Log the summary of a phonecall"
-msgstr "Запишите резюме телефонного звонка"
-
-#. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_log_wizard__phonecall_id
-msgid "Logged Phonecall"
-msgstr "Зарегистрирован телефонный звонок"
-
-#. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/dialing_panel.js:0
-#, python-format
-msgid "Make a call using:"
-msgstr ""
-
-#. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/softphone/correspondence_details.xml:0
 #, python-format
 msgid "Mark as done"
-msgstr "Выполнено"
+msgstr "Отмечено как завершенное"
 
 #. module: voip
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall__state__missed
+#. odoo-javascript
+#: code:addons/voip/static/src/softphone/activities_tab.js:0
+#, python-format
+msgid "Missclicked, sorry."
+msgstr "Промахнулся, извините."
+
+#. module: voip
+#: model:ir.model.fields.selection,name:voip.selection__voip_call__state__missed
 msgid "Missed"
-msgstr ""
+msgstr "Пропущенный"
 
 #. module: voip
 #. odoo-python
-#: code:addons/voip/models/voip_phonecall.py:0
+#: code:addons/voip/models/voip_call.py:0
 #, python-format
-msgid "Missed Call from %s"
-msgstr ""
+msgid "Missed call from %(phone_number)s"
+msgstr "Пропущенный звонок от %(phone_number)s"
 
 #. module: voip
 #: model:ir.model.fields,field_description:voip.field_mail_activity__mobile
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__mobile
 msgid "Mobile"
 msgstr "Мобильный"
 
 #. module: voip
-#: model:ir.model.fields,field_description:voip.field_res_partner__sanitized_mobile
-#: model:ir.model.fields,field_description:voip.field_res_users__sanitized_mobile
-msgid "Mobile number sanitized"
-msgstr "Мобильный номер очищенный"
-
-#. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/components/activity/activity_patch.xml:0
+#: code:addons/voip/static/src/activity/activity_patch.xml:0
 #, python-format
 msgid "Mobile:"
 msgstr "Мобильный:"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/softphone/correspondence_details.js:0
 #, python-format
 msgid "Mute"
-msgstr "Выключить звук"
-
-#. module: voip
-#: model_terms:ir.ui.view,arch_db:voip.view_voip_case_phonecalls_filter
-msgid "My Phonecalls"
-msgstr "Мои телефонные звонки"
+msgstr "Без звука"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/dialing_panel.xml:0
+#: code:addons/voip/static/src/softphone/softphone.js:0
 #, python-format
-msgid "Next activities"
-msgstr ""
+msgid "Next Activities"
+msgstr "Следующие мероприятия"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/user_agent.js:0
+#: code:addons/voip/static/src/core/user_agent_service.js:0
 #, python-format
-msgid "No audio recording device available. The application requires a microphone in order to be used."
-msgstr ""
-
-#. module: voip
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall__state__pending
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall_report__state__pending
-msgid "Not Held"
-msgstr "Не произведён"
-
-#. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__note
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_log_wizard__note
-msgid "Note"
-msgstr "Заметка"
-
-#. module: voip
-#: model_terms:ir.actions.act_window,help:voip.voip_phonecall_view
 msgid ""
-"Odoo allows you to log inbound calls on the fly to track the\n"
-"        history of the communication with a customer or to inform another\n"
-"        team member."
-msgstr "Odoo позволяет получать входящие звонки на лету для отслеживания истории общения с клиентом или информирования другого члена команды."
+"No audio recording device available. The application requires a microphone "
+"in order to be used."
+msgstr ""
+"Отсутствует устройство для записи звука. Для использования приложения "
+"требуется микрофон."
 
 #. module: voip
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall__direction__outgoing
+#. odoo-javascript
+#: code:addons/voip/static/src/softphone/activities_tab.xml:0
+#, python-format
+msgid "No calls scheduled for today 😎"
+msgstr "На сегодня звонков не запланировано 😎"
+
+#. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/softphone/activities_tab.xml:0
+#: code:addons/voip/static/src/softphone/contacts_tab.xml:0
+#: code:addons/voip/static/src/softphone/recent_tab.xml:0
+#, python-format
+msgid "No search results 💔"
+msgstr "Нет результатов поиска 💔"
+
+#. module: voip
+#: model:ir.model.fields.selection,name:voip.selection__voip_call__state__ongoing
+msgid "Ongoing"
+msgstr "Текущие"
+
+#. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/softphone/softphone.js:0
+#, python-format
+msgid "Open Numpad"
+msgstr "Открыть Numpad"
+
+#. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/web/voip_systray_item.js:0
+#, python-format
+msgid "Open Softphone"
+msgstr "Открытый софтфон"
+
+#. module: voip
+#: model:ir.model.fields.selection,name:voip.selection__voip_call__direction__outgoing
 msgid "Outgoing"
 msgstr "Исходящие"
 
@@ -685,68 +713,45 @@ msgstr "PBX сервер IP"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/user_agent_service.js:0
+#: code:addons/voip/static/src/core/user_agent_service.js:0
 #, python-format
 msgid "PBX or Websocket address is missing. Please check your settings."
-msgstr ""
+msgstr "Отсутствует адрес АТС или Websocket. Пожалуйста, проверьте настройки."
 
 #. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call.xml:0
-#, python-format
-msgid "Pending"
-msgstr "В очереди"
-
-#. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/legacy/dialing_panel.js:0
 #: model:ir.model.fields,field_description:voip.field_mail_activity__phone
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__phone
-#, python-format
 msgid "Phone"
 msgstr "Телефон"
 
 #. module: voip
-#: model:ir.model.fields,field_description:voip.field_res_partner__sanitized_phone
-#: model:ir.model.fields,field_description:voip.field_res_users__sanitized_phone
-msgid "Phone number sanitized"
-msgstr "Номер телефона очищенный"
+#: model:ir.model.fields,field_description:voip.field_voip_call__phone_number
+msgid "Phone Number"
+msgstr "Номер телефона"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/components/activity/activity_patch.xml:0
+#: code:addons/voip/static/src/activity/activity_patch.xml:0
 #, python-format
 msgid "Phone:"
 msgstr "Телефон:"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
-#, python-format
-msgid "Phonecall details"
-msgstr "Детали телефонного звонка"
-
-#. module: voip
-#: model:ir.actions.act_window,name:voip.voip_phonecall_view
-#: model:ir.ui.menu,name:voip.menu_voip_phonecall_view
-#: model_terms:ir.ui.view,arch_db:voip.view_voip_case_phonecalls_filter
-#: model_terms:ir.ui.view,arch_db:voip.voip_phonecall_tree_view
-msgid "Phonecalls"
-msgstr "Звонки"
-
-#. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/legacy/user_agent.js:0
+#: code:addons/voip/static/src/core/user_agent_service.js:0
 #, python-format
 msgid "Please accept the use of the microphone."
-msgstr ""
+msgstr "Пожалуйста, разрешите воспользоваться микрофоном."
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/js/registerer.js:0
+#: code:addons/voip/static/src/core/registerer.js:0
 #, python-format
-msgid "Please try again later. If the problem persists, you may want to ask an administrator to check the configuration."
+msgid ""
+"Please try again later. If the problem persists, you may want to ask an "
+"administrator to check the configuration."
 msgstr ""
+"Пожалуйста, повторите попытку позже. Если проблема сохраняется, попросите "
+"администратора проверить конфигурацию."
 
 #. module: voip
 #: model:ir.model.fields.selection,name:voip.selection__res_config_settings__mode__prod
@@ -755,180 +760,139 @@ msgstr "Производство"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/dialing_panel.xml:0
+#: code:addons/voip/static/src/softphone/softphone.js:0
 #, python-format
 msgid "Recent"
-msgstr "Последний"
+msgstr "Последние"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/dialing_panel.xml:0
-#, python-format
-msgid "Refresh the Panel"
-msgstr "Обновить панель"
-
-#. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/js/registerer.js:0
+#: code:addons/voip/static/src/core/registerer.js:0
 #, python-format
 msgid "Registration rejected: %(statusCode)s %(reasonPhrase)s."
-msgstr ""
-
-#. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
-#, python-format
-msgid "Reject"
-msgstr "Отклонить"
-
-#. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
-#, python-format
-msgid "Reject call"
-msgstr ""
+msgstr "Регистрация отклонена: %(statusCode)s %(reasonPhrase)s."
 
 #. module: voip
 #: model:ir.model.fields,field_description:voip.field_res_users__should_auto_reject_incoming_calls
 #: model:ir.model.fields,field_description:voip.field_res_users_settings__should_auto_reject_incoming_calls
 msgid "Reject incoming calls"
-msgstr ""
+msgstr "Отклонять входящие вызовы"
 
 #. module: voip
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall__state__rejected
+#: model:ir.model.fields.selection,name:voip.selection__voip_call__state__rejected
 msgid "Rejected"
 msgstr "Отклонено"
 
 #. module: voip
 #. odoo-python
-#: code:addons/voip/models/voip_phonecall.py:0
+#: code:addons/voip/models/voip_call.py:0
 #, python-format
-msgid "Rejected Incoming Call from %s"
-msgstr ""
+msgid "Rejected call from %(phone_number)s"
+msgstr "Отклоненный вызов с %(phone_number)s"
+
+#. module: voip
+#. odoo-python
+#: code:addons/voip/models/voip_call.py:0
+#, python-format
+msgid "Rejected call to %(phone_number)s"
+msgstr "Отклоненный вызов на %(phone_number)s"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/dialing_panel.js:0
+#: code:addons/voip/static/src/mobile/call_method_selection_dialog.xml:0
 #, python-format
 msgid "Remember?"
-msgstr ""
+msgstr "Помните?"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/components/call_queue_switch/call_queue_switch.js:0
+#: code:addons/voip/static/src/web/call_queue_switch.js:0
 #, python-format
 msgid "Remove from Call Queue"
 msgstr "Удалить из очереди вызовов"
 
 #. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call.xml:0
-#, python-format
-msgid "Remove from the queue"
-msgstr "Удалить из очереди"
-
-#. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__user_id
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_report__user_id
-#: model_terms:ir.ui.view,arch_db:voip.view_voip_case_phonecalls_filter
+#: model:ir.model.fields,field_description:voip.field_voip_call__user_id
 msgid "Responsible"
 msgstr "Ответственный"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/softphone/correspondence_details.js:0
 #, python-format
-msgid "Ringing..."
-msgstr ""
+msgid "Ringing…"
+msgstr "Звонок.."
 
 #. module: voip
 #: model_terms:ir.ui.view,arch_db:voip.res_config_settings_view_form
 msgid "Schedule & make calls from your database"
-msgstr ""
-
-#. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_log_wizard__reschedule_option
-msgid "Schedule A New Activity"
-msgstr "Запланировать новую действие"
+msgstr "Планируйте и совершайте звонки из своей базы данных"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/softphone/correspondence_details.xml:0
 #, python-format
 msgid "Schedule Activity"
-msgstr "Запланировать действие"
+msgstr "Деятельность по расписанию"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
-#, python-format
-msgid "Schedule Next"
-msgstr ""
-
-#. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/xml/dialing_panel.xml:0
+#: code:addons/voip/static/src/softphone/softphone.xml:0
 #, python-format
 msgid "Search"
 msgstr "Поиск"
 
 #. module: voip
-#: model_terms:ir.ui.view,arch_db:voip.view_voip_case_phonecalls_filter
-msgid "Search Phonecalls"
-msgstr "Искать звонки"
+#. odoo-javascript
+#: code:addons/voip/static/src/mobile/call_method_selection_dialog.js:0
+#, python-format
+msgid "Select a call method"
+msgstr "Выберите метод вызова"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/softphone/correspondence_details.xml:0
 #, python-format
-msgid "Send mail"
-msgstr "Отправить сообщение"
-
-#. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__sequence
-msgid "Sequence"
-msgstr "Нумерация"
+msgid "Send e-mail"
+msgstr "Отправить электронное письмо"
 
 #. module: voip
 #. odoo-python
 #: code:addons/voip/models/voip_queue_mixin.py:0
 #, python-format
-msgid "Some documents cannot be added to the call queue as they do not have a phone number set: %(record_names)s"
+msgid ""
+"Some documents cannot be added to the call queue as they do not have a phone"
+" number set: %(record_names)s"
 msgstr ""
+"Некоторые документы нельзя добавить в очередь вызовов, поскольку для них не "
+"задан номер телефона: %(record_names)s"
 
 #. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_log_wizard__reschedule_date
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall_log_wizard__reschedule_option__custom
-msgid "Specific Date"
-msgstr "Конкретная дата"
+#: model:ir.model.fields,field_description:voip.field_voip_call__start_date
+msgid "Start Date"
+msgstr "Дата начала"
 
 #. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__start_time
-msgid "Start time"
-msgstr "Время начала"
-
-#. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall__state
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_report__state
-msgid "Status"
-msgstr "Статус"
-
-#. module: voip
-#: model:ir.model.fields,field_description:voip.field_voip_phonecall_log_wizard__summary
-msgid "Summary"
-msgstr "Сводка"
+#: model:ir.model.fields,field_description:voip.field_voip_call__state
+msgid "State"
+msgstr "Область"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/mobile/call_method_selection_dialog.xml:0
 #, python-format
-msgid "Take call"
-msgstr ""
+msgid "Tell us how to make the call:"
+msgstr "Расскажите нам, как сделать звонок:"
+
+#. module: voip
+#: model:ir.model.fields.selection,name:voip.selection__voip_call__state__terminated
+msgid "Terminated"
+msgstr "Остановлено"
 
 #. module: voip
 #: model:ir.model.fields,help:voip.field_res_config_settings__pbx_ip
 msgid "The IP address of your PBX Server"
-msgstr ""
+msgstr "IP-адрес вашего сервера АТС"
 
 #. module: voip
 #: model:ir.model.fields,help:voip.field_res_config_settings__wsServer
@@ -937,96 +901,132 @@ msgstr "URL вашего WebSocket"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/user_agent.js:0
+#: code:addons/voip/static/src/core/registerer.js:0
 #, python-format
-msgid "The connection cannot be made.</br> Please check your configuration."
+msgid ""
+"The error may come from the transport layer. Please have an administrator "
+"verify the websocket server URL in the General Settings. If the problem "
+"persists, this is probably an issue with the server."
 msgstr ""
+"Ошибка может возникнуть на транспортном уровне. Попросите администратора "
+"проверить URL-адрес сервера websocket в общих настройках. Если проблема не "
+"исчезла, вероятно, дело в сервере."
+
+#. module: voip
+#: model:ir.model.fields,help:voip.field_voip_call__activity_name
+msgid "The name of the activity related to this phone call, if any."
+msgstr ""
+"Название мероприятия, связанного с этим телефонным звонком, если таковое "
+"имеется."
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/js/registerer.js:0
+#: code:addons/voip/static/src/core/user_agent_service.js:0
 #, python-format
-msgid "The error may come from the transport layer. Please have an administrator verify the websocket server URL in the General Settings. If the problem persists, this is probably an issue with the server."
+msgid ""
+"The number is incorrect, the user credentials could be wrong or the connection cannot be made. Please check your configuration.\n"
+"(Reason received: %(reasonPhrase)s)"
 msgstr ""
-
-#. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/legacy/user_agent.js:0
-#, python-format
-msgid "The number is incorrect, the user credentials could be wrong or the connection cannot be made. Please check your configuration.</br> (Reason received: %(reasonPhrase)s)"
-msgstr ""
+"Номер неверен, возможно, неверно указаны учетные данные пользователя или не удается установить соединение. Пожалуйста, проверьте конфигурацию.\n"
+"(Причина получена: %(reasonPhrase)s)"
 
 #. module: voip
 #: model:ir.model.fields,help:voip.field_res_users__voip_secret
 #: model:ir.model.fields,help:voip.field_res_users_settings__voip_secret
 msgid "The password that will be used to register with the PBX server."
-msgstr ""
+msgstr "Пароль, который будет использоваться для регистрации на сервере АТС."
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/user_agent.js:0
+#: code:addons/voip/static/src/core/user_agent_service.js:0
 #, python-format
 msgid "The person you try to contact is currently unavailable."
-msgstr ""
+msgstr "Человек, с которым вы пытаетесь связаться, сейчас недоступен."
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/dialing_panel.js:0
+#: code:addons/voip/static/src/core/registerer.js:0
 #, python-format
-msgid "The phonecall has no number"
-msgstr "У телефонного звонка нет номера"
-
-#. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/js/registerer.js:0
-#, python-format
-msgid "The server failed to authenticate you. Please have an administrator verify that you are reaching the right server (PBX server IP in the General Settings) and that the credentials in your user preferences are correct."
-msgstr ""
-
-#. module: voip
-#: model:ir.model.fields,help:voip.field_voip_phonecall__state
 msgid ""
-"The status is set to To Do, when a call is created.\n"
-"When the call is over, the status is set to Held.\n"
-"If the call is not applicable anymore, the status can be set to Cancelled."
-msgstr "Статус устанавливается на значение Сделать, когда звонок создан. Когда звонок завершается, статус меняется на пойманных. Если звонок больше не применяется, статус может быть установлен как Отменены."
+"The server failed to authenticate you. Please have an administrator verify "
+"that you are reaching the right server (PBX server IP in the General "
+"Settings) and that the credentials in your user preferences are correct."
+msgstr ""
+"Серверу не удалось подтвердить вашу подлинность. Пожалуйста, попросите "
+"администратора проверить, что вы обращаетесь к нужному серверу (IP-адрес "
+"сервера АТС в общих настройках) и что учетные данные в настройках "
+"пользователя верны."
+
+#. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/core/user_agent_service.js:0
+#, python-format
+msgid ""
+"The user agent could not be started. The websocket server URL may be "
+"incorrect. Please have an administrator check the websocket server URL in "
+"the General Settings."
+msgstr ""
+"Не удалось запустить агент пользователя. URL-адрес сервера сокетов может "
+"быть неверным. Попросите администратора проверить URL-адрес сервера сокетов "
+"в общих настройках."
 
 #. module: voip
 #: model:ir.model.fields,help:voip.field_res_users__voip_username
 #: model:ir.model.fields,help:voip.field_res_users_settings__voip_username
-msgid "The username (typically the extension number) that will be used to register with the PBX server."
+msgid ""
+"The username (typically the extension number) that will be used to register "
+"with the PBX server."
 msgstr ""
+"Имя пользователя (обычно внутренний номер), которое будет использоваться для"
+" регистрации на сервере АТС."
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/user_agent_service.js:0
+#: code:addons/voip/static/src/core/user_agent_service.js:0
 #, python-format
-msgid "The websocket connection with the server has been lost. Please try to refresh the page."
+msgid ""
+"The websocket connection with the server has been lost. Please try to "
+"refresh the page."
 msgstr ""
-
-#. module: voip
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall__state__open
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall_report__state__open
-#: model_terms:ir.ui.view,arch_db:voip.view_voip_case_phonecalls_filter
-msgid "To Do"
-msgstr "Задача"
-
-#. module: voip
-#: model:ir.model.fields.selection,name:voip.selection__voip_phonecall_log_wizard__reschedule_option__1d
-msgid "Tomorrow"
-msgstr "Завтра"
+"Соединение с сервером через веб-сокет было потеряно. Пожалуйста, попробуйте "
+"обновить страницу."
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/core/voip_service.js:0
+#, python-format
+msgid ""
+"There is still a call in progress, are you sure you want to leave the page?"
+msgstr "Вызов все еще продолжается, вы уверены, что хотите покинуть страницу?"
+
+#. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/softphone/correspondence_details.xml:0
+#: code:addons/voip/static/src/softphone/transfer_popover.xml:0
 #, python-format
 msgid "Transfer"
-msgstr "Перемещение"
+msgstr "Перевод"
 
 #. module: voip
-#: model_terms:ir.ui.view,arch_db:voip.view_voip_case_phonecalls_filter
-msgid "Unassigned"
-msgstr "Без ответственного"
+#. odoo-javascript
+#: code:addons/voip/static/src/softphone/transfer_popover.xml:0
+#, python-format
+msgid "Transfer to"
+msgstr "Перевести в"
+
+#. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/web/voip_systray_item.js:0
+#, python-format
+msgid "Unfold Softphone"
+msgstr "Развернутый софтфон"
+
+#. module: voip
+#. odoo-javascript
+#: code:addons/voip/static/src/softphone/correspondence_details.js:0
+#, python-format
+msgid "Unmute"
+msgstr "Вкл. звук"
 
 #. module: voip
 #: model:ir.model,name:voip.model_res_users
@@ -1036,66 +1036,63 @@ msgstr "Пользователь"
 #. module: voip
 #: model:ir.model,name:voip.model_res_users_settings
 msgid "User Settings"
-msgstr ""
+msgstr "Настройки пользователя"
 
 #. module: voip
-#: model:ir.model,name:voip.model_voip_phonecall
-msgid "VOIP Phonecall"
-msgstr "Телефонный звонок IP-телефонии"
+#. odoo-javascript
+#: code:addons/voip/static/src/mobile/call_method_selection_dialog.xml:0
+#, python-format
+msgid "Using VoIP"
+msgstr "Использование VoIP"
 
 #. module: voip
-#: model:ir.model,name:voip.model_voip_phonecall_log_wizard
-msgid "VOIP Phonecall log Wizard"
-msgstr "Помощник записи звонка IP-телефонии"
-
-#. module: voip
-#: model:ir.model,name:voip.model_voip_phonecall_report
-msgid "VOIP Phonecalls by user report"
-msgstr "Звонок IP-телефонии по отчету пользователя"
+#. odoo-javascript
+#: code:addons/voip/static/src/mobile/call_method_selection_dialog.xml:0
+#, python-format
+msgid "Using device's phone"
+msgstr "Использование телефона устройства"
 
 #. module: voip
 #: model:ir.model,name:voip.model_voip_queue_mixin
 msgid "VOIP Queue support"
-msgstr ""
+msgstr "Поддержка очередей VOIP"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/dialing_panel.js:0
+#: code:addons/voip/static/src/softphone/softphone.js:0
 #: model:ir.model.fields.selection,name:voip.selection__res_users_settings__how_to_call_on_mobile__voip
 #: model_terms:ir.ui.view,arch_db:voip.res_user_form
 #: model_terms:ir.ui.view,arch_db:voip.res_users_view_form_preferences
 #, python-format
 msgid "VoIP"
-msgstr ""
+msgstr "VoIP"
 
 #. module: voip
 #: model_terms:ir.ui.view,arch_db:voip.voip_res_users_settings_view_form
 msgid "VoIP Configuration"
-msgstr ""
+msgstr "Конфигурация VoIP"
 
 #. module: voip
 #: model:ir.model.fields,field_description:voip.field_res_config_settings__mode
 msgid "VoIP Environment"
-msgstr "Среда IP-телефонии"
+msgstr "Среда VoIP"
 
 #. module: voip
 #: model:ir.model.fields,field_description:voip.field_res_users__voip_secret
 #: model:ir.model.fields,field_description:voip.field_res_users_settings__voip_secret
 msgid "VoIP secret"
-msgstr ""
+msgstr "Секрет VoIP"
 
 #. module: voip
 #: model:ir.model.fields,field_description:voip.field_res_users__voip_username
 #: model:ir.model.fields,field_description:voip.field_res_users_settings__voip_username
 msgid "VoIP username / Extension number"
-msgstr ""
+msgstr "Имя пользователя VoIP / Добавочный номер"
 
 #. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/legacy/dialing_panel.js:0
-#, python-format
-msgid "Voip"
-msgstr ""
+#: model:ir.ui.menu,name:voip.menu_voip_call_view
+msgid "Voip / Calls"
+msgstr "Voip / Звонки"
 
 #. module: voip
 #: model:ir.model.fields,field_description:voip.field_res_config_settings__wsServer
@@ -1104,44 +1101,44 @@ msgstr "WebSocket"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/dialing_panel.js:0
+#: code:addons/voip/static/src/softphone/activities_tab.js:0
 #, python-format
-msgid "You are already in a call"
-msgstr "Вы уже звоните"
+msgid "Yes, do it."
+msgstr "Да, сделайте это."
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/legacy/dialing_panel.js:0
+#: code:addons/voip/static/src/core/user_agent_service.js:0
 #, python-format
-msgid "Your browser could not support WebRTC. Please check your configuration."
-msgstr "Ваш браузер не может поддерживать WebRTC. Пожалуйста, проверьте конфигурацию."
-
-#. module: voip
-#. odoo-javascript
-#: code:addons/voip/static/src/user_agent_service.js:0
-#, python-format
-msgid "Your browser does not support some of the features needed for VoIP to work. Please try to update your browser or use a different one."
+msgid ""
+"Your browser does not support some of the features required for VoIP to "
+"work. Please try updating your browser or using a different one."
 msgstr ""
+"Ваш браузер не поддерживает некоторые функции, необходимые для работы VoIP. "
+"Пожалуйста, попробуйте обновить браузер или использовать другой."
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/user_agent_service.js:0
+#: code:addons/voip/static/src/softphone/recent_tab.xml:0
 #, python-format
-msgid "Your credentials are not correctly set. Please contact your administrator."
+msgid "Your call history is empty! Make a call now and have it listed here 💡"
 msgstr ""
+"Ваша история звонков пуста! Сделайте звонок прямо сейчас, чтобы он был "
+"указан здесь 💡"
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call.xml:0
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/core/user_agent_service.js:0
 #, python-format
-msgid "min"
-msgstr "мин."
+msgid ""
+"Your login details are not set correctly. Please contact your administrator."
+msgstr ""
+"Ваши данные для входа в систему заданы неверно. Пожалуйста, свяжитесь с "
+"вашим администратором."
 
 #. module: voip
 #. odoo-javascript
-#: code:addons/voip/static/src/xml/phone_call.xml:0
-#: code:addons/voip/static/src/xml/phone_call_details.xml:0
+#: code:addons/voip/static/src/core/call_model.js:0
 #, python-format
-msgid "sec"
-msgstr "сек"
+msgid "less than a second"
+msgstr "менее секунды"

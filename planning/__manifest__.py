@@ -38,6 +38,7 @@ Schedule your teams and employees with shift.
             'planning/static/src/components/**/*',
             'planning/static/src/views/**/*',
             'planning/static/src/scss/planning_gantt.scss',
+            'planning/static/src/scss/planning_list.scss',
             'planning/static/src/js/tours/planning.js',
         ],
         'web.assets_frontend': [

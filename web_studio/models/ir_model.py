@@ -206,7 +206,7 @@ class IrModel(models.Model):
         """
         # create the Line model
         model_table = model_name.replace('.', '_')
-        if not model_table.startswith('x_'):
+        if not self._is_manual_name(model_table):
             model_table = 'x_' + model_table
         model_line_name = model_table[2:] + '_line'
         model_line_model = model_table + '_line_' + uuid.uuid4().hex[:5]

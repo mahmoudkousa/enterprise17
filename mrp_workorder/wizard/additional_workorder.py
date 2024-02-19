@@ -24,7 +24,7 @@ class MrpWorkorderAdditionalWorkorder(models.TransientModel):
 
     def add_workorder(self):
         """Create production workorder for the additional workorder."""
-        self.env['mrp.workorder'].create({
+        wo = self.env['mrp.workorder'].create({
             'production_id': self.production_id.id,
             'name': self.name,
             'workcenter_id': self.workcenter_id.id,
@@ -34,3 +34,5 @@ class MrpWorkorderAdditionalWorkorder(models.TransientModel):
             'product_uom_id': self.production_id.product_uom_id.id,
             'blocked_by_workorder_ids': self.production_id.workorder_ids.ids,
         })
+        if wo.date_start:
+            wo.date_finished = wo._calculate_date_finished()

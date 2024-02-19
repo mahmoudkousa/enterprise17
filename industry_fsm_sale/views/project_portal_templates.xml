@@ -138,7 +138,7 @@
                             <tr>
                                 <td><strong>Total</strong></td>
                                 <td class="text-end">
-                                    <span t-esc="final_total" t-options='{"widget": "monetary", "display_currency": doc.sale_order_id.currency_id}'/>
+                                    <span t-esc="final_subtotal + final_tax" t-options='{"widget": "monetary", "display_currency": doc.sale_order_id.currency_id}'/>
                                 </td>
                             </tr>
                             <tr>
@@ -168,7 +168,7 @@
                 </a>
             </li>
         </xpath>
-        <xpath expr="//div[@t-if='timesheets and allow_timesheets']" position="before">
+        <xpath expr="//div[@id='card_body']/div[@t-if='timesheets and allow_timesheets']" position="before">
             <div class="container" t-if="task._show_time_and_material()">
                 <hr class="mt-4 mb-4"/>
                 <h5 id="time_and_material" class="mt-2 mb-2" data-anchor="true">Time &amp; Material</h5>

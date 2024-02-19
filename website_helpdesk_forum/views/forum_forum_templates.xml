@@ -26,7 +26,7 @@
                 </small>
                 <div class="whelpdesk_search_description mt-3 text-break text-muted overflow-hidden" t-if="not is_html_empty(record.content)" t-out="record.content"/>
                 <p class="d-flex gap-1 flex-wrap mt-3 mb-0" t-if="record.tag_ids">
-                    <a t-foreach="record.tag_ids" t-as="tag" t-attf-href="/forum/#{slug(tag.forum_id)}/tag/#{slug(tag)}/questions?filters=tag" class="btn btn-sm btn-outline-secondary" t-out="tag.name"/>
+                    <a t-foreach="record.tag_ids" t-as="tag" t-attf-href="/forum/#{slug(tag.forum_id)}/tag/#{slug(tag)}/questions?filters=tag" class="btn btn-sm btn-outline-secondary me-1" t-out="tag.name"/>
                 </p>
             </div>
         </div>

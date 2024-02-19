@@ -35,7 +35,7 @@ const dialogService = {
             const props = { env, Component, componentProps: _props };
             return dialog.add(DialogWithEnv, props, options);
         }
-        return { add: addDialog };
+        return { ...dialog, add: addDialog };
     },
 };
 
@@ -118,7 +118,10 @@ export class Editor extends Component {
             Component: AppMenuEditor,
             props: { env: this.env },
         });
-        menuButtonsRegistry.add(`new_model_item_${menuButtonsId}`, { Component: NewModelItem });
+        menuButtonsRegistry.add(`new_model_item_${menuButtonsId}`, {
+            Component: NewModelItem,
+            props: { env: this.env },
+        });
         onWillDestroy(() => {
             menuButtonsRegistry.remove(`app_menu_editor_${menuButtonsId}`);
             menuButtonsRegistry.remove(`new_model_item_${menuButtonsId}`);

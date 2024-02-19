@@ -320,7 +320,7 @@
                             <record id="account_financial_report_NO_tax_on_ordinary_result_balance" model="account.report.expression">
                                 <field name="label">balance</field>
                                 <field name="engine">account_codes</field>
-                                <field name="formula">-832 - 830</field>
+                                <field name="formula">-83</field>
                                 <field name="date_scope">normal</field>
                             </record>
                         </field>
@@ -330,6 +330,7 @@
             <record id="account_financial_report_NO_ordinary_result" model="account.report.line">
                 <field name="name">Ordinary Result</field>
                 <field name="hierarchy_level">0</field>
+                <field name="code">NO_Ordinary_Result_After_Tax</field>
                 <field name="expression_ids">
                     <record id="account_financial_report_NO_ordinary_result_balance" model="account.report.expression">
                         <field name="label">balance</field>
@@ -369,14 +370,13 @@
                     </record>
                     <record id="account_financial_report_NO_net_profit_loss_for_the_year" model="account.report.line">
                         <field name="name">Net profit/Loss for the Year</field>
-                        <field name="code">NO_88_89</field>
-                        <field name="groupby">account_id</field>
-                        <field name="foldable" eval="True"/>
+                        <field name="code">NO_profit_loss</field>
+                        <field name="foldable" eval="False"/>
                         <field name="expression_ids">
                             <record id="account_financial_report_NO_net_profit_loss_for_the_year_balance" model="account.report.expression">
                                 <field name="label">balance</field>
-                                <field name="engine">account_codes</field>
-                                <field name="formula">-89 - 88</field>
+                                <field name="engine">aggregation</field>
+                                <field name="formula">NO_Ordinary_Result_After_Tax.balance + NO_84_85.balance + NO_86.balance</field>
                                 <field name="date_scope">normal</field>
                             </record>
                         </field>

@@ -46,14 +46,16 @@ class Webhook(http.Controller):
                 # Process Template webhooks
                 if value.get('message_template_id'):
                     # There is no user in webhook, so we need to SUPERUSER_ID to write on template object
-                    template = request.env['whatsapp.template'].sudo().search([('wa_template_uid', '=', value['message_template_id'])])
+                    template = request.env['whatsapp.template'].sudo().with_context(active_test=False).search([('wa_template_uid', '=', value['message_template_id'])])
                     if template:
                         if changes['field'] == 'message_template_status_update':
                             template.write({'status': value['event'].lower()})
-                            description = value.get('other_info', {}).get('description', {}) or value.get('reason', {})
-                            if description:
-                                template.message_post(
-                                    body=_("Your Template has been rejected.") + Markup("<br/>") + _("Reason : %s", description))
+                            if value['event'].lower() == 'rejected':
+                                body = _("Your Template has been rejected.")
+                                description = value.get('other_info', {}).get('description') or value.get('reason')
+                                if description:
+                                    body += Markup("<br/>") + _("Reason : %s", description)
+                                template.message_post(body=body)
                             continue
                         if changes['field'] == 'message_template_quality_update':
                             template.write({'quality': value['new_quality_score'].lower()})

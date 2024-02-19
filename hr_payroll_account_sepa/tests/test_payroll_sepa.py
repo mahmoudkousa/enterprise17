@@ -18,8 +18,11 @@ class TestPayrollSEPACreditTransfer(TestHrPayrollAccountCommon):
     @classmethod
     def setUpClass(cls):
         super(TestPayrollSEPACreditTransfer, cls).setUpClass()
-
-        cls.env.user.company_id.sepa_orgid_id = "0468651441"
+        cls.env.company.currency_id = cls.env.ref('base.USD')
+        cls.env.user.company_id.write({
+            'sepa_orgid_id': "0468651441",
+            'country_id': cls.env.ref('base.us').id,
+        })
 
         cls.bank = cls.env['res.bank'].create({
             'name':'BNP',

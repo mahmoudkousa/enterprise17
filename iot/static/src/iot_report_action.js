@@ -24,13 +24,14 @@ async function iotReportActionHandler(action, options, env) {
         action.data["device_ids"] = action.device_ids;
         const args = [action.id, action.context.active_ids, action.data, uuid()];
         const report_id = action.id;
-        const list = browser.localStorage.getItem(`print_report_number_${report_id}`);
+        const local_lists = JSON.parse(browser.localStorage.getItem("odoo-iot-linked_reports"));
+        const list = local_lists ? local_lists[report_id] : undefined;
         if (!list) {
             const action_wizard = await orm.call("ir.actions.report", "get_action_wizard", args);
             await env.services.action.doAction(action_wizard);
         }
         else {
-            await env.services.iot_websocket.addJob(JSON.parse(list), args);
+            await env.services.iot_websocket.addJob(list, args);
         }
         if (options.onClose) {
             options.onClose();

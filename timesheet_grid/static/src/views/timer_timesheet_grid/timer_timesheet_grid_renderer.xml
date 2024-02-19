@@ -102,13 +102,6 @@
                 'text-warning' : column.grandTotal gt column._dataPoint.data.workingHours.daily[column.value],
             }</attribute>
         </xpath>
-        <xpath expr="//div[@t-if='!props.options.hideLineTotal']" position="attributes">
-            <attribute name="t-att-class">{
-                'text-bg-danger': getWeeklyOvertime() lt 0,
-                'text-bg-success': getWeeklyOvertime() == 0,
-                'text-bg-warning': getWeeklyOvertime() gt 0,
-            }</attribute>
-        </xpath>
     </t>
     <t t-name="timesheet_grid.TimerGridTotal" t-inherit="web_grid.barChart">
         <xpath expr="//t/div" position="before">

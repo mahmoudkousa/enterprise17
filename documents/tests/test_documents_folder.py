@@ -280,6 +280,28 @@ class TestDocumentsFolder(TransactionCase):
         self.assertFalse(folder.exists(), "Folder should not exist")
         self.assertFalse(document.exists(), "Document should not exist")
 
+    def test_create_from_search_panel(self):
+        """
+        Create a folder from the search panel and check that the values are copied from the parent folder.
+        """
+        group = self.env.ref('base.group_user')
+        folder = self.env['documents.folder'].create({
+            'name': 'Folder',
+            'group_ids': [(6, 0, group.ids)],
+            'read_group_ids': [(6, 0, group.ids)],
+            'user_specific': True,
+            'user_specific_write': True,
+        })
+        sub_folder = self.env['documents.folder'].with_context(create_from_search_panel=True).create({
+            'name': 'Sub Folder',
+            'parent_folder_id': folder.id,
+        })
+        self.assertEqual(sub_folder.group_ids, group, "The groups should be copied from the parent folder")
+        self.assertEqual(sub_folder.read_group_ids, group, "The read groups should be copied from the parent folder")
+        self.assertTrue(sub_folder.user_specific, "The user specific flag should be copied from the parent folder")
+        self.assertTrue(sub_folder.user_specific_write, "The user specific write flag should be copied from the parent folder")
+
+
 class TestDocumentsFolderSequence(TransactionCase):
     @classmethod
     def setUpClass(cls):

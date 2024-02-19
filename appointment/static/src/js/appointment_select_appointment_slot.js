@@ -141,6 +141,11 @@ publicWidget.registry.appointmentSlotSelect = publicWidget.Widget.extend({
         this.$('.o_slot_selected').removeClass('o_slot_selected active');
         this.$(ev.currentTarget).addClass('o_slot_selected active');
 
+        // Do not display slots until user has actively selected the capacity
+        if (this.$("select[name='resourceCapacity'] :selected").data('placeholderOption')) {
+            return;
+        }
+
         const slotDate = this.$(ev.currentTarget).data('slotDate');
         const slots = this.$(ev.currentTarget).data('availableSlots');
         const scheduleBasedOn = this.$("input[name='schedule_based_on']").val();
@@ -248,6 +253,9 @@ publicWidget.registry.appointmentSlotSelect = publicWidget.Widget.extend({
             this.$('.o_appointment_no_slot_overall_helper').empty();
             this.$slotsList.empty();
             this.$('#resourceSelection').empty();
+            if (daySlotSelected && !this.$("select[name='resourceCapacity'] :selected").data('placeholderOption')) {
+                this.$('.o_appointment_slot_list_loading').removeClass('d-none');
+            }
             const updatedAppointmentCalendarHtml = await this.rpc(
                 `/appointment/${appointmentTypeID}/update_available_slots`,
                 {
@@ -277,10 +285,11 @@ publicWidget.registry.appointmentSlotSelect = publicWidget.Widget.extend({
     },
 
     /**
-     * Remove the loading spinner when no longer useful
+     * Remove the loading spinners when no longer useful
      */
     _removeLoadingSpinner: function () {
         this.$('.o_appointment_slots_loading').remove();
+        this.$('.o_appointment_slot_list_loading').addClass('d-none');
         this.$('#slots_availabilities').removeClass('d-none');
     },
 });

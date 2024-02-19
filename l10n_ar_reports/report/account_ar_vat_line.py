@@ -47,6 +47,9 @@ class AccountArVatLine(models.Model):
     not_taxed = fields.Monetary(
         readonly=True, string='Not taxed/ex', help='Not Taxed / Exempt.\All lines that have VAT 0, Exempt, Not Taxed'
         ' or Not Applicable', currency_field='company_currency_id')
+    perc_iibb = fields.Monetary(readonly=True, string='Perc. IIBB', currency_field='company_currency_id')
+    perc_earnings = fields.Monetary(readonly=True, string='Perc. Earnings', currency_field='company_currency_id')
+    city_tax = fields.Monetary(readonly=True, string='City Tax', currency_field='company_currency_id')
     other_taxes = fields.Monetary(
         readonly=True, string='Other Taxes', help='All the taxes tat ar not VAT taxes or iibb perceptions and that'
         ' are realted to documents that have VAT', currency_field='company_currency_id')
@@ -58,7 +61,7 @@ class AccountArVatLine(models.Model):
         'l10n_ar.afip.responsibility.type', string='AFIP Responsibility Type', readonly=True, auto_join=True)
     company_id = fields.Many2one('res.company', 'Company', readonly=True, auto_join=True)
     company_currency_id = fields.Many2one(related='company_id.currency_id', readonly=True)
-    move_id = fields.Many2one('account.move', string='Entry', auto_join=True)
+    move_id = fields.Many2one('account.move', string='Entry', auto_join=True, index='btree_not_null')
 
     def open_journal_entry(self):
         self.ensure_one()
@@ -73,6 +76,10 @@ class AccountArVatLine(models.Model):
         query, params = self._ar_vat_line_build_query()
         sql = f"""CREATE or REPLACE VIEW account_ar_vat_line as ({query})"""
         cr.execute(sql, params)
+
+    @property
+    def _table_query(self):
+        return self.env.cr.mogrify(*self._ar_vat_line_build_query()).decode()
 
     @api.model
     def _ar_vat_line_build_query(self, tables='account_move_line', where_clause='', where_params=None,
@@ -117,7 +124,10 @@ class AccountArVatLine(models.Model):
                     SUM(CASE WHEN ntg.l10n_ar_vat_afip_code = '9' THEN account_move_line.balance ELSE 0 END) AS vat_25,
                     SUM(CASE WHEN btg.l10n_ar_vat_afip_code in ('0', '1', '2', '3', '7') THEN account_move_line.balance ELSE 0 END) AS not_taxed,
                     SUM(CASE WHEN ntg.l10n_ar_tribute_afip_code = '06' THEN account_move_line.balance ELSE 0 END) AS vat_per,
-                    SUM(CASE WHEN ntg.l10n_ar_vat_afip_code is NULL and ntg.l10n_ar_tribute_afip_code != '06' THEN account_move_line.balance ELSE 0 END) AS other_taxes,
+                    SUM(CASE WHEN ntg.l10n_ar_vat_afip_code is NULL and ntg.l10n_ar_tribute_afip_code = '07' THEN account_move_line.balance ELSE 0 END) AS perc_iibb,
+                    SUM(CASE WHEN ntg.l10n_ar_vat_afip_code is NULL and ntg.l10n_ar_tribute_afip_code = '09' THEN account_move_line.balance ELSE 0 END) AS perc_earnings,
+                    SUM(CASE WHEN ntg.l10n_ar_vat_afip_code is NULL and ntg.l10n_ar_tribute_afip_code in ('03', '08') THEN account_move_line.balance ELSE 0 END) AS city_tax,
+                    SUM(CASE WHEN ntg.l10n_ar_vat_afip_code is NULL and ntg.l10n_ar_tribute_afip_code in ('02', '04', '05', '99') THEN account_move_line.balance ELSE 0 END) AS other_taxes,
                     SUM(account_move_line.balance) AS total
                 FROM
                     {tables}
@@ -148,5 +158,5 @@ class AccountArVatLine(models.Model):
                 GROUP BY
                     account_move.id, art.name, rp.id, lit.id,  COALESCE(nt.type_tax_use, bt.type_tax_use)
                 ORDER BY
-                    account_move.date, account_move.name"""
+                    account_move.invoice_date, account_move.name"""
         return query, [column_group_key, tax_types, tax_types, *where_params]

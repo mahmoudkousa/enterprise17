@@ -4,15 +4,15 @@
 # 
 # Translators:
 # Wil Odoo, 2023
-# Jolien De Paepe, 2023
+# Jolien De Paepe, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-26 16:10+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Jolien De Paepe, 2023\n"
+"Last-Translator: Jolien De Paepe, 2024\n"
 "Language-Team: French (https://app.transifex.com/odoo/teams/41243/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -282,7 +282,7 @@ msgid ""
 msgstr ""
 "<span nolabel=\"1\" colspan=\"2\">Cet assistant génère les fiches de paie de"
 " tous les employés sélectionnés sur la base des dates et des avoirs figurant"
-" sur les bulletins de paie.</span>"
+" sur les fiches de paie.</span>"
 
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_payroll_index_form_view
@@ -335,11 +335,6 @@ msgstr "<span>Jours</span>"
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_rule_parameter_view_form
 msgid "<span>Versions</span>"
 msgstr "<span>Versions</span>"
-
-#. module: hr_payroll
-#: model_terms:ir.ui.view,arch_db:hr_payroll.report_payslip
-msgid "<strong>Basic Salary</strong>"
-msgstr "<strong>Salaire de base</strong>"
 
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.report_payslip
@@ -649,14 +644,14 @@ msgstr "Nombre de pièces jointes"
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_salary_attachment__attachment_name
 msgid "Attachment Name"
-msgstr "Nom de la saisie"
+msgstr "Nom de la pièce jointe"
 
 #. module: hr_payroll
 #: model:hr.salary.attachment.type,name:hr_payroll.hr_salary_attachment_type_attachment
 #: model:hr.salary.rule,name:hr_payroll.default_attachment_of_salary_rule
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_salary_attachment_report__attachment_amount
 msgid "Attachment of Salary"
-msgstr "Saisie sur salaire"
+msgstr "Ajustement salarial"
 
 #. module: hr_payroll
 #: model:ir.model.fields.selection,name:hr_payroll.selection__hr_payroll_report__work_entry_source__attendance
@@ -708,10 +703,15 @@ msgid "Basic Salary"
 msgstr "Salaire de base"
 
 #. module: hr_payroll
+#: model_terms:ir.ui.view,arch_db:hr_payroll.report_payslip
+msgid "Basic Salary ("
+msgstr "Salaire de base ("
+
+#. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_payroll_report__basic_wage
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_payslip__basic_wage
 msgid "Basic Wage"
-msgstr "Salaire minimum"
+msgstr "Salaire de base"
 
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_payroll_report__leave_basic_wage
@@ -824,7 +824,7 @@ msgstr "Catégorie"
 #: code:addons/hr_payroll/static/src/js/tours/hr_payroll.js:0
 #, python-format
 msgid "Check the <strong>Salary Structure Type</strong>."
-msgstr "Vérifiez le <strong>type de structure de salaire</strong>."
+msgstr "Vérifiez le <strong>type de structure salariale</strong>."
 
 #. module: hr_payroll
 #. odoo-javascript
@@ -1177,12 +1177,12 @@ msgstr "Code du pays"
 #. module: hr_payroll
 #: model:ir.actions.server,name:hr_payroll.action_hr_payroll_confirm_payroll
 msgid "Create Draft Entry"
-msgstr "Créer une écriture brouillon"
+msgstr "Créer une entrée brouillon"
 
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_salary_attachment_view_form
 msgid "Create Individual Attachments"
-msgstr "Créer des saisies individuelles"
+msgstr "Créer des ajustements individuels"
 
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.res_config_settings_view_form
@@ -1192,12 +1192,27 @@ msgstr "Créer un paiement SEPA"
 #. module: hr_payroll
 #: model:ir.actions.server,name:hr_payroll.action_new_salary_attachment
 msgid "Create Salary Attachment"
-msgstr "Créer une saisie sur salaire"
+msgstr "Créer un ajustement salarial"
 
 #. module: hr_payroll
 #: model_terms:ir.actions.act_window,help:hr_payroll.action_hr_contract_repository
 msgid "Create a new contract"
 msgstr "Créer un nouveau contrat"
+
+#. module: hr_payroll
+#: model_terms:ir.actions.act_window,help:hr_payroll.action_salary_rule_form
+msgid "Create a new salary rule"
+msgstr "Créer une nouvelle règle salariale"
+
+#. module: hr_payroll
+#: model_terms:ir.actions.act_window,help:hr_payroll.hr_rule_parameter_action
+msgid "Create a new salary rule parameter"
+msgstr "Créer un nouveau paramètre de règle salariale"
+
+#. module: hr_payroll
+#: model_terms:ir.actions.act_window,help:hr_payroll.action_view_hr_payroll_structure_list_form
+msgid "Create a new salary structure"
+msgstr "Créer une nouvelle structure salariale"
 
 #. module: hr_payroll
 #. odoo-javascript
@@ -1310,7 +1325,7 @@ msgstr "Date"
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_payslip_run__date_start
 msgid "Date From"
-msgstr "Date début"
+msgstr "Date de début"
 
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_work_entry_report__date_start
@@ -1915,7 +1930,7 @@ msgstr "Générer des fiches de paie"
 #. module: hr_payroll
 #: model:ir.model,name:hr_payroll.model_hr_payslip_employees
 msgid "Generate payslips for all selected employees"
-msgstr "Génère les bulletins de paie pour tous les employés sélectionnés"
+msgstr "Génère les fiches de paie pour tous les employés sélectionnés"
 
 #. module: hr_payroll
 #: model:ir.model.fields.selection,name:hr_payroll.selection__hr_payroll_employee_declaration__state__pdf_generated
@@ -2000,12 +2015,12 @@ msgstr "A un bulletin de remboursement"
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_salary_attachment__has_similar_attachment
 msgid "Has Similar Attachment"
-msgstr "A une saisie similaire"
+msgstr "A un ajustement similaire"
 
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_salary_attachment__has_similar_attachment_warning
 msgid "Has Similar Attachment Warning"
-msgstr "A l'avertissement de saisie similaire"
+msgstr "A l'avertissement d'ajustement similaire"
 
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_salary_attachment__has_total_amount
@@ -2225,7 +2240,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:hr_payroll.payroll_report_view_search
 #: model_terms:ir.ui.view,arch_db:hr_payroll.view_hr_payslip_filter
 msgid "Job Position"
-msgstr "Poste de travail"
+msgstr "Poste"
 
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.report_payslip
@@ -2655,7 +2670,7 @@ msgstr "Nombre de jours"
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_payslip_worked_days__number_of_hours
 #: model_terms:ir.ui.view,arch_db:hr_payroll.report_payslip
 msgid "Number of Hours"
-msgstr "Nombre d'Heures"
+msgstr "Nombre d'heures"
 
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.res_config_settings_view_form
@@ -3345,7 +3360,7 @@ msgstr "Référence"
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.view_hr_payslip_form
 msgid "Refund"
-msgstr "Remboursement"
+msgstr "Rembourser"
 
 #. module: hr_payroll
 #. odoo-python
@@ -3510,49 +3525,49 @@ msgstr "Salaire"
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_salary_attachment_view_form
 #, python-format
 msgid "Salary Attachment"
-msgstr "Saisie sur salaire"
+msgstr "Ajustement salarial"
 
 #. module: hr_payroll
 #: model:ir.model,name:hr_payroll.model_hr_salary_attachment_report
 msgid "Salary Attachment / Report"
-msgstr "Saisie sur salaire / Rapport"
+msgstr "Ajustement salarial / Rapport"
 
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_contract__salary_attachments_count
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_contract_history__salary_attachment_count
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_employee__salary_attachment_count
 msgid "Salary Attachment Count"
-msgstr "Nombre de saisies sur salaire"
+msgstr "Nombre d'ajustements salariaux"
 
 #. module: hr_payroll
 #: model:ir.actions.act_window,name:hr_payroll.hr_salary_attachment_report_action
 #: model:ir.ui.menu,name:hr_payroll.menu_hr_payroll_attachment_salary_report
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_salary_attachment_report_view_pivot
 msgid "Salary Attachment Report"
-msgstr "Rapport de saisies sur salaire"
+msgstr "Rapport d'ajustement salarial"
 
 #. module: hr_payroll
 #: model:ir.model,name:hr_payroll.model_hr_salary_attachment_type
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_salary_attachment_type_view_form
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_salary_attachment_type_view_tree
 msgid "Salary Attachment Type"
-msgstr "Type de saisie sur salaire"
+msgstr "Type d'ajustement salarial"
 
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_salary_attachment_type_view_tree
 msgid "Salary Attachment Type Name"
-msgstr "Nom du type de saisie sur salaire"
+msgstr "Nom du type d'ajustement salarial"
 
 #. module: hr_payroll
 #: model:ir.actions.act_window,name:hr_payroll.action_hr_salary_attachment_type
 #: model:ir.ui.menu,name:hr_payroll.menu_hr_salary_attachment_type
 msgid "Salary Attachment Types"
-msgstr "Types de saisie sur salaire"
+msgstr "Types d'ajustement salarial"
 
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_payslip__salary_attachment_count
 msgid "Salary Attachment count"
-msgstr "Nombre de saisies sur salaire"
+msgstr "Nombre d'ajustements salariaux"
 
 #. module: hr_payroll
 #. odoo-python
@@ -3567,7 +3582,7 @@ msgstr "Nombre de saisies sur salaire"
 #: model_terms:ir.ui.view,arch_db:hr_payroll.view_hr_payslip_form
 #, python-format
 msgid "Salary Attachments"
-msgstr "Saisies sur salaire"
+msgstr "Ajustements salariaux"
 
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_salary_rule_category_form
@@ -3647,7 +3662,7 @@ msgstr "Structure salariale"
 #. module: hr_payroll
 #: model:ir.model,name:hr_payroll.model_hr_payroll_structure_type
 msgid "Salary Structure Type"
-msgstr "Type de structure de salaire"
+msgstr "Type de structure salariale"
 
 #. module: hr_payroll
 #: model:ir.actions.act_window,name:hr_payroll.action_view_hr_payroll_structure_from_type
@@ -3684,7 +3699,7 @@ msgstr "Rechercher dans les fiches de paie"
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_salary_attachment_view_search
 msgid "Search Salary Attachment"
-msgstr "Rechercher des saisies sur salaire"
+msgstr "Rechercher des ajustements salariaux"
 
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.view_hr_rule_filter
@@ -4417,7 +4432,7 @@ msgstr "Message d'avertissement"
 #: code:addons/hr_payroll/models/hr_salary_attachment.py:0
 #, python-format
 msgid "Warning, a similar attachment has been found."
-msgstr "Attention, une saisie similaire a été trouvée."
+msgstr "Attention, un ajustement salarial a été trouvé."
 
 #. module: hr_payroll
 #. odoo-javascript
@@ -4659,7 +4674,7 @@ msgstr ""
 #: model:ir.model.fields.selection,name:hr_payroll.selection__hr_payroll_report__work_entry_source__calendar
 #: model:ir.model.fields.selection,name:hr_payroll.selection__hr_work_entry_report__work_entry_source__calendar
 msgid "Working Schedule"
-msgstr "Heures de travail"
+msgstr "Horaire de travail"
 
 #. module: hr_payroll
 #. odoo-python
@@ -4702,6 +4717,17 @@ msgstr "Mauvaise quantité définie pour :"
 #, python-format
 msgid "Wrong range condition defined for:"
 msgstr "Mauvais intervalle conditionnel défini pour :"
+
+#. module: hr_payroll
+#. odoo-python
+#: code:addons/hr_payroll/models/hr_rule_parameter.py:0
+#, python-format
+msgid ""
+"Wrong rule parameter value for %s at date %s.\n"
+"%s"
+msgstr ""
+"Valeur du paramètre de règle erronée pour %s à la date %s.\n"
+"%s"
 
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_payroll_declaration_mixin__year
@@ -4769,7 +4795,7 @@ msgstr ""
 #: code:addons/hr_payroll/models/hr_salary_attachment.py:0
 #, python-format
 msgid "You cannot delete a running salary attachment!"
-msgstr "Vous ne pouvez pas supprimer une saisie sur salaire en cours."
+msgstr "Vous ne pouvez pas supprimer un ajustement salarial en cours."
 
 #. module: hr_payroll
 #. odoo-python
@@ -4777,7 +4803,7 @@ msgstr "Vous ne pouvez pas supprimer une saisie sur salaire en cours."
 #, python-format
 msgid "You cannot record a payment on multi employees attachments."
 msgstr ""
-"Il n'est pas possible d'enregistrer un paiement sur des saisies multi-"
+"Il n'est pas possible d'enregistrer un paiement sur des ajustements multi-"
 "employés."
 
 #. module: hr_payroll

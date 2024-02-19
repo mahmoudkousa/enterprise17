@@ -17,7 +17,7 @@ patch(RemoteDisplay.prototype, {
     async connect() {
         this.hardwareProxy.deviceControllers.display.action({
             action: "take_control",
-            html: await this.customerDisplayHTML(),
+            html: await this.pos.customerDisplayHTML(),
         });
     },
     /**
@@ -26,7 +26,7 @@ patch(RemoteDisplay.prototype, {
     async update() {
         return this.hardwareProxy.deviceControllers?.display?.action({
             action: "customer_facing_display",
-            html: await this.customerDisplayHTML(),
+            html: await this.pos.customerDisplayHTML(),
         });
     },
     /**

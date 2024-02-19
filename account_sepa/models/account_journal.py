@@ -13,7 +13,7 @@ import odoo.addons.account.tools.structured_reference as sr
 from odoo.addons.account_batch_payment.models.sepa_mapping import _replace_characters_SEPA
 
 
-def sanitize_communication(communication):
+def sanitize_communication(communication, size=140):
     """ Returns a sanitized version of the communication given in parameter,
         so that:
             - it contains only latin characters
@@ -22,14 +22,13 @@ def sanitize_communication(communication):
             - it is maximum 140 characters long
         (these are the SEPA compliance criteria)
     """
-    communication = communication[:140]
     while '//' in communication:
         communication = communication.replace('//', '/')
     if communication.startswith('/'):
         communication = communication[1:]
     if communication.endswith('/'):
         communication = communication[:-1]
-    communication = _replace_characters_SEPA(communication)
+    communication = _replace_characters_SEPA(communication, size)
     return communication
 
 class AccountJournal(models.Model):
@@ -162,6 +161,7 @@ class AccountJournal(models.Model):
                 Othr = etree.SubElement(FinInstnId, "Othr")
                 Id = etree.SubElement(Othr, "Id")
                 Id.text = "NOTPROVIDED"
+            PmtInf.append(self._get_ChrgBr(sct_generic))
 
             # One CdtTrfTxInf per transaction
             for payment in payments_list:
@@ -260,19 +260,23 @@ class AccountJournal(models.Model):
     def _get_PmtTpInf(self, sct_generic=False):
         PmtTpInf = etree.Element("PmtTpInf")
 
-        if not sct_generic and self.sepa_pain_version != 'pain.001.001.03.ch.02':
-            SvcLvl = etree.SubElement(PmtTpInf, "SvcLvl")
-            Cd = etree.SubElement(SvcLvl, "Cd")
-            Cd.text = 'SEPA'
+        is_salary = self.env.context.get('sepa_payroll_sala')
 
-        # 1/ the SALA purpose code is standard for all SEPA, and guarantees a series
-        #    of things in instant payment: https://www.sepaforcorporates.com/sepa-payments/sala-sepa-salary-payments.
-        # 2/ the "High" priority level is also an attribute of the payment
-        #    that we should specify as well for salary payments
-        #    See https://www.febelfin.be/sites/default/files/2019-04/standard-credit_transfer-xml-v32-en_0.pdf section 2.6
-        if self.env.context.get('sepa_payroll_sala'):
+        if is_salary:
+            # The "High" priority level is also an attribute of the payment
+            # that we should specify as well for salary payments
+            # See https://www.febelfin.be/sites/default/files/2019-04/standard-credit_transfer-xml-v32-en_0.pdf section 2.6
             InstrPrty = etree.SubElement(PmtTpInf, "InstrPrty")
             InstrPrty.text = 'HIGH'
+
+        if sct_generic ^ (self.sepa_pain_version != 'pain.001.001.03.ch.02'):
+            SvcLvl = etree.SubElement(PmtTpInf, "SvcLvl")
+            Cd = etree.SubElement(SvcLvl, "Cd")
+            Cd.text = 'NURG' if sct_generic else 'SEPA'
+
+        if is_salary:
+            # The SALA purpose code is standard for all SEPA, and guarantees a series
+            # of things in instant payment: https://www.sepaforcorporates.com/sepa-payments/sala-sepa-salary-payments.
             CtgyPurp = etree.SubElement(PmtTpInf, "CtgyPurp")
             Cd = etree.SubElement(CtgyPurp, "Cd")
             Cd.text = 'SALA'
@@ -303,7 +307,7 @@ class AccountJournal(models.Model):
         PstlAdr = etree.Element("PstlAdr")
         address_fields = []
         if partner_id.street:
-            partner_text = sanitize_communication(partner_id.street[:70])
+            partner_text = sanitize_communication(partner_id.street, 70)
             address_fields.append(('StrtNm', partner_text))
         if partner_id.zip:
             partner_zip = sanitize_communication(partner_id.zip)
@@ -323,17 +327,16 @@ class AccountJournal(models.Model):
             # Some banks seem allergic to having the zip in a separate tag, so we do as before
             if partner_id.street:
                 AdrLine = etree.SubElement(PstlAdr, "AdrLine")
-                AdrLine.text = sanitize_communication(partner_id.street[:70])
+                AdrLine.text = sanitize_communication(partner_id.street, 70)
             if partner_id.zip and partner_id.city:
                 AdrLine = etree.SubElement(PstlAdr, "AdrLine")
-                AdrLine.text = sanitize_communication((partner_id.zip + " " + partner_id.city)[:70])
+                AdrLine.text = sanitize_communication(partner_id.zip + " " + partner_id.city, 70)
 
         return PstlAdr
 
     def _skip_CdtrAgt(self, partner_bank, pain_version):
         return (
-            self.env.context.get('skip_bic', False)
-            or not partner_bank.bank_id.bic
+            not partner_bank.bank_id.bic
             or (
                 # Creditor Agent can be omitted with IBAN and QR-IBAN accounts
                 pain_version == 'pain.001.001.03.ch.02'
@@ -346,7 +349,7 @@ class AccountJournal(models.Model):
         PmtId = etree.SubElement(CdtTrfTxInf, "PmtId")
         if payment['name']:
             InstrId = etree.SubElement(PmtId, "InstrId")
-            InstrId.text = sanitize_communication(payment['name'][:35])
+            InstrId.text = sanitize_communication(payment['name'], 35)
         EndToEndId = etree.SubElement(PmtId, "EndToEndId")
         EndToEndId.text = (PmtInfId.text + str(payment['id']))[-30:].strip()
         Amt = etree.SubElement(CdtTrfTxInf, "Amt")
@@ -364,7 +367,6 @@ class AccountJournal(models.Model):
             ))
         InstdAmt = etree.SubElement(Amt, "InstdAmt", Ccy=val_Ccy)
         InstdAmt.text = val_InstdAmt
-        CdtTrfTxInf.append(self._get_ChrgBr(sct_generic))
 
         partner = self.env['res.partner'].sudo().browse(payment['partner_id'])
 

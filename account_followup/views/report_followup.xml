@@ -66,7 +66,7 @@
                 </div>
 
                 <p style="margin-top: 35px;">
-                    Date: <span t-out="today" t-options="{'widget': 'date'}">2023-09-06</span><br/>
+                    Date: <span t-out="datetime.date.today()" t-options="{'widget': 'date'}">2023-09-06</span><br/>
                     <span t-if='partner_addr.ref'>Customer ref: <span t-field="partner_addr.ref">Demo Ref</span></span>
                 </p>
             </div>
@@ -122,9 +122,10 @@
 
                     <t t-foreach="line.get('columns')" t-as="cell">
                         <t t-set="cell_classes" t-value="(cell.get('class', '') + (line.get('unfoldable') and ' o_foldable_total' or ''))"/>
+                        <t t-set="style_classes" t-value="cell.get('style', '')"/>
 
                         <td>
-                            <div class="o_account_report_column_value">
+                            <div t-att-style="style_classes" t-att-class="cell_classes + ' o_account_report_column_value ps-2 pe-2'">
                                 <span class="o_account_report_column_value" t-out="cell.get('name')">Name</span>
                             </div>
                         </td>
@@ -146,15 +147,7 @@
                         </div>
                     </t>
                     <div class="oe_structure"></div>
-                    <t t-if="(options or {}).get('join_invoices', doc.followup_line_id.join_invoices)">
-                        <t t-foreach="doc._get_invoices_to_print(options)" t-as="o">
-                            <t t-set="lang" t-value="o.user_id.lang if o.move_type in ('in_invoice', 'in_refund') else o.partner_id.lang"/>
-                            <t t-call="account.report_invoice_document" t-lang="lang"/>
-                        </t>
-                    </t>
-                    <t t-else="">
-                        <div class="oe_structure"></div>
-                    </t>
+                    <!-- The invoice PDFs are attached by extending function _render_qweb_pdf_prepare_streams of ir.actions.report -->
                 </t>
             </t>
         </template>

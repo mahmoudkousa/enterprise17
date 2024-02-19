@@ -347,7 +347,7 @@ class HrContract(models.Model):
             self.train_transport_reimbursed_amount = 0
         if not self.transport_mode_public:
             self.public_transport_reimbursed_amount = 0
-        if self.transport_mode_car or self.car_id:
+        if self.transport_mode_car:
             self.transport_mode_private_car = False
 
     @api.onchange('transport_mode_private_car')

@@ -10,10 +10,10 @@ from lxml import etree
 import odoo
 from odoo import http, _
 from odoo.http import content_disposition, request
-from odoo.exceptions import UserError, AccessError, ValidationError
+from odoo.exceptions import UserError, ValidationError
 from odoo.addons.web_studio.controllers import export
 from odoo.osv import expression
-from odoo.tools import ustr, sql
+from odoo.tools import ustr, sql, clean_context
 from odoo.models import check_method_name
 
 _logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ class WebStudioController(http.Controller):
             - it already inherits from mail.thread.
         """
         Model = request.env[model]
-        return Model._custom or isinstance(Model, type(request.env['mail.thread']))
+        return Model._custom or isinstance(Model, request.env.registry['mail.thread'])
 
     @http.route('/web_studio/activity_allowed', type='json', auth='user')
     def is_activity_allowed(self, model):
@@ -58,7 +58,7 @@ class WebStudioController(http.Controller):
             - it already inherits from mail.thread.
         """
         Model = request.env[model]
-        return Model._custom or isinstance(Model, type(request.env['mail.activity.mixin']))
+        return Model._custom or isinstance(Model, request.env.registry['mail.activity.mixin'])
 
     @http.route('/web_studio/get_studio_action', type='json', auth='user')
     def get_studio_action(self, action_name, model, view_id=None, view_type=None):
@@ -124,19 +124,29 @@ class WebStudioController(http.Controller):
         }
 
     def _get_studio_action_reports(self, model, **kwargs):
+        report_name_blacklist = [
+            "account_followup.report_followup_print_all",
+            "stock.report_lot_label",
+            "stock.report_picking_type_label",
+            "product.report_producttemplatelabel",
+            "product.report_producttemplatelabel_dymo",
+            "stock.report_reception_report_label",
+            "mrp.label_production_view_pdf",
+        ]
+        report_domain = expression.AND([
+            # One can edit only reports backed by persisting models
+            [("model_id.transient", "=", False)],
+            [("model_id.abstract", "=", False)],
+            [("report_type", "not in", ['qweb-text'])],
+            [("report_name", "not in", report_name_blacklist)],
+        ])
         return {
             'name': _('Reports'),
             'type': 'ir.actions.act_window',
             'res_model': 'ir.actions.report',
             'views': [[False, 'kanban'], [False, 'form']],
             'target': 'current',
-            # One can edit only reports backed by persisting models
-            'domain': [
-                '&',
-                ("model_id.transient", "=", False),
-                ("model_id.abstract", "=", False),
-                ("report_type", "not in", ['qweb-text'])
-            ],
+            'domain': report_domain,
             'context': {
                 'default_model': model.model,
                 'search_default_model': model.model,
@@ -463,9 +473,12 @@ class WebStudioController(http.Controller):
             'main_view_id': view.id,
         }
 
-    def _return_view(self, view, studio_view):
+    def _return_view(self, view, studio_view, context=None):
+        if context is None:
+            context = {}
+
         ViewModel = request.env[view.model]
-        fields_view = ViewModel.with_context(studio=True).get_view(view.id, view.type)
+        fields_view = ViewModel.with_context(dict(context, studio=True)).get_view(view.id, view.type)
         view_type = 'list' if view.type == 'tree' else view.type
         models = fields_view['models']
 
@@ -498,7 +511,8 @@ class WebStudioController(http.Controller):
     @http.route('/web_studio/edit_view', type='json', auth='user')
     def edit_view(self, view_id, studio_view_arch, operations=None, model=None, context=None):
         if context:
-            request.update_context(**context)
+            context_cleaned = clean_context(context)
+            request.update_context(**context_cleaned)
         IrModelFields = request.env['ir.model.fields']
         view = request.env['ir.ui.view'].browse(view_id)
         operations = operations or []
@@ -594,6 +608,8 @@ class WebStudioController(http.Controller):
                     'relation': 'res.currency',
                     'field_description': 'Currency',
                 })
+                # delete the 'related' attribute from currency if it comes from a related monetary
+                currency_op['node']['field_description'].pop('related', None)
                 values['currency_field'] = 'x_studio_currency_id'
                 op['target']['attrs'] = {'name': 'x_studio_currency_id'}
             else:
@@ -677,18 +693,21 @@ class WebStudioController(http.Controller):
             # the change he would like to make.
             self._set_studio_view(view, new_arch)
 
-        return self._return_view(view, studio_view)
+        return self._return_view(view, studio_view, context)
 
     @http.route('/web_studio/rename_field', type='json', auth='user')
-    def rename_field(self, studio_view_id, studio_view_arch, model, old_name, new_name):
+    def rename_field(self, studio_view_id, studio_view_arch, model, old_name, new_name, new_label=None):
         studio_view = request.env['ir.ui.view'].browse(studio_view_id)
 
         # a field cannot be renamed if it appears in a view ; we thus reset the
         # studio view before all operations to be able to rename the field
         studio_view.arch_db = studio_view_arch
 
-        field_id = request.env['ir.model.fields']._get(model, old_name)
-        field_id.write({'name': new_name})
+        field_id = request.env['ir.model.fields']._get(model, old_name).with_context(lang=None)
+        to_write = {'name': new_name}
+        if new_label is not None:
+            to_write["field_description"] = new_label
+        field_id.write(to_write)
 
         if field_id.ttype == 'binary' and not field_id.related:
             # during the binary field creation, another char field containing
@@ -744,7 +763,8 @@ Are you sure you want to remove the selection values of those records?""", len(r
     @http.route('/web_studio/edit_view_arch', type='json', auth='user')
     def edit_view_arch(self, view_id, view_arch, context=None):
         if context:
-            request.update_context(**context)
+            context_cleaned = clean_context(context)
+            request.update_context(**context_cleaned)
         # view is really the view on which we are writing the new arch verbatim (in most cases, the studio view)
         # the _return_view API calls get_views, that will eventually return the whole arch
         # meaning that even if we pass the studio view, we'll get the full arch with
@@ -754,7 +774,7 @@ Are you sure you want to remove the selection values of those records?""", len(r
             view.write({'arch': view_arch})
             ViewModel = request.env[view.model]
             studio_view = self._get_studio_view(view)
-            return self._return_view(view, studio_view)
+            return self._return_view(view, studio_view, context)
 
     @http.route('/web_studio/export', type='http', auth='user')
     def export(self, **kw):
@@ -1066,7 +1086,7 @@ Are you sure you want to remove the selection values of those records?""", len(r
             if key == 'string' and operation.get('node', {}).get('tag') == 'field':
                 field_name = operation.get('node', {}).get('attrs', {}).get('name')
                 field_id = request.env['ir.model.fields'].search([('model', '=', model), ('name', '=', field_name)])
-                if field_name.startswith('x_') and field_id and field_id.field_description != new_attr:
+                if field_id and field_id._is_manual_name(field_name) and field_id.field_description != new_attr:
                     field_id.write({'field_description': new_attr})
 
     def _operation_buttonbox(self, arch, operation, model=None):
@@ -1694,7 +1714,7 @@ Are you sure you want to remove the selection values of those records?""", len(r
             raise ValidationError(_('It lacks a method to check.'))
         else:
             check_method_name(method_name)
-            if not callable(getattr(model, method_name)):
+            if not callable(getattr(model, method_name, None)):
                 raise ValidationError(_('The method %s does not exist on the model %s.', method_name, model))
             else:
                 return True

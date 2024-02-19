@@ -17,6 +17,7 @@ class TestWebsiteSaleRentingProductAttributeValueConfig(TestSaleProductAttribute
         super().setUpClass()
         cls.computer.rent_ok = True
         cls.website = cls.env['website'].get_current_website()
+        cls.website.company_id = cls.env.company
 
         recurrence_3_hour, recurrence_week = cls.env['sale.temporal.recurrence'].create([
             {

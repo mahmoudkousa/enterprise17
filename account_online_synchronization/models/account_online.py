@@ -46,6 +46,7 @@ class AccountOnlineAccount(models.Model):
     currency_id = fields.Many2one('res.currency')
     fetching_status = fields.Selection(
         selection=[
+            ('planned', 'Planned'), # When all the transactions couldn't be imported in one go and is waiting for next batch
             ('waiting', 'Waiting'),  # When waiting for the provider to fetch the transactions
             ('processing', 'Processing'),  # When currently importing in odoo
             ('done', 'Done'),  # When every transaction have been imported in odoo
@@ -155,8 +156,7 @@ class AccountOnlineAccount(models.Model):
             currently_fetching = resp_json.get('currently_fetching')
             success = resp_json.get('success', True)
             if currently_fetching:
-                # Provider has not finished fetching transactions, trigger next check in a few minutes and set status to waiting
-                self.account_online_link_id._trigger_fetch_transactions_cron(fields.Datetime.now() + relativedelta(minutes=3))
+                # Provider has not finished fetching transactions, set status to waiting
                 self.fetching_status = 'waiting'
             if not resp_json.get('next_data'):
                 break
@@ -553,6 +553,7 @@ class AccountOnlineLink(models.Model):
                 odoo_help_summary = f'Bank sync error ref: {error_reference} - Provider: {provider} - Client ID: {self.client_id}'
                 url_params = urllib.parse.urlencode({'stage': 'bank_sync', 'summary': odoo_help_summary, 'description': odoo_help_description[:1500]})
                 url = f'https://www.odoo.com/help?{url_params}'
+                message += _(" If you've already opened this issue don't report it again.")
             # if state is disconnected, and new state is error: ignore it
             if state == 'error' and self.state == 'disconnected':
                 state = 'disconnected'
@@ -650,14 +651,7 @@ class AccountOnlineLink(models.Model):
     def _pre_check_fetch_transactions(self):
         self.ensure_one()
         cron_limit_time = tools.config['limit_time_real_cron']  # time after which cron process is killed
-        limit_time = (cron_limit_time if cron_limit_time > 0 else 300) + 60  # Add one minute to be sure that the process will have been killed
-        # If no future trigger exist, create one.
-        # This is needed because otherwise the creation of bnk_stmt_lines in Odoo could be interrupted if the process takes too much time
-        # and we'll have to wait for 12 hours to continue fetching (next cron activation). To avoid that, create by default a cron_trigger
-        # at a date just after the expiration of the process. If process is completed without being killed, all cron_trigger
-        # will be deleted.
-        if self.env.context.get('cron'):
-            self._trigger_fetch_transactions_cron(fields.Datetime.now() + relativedelta(seconds=limit_time))
+        limit_time = (cron_limit_time if cron_limit_time > 0 else tools.config['limit_time_real']) + 20  # Add 20 seconds to be sure that the process will have been killed
         # if any account is actually creating entries and last_refresh was made less than cron_limit_time ago, skip fetching
         if (self.account_online_account_ids.filtered(lambda account: account.fetching_status == 'processing') and
                 self.last_refresh + relativedelta(seconds=limit_time) > fields.Datetime.now()):
@@ -665,7 +659,7 @@ class AccountOnlineLink(models.Model):
         # If not in the process of importing and auto_sync is not set, skip fetching
         if (self.env.context.get('cron') and
                 not self.auto_sync and
-                not self.account_online_account_ids.filtered(lambda acc: acc.fetching_status in ('waiting', 'processing'))):
+                not self.account_online_account_ids.filtered(lambda acc: acc.fetching_status in ('planned', 'waiting', 'processing'))):
             return False
         return True
 
@@ -682,25 +676,23 @@ class AccountOnlineLink(models.Model):
             # When manually fetching, refresh must still be done in case a redirect occurs
             # however since transactions are always fetched inside a cron, in case we are manually
             # fetching, trigger the cron and redirect customer to accounting dashboard
+            accounts_to_synchronize = acc
             if not is_cron_running:
                 accounts_not_to_synchronize = self.env['account.online.account']
                 for online_account in acc:
                     # Only get transactions on account linked to a journal
-                    if refresh and not online_account._refresh():
+                    if refresh and online_account.fetching_status not in ('planned', 'processing') and not online_account._refresh():
                         accounts_not_to_synchronize += online_account
                         continue
                     online_account.fetching_status = 'waiting'
                 accounts_to_synchronize = acc - accounts_not_to_synchronize
-                if accounts_to_synchronize:
-                    # Only call the cron (to fetch transaction asynchronously) if we have account to synchronize
-                    # It means that the account should be refreshed successfully and that we're currently fetching it.
-                    self._trigger_fetch_transactions_cron()
-                return
+                if not accounts_to_synchronize:
+                    return
 
-            for online_account in acc:
+            for online_account in accounts_to_synchronize:
                 journal = online_account.journal_ids[0]
                 online_account.fetching_status = 'processing'
-                # Commiting here so that multiple thread calling this method won't execute in parrallel and import duplicates transaction
+                # Commiting here so that multiple thread calling this method won't execute in parallel and import duplicates transaction
                 self.env.cr.commit()
                 try:
                     transactions = online_account._retrieve_transactions().get('transactions', [])
@@ -726,37 +718,40 @@ class AccountOnlineLink(models.Model):
                     )
                     raise
 
-                statement_lines = self.env['account.bank.statement.line']._online_sync_bank_statement(transactions, online_account)
-                online_account.fetching_status = 'done'
-                self._notify_connection_update(
-                    journal=journal,
-                    connection_state_details={
-                        'status': 'success',
-                        'nb_fetched_transactions': len(statement_lines),
-                        'action': self._show_fetched_transactions_action(statement_lines),
-                    },
-                )
+                sorted_transactions = sorted(transactions, key=lambda transaction: transaction['date'])
+                if not is_cron_running:
+                    # For people in stable who will update their code without upgrading their module,
+                    # we need to be sure to change the cron from running only once every year (original interval is 12 months) to maximum 5 minutes
+                    cron_record_in_sudo = self.env.ref('account_online_synchronization.online_sync_cron_waiting_synchronization').sudo()
+                    if cron_record_in_sudo.nextcall > fields.Datetime.now() + relativedelta(minutes=5) or cron_record_in_sudo.interval_number > 5 or cron_record_in_sudo.interval_type != 'minutes':
+                        cron_record_in_sudo.nextcall = fields.Datetime.now() + relativedelta(minutes=5)
+                        cron_record_in_sudo.interval_number = 5
+                        cron_record_in_sudo.interval_type = 'minutes'
+                    # we want to import the first 100 transaction, show them to the user
+                    # and import the rest asynchronously with the 'online_sync_cron_waiting_synchronization' cron
+                    total = sum([transaction['amount'] for transaction in transactions])
+                    statement_lines = self.env['account.bank.statement.line'].with_context(transactions_total=total)._online_sync_bank_statement(sorted_transactions[:100], online_account)
+                    online_account.fetching_status = 'planned' if len(transactions) > 100 else 'done'
 
-            cron_record = self.env.ref('account_online_synchronization.online_sync_cron_waiting_synchronization')
-            # Everything has been imported: cancel all further cron_trigger
-            self.env['ir.cron.trigger'].search([('cron_id', '=', cron_record.id), ('call_at', '>', fields.Datetime.now())]).unlink()
+                    return self.env['account.bank.statement.line']._action_open_bank_reconciliation_widget(
+                        extra_domain=[('id', 'in', statement_lines.ids)],
+                        name=_('Fetched Transactions'),
+                        default_context=self.env.context,
+                    )
+                else:
+                    statement_lines = self.env['account.bank.statement.line']._online_sync_bank_statement(sorted_transactions, online_account)
+                    online_account.fetching_status = 'done'
+                    self._notify_connection_update(
+                        journal=journal,
+                        connection_state_details={
+                            'status': 'success',
+                            'nb_fetched_transactions': len(statement_lines),
+                            'action': self._show_fetched_transactions_action(statement_lines),
+                        },
+                    )
             return
         except OdooFinRedirectException as e:
             return self._handle_odoofin_redirect_exception(mode=e.mode)
-
-    @api.model
-    def _trigger_fetch_transactions_cron(self, execution_time=None):
-        cron_record = self.env.ref('account_online_synchronization.online_sync_cron_waiting_synchronization')
-        # Only add a trigger if no other one before exists
-        if not execution_time:
-            execution_time = fields.Datetime.now()
-        search_domain = [
-            ('cron_id', '=', cron_record.id),
-            ('call_at', '>', fields.Datetime.now()),  # This part is needed as current existing cron_trigger might be returned otherwise
-            ('call_at', '<=', execution_time),
-        ]
-        if self.env['ir.cron.trigger'].search_count(search_domain) == 0:
-            cron_record._trigger(execution_time)
 
     def _get_consent_expiring_date(self):
         self.ensure_one()

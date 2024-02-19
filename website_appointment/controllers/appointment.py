@@ -158,7 +158,7 @@ class WebsiteAppointment(AppointmentController):
         )
 
         # Use appointment_types to keep the sudo if needed
-        appointment_types = Appointment.sudo().search(domain, limit=APPOINTMENTS_PER_PAGE, offset=pager['offset'])
+        appointment_types = Appointment.sudo().search(domain, order='is_published desc, sequence, id', limit=APPOINTMENTS_PER_PAGE, offset=pager['offset'])
 
         return {
             'appointment_types': appointment_types,

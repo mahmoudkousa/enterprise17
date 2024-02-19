@@ -34,6 +34,7 @@
     'application': True,
     'pre_init_hook': '_pre_init_referral',
     'post_init_hook': '_update_stage',
+    'uninstall_hook': 'uninstall_hook',
     'assets': {
         'web.assets_backend': [
             'hr_referral/static/src/views/*.js',

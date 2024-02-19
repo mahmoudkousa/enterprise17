@@ -4,7 +4,7 @@
 from odoo import api, fields, models, _, Command
 from odoo.exceptions import UserError
 from odoo.tools.misc import format_date
-from odoo.tools import float_compare
+from odoo.tools import float_is_zero
 
 from dateutil.relativedelta import relativedelta
 
@@ -147,13 +147,13 @@ class AssetModify(models.TransientModel):
             if wizard.modify_action == 'dispose':
                 if wizard.gain_or_loss == 'gain':
                     account = wizard.gain_account_id.display_name or ''
-                    gain_or_loss = 'gain'
+                    gain_or_loss = _('gain')
                 elif wizard.gain_or_loss == 'loss':
                     account = wizard.loss_account_id.display_name or ''
-                    gain_or_loss = 'loss'
+                    gain_or_loss = _('loss')
                 else:
                     account = ''
-                    gain_or_loss = 'gain/loss'
+                    gain_or_loss = _('gain/loss')
                 wizard.informational_text = _(
                     "A depreciation entry will be posted on and including the date %s."
                     "<br/> A disposal entry will be posted on the %s account <b>%s</b>.",
@@ -249,7 +249,7 @@ class AssetModify(models.TransientModel):
             # i.e. If we pause and resume the same day, there isn't any gap whereas for depreciation
             # purpose it would count as one full day
             number_days = self.asset_id._get_delta_days(date_before_pause, self.date) - 1
-            if float_compare(number_days, 0, precision_rounding=self.currency_id.rounding) < 0:
+            if self.currency_id.compare_amounts(number_days, 0) < 0:
                 raise UserError(_("You cannot resume at a date equal to or before the pause date"))
 
             asset_vals.update({'asset_paused_days': self.asset_id.asset_paused_days + number_days})
@@ -266,10 +266,12 @@ class AssetModify(models.TransientModel):
         salvage_increase = max(0, self.salvage_value - new_salvage)
 
         if not self.env.context.get('resume_after_pause'):
+            if self.env['account.move'].search([('asset_id', '=', self.asset_id.id), ('state', '=', 'draft'), ('date', '<=', self.date)]):
+                raise UserError(_('There are unposted depreciations prior to the selected operation date, please deal with them first.'))
             self.asset_id._create_move_before_date(self.date)
 
         # Check for residual/salvage increase while rounding with the company currency precision to prevent float precision issues.
-        if self.currency_id.round(residual_increase + salvage_increase) > 0:
+        if self.currency_id.compare_amounts(residual_increase + salvage_increase, 0) > 0:
             move = self.env['account.move'].create({
                 'journal_id': self.asset_id.journal_id.id,
                 'date': fields.Date.today(),
@@ -316,9 +318,7 @@ class AssetModify(models.TransientModel):
             subject = _('A gross increase has been created: ') + asset_increase._get_html_link()
             self.asset_id.message_post(body=subject)
 
-        if increase < 0:
-            if self.env['account.move'].search([('asset_id', '=', self.asset_id.id), ('state', '=', 'draft'), ('date', '<=', self.date)]):
-                raise UserError(_('There are unposted depreciations prior to the selected operation date, please deal with them first.'))
+        if self.currency_id.compare_amounts(increase, 0) < 0:
             move = self.env['account.move'].create(self.env['account.move']._prepare_move_for_asset_depreciation({
                 'amount': -increase,
                 'asset_id': self.asset_id,
@@ -334,20 +334,30 @@ class AssetModify(models.TransientModel):
             'value_residual': new_residual,
             'salvage_value': new_salvage,
         })
+        computation_children_changed = (
+                asset_vals['method_number'] != self.asset_id.method_number
+                or asset_vals['method_period'] != self.asset_id.method_period
+                or asset_vals.get('asset_paused_days') and not float_is_zero(asset_vals['asset_paused_days'] - self.asset_id.asset_paused_days, 8)
+        )
         self.asset_id.write(asset_vals)
 
-        self.asset_id.compute_depreciation_board()
+        restart_date = self.date if self.env.context.get('resume_after_pause') else self.date + relativedelta(days=1)
+        self.asset_id.compute_depreciation_board(restart_date)
 
-        self.asset_id.children_ids.write({
-            'method_number': asset_vals['method_number'],
-            'method_period': asset_vals['method_period'],
-            'asset_paused_days': self.asset_id.asset_paused_days,
-        })
+        if computation_children_changed:
+            children = self.asset_id.children_ids
+            children.write({
+                'method_number': asset_vals['method_number'],
+                'method_period': asset_vals['method_period'],
+                'asset_paused_days': self.asset_id.asset_paused_days,
+            })
 
-        for child in self.asset_id.children_ids:
-            child.compute_depreciation_board()
-            child._check_depreciations()
-            child.depreciation_move_ids.filtered(lambda move: move.state != 'posted')._post()
+            for child in children:
+                if not self.env.context.get('resume_after_pause'):
+                    child._create_move_before_date(self.date)
+            children.compute_depreciation_board(restart_date)
+            children._check_depreciations()
+            children.depreciation_move_ids.filtered(lambda move: move.state != 'posted')._post()
         tracked_fields = self.env['account.asset'].fields_get(old_values.keys())
         changes, tracking_value_ids = self.asset_id._mail_track(tracked_fields, old_values)
         if changes:

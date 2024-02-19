@@ -7,7 +7,7 @@
                  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
                  <t t-call-assets="account_reports.assets_pdf_export" t-js="False"/>
              </head>
-             <body>
+             <body t-att-dir="env['res.lang']._lang_get(lang or env.user.lang).direction or 'ltr'">
                  <div t-att-class="'o_content ' + options['css_custom_class']">
                      <header>
                          <div class="o_title">
@@ -103,10 +103,10 @@
         <!-- Horizontal -->
         <t t-if="options.get('selected_horizontal_group_id')">
             <div class="row">
-                <t t-set="horizontal_group" t-value="options.get('available_horizontal_groups')[options.get('selected_horizontal_group_id')]['name']"/>
+                <t t-set="horizontal_group" t-value="[hg['name'] for hg in options['available_horizontal_groups'] if hg['id'] == options.get('selected_horizontal_group_id')]"/>
                 <t t-if="horizontal_group">
                     <div class="col-3">Horizontal:</div>
-                    <div class="col-9 o_text_muted" t-out="horizontal_group"/>
+                    <div class="col-9 o_text_muted" t-out="horizontal_group[0]"/>
                 </t>
             </div>
         </t>
@@ -200,7 +200,15 @@
                 <th/>
 
                 <t t-foreach="options['columns']" t-as="subheader">
-                    <th t-out="subheader.get('name')"/>
+                    <th>
+                        <t t-out="subheader.get('name')"/>
+
+                        <t t-if="subheader.get('figure_type') == 'monetary'">
+                            <t t-set="rounding_unit" t-value="options.get('rounding_unit')"/>
+
+                            <t t-out="'( ' + options['rounding_unit_names'][rounding_unit] + ' )'"/>
+                        </t>
+                    </th>
                 </t>
             </tr>
         </thead>
@@ -251,7 +259,9 @@
 
                 <t t-foreach="line.get('columns')" t-as="cell">
                     <td class="o_cell_td">
-                        <t t-call="{{custom_templates.get('pdf_export_cell', 'account_reports.pdf_export_cell')}}"/>
+                        <t t-if="not env.company.totals_below_sections or options.get('ignore_totals_below_sections') or not line.get('unfolded')">
+                            <t t-call="{{custom_templates.get('pdf_export_cell', 'account_reports.pdf_export_cell')}}"/>
+                        </t>
                     </td>
                 </t>
 

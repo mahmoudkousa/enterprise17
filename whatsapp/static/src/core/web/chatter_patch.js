@@ -6,7 +6,7 @@ import { patch } from "@web/core/utils/patch";
 
 patch(Chatter.prototype, {
     sendWhatsapp() {
-        const send = async (threadId) => {
+        const send = async (thread) => {
             await new Promise((resolve) => {
                 this.env.services.action.doAction(
                     {
@@ -17,27 +17,21 @@ patch(Chatter.prototype, {
                         views: [[false, "form"]],
                         target: "new",
                         context: {
-                            active_model: this.props.threadModel,
-                            active_id: threadId,
+                            active_model: thread.model,
+                            active_id: thread.id,
                         },
                     },
                     { onClose: resolve }
                 );
             });
             this.threadService.fetchNewMessages(
-                this.threadService.getThread(this.props.threadModel, threadId)
+                this.threadService.getThread(thread.model, thread.id)
             );
         };
-        if (this.props.threadId) {
-            send(this.props.threadId);
+        if (this.state.thread.id) {
+            send(this.state.thread);
         } else {
-            this.onNextUpdate = (nextProps) => {
-                if (nextProps.threadId) {
-                    send(nextProps.threadId);
-                } else {
-                    return true;
-                }
-            };
+            this.onThreadCreated = send;
             this.props.saveRecord?.();
         }
     },

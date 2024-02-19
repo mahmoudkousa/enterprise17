@@ -3,6 +3,7 @@
 from datetime import date
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
+from odoo.tools.float_utils import float_compare
 
 
 class TestL10NHkHrPayrollAccountCommon(AccountTestInvoicingCommon):
@@ -14,37 +15,28 @@ class TestL10NHkHrPayrollAccountCommon(AccountTestInvoicingCommon):
 
     @classmethod
     def setUpClass(cls, chart_template_ref='hk'):
-        super(TestL10NHkHrPayrollAccountCommon, cls).setUpClass(chart_template_ref=chart_template_ref)
+        super().setUpClass(chart_template_ref=chart_template_ref)
 
-        cls.hong_kong_company = cls.env.ref('l10n_hk_hr_payroll.demo_company_hk')
+        cls.company_data['company'].write({
+            'country_id': cls.env.ref('base.hk').id,
+        })
+        cls.company = cls.env.company
 
-        cls.env.user.company_ids |= cls.hong_kong_company
-        cls.env = cls.env(context=dict(cls.env.context, allowed_company_ids=cls.hong_kong_company.ids))
+        admin = cls.env['res.users'].search([('login', '=', 'admin')])
+        admin.company_ids |= cls.company
 
-        cls.holiday_allocations = cls.env['hr.leave.allocation'].create([{
-            'name': 'Paid Time Off %s' % year,
-            'holiday_status_id': cls.env.ref('l10n_hk_hr_payroll.holiday_type_hk_annual_leave').id,
-            'number_of_days': 20,
-            'holiday_type': 'company',
-            'mode_company_id': cls.hong_kong_company.id,
-            'date_from': date(year, 1, 1),
-            'date_to': date(year, 12, 31),
-        } for year in range(2021, 2024)])
+        cls.env.user.tz = 'Asia/Hong_Kong'
 
-        cls.resource_calendar = cls.env['resource.calendar'].create({
-            'name': 'Test Calendar',
-            'company_id': cls.hong_kong_company.id,
-            'hours_per_day': 8,
+        cls.resource_calendar_40_hours_per_week = cls.env['resource.calendar'].create({
+            'name': "Test Calendar : 40 Hours/Week",
+            'company_id': cls.company.id,
+            'hours_per_day': 8.0,
             'tz': "Asia/Hong_Kong",
             'two_weeks_calendar': False,
             'hours_per_week': 40,
-            'full_time_required_hours': 40
-        })
-
-        cls.resource_calendar_full = cls.resource_calendar.copy({
-            'name': 'Calendar (Full)',
             'full_time_required_hours': 40,
             'attendance_ids': [
+                (5, 0, 0),
                 (0, 0, {'name': 'Monday Morning', 'dayofweek': '0', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
                 (0, 0, {'name': 'Monday Afternoon', 'dayofweek': '0', 'hour_from': 13, 'hour_to': 17.0, 'day_period': 'afternoon'}),
                 (0, 0, {'name': 'Tuesday Morning', 'dayofweek': '1', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
@@ -62,86 +54,48 @@ class TestL10NHkHrPayrollAccountCommon(AccountTestInvoicingCommon):
             ]
         })
 
-        cls.resource_calendar_half = cls.resource_calendar.copy({
-            'name': 'Calendar (Half)',
-            'hours_per_day': 4,
-            'hours_per_week': 20,
-            'full_time_required_hours': 40,
-            'attendance_ids': [
-                (0, 0, {'name': 'Monday Morning', 'dayofweek': '0', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
-                (0, 0, {'name': 'Tuesday Morning', 'dayofweek': '1', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
-                (0, 0, {'name': 'Wednesday Morning', 'dayofweek': '2', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
-                (0, 0, {'name': 'Thursday Morning', 'dayofweek': '3', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
-                (0, 0, {'name': 'Friday Morning', 'dayofweek': '4', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
-                (0, 0, {'name': 'Saturday Morning', 'dayofweek': '5', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning', 'work_entry_type_id': cls.env.ref('l10n_hk_hr_payroll.work_entry_type_weekend').id}),
-                (0, 0, {'name': 'Sunday Morning', 'dayofweek': '6', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning', 'work_entry_type_id': cls.env.ref('l10n_hk_hr_payroll.work_entry_type_weekend').id}),
-            ]
-        })
+    @classmethod
+    def _generate_payslip(cls, date_from, date_to, struct_id=False, input_line_ids=False):
+        work_entries = cls.contract.generate_work_entries(date_from, date_to)
+        payslip = cls.env['hr.payslip'].create([{
+            'name': "Test Payslip",
+            'employee_id': cls.employee.id,
+            'contract_id': cls.contract.id,
+            'company_id': cls.env.company.id,
+            'struct_id': struct_id or cls.env.ref('l10n_hk_hr_payroll.structure_type_employee_cap57').id,
+            'date_from': date_from,
+            'date_to': date_to,
+            'input_line_ids': input_line_ids or [],
+        }])
+        work_entries.action_validate()
+        payslip.compute_sheet()
+        return payslip
 
-        cls.resource_calendar_without_weekend = cls.resource_calendar.copy({
-            'name': 'Calendar (Without Weekend)',
-            'full_time_required_hours': 40,
-            'attendance_ids': [
-                (0, 0, {'name': 'Monday Morning', 'dayofweek': '0', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
-                (0, 0, {'name': 'Monday Afternoon', 'dayofweek': '0', 'hour_from': 13, 'hour_to': 17.0, 'day_period': 'afternoon'}),
-                (0, 0, {'name': 'Tuesday Morning', 'dayofweek': '1', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
-                (0, 0, {'name': 'Tuesday Afternoon', 'dayofweek': '1', 'hour_from': 13, 'hour_to': 17.0, 'day_period': 'afternoon'}),
-                (0, 0, {'name': 'Wednesday Morning', 'dayofweek': '2', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
-                (0, 0, {'name': 'Wednesday Afternoon', 'dayofweek': '2', 'hour_from': 13, 'hour_to': 17.0, 'day_period': 'afternoon'}),
-                (0, 0, {'name': 'Thursday Morning', 'dayofweek': '3', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
-                (0, 0, {'name': 'Thursday Afternoon', 'dayofweek': '3', 'hour_from': 13, 'hour_to': 17.0, 'day_period': 'afternoon'}),
-                (0, 0, {'name': 'Friday Morning', 'dayofweek': '4', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
-                (0, 0, {'name': 'Friday Afternoon', 'dayofweek': '4', 'hour_from': 13, 'hour_to': 17.0, 'day_period': 'afternoon'}),
-            ]
-        })
+    @classmethod
+    def _generate_leave(cls, date_from, date_to, holiday_status_id):
+        return cls.env['hr.leave'].create({
+            'holiday_type': 'employee',
+            'employee_id': cls.employee.id,
+            'request_date_from': date_from,
+            'request_date_to': date_to,
+            'holiday_status_id': cls.env.ref(holiday_status_id).id,
+        }).action_validate()
 
-        cls.resource_calendar_without_weekend_half = cls.resource_calendar.copy({
-            'name': 'Calendar (Without Weekend Half)',
-            'hours_per_day': 4,
-            'hours_per_week': 20,
-            'full_time_required_hours': 40,
-            'attendance_ids': [
-                (0, 0, {'name': 'Monday Morning', 'dayofweek': '0', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
-                (0, 0, {'name': 'Tuesday Morning', 'dayofweek': '1', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
-                (0, 0, {'name': 'Wednesday Morning', 'dayofweek': '2', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
-                (0, 0, {'name': 'Thursday Morning', 'dayofweek': '3', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
-                (0, 0, {'name': 'Friday Morning', 'dayofweek': '4', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
-            ]
-        })
-
-        cls.employee_georges = cls.env['hr.employee'].create({
-            'name': 'Georges',
-            'private_country_id': cls.env.ref('base.hk').id,
-            'resource_calendar_id': cls.resource_calendar_full.id,
-            'company_id': cls.hong_kong_company.id,
-            'marital': "single",
-        })
-
-        cls.contract_georges = cls.env['hr.contract'].create({
-            'name': "Georges's contract",
-            'employee_id': cls.employee_georges.id,
-            'resource_calendar_id': cls.resource_calendar_full.id,
-            'company_id': cls.hong_kong_company.id,
-            'structure_type_id': cls.env.ref('l10n_hk_hr_payroll.structure_type_employee_cap57').id,
-            'date_start': date(2023, 1, 1),
-            'wage': 20000.0,
-            'hourly_wage': 0.0,
-            'l10n_hk_internet': 200.0,
-        })
-
-        cls.contract_georges.write({'state': 'open'})
-
-        cls.employee_john = cls.employee_georges.copy({
-            'name': 'John Doe',
-        })
-
-        cls.contract_john = cls.contract_georges.copy({
-            'name': "John's contract",
-            'employee_id': cls.employee_john.id,
-            'wage': 10000.0,
-            'hourly_wage': 0.0,
-            'l10n_hk_internet': 200.0,
-            'resource_calendar_id': cls.resource_calendar_without_weekend_half.id
-        })
-
-        cls.contract_john.write({'state': 'open'})
+    def _validate_payslip(self, payslip, results):
+        error = []
+        line_values = payslip._get_line_values(set(results.keys()) | set(payslip.line_ids.mapped('code')))
+        for code, value in results.items():
+            payslip_line_value = line_values[code][payslip.id]['total']
+            if float_compare(payslip_line_value, value, 2):
+                error.append("Code: %s - Expected: %s - Reality: %s" % (code, value, payslip_line_value))
+        for line in payslip.line_ids:
+            if line.code not in results:
+                error.append("Missing Line: '%s' - %s," % (line.code, line_values[line.code][payslip.id]['total']))
+        if error:
+            error.append("Payslip Period: %s - %s" % (payslip.date_from, payslip.date_to))
+            error.append("Payslip Actual Values: ")
+            error.append("        {")
+            for line in payslip.line_ids:
+                error.append("            '%s': %s," % (line.code, line_values[line.code][payslip.id]['total']))
+            error.append("        }")
+        self.assertEqual(len(error), 0, '\n' + '\n'.join(error))

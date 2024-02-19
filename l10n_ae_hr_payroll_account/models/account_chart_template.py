@@ -19,7 +19,7 @@ class AccountChartTemplate(models.AbstractModel):
             '400008',  # End of Service Indemnity
             '400012',  # Staff Other Allowances
         ]
-        default_account = '201002'
+        default_account = '400003'
         rules_mapping = defaultdict(dict)
 
         # ================================================ #

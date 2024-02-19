@@ -44,8 +44,10 @@ class ViewSelector extends SelectMenu {
         if (!resource.called_xml_ids) {
             return [];
         }
-        const composedChoices = this.state.displayedOptions.filter((opt) =>
-            resource.called_xml_ids.includes(opt.resource.xml_id)
+        const composedChoices = this.state.displayedOptions.filter(
+            (opt) =>
+                resource.called_xml_ids.includes(opt.resource.xml_id) ||
+                resource.called_xml_ids.includes(opt.resource.key)
         );
         if (composedChoices.length) {
             composedChoices.forEach((opt) => (opt.resource.relatedChoice = resource.id));
@@ -81,6 +83,7 @@ export class XmlResourceEditor extends Component {
         onSave: { type: Function, optional: true },
         mainResourceId: { type: true },
         defaultResourceId: { type: true, optional: true },
+        getDefaultResource: { optional: true, type: Function },
         canSave: { type: Boolean, optional: true },
         minWidth: { type: Number, optional: true },
         reloadSources: { type: Number, optional: true },
@@ -93,6 +96,7 @@ export class XmlResourceEditor extends Component {
         reloadSources: 1,
         displayAlerts: true,
         onResourceChange: () => {},
+        getDefaultResource: () => {},
     };
 
     setup() {
@@ -218,8 +222,11 @@ export class XmlResourceEditor extends Component {
 
         this.state.resourcesOptions = resourcesOptions;
         if (resourcesOptions.length >= 1) {
-            let defaultResource;
-            if (this.props.defaultResourceId || resources.main_view_key) {
+            let defaultResource = this.props.getDefaultResource(
+                resourcesOptions,
+                resources.main_view_key
+            );
+            if (!defaultResource && (this.props.defaultResourceId || resources.main_view_key)) {
                 const defaultId = this.props.defaultResourceId || resources.main_view_key;
                 defaultResource = resourcesOptions.find(
                     (opt) =>

@@ -6,6 +6,7 @@ from datetime import timedelta
 from markupsafe import Markup
 
 from odoo import api, Command, fields, models, tools, _
+from odoo.addons.whatsapp.tools import phone_validation as wa_phone_validation
 from odoo.exceptions import ValidationError
 from odoo.tools.misc import DEFAULT_SERVER_DATETIME_FORMAT
 
@@ -142,14 +143,27 @@ class DiscussChannel(models.Model):
     @api.returns('self')
     def _get_whatsapp_channel(self, whatsapp_number, wa_account_id, sender_name=False, create_if_not_found=False, related_message=False):
         """ Creates a whatsapp channel.
-            :param str whatsapp_number: whatsapp phone number. The whatsapp phone number of the partner
-            :returns: channel
+
+        :param str whatsapp_number: whatsapp phone number of the customer. It should
+          be formatted according to whatsapp standards, aka {country_code}{national_number}.
+
+        :returns: whatsapp discussion discuss.channel
         """
+        # be somewhat defensive with number, as it is used in various flows afterwards
+        # notably in 'message_post' for the number, and called by '_process_messages'
+        base_number = whatsapp_number if whatsapp_number.startswith('+') else f'+{whatsapp_number}'
+        wa_number = base_number.lstrip('+')
+        wa_formatted = wa_phone_validation.wa_phone_format(
+            self.env.company,
+            number=base_number,
+            force_format="WHATSAPP",
+            raise_exception=False,
+        ) or wa_number
+
         related_record = False
         responsible_partners = self.env['res.partner']
-        IrModel = self.env['ir.model']
         channel_domain = [
-            ('whatsapp_number', '=', whatsapp_number),
+            ('whatsapp_number', '=', wa_formatted),
             ('wa_account_id', '=', wa_account_id.id)
         ]
         if related_message:
@@ -178,20 +192,20 @@ class DiscussChannel(models.Model):
         partners_to_notify = responsible_partners
         record_name = related_message.record_name
         if not record_name and related_message.res_id:
-            record_name = self.env[related_message.model].browse(related_message.res_id).name
+            record_name = self.env[related_message.model].browse(related_message.res_id).display_name
         if not channel and create_if_not_found:
             channel = self.sudo().with_context(tools.clean_context(self.env.context)).create({
-                'name': f"{whatsapp_number} ({record_name})" if record_name else whatsapp_number,
+                'name': f"{wa_formatted} ({record_name})" if record_name else wa_formatted,
                 'channel_type': 'whatsapp',
-                'whatsapp_number': whatsapp_number,
-                'whatsapp_partner_id': self.env['res.partner']._find_or_create_from_number(whatsapp_number, sender_name).id,
+                'whatsapp_number': wa_formatted,
+                'whatsapp_partner_id': self.env['res.partner']._find_or_create_from_number(wa_formatted, sender_name).id,
                 'wa_account_id': wa_account_id.id,
                 'whatsapp_mail_message_id': related_message.id if related_message else None,
             })
             partners_to_notify += channel.whatsapp_partner_id
             if related_message:
                 # Add message in channel about the related document
-                info = _("Related %(model_name)s:", model_name=IrModel._get(related_message.model).display_name)
+                info = _("Related %(model_name)s: ", model_name=self.env['ir.model']._get(related_message.model).display_name)
                 url = Markup('{base_url}/web#model={model}&id={res_id}').format(
                     base_url=self.get_base_url(), model=related_message.model, res_id=related_message.res_id)
                 related_record_name = related_message.record_name

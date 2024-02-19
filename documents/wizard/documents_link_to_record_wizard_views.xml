@@ -9,7 +9,8 @@
                     <field name="is_readonly_model" invisible="1"/>
                     <field name="document_ids" widget="many2many_tags"/>
                     <field name="model_id" readonly="is_readonly_model" options="{'no_open': True, 'no_create': True}"/>
-                    <field name="resource_ref" options="{'model_field': 'model_id', 'no_create': True}" invisible="not model_id"/>
+                    <field name="resource_ref" options="{'model_field': 'model_id', 'no_create': True}" invisible="not model_id" groups="base.user_admin"/>
+                    <field name="resource_ref" options="{'hide_model': True, 'no_create': True}" invisible="not model_id" groups="!base.user_admin"/>
                 </group>
                 <footer>
                     <button name="link_to" type="object" data-hotkey="q"

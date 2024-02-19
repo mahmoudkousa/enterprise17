@@ -29,7 +29,7 @@ class ArgentinianReportCustomHandler(models.AbstractModel):
         total_values_dict = {}
 
         # Every key/expression_label that is a number (and should be rendered like one)
-        number_keys = ['taxed', 'not_taxed', 'vat_25', 'vat_5', 'vat_10', 'vat_21', 'vat_27', 'vat_per', 'other_taxes', 'total']
+        number_keys = ['taxed', 'not_taxed', 'vat_25', 'vat_5', 'vat_10', 'vat_21', 'vat_27', 'vat_per', 'perc_iibb', 'perc_earnings', 'city_tax', 'other_taxes', 'total']
 
         # Build full query
         query_list = []

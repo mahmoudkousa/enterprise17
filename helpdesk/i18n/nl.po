@@ -3,16 +3,17 @@
 # 	* helpdesk
 # 
 # Translators:
-# Wil Odoo, 2023
-# Jolien De Paepe, 2023
+# Erwin van der Ploeg <erwin@odooexperts.nl>, 2023
+# Jolien De Paepe, 2024
+# Wil Odoo, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-26 16:09+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Jolien De Paepe, 2023\n"
+"Last-Translator: Wil Odoo, 2024\n"
 "Language-Team: Dutch (https://app.transifex.com/odoo/teams/41243/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -43,7 +44,7 @@ msgstr "# SLA afspraken"
 #. module: helpdesk
 #: model:ir.model.fields,field_description:helpdesk.field_helpdesk_team__urgent_ticket
 msgid "# Urgent Ticket"
-msgstr "# Dringend ticket"
+msgstr "# Urgente ticket"
 
 #. module: helpdesk
 #. odoo-python
@@ -57,7 +58,7 @@ msgstr "%s (kopie)"
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_sla_view_form
 msgid "(any of these tags)"
-msgstr "(eender welke van deze labels)"
+msgstr "(een van deze labels)"
 
 #. module: helpdesk
 #: model:helpdesk.sla,name:helpdesk.helpdesk_sla_1
@@ -92,13 +93,14 @@ msgstr ""
 #: code:addons/helpdesk/static/src/js/tours/helpdesk.js:0
 #, python-format
 msgid ""
-"<b>Log notes</b> for internal communications (you will only notify the persons you specifically tag). \n"
-"    Use <b>@ mentions</b> to ping a colleague \n"
-"    or <b># mentions</b> to contact a group of people."
+"<b>Log notes</b> for internal communications (you will only notify the "
+"persons you specifically tag). Use <b>@ mentions</b> to ping a colleague or "
+"<b># mentions</b> to contact a group of people."
 msgstr ""
-"<b>Aantekeningen maken</b> voor interne communicatie (je stelt alleen de personen op de hoogte die je specifiek tagt).\n"
-"    Gebruik <b>@ vermeldingen</b> om een collega te pingen\n"
-"    of <b># vermeldingen</b> om contact op te nemen met een groep mensen."
+"<b>Maak aantekeningen</b> voor interne communicatie (je stelt alleen de "
+"personen op de hoogte die je specifiek tagt). Gebruik <b>@ vermeldingen</b> "
+"om een collega te pingen of <b># vermeldingen</b> om contact op te nemen met"
+" een groep mensen."
 
 #. module: helpdesk
 #. odoo-javascript
@@ -267,7 +269,7 @@ msgid ""
 "        <a t-attf-href=\"/my/ticket/{{ object.id }}/{{ object.access_token }}\" t-out=\"object.name or ''\">Table legs are unbalanced</a>\n"
 "    </t>\n"
 "    has been received and is being reviewed by our <t t-out=\"object.team_id.name or ''\">VIP Support</t> team.<br><br>\n"
-"    The reference for your ticket is <strong><t t-out=\"object.id or ''\">15</t></strong>.<br><br>\n"
+"    The reference for your ticket is <strong><t t-out=\"object.ticket_ref or ''\">15</t></strong>.<br><br>\n"
 "\n"
 "    To provide any additional information, simply reply to this email.<br><br>\n"
 "    <t t-if=\"object.team_id.show_knowledge_base\">\n"
@@ -297,32 +299,32 @@ msgstr ""
 "    Beste <t t-out=\"object.sudo().partner_id.name or object.sudo().partner_name or 'Madam/Sir'\">heer/mevrouw</t>,<br><br>\n"
 "    Je verzoek\n"
 "    <t t-if=\"object.get_portal_url()\">\n"
-"        <a t-attf-href=\"/my/ticket/{{ object.id }}/{{ object.access_token }}\" t-out=\"object.name or ''\">Tafelpotel zijn uit balans</a>\n"
+"        <a t-attf-href=\"/my/ticket/{{ object.id }}/{{ object.access_token }}\" t-out=\"object.name or ''\">Tafelpoten zijn uit balans</a>\n"
 "    </t>\n"
 "    werd goed ontvangen en wordt beoordeeld door ons <t t-out=\"object.team_id.name or ''\">VIP Support</t> team.<br><br>\n"
-"    De referentie van je ticket is <strong><t t-out=\"object.id or ''\">15</t></strong>.<br><br>\n"
+"    De referentie van je ticket is <strong><t t-out=\"object.ticket_ref or ''\">15</t></strong>.<br><br>\n"
 "\n"
-"    Indien je meer informatie wenst kan je gewoonweg op deze e-mail antwoorden.<br><br>\n"
+"    Om extra informatie te geven, kan je gewoonweg op deze e-mail antwoorden.<br><br>\n"
 "    <t t-if=\"object.team_id.show_knowledge_base\">\n"
-"        Je kan ook ons <a t-attf-href=\"{{ object.team_id.get_knowledge_base_url() }}\">Helpcentrum</a> bezoeken. Je vindt er misschien het antwoord op je vraag.\n"
+"        Aarzel niet om ons <a t-attf-href=\"{{ object.team_id.get_knowledge_base_url() }}\">Helpcentrum</a> te bezoeken. Je vindt er misschien het antwoord op je vraag.\n"
 "        <br><br>\n"
 "    </t>\n"
 "    <t t-if=\"object.team_id.allow_portal_ticket_closing\">\n"
-"        Aarzel niet om je ticket te sluiten als onze hulp niet langer nodig is. Hartelijk dank voor je medewerking.<br><br>\n"
+"        Aarzel niet om je ticket te sluiten als je onze hulp niet langer nodig hebt. Bedankt voor je medewerking.<br><br>\n"
 "    </t>\n"
 "\n"
 "    <div style=\"text-align: center; padding: 16px 0px 16px 0px;\">\n"
-"        <a style=\"background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;\" t-att-href=\"object.get_portal_url()\" target=\"_blank\">Ticket bekijken</a>\n"
+"        <a style=\"background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;\" t-att-href=\"object.get_portal_url()\" target=\"_blank\">Bekijk ticket</a>\n"
 "        <t t-if=\"object.team_id.allow_portal_ticket_closing\">\n"
-"            <a style=\"background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;\" t-att-href=\"'/my/ticket/close/%s/%s' % (object.id, object.access_token)\" target=\"_blank\">Ticket sluiten</a>\n"
+"            <a style=\"background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;\" t-att-href=\"'/my/ticket/close/%s/%s' % (object.id, object.access_token)\" target=\"_blank\">Sluit ticket</a>\n"
 "        </t>\n"
 "        <t t-if=\"object.team_id.use_website_helpdesk_forum or object.team_id.use_website_helpdesk_knowledge or object.team_id.use_website_helpdesk_slides\">\n"
-"            <a style=\"background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;\" t-att-href=\"object.team_id.feature_form_url\" target=\"_blank\">Helpcentrum bezoeken</a>\n"
+"            <a style=\"background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;\" t-att-href=\"object.team_id.feature_form_url\" target=\"_blank\">Bezoek het Helpcentrum</a>\n"
 "        </t><br><br>\n"
 "    </div>\n"
 "\n"
 "    Vriendelijke groet,<br><br>\n"
-"    Het <t t-out=\"object.team_id.name or 'Helpdesk'\">Helpdesk</t> Team\n"
+"    <t t-out=\"object.team_id.name or 'Helpdesk'\">Helpdesk</t> Team\n"
 "</div>\n"
 "        "
 
@@ -486,7 +488,7 @@ msgstr "<span class=\"text-muted\">Niet toegewezen</span>"
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_team_view_kanban
 msgid "<span class=\"text-muted\">Urgent</span>"
-msgstr "<span class=\"text-muted\">Dringend</span>"
+msgstr "<span class=\"text-muted\">Urgent</span>"
 
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_team_view_form
@@ -631,7 +633,7 @@ msgstr "Activiteitensoort icoon"
 #: model:ir.actions.act_window,name:helpdesk.mail_activity_type_action_config_helpdesk
 #: model:ir.ui.menu,name:helpdesk.helpdesk_menu_config_activity_type
 msgid "Activity Types"
-msgstr "Activiteitssoorten"
+msgstr "Activiteitensoorten"
 
 #. module: helpdesk
 #. odoo-javascript
@@ -2333,12 +2335,14 @@ msgstr "Mijn deadline"
 #. module: helpdesk
 #. odoo-javascript
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
+#: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #, python-format
 msgid "My Performance"
 msgstr "Mijn prestaties"
 
 #. module: helpdesk
 #. odoo-javascript
+#: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
@@ -2427,7 +2431,7 @@ msgstr "Geen SLA-afspraak gevonden. Maak er één aan!"
 #. module: helpdesk
 #: model_terms:ir.actions.act_window,help:helpdesk.mail_activity_type_action_config_helpdesk
 msgid "No activity types found. Let's create one!"
-msgstr "Geen activiteitstypes gevonden. Laten we er een maken!"
+msgstr "Geen activiteitensoorten gevonden. Laten we er een maken!"
 
 #. module: helpdesk
 #: model_terms:ir.actions.act_window,help:helpdesk.helpdesk_sla_report_analysis_action
@@ -2890,7 +2894,7 @@ msgstr "Bereikte datum"
 #: model:helpdesk.stage,legend_done:helpdesk.stage_solved
 #, python-format
 msgid "Ready"
-msgstr "Beschikbaar"
+msgstr "Klaar om te starten"
 
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_team_view_form
@@ -2923,7 +2927,7 @@ msgstr "Rood kanban label"
 #: code:addons/helpdesk/controllers/portal.py:0
 #, python-format
 msgid "Reference"
-msgstr "Verwijzing"
+msgstr "Referentie"
 
 #. module: helpdesk
 #: model:mail.message.subtype,name:helpdesk.mt_ticket_refund_status
@@ -3734,8 +3738,8 @@ msgid "Ticket created"
 msgstr "Ticket aangemaakt"
 
 #. module: helpdesk
-#. odoo-python
 #. odoo-javascript
+#. odoo-python
 #: code:addons/helpdesk/models/helpdesk_team.py:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
 #: code:addons/helpdesk/static/src/components/helpdesk_team_dashboard/helpdesk_team_dashboard.xml:0
@@ -3796,7 +3800,7 @@ msgstr "Tickets in een gevouwen fase worden als gesloten beschouwd."
 #. module: helpdesk
 #: model:ir.model.fields,field_description:helpdesk.field_helpdesk_team__use_helpdesk_sale_timesheet
 msgid "Time Billing"
-msgstr "Urenfacturatie"
+msgstr "Tijdfacturatie"
 
 #. module: helpdesk
 #: model:ir.model.fields,field_description:helpdesk.field_helpdesk_ticket__close_hours
@@ -3956,7 +3960,7 @@ msgstr "Ongelezen berichten"
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_tickets_view_search_base
 #, python-format
 msgid "Urgent"
-msgstr "Dringend"
+msgstr "Urgent"
 
 #. module: helpdesk
 #. odoo-javascript
@@ -4000,11 +4004,13 @@ msgstr "Gebruik retouren"
 #: code:addons/helpdesk/static/src/js/tours/helpdesk.js:0
 #, python-format
 msgid ""
-"Use the chatter to <b>send emails</b> and communicate efficiently with your customers. \n"
-"    Add new people to the followers' list to make them aware of the progress of this ticket."
+"Use the chatter to <b>send emails</b> and communicate efficiently with your "
+"customers. Add new people to the followers' list to make them aware of the "
+"progress of this ticket."
 msgstr ""
-"Gebruik de chatter om <b>e-mails te verzenden</b> en efficiënt met je klanten te communiceren.\n"
-"    Voeg nieuwe mensen toe aan de volgerslijst om ze op de hoogte te houden van de voortgang van dit ticket."
+"Gebruik de chatter om <b>e-mails te verzenden</b> en efficiënt met je "
+"klanten te communiceren. Voeg nieuwe mensen toe aan de volgerslijst om ze op"
+" de hoogte te houden van de voortgang van dit ticket."
 
 #. module: helpdesk
 #: model:ir.model,name:helpdesk.model_res_users
@@ -4160,7 +4166,7 @@ msgstr "Je hebt al je tickets op tijd voltooid."
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_sla_view_form
 msgid "e.g. Close urgent tickets within 36 hours"
-msgstr "Bijv. Sluit dringende ticket binnen 36 uur"
+msgstr "Bijv. Sluit urgente tickets binnen 36 uur"
 
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_team_view_form

@@ -37,6 +37,11 @@
             <field name="rule_parameter_id" ref="rule_parameter_prp_yearly_gross_revenue_bound_expense"/>
             <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
         </record>
+        <record id="rule_parameter_value_prp_yearly_gross_revenue_bound_expense_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">19166.67</field>
+            <field name="rule_parameter_id" ref="rule_parameter_prp_yearly_gross_revenue_bound_expense"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+        </record>
 
         <record id="rule_parameter_prp_expense_deduction" model="hr.rule.parameter">
             <field name="name">Withholding Taxes Income Upper bound for Business Expenses</field>
@@ -72,6 +77,11 @@
             <field name="parameter_value">5510.0</field>
             <field name="rule_parameter_id" ref="rule_parameter_prp_expense_deduction"/>
             <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+        </record>
+        <record id="rule_parameter_value_prp_expense_deduction_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">5750.0</field>
+            <field name="rule_parameter_id" ref="rule_parameter_prp_expense_deduction"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
         </record>
 
         <!-- BAREME DE BASE -->
@@ -110,6 +120,11 @@
             <field name="rule_parameter_id" ref="rule_parameter_prp_basic_bareme"/>
             <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
         </record>
+        <record id="rule_parameter_value_prp_basic_bareme_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">[(15830.0, 0.2675), (27940.0, 0.428), (48350.0, 0.4815), (None, 0.535)]</field>
+            <field name="rule_parameter_id" ref="rule_parameter_prp_basic_bareme"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+        </record>
 
         <!-- IMPOT DE BASE : Isolé / Conjoint avec revenus -->
         <record id="rule_parameter_prp_deduct_single_with_income" model="hr.rule.parameter">
@@ -147,6 +162,11 @@
             <field name="rule_parameter_id" ref="rule_parameter_prp_deduct_single_with_income"/>
             <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
         </record>
+        <record id="rule_parameter_value_prp_deduct_single_with_income_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">2830.15</field>
+            <field name="rule_parameter_id" ref="rule_parameter_prp_deduct_single_with_income"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+        </record>
 
         <!-- CONJOIT SANS REVENU : maximum alloué au conjoint -->
         <record id="rule_parameter_prp_max_spouse_income" model="hr.rule.parameter">
@@ -183,6 +203,11 @@
             <field name="parameter_value">12520.0</field>
             <field name="rule_parameter_id" ref="rule_parameter_prp_max_spouse_income"/>
             <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+        </record>
+        <record id="rule_parameter_value_prp_max_spouse_income_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">13060.0</field>
+            <field name="rule_parameter_id" ref="rule_parameter_prp_max_spouse_income"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
         </record>
 
         <!-- CHILD ALLOWANCES (UPDATE EVERY YEAR) -->
@@ -239,6 +264,14 @@
             <field name="rule_parameter_id" ref="rule_parameter_prp_dependent_children_deduction"/>
             <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
         </record>
+        <record id="rule_parameter_value_prp_dependent_children_deduction_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">{
+                1: 49.0, 2: 131.0, 3: 347.0, 4: 601.0,
+                5: 876.0, 6: 1151.0, 7: 1429.0, 8: 1734.0,
+            }</field>
+            <field name="rule_parameter_id" ref="rule_parameter_prp_dependent_children_deduction"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+        </record>
 
         <record id="rule_parameter_prp_more_children_deduction" model="hr.rule.parameter">
             <field name="name">Dependent children deduction</field>
@@ -274,6 +307,11 @@
             <field name="parameter_value">293</field>
             <field name="rule_parameter_id" ref="rule_parameter_prp_more_children_deduction"/>
             <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+        </record>
+        <record id="rule_parameter_value_prp_more_children_deduction_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">305</field>
+            <field name="rule_parameter_id" ref="rule_parameter_prp_more_children_deduction"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
         </record>
 
         <!-- OTHER FAMILITY CHARGES -->
@@ -326,6 +364,11 @@
             <field name="rule_parameter_id" ref="rule_parameter_prp_disabled_dependent_deduction"/>
             <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
         </record>
+        <record id="rule_parameter_value_prp_disabled_dependent_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">49</field>
+            <field name="rule_parameter_id" ref="rule_parameter_prp_disabled_dependent_deduction"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+        </record>
 
         <record id="rule_parameter_prp_dependent_senior_deduction" model="hr.rule.parameter">
             <field name="name">Dependent senior deduction</field>
@@ -357,6 +400,11 @@
             <field name="rule_parameter_id" ref="rule_parameter_prp_dependent_senior_deduction"/>
             <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
         </record>
+        <record id="rule_parameter_value_prp_dependent_senior_deduction_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">101</field>
+            <field name="rule_parameter_id" ref="rule_parameter_prp_dependent_senior_deduction"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+        </record>
 
         <record id="rule_parameter_prp_spouse_low_income_threshold" model="hr.rule.parameter">
             <field name="name">Spouse with low income threshold</field>
@@ -377,6 +425,11 @@
             <field name="parameter_value">263</field>
             <field name="rule_parameter_id" ref="rule_parameter_prp_spouse_low_income_threshold"/>
             <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+        </record>
+        <record id="rule_parameter_prp_spouse_low_income_threshold_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">275</field>
+            <field name="rule_parameter_id" ref="rule_parameter_prp_spouse_low_income_threshold"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
         </record>
 
         <record id="rule_parameter_prp_spouse_low_income_deduction" model="hr.rule.parameter">
@@ -414,6 +467,11 @@
             <field name="rule_parameter_id" ref="rule_parameter_prp_spouse_low_income_deduction"/>
             <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
         </record>
+        <record id="rule_parameter_value_prp_spouse_low_income_deduction_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">137.5</field>
+            <field name="rule_parameter_id" ref="rule_parameter_prp_spouse_low_income_deduction"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+        </record>
 
         <record id="rule_parameter_prp_spouse_other_income_threshold" model="hr.rule.parameter">
             <field name="name">Spouse with other income threshold</field>
@@ -434,6 +492,11 @@
             <field name="parameter_value">525</field>
             <field name="rule_parameter_id" ref="rule_parameter_prp_spouse_other_income_threshold"/>
             <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+        </record>
+        <record id="rule_parameter_prp_spouse_other_income_threshold_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">548</field>
+            <field name="rule_parameter_id" ref="rule_parameter_prp_spouse_other_income_threshold"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
         </record>
 
         <record id="rule_parameter_prp_spouse_other_income_deduction" model="hr.rule.parameter">
@@ -471,6 +534,11 @@
             <field name="rule_parameter_id" ref="rule_parameter_prp_spouse_other_income_deduction"/>
             <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
         </record>
+        <record id="rule_parameter_value_prp_spouse_other_income_deduction_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">274</field>
+            <field name="rule_parameter_id" ref="rule_parameter_prp_spouse_other_income_deduction"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+        </record>
 
         <record id="rule_parameter_prp_spouse_low_income_limit" model="hr.rule.parameter">
             <field name="name">Spouse with low income limit</field>
@@ -507,6 +575,11 @@
             <field name="rule_parameter_id" ref="rule_parameter_prp_spouse_low_income_limit"/>
             <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
         </record>
+        <record id="rule_parameter_value_prp_spouse_low_income_limit_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">275</field>
+            <field name="rule_parameter_id" ref="rule_parameter_prp_spouse_low_income_limit"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+        </record>
 
         <record id="rule_parameter_prp_spouse_other_income_limit" model="hr.rule.parameter">
             <field name="name">Spouse with other income limit</field>
@@ -542,6 +615,11 @@
             <field name="parameter_value">525</field>
             <field name="rule_parameter_id" ref="rule_parameter_prp_spouse_other_income_limit"/>
             <field name="date_from" eval="datetime(2023, 1, 1).date()"/>
+        </record>
+        <record id="rule_parameter_value_prp_spouse_other_income_limit_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">548</field>
+            <field name="rule_parameter_id" ref="rule_parameter_prp_spouse_other_income_limit"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
         </record>
 
         <!-- ***** Employment Bonus ***** -->
@@ -899,6 +977,24 @@
             <field name="rule_parameter_id" ref="rule_parameter_holiday_pay_rates"/>
             <field name="date_from" eval="datetime(2022, 1, 1).date()"/>
         </record>
+        <record id="rule_parameter_holiday_pay_rates_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">
+[
+    (    0.00,      10115.00,  0.00),
+    (10115.01,      12930.00, 19.17),
+    (12930.01,      16460.00, 21.20),
+    (16460.01,      19740.00, 26.25),
+    (19740.01,      22330.00, 31.30),
+    (22330.01,      24940.00, 34.33),
+    (24940.01,      30150.00, 36.34),
+    (30150.01,      32800.00, 39.37),
+    (32800.01,      43440.00, 42.39),
+    (43440.01,      56730.00, 47.44),
+    (56730.00,  999999999.00, 53.50)
+]</field>
+            <field name="rule_parameter_id" ref="rule_parameter_holiday_pay_rates"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+        </record>
 
         <record id="rule_parameter_exceptional_allowances_rates" model="hr.rule.parameter">
             <field name="name">Exceptional Allowances: Withholding Taxes Rates</field>
@@ -940,6 +1036,24 @@
 ]</field>
             <field name="rule_parameter_id" ref="rule_parameter_exceptional_allowances_rates"/>
             <field name="date_from" eval="datetime(2022, 1, 1).date()"/>
+        </record>
+        <record id="rule_parameter_exceptional_allowances_rates_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">
+[
+    (    0.00,      10115.00,  0.00),
+    (10115.01,      12930.00, 23.22),
+    (12930.01,      16460.00, 25.23),
+    (16460.01,      19740.00, 30.28),
+    (19740.01,      22330.00, 35.33),
+    (22330.01,      24940.00, 38.36),
+    (24940.01,      30150.00, 40.38),
+    (30150.01,      32800.00, 43.41),
+    (32800.01,      43440.00, 46.44),
+    (43440.01,      56730.00, 51.48),
+    (56730.00,  999999999.00, 53.50)
+]</field>
+            <field name="rule_parameter_id" ref="rule_parameter_exceptional_allowances_rates"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
         </record>
 
         <!-- Holiday Pay - PP Exoneration -->
@@ -984,6 +1098,24 @@
             <field name="rule_parameter_id" ref="rule_parameter_holiday_pay_exoneration"/>
             <field name="date_from" eval="datetime(2022, 1, 1).date()"/>
         </record>
+        <record id="rule_parameter_holiday_pay_exoneration_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">{
+    1: 17858.00,
+    2: 21280.00,
+    3: 27430.00,
+    4: 34280.00,
+    5: 41130.00,
+    6: 47980.00,
+    7: 54830.00,
+    8: 61680.00,
+    9: 68530.00,
+    10: 75380.00,
+    11: 82230.00,
+    12: 89080.00,
+}</field>
+            <field name="rule_parameter_id" ref="rule_parameter_holiday_pay_exoneration"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
+        </record>
 
         <!-- Holiday Pay - PP rate reduction -->
         <record id="rule_parameter_holiday_pay_rate_reduction" model="hr.rule.parameter">
@@ -1012,6 +1144,17 @@
 }</field>
             <field name="rule_parameter_id" ref="rule_parameter_holiday_pay_rate_reduction"/>
             <field name="date_from" eval="datetime(2022, 1, 1).date()"/>
+        </record>
+        <record id="rule_parameter_holiday_pay_rate_reduction_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">{
+    1: (7.5, 27410.00),
+    2: (20.0, 27410.00),
+    3: (35.0, 30150.00),
+    4: (55.0, 35635.00),
+    5: (75.0, 38375.00),
+}</field>
+            <field name="rule_parameter_id" ref="rule_parameter_holiday_pay_rate_reduction"/>
+            <field name="date_from" eval="datetime(2024, 1, 1).date()"/>
         </record>
 
         <!-- ONSS Restructuring -->
@@ -1230,6 +1373,11 @@
             <field name="parameter_value">38.10</field>
             <field name="rule_parameter_id" ref="rule_parameter_cp200_global_rate"/>
             <field name="date_from" eval="datetime(2022, 1, 1).date()"/>
+        </record>
+        <record id="rule_parameter_cp200_global_rate_2024" model="hr.rule.parameter.value">
+            <field name="parameter_value">38.09</field>
+            <field name="rule_parameter_id" ref="rule_parameter_cp200_global_rate"/>
+            <field name="date_from" eval="datetime(2023, 10, 1).date()"/>
         </record>
 
         <record id="rule_parameter_cp200_special_ffe_rate" model="hr.rule.parameter">

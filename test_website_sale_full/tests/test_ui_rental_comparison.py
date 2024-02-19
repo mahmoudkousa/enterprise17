@@ -1,13 +1,21 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo.tests import HttpCase, tagged
+import logging
+
+from odoo.tests import HttpCase, tagged, loaded_demo_data
 from odoo.addons.website_sale_renting.tests.common import TestWebsiteSaleRentingCommon
+
+_logger = logging.getLogger(__name__)
+
 
 @tagged('-at_install', 'post_install')
 class TestUi(HttpCase, TestWebsiteSaleRentingCommon):
 
     def test_website_sale_renting_comparison_ui(self):
+        if not loaded_demo_data(self.env):
+            _logger.warning("This test relies on demo data. To be rewritten independently of demo data for accurate and reliable results.")
+            return
         self.attribute_processor = self.env['product.attribute'].create({
             'name': 'Processor',
             'sequence': 1,

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import ast
 import base64
 import logging
 import requests
@@ -96,6 +97,7 @@ class SocialStreamPostTwitter(models.Model):
     # ========================================================
 
     def _twitter_comment_add(self, stream, comment_id, message, attachment):
+        """Create a reply to a tweet."""
         self.ensure_one()
         tweet_id = comment_id or self.twitter_tweet_id
         tweet = self._twitter_post_tweet(stream, message, attachment, reply={'in_reply_to_tweet_id': tweet_id})
@@ -167,7 +169,9 @@ class SocialStreamPostTwitter(models.Model):
                     ],
                 })
                 for tweet in result.json().get('data', [])
-            ]
+            ],
+            'is_reply_limited': ast.literal_eval(self.env['ir.config_parameter'].sudo().get_param(
+                'social_twitter.enable_reply_limit', 'False'))
         }
 
     def _twitter_tweet_delete(self, tweet_id):

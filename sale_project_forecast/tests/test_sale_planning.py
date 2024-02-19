@@ -4,14 +4,18 @@ from freezegun import freeze_time
 
 from odoo.tests import Form, tagged
 
-from odoo.addons.sale_planning.tests.test_sale_planning import TestSalePlanning
+from odoo.addons.sale_planning.tests.test_sale_planning import TestCommonSalePlanning
 
 @tagged('post_install', '-at_install')
-class TestSaleForecast(TestSalePlanning):
+class TestSaleForecast(TestCommonSalePlanning):
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.planning_partner = cls.env['res.partner'].create({
+            'name': 'Customer Credee'
+        })
+
         cls.plannable_forecast_product = cls.env['product.product'].create({
             'name': 'Junior Developer Service',
             'type': 'service',

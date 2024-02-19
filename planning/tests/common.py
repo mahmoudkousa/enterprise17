@@ -42,6 +42,7 @@ class TestCommonPlanning(TransactionCase):
 
     @classmethod
     def setUpEmployees(cls):
+        cls.env.user.tz = "Europe/Brussels"
         cls.employee_joseph = cls.env['hr.employee'].create({
             'name': 'joseph',
             'work_email': 'joseph@a.be',

@@ -35,7 +35,20 @@ async function ganttResourceWorkIntervalRPC(_, args) {
                     ["2022-10-14 06:00:00", "2022-10-14 10:00:00"], //Friday    8h
                     ["2022-10-14 11:00:00", "2022-10-14 15:00:00"],
                 ],
+                false: [
+                    ["2022-10-10 06:00:00", "2022-10-10 10:00:00"],
+                    ["2022-10-10 11:00:00", "2022-10-10 15:00:00"],
+                    ["2022-10-11 06:00:00", "2022-10-11 10:00:00"],
+                    ["2022-10-11 11:00:00", "2022-10-11 15:00:00"],
+                    ["2022-10-12 06:00:00", "2022-10-12 10:00:00"],
+                    ["2022-10-12 11:00:00", "2022-10-12 15:00:00"],
+                    ["2022-10-13 06:00:00", "2022-10-13 10:00:00"],
+                    ["2022-10-13 11:00:00", "2022-10-13 15:00:00"],
+                    ["2022-10-14 06:00:00", "2022-10-14 10:00:00"],
+                    ["2022-10-14 11:00:00", "2022-10-14 15:00:00"],
+                ],
             },
+            {false: true},
         ];
     }
 }
@@ -417,7 +430,39 @@ QUnit.module("Views", (hooks) => {
         assert.containsOnce(target, SELECTORS.progressBarForeground);
         assert.deepEqual(
             target.querySelector(SELECTORS.progressBarForeground).textContent,
-            "100 h / 100 h"
+            "100h / 100h"
+        );
+    });
+
+    QUnit.test("total computes correctly for open shifts", async (assert) => {
+        // For open shifts and shifts with flexible resource, the total should be computed
+        // based on the shifts' duration, each maxed to the calendar's hours per day.
+        // Not based on the intersection of the shifts and the calendar.
+        const createViewArgs = _getCreateViewArgsForGanttViewTotalsTests();
+        serverData.models.task.fields.allocated_hours = {
+            string: "Allocated Hours",
+            type: "float",
+        };
+        serverData.models.task.records[0] = {
+            id: 1,
+            name: "test",
+            start_datetime: "2022-10-10 04:00:00",
+            end_datetime: "2022-10-10 12:00:00",
+            resource_id: false,
+            allocated_hours: 8,
+            allocated_percentage: 100,
+        };
+        createViewArgs.arch = createViewArgs.arch.replace(
+            'default_scale="week"',
+            'default_scale="week" default_group_by="resource_id"'
+        ).replace(
+            '<field name="allocated_percentage"/>',
+            '<field name="allocated_percentage"/><field name="allocated_hours"/>',
+        );
+        await makeView(createViewArgs);
+        assert.strictEqual(
+            target.querySelector(SELECTORS.rowTotal).textContent,
+            "08:00"
         );
     });
 });

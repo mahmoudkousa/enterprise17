@@ -36,6 +36,30 @@ function getActionActiveFields() {
 }
 
 export class SignItemCustomPopover extends Component {
+    static template = "sign.SignItemCustomPopover";
+    static components = {
+        Record,
+        Many2ManyTagsField,
+        Many2OneField,
+    };
+    static props = {
+        id: { type: Number },
+        alignment: { type: String },
+        placeholder: { type: String },
+        required: { type: Boolean },
+        option_ids: { type: Array },
+        responsible: { type: Number },
+        onValidate: { type: Function },
+        updateSelectionOptions: { type: Function },
+        updateRoles: { type: Function },
+        type: { type: String },
+        onDelete: { type: Function },
+        onClose: { type: Function },
+        debug: { type: String },
+        roles: { type: Object },
+        close: { type: Function },
+    };
+
     setup() {
         this.alignmentOptions = [
             { title: _t("Left"), key: "left" },
@@ -74,7 +98,7 @@ export class SignItemCustomPopover extends Component {
             activeFields: this.signItemFieldsGet,
             onRecordChanged: async (record, changes) => {
                 if (changes.option_ids) {
-                    const ids = changes.option_ids[0][2];
+                    const ids = changes.option_ids.map((command) => command[1]);
                     this.state.option_ids = ids;
                     return this.props.updateSelectionOptions(ids);
                 }
@@ -110,10 +134,3 @@ export class SignItemCustomPopover extends Component {
         return this.typesWithAlignment.has(this.props.type);
     }
 }
-
-SignItemCustomPopover.template = "sign.SignItemCustomPopover";
-SignItemCustomPopover.components = {
-    Record,
-    Many2ManyTagsField,
-    Many2OneField,
-};

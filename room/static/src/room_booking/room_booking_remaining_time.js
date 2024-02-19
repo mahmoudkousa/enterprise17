@@ -2,7 +2,7 @@
 
 import { useInterval } from "@room/room_booking/useInterval";
 
-import { Component, useState, xml } from "@odoo/owl";
+import { Component, onWillUpdateProps, useState, xml } from "@odoo/owl";
 
 export class RoomBookingRemainingTime extends Component {
     static template = xml`
@@ -16,6 +16,17 @@ export class RoomBookingRemainingTime extends Component {
     setup() {
         this.state = useState({ remainingTime: this.props.endTime.diffNow() });
         // Update the remaining time every second
-        useInterval(() => (this.state.remainingTime = this.props.endTime.diffNow()), 1000);
+        useInterval(() => {
+            const remainingTime = this.props.endTime.diffNow();
+            // Prevent flicker (could show -1s for a split second)
+            if (remainingTime >= 0) {
+                this.state.remainingTime = remainingTime;
+            }
+        }, 1000);
+        // When there are 2 consecutive bookings, make sure the remaining time is updated
+        // immediately (because the booking title and sidebar update immediately)
+        onWillUpdateProps((nextProps) => {
+            this.state.remainingTime = nextProps.endTime.diffNow();
+        });
     }
 }

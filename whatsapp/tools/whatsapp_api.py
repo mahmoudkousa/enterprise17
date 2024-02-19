@@ -58,9 +58,11 @@ class WhatsAppApi:
         """
         if response.get('error'):
             error = response['error']
-            desc = error.get('message')
+            desc = error.get('message', '')
+            desc += (' - ' + error['error_user_title']) if error.get('error_user_title') else ''
+            desc += ('\n\n' + error['error_user_msg']) if error.get('error_user_msg') else ''
             code = error.get('code', 'odoo')
-            return (desc if desc else _("{error_code} - Non-descript Error", code), code)
+            return (desc if desc else _("Non-descript Error"), code)
         return (_("Something went wrong when contacting WhatsApp, please try again later. If this happens frequently, contact support."), -1)
 
     def _get_all_template(self):

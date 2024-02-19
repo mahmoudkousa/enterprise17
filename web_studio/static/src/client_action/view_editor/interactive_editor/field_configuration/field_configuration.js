@@ -1,24 +1,13 @@
 /** @odoo-module */
 import { Component, useState, xml } from "@odoo/owl";
 import { Dialog } from "@web/core/dialog/dialog";
-import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { ModelFieldSelector } from "@web/core/model_field_selector/model_field_selector";
 import { useDialogConfirmation } from "@web_studio/client_action/utils";
 import { useOwnedDialogs, useService } from "@web/core/utils/hooks";
-import { session } from "@web/session";
 import { _t } from "@web/core/l10n/translation";
 import { DomainSelector } from "@web/core/domain_selector/domain_selector";
 import { SelectionContentDialog } from "@web_studio/client_action/view_editor/interactive_editor/field_configuration/selection_content_dialog";
 import { RecordSelector } from "@web/core/record_selectors/record_selector";
-
-export function getCurrencyField(fieldsGet) {
-    const field = Object.entries(fieldsGet).find(([fName, fInfo]) => {
-        return fInfo.type === "many2one" && fInfo.relation === "res.currency";
-    });
-    if (field) {
-        return field[0];
-    }
-}
 
 export class SelectionValuesEditor extends Component {
     static components = {
@@ -105,7 +94,6 @@ class RelatedChainBuilderModel {
         this.services = services;
         this.relatedParams = {};
         this.fieldInfo = { resModel: props.resModel, fieldDef: null };
-        this.shouldOpenCurrencyDialog = props.shouldOpenCurrencyDialog;
         this.resModel = props.resModel;
     }
 
@@ -140,40 +128,8 @@ class RelatedChainBuilderModel {
             this.fieldInfo.resModel,
             this.fieldInfo.fieldDef
         );
-        if (this.shouldOpenCurrencyDialog && relatedDescription.type === "monetary") {
-            const currencyDescription = await openCurrencyConfirmDialog(
-                this.services.dialog.add,
-                this.resModel
-            );
-            if (!currencyDescription) {
-                return false;
-            }
-            const relatedCurrencyField = await this.getRelatedCurrencyField(
-                this.fieldInfo.resModel
-            );
-            if (relatedCurrencyField) {
-                currencyDescription.related = relatedCurrencyField;
-            } else {
-                currencyDescription.related = "";
-            }
-
-            Object.assign(this.relatedParams, currencyDescription);
-            return true;
-        } else {
-            Object.assign(this.relatedParams, relatedDescription);
-            return true;
-        }
-    }
-
-    async getRelatedCurrencyField(resModel) {
-        const fields = await this.services.field.loadFields(resModel);
-        const currencyField = getCurrencyField(fields);
-        if (!currencyField) {
-            return null;
-        }
-        const chainSplit = this.relatedParams.related.split(".");
-        chainSplit.splice(chainSplit.length - 1, 1, currencyField);
-        return chainSplit.join(".");
+        Object.assign(this.relatedParams, relatedDescription);
+        return true;
     }
 }
 
@@ -183,7 +139,6 @@ export class RelatedChainBuilder extends Component {
     static props = {
         resModel: { type: String },
         configurationModel: { type: Object },
-        shouldOpenCurrencyDialog: { type: Boolean },
     };
     static Model = RelatedChainBuilderModel;
 
@@ -204,7 +159,7 @@ export class RelatedChainBuilder extends Component {
         if (!path) {
             return fieldDef.type === "many2one";
         }
-        return true;
+        return fieldDef.type !== "properties";
     }
 
     async updateChain(path, fieldInfo) {
@@ -289,29 +244,6 @@ export class FieldConfigurationDialog extends Component {
     get canConfirm() {
         return this.configurationModel.isValid;
     }
-}
-
-export function openCurrencyConfirmDialog(add, resModel) {
-    const currencyFieldDescription = {
-        default_value: session.company_currency_id, // FIXME: doesn't exist and/or necessary ?
-        field_description: "Currency",
-        model_name: resModel,
-        name: "x_currency_id",
-        relation: "res.currency",
-        type: "many2one",
-    };
-
-    return new Promise((resolve, reject) => {
-        add(ConfirmationDialog, {
-            body: _t(
-                `In order to use a monetary field, you need a currency field on the model. Do you want to create a currency field first? You can make this field invisible afterwards.`
-            ),
-            confirm: () => {
-                resolve(currencyFieldDescription);
-            },
-            cancel: () => resolve(false),
-        });
-    });
 }
 
 export class FilterConfiguration extends Component {

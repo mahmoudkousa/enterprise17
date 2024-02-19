@@ -199,7 +199,7 @@ class AustralianReportCustomHandler(models.AbstractModel):
     def get_txt(self, options):
         report = self.env['account.report'].browse(options['report_id'])
         sender_data = {
-            'vat': report.get_vat_for_export(options),
+            'abn': report.get_vat_for_export(options),
             'name': self.env.company.name,
             'commercial_partner_name': self.env.company.name,
             'street': self.env.company.street,
@@ -234,7 +234,7 @@ class AustralianReportCustomHandler(models.AbstractModel):
         return "%03d%-14s%-11s%-1s%-8s%-1s%-1s%-1s%-10s%-946s" % (
             996,                                                                     # 6.1  M
             'IDENTREGISTER1',                                                        # 6.2  M
-            int(data['vat']),                                                        # 6.3  M
+            int(data['abn']),                                                        # 6.3  M
             RUN_TYPE,                                                                # 6.4  M
             fields.Date.to_date(options['date']['date_to']).strftime('%d%m%Y'),      # 6.5  M
             'P',                                                                     # 6.6  M
@@ -280,7 +280,7 @@ class AustralianReportCustomHandler(models.AbstractModel):
         return "%03d%-8s%011d%03d%-4s%-200s%-200s%-38s%-38s%-27s%-3s%-4s%-20s%-38s%-15s%-15s%-76s%-293s" % (
             996,                                                                     # 6.1  M
             'IDENTITY',                                                              # 6.29 M
-            int(data['vat']),                                                        # 6.30 M
+            int(data['abn']),                                                        # 6.30 M
             0,                                                                       # 6.31 C
             fields.Date.to_date(options['date']['date_to']).strftime('%Y'),          # 6.32 M
             data['name'],                                                            # 6.33 M
@@ -311,7 +311,7 @@ class AustralianReportCustomHandler(models.AbstractModel):
         return "%03d%-6s%011d%-30s%-15s%-15s%-200s%-200s%-38s%-38s%-27s%-3s%-4s%-20s%-15s%-6s%-9s%011d%011d%011d%-1s%08d%-200s%-76s%-1s%-1s%-36s" % (
             996,                                                                     # 6.1  M
             'DPAIVS',                                                                # 6.46 M
-            int(data['vat']),                                                        # 6.47 M
+            int(data['abn']),                                                        # 6.47 M
             '',                                                                      # 6.48 C
             '',                                                                      # 6.49 C
             '',                                                                      # 6.50 O
@@ -367,9 +367,9 @@ class AustralianReportCustomHandler(models.AbstractModel):
         if len(data.get('phone') or '') > 15:
             errors += [_('The phone number is not valid (max 15 char)')]
 
-        data['vat'] = (data['vat'] or '0').replace(' ', '')
+        data['abn'] = (data['abn'] or '0').replace(' ', '')
         if not without_abn:
-            errors += self._validate_abn(data['vat'])
+            errors += self._validate_abn(data['abn'])
 
         if errors:
             raise UserError('\n'.join(errors + ['', _('While processing %s', data['name'])]))

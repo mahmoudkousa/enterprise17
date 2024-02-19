@@ -1,55 +1,54 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # 	* website_appointment
-#
+# 
 # Translators:
-# דודי מלכה <Dudimalka6@gmail.com>, 2022
-# Netta Waizer, 2022
-# Lilach Gilliam <lilach.gilliam@gmail.com>, 2022
-# ZVI BLONDER <ZVIBLONDER@gmail.com>, 2022
-# Martin Trigaux, 2022
-# NoaFarkash, 2022
-# Ha Ketem <haketem@gmail.com>, 2022
-#
+# NoaFarkash, 2023
+# דודי מלכה <Dudimalka6@gmail.com>, 2023
+# Yihya Hugirat <hugirat@gmail.com>, 2023
+# Lilach Gilliam <lilach.gilliam@gmail.com>, 2023
+# Ha Ketem <haketem@gmail.com>, 2023
+# ZVI BLONDER <ZVIBLONDER@gmail.com>, 2023
+# Martin Trigaux, 2023
+# Netta Waizer, 2023
+# yael terner, 2023
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 16.0+e\n"
+"Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-16 16:03+0000\n"
-"PO-Revision-Date: 2022-09-22 05:49+0000\n"
-"Last-Translator: Ha Ketem <haketem@gmail.com>, 2022\n"
+"POT-Creation-Date: 2023-10-26 22:22+0000\n"
+"PO-Revision-Date: 2023-10-26 23:10+0000\n"
+"Last-Translator: yael terner, 2023\n"
 "Language-Team: Hebrew (https://app.transifex.com/odoo/teams/41243/he/)\n"
-"Language: he\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
+"Language: he\n"
 "Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n == 2 && n % 1 == 0) ? 1: (n % 10 == 0 && n % 1 == 0 && n > 10) ? 2 : 3;\n"
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_booking_resource_description
-msgid "(+1 other)"
-msgstr ""
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointments_cards
 msgid "<i class=\"fa fa-ban me-2\"/>Unpublished"
-msgstr ""
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_pages_kanban_view
-msgid "<i class=\"fa fa-globe me-2\" title=\"Website URL\"/>"
-msgstr ""
+msgstr "לא פורסם"
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointment_form
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointment_info
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointment_select_operator
 msgid "<i class=\"fa fa-long-arrow-left me-2\"/>All Appointments"
+msgstr "כל הפגישות"
+
+#. module: website_appointment
+#: model_terms:ir.ui.view,arch_db:website_appointment.appointments_cards
+msgid ""
+"<i class=\"fa fa-video-camera fa-fw me-1 fs-5 text-muted\"/>\n"
+"                                <span class=\"o_not_editable\">Online</span>"
 msgstr ""
 
 #. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.website_calendar_index_topbar
-msgid "<span class=\"navbar-brand h4 my-0 me-auto my-auto\">Choose Your Appointment</span>"
+#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_pages_kanban_view
+msgid "<span class=\"fa fa-globe\" title=\"website\"/>"
 msgstr ""
 
 #. module: website_appointment
@@ -59,7 +58,7 @@ msgstr ""
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointment_select_operator
-msgid "<span> See all availabilities <i class=\"fa fa-long-arrow-right\"/></span>"
+msgid "<span>See all availabilities <i class=\"fa fa-long-arrow-right\"/></span>"
 msgstr ""
 
 #. module: website_appointment
@@ -83,11 +82,6 @@ msgid "Add an intro message here..."
 msgstr ""
 
 #. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_validated
-msgid "All Appointments"
-msgstr "כל הפגישות"
-
-#. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.s_online_appointment_options
 msgid "All Types"
 msgstr ""
@@ -101,9 +95,15 @@ msgstr ""
 #. odoo-python
 #: code:addons/website_appointment/models/website.py:0
 #: model:website.menu,name:website_appointment.menu_appointment
+#: model_terms:ir.ui.view,arch_db:website_appointment.website_online_appointment_snippet
 #, python-format
 msgid "Appointment"
 msgstr "פגישה"
+
+#. module: website_appointment
+#: model:ir.model,name:website_appointment.model_appointment_invite
+msgid "Appointment Invite"
+msgstr ""
 
 #. module: website_appointment
 #: model:ir.actions.act_window,name:website_appointment.action_appointment_pages_list
@@ -120,10 +120,11 @@ msgstr "סוג פגישה"
 #: code:addons/website_appointment/static/src/xml/website_appointment_templates.xml:0
 #, python-format
 msgid "Appointment Type Name"
-msgstr ""
+msgstr "שם סוג פגישה"
 
 #. module: website_appointment
 #: model:ir.ui.menu,name:website_appointment.menu_appointment_pages
+#: model:ir.ui.menu,name:website_appointment.website_appointment_type_menu
 #: model_terms:ir.ui.view,arch_db:website_appointment.s_online_appointment_options
 msgid "Appointments"
 msgstr "פגישות"
@@ -131,7 +132,7 @@ msgstr "פגישות"
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.snippet_options
 msgid "Appointments Page"
-msgstr ""
+msgstr "דף פגישות"
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.s_online_appointment
@@ -140,10 +141,11 @@ msgstr ""
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointment_progress_bar
-msgid "Booked<span class=\"chevron position-absolute d-block\"/>"
-msgstr ""
+msgid "Booked"
+msgstr "הוזמן"
 
 #. module: website_appointment
+#: model:ir.model.fields,field_description:website_appointment.field_appointment_invite__can_publish
 #: model:ir.model.fields,field_description:website_appointment.field_appointment_type__can_publish
 msgid "Can Publish"
 msgstr "יכול לפרסם"
@@ -151,16 +153,16 @@ msgstr "יכול לפרסם"
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.snippet_options
 msgid "Card Design"
-msgstr ""
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_select_operator
-msgid "Choose"
-msgstr "בחר"
+msgstr "עיצוב כרטיס"
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointment_select_operator
 msgid "Choose who you will meet"
+msgstr "בחר עם מי להיפגש"
+
+#. module: website_appointment
+#: model_terms:ir.ui.view,arch_db:website_appointment.website_calendar_index_topbar
+msgid "Choose your appointment"
 msgstr ""
 
 #. module: website_appointment
@@ -177,7 +179,19 @@ msgstr "מאפייני מעטפת"
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointment_progress_bar
-msgid "Details<span class=\"chevron position-absolute d-block\"/>"
+msgid "Date &amp; time"
+msgstr ""
+
+#. module: website_appointment
+#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_progress_bar
+msgid ""
+"Details<span class=\"d-inline-block mx-sm-3 fa fa-angle-right text-muted "
+"fs-5\"/>"
+msgstr ""
+
+#. module: website_appointment
+#: model:ir.model.fields,field_description:website_appointment.field_appointment_invite__appointment_type_warning_msg
+msgid "Different Website Message"
 msgstr ""
 
 #. module: website_appointment
@@ -185,9 +199,10 @@ msgstr ""
 #: code:addons/website_appointment/static/src/xml/appointment_no_slot.xml:0
 #, python-format
 msgid "Go back to Appointment"
-msgstr ""
+msgstr "חזור לפגישה"
 
 #. module: website_appointment
+#: model:ir.model.fields,field_description:website_appointment.field_appointment_invite__is_published
 #: model:ir.model.fields,field_description:website_appointment.field_appointment_type__is_published
 msgid "Is Published"
 msgstr "מפורסם"
@@ -195,7 +210,7 @@ msgstr "מפורסם"
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointment_progress_bar
 msgid "Meeting"
-msgstr ""
+msgstr "פגישה"
 
 #. module: website_appointment
 #: model:ir.actions.act_window,name:website_appointment.appointment_type_action_add_simplified
@@ -204,23 +219,8 @@ msgstr "סוג פגישה חדש"
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointments_cards
-msgid "No appointment found."
-msgstr "לא נמצאו פגישות."
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointments_cards
-msgid "Online"
-msgstr "מקוון"
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.website_online_appointment_snippet
-msgid "Online Appointment"
+msgid "No result for \""
 msgstr ""
-
-#. module: website_appointment
-#: model:ir.ui.menu,name:website_appointment.website_appointment_type_menu
-msgid "Online Appointments"
-msgstr "פגישות מקוונות"
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointment_progress_bar
@@ -232,7 +232,7 @@ msgstr "מפעיל"
 #: code:addons/website_appointment/static/src/xml/website_appointment_templates.xml:0
 #, python-format
 msgid "Please fill this field"
-msgstr ""
+msgstr "אנא מלא את השדה"
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.appointment_type_view_form
@@ -246,35 +246,36 @@ msgid "Published"
 msgstr "פורסם"
 
 #. module: website_appointment
+#: model:ir.model.fields,help:website_appointment.field_appointment_invite__website_id
+#: model:ir.model.fields,help:website_appointment.field_appointment_type__website_id
+msgid "Restrict publishing to this website."
+msgstr "הגבל את הפרסום לאתר זה."
+
+#. module: website_appointment
 #: model:ir.model.fields,field_description:website_appointment.field_appointment_type__is_seo_optimized
 msgid "SEO optimized"
 msgstr "עבר אופטימיזציה לקידום אתרים"
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_select_operator
-msgid "Schedule"
-msgstr "תזמן"
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_validated
-msgid "Schedule Another Appointment"
-msgstr ""
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointments_cards
-msgid "Schedule an Appointment"
-msgstr "תזמן פגישה"
 
 #. module: website_appointment
 #. odoo-python
 #: code:addons/website_appointment/models/website.py:0
 #, python-format
 msgid "Schedule an appointment"
+msgstr "תזמן פגישה"
+
+#. module: website_appointment
+#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_validated
+msgid "Schedule another appointment"
 msgstr ""
 
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.website_calendar_index_topbar
-msgid "Search an appointment..."
+msgid "Search..."
+msgstr "חיפוש…"
+
+#. module: website_appointment
+#: model_terms:ir.ui.view,arch_db:website_appointment.appointments_cards
+msgid "See all appointments <i class=\"fa fa-long-arrow-right\"/>"
 msgstr ""
 
 #. module: website_appointment
@@ -293,13 +294,23 @@ msgid "Specific users"
 msgstr ""
 
 #. module: website_appointment
+#. odoo-python
+#: code:addons/website_appointment/models/appointment_invite.py:0
+#, python-format
+msgid ""
+"The following appointment type(s) are not compatible with the website "
+"chosen: "
+msgstr ""
+
+#. module: website_appointment
+#: model:ir.model.fields,help:website_appointment.field_appointment_invite__website_url
 #: model:ir.model.fields,help:website_appointment.field_appointment_type__website_url
 msgid "The full URL to access the document through the website."
 msgstr "כתובת האתר המלאה לגישה למסמך דרך אתר האינטרנט."
 
 #. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_progress_bar
-msgid "Time<span class=\"chevron position-absolute d-block\"/>"
+#: model_terms:ir.ui.view,arch_db:website_appointment.appointments_cards
+msgid "There is currently no appointment available"
 msgstr ""
 
 #. module: website_appointment
@@ -321,21 +332,21 @@ msgid "Users"
 msgstr "משתמשים"
 
 #. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointments_cards
-msgid "View availability <i class=\"oi oi-arrow-right\"/>"
-msgstr ""
-
-#. module: website_appointment
+#: model:ir.model.fields,field_description:website_appointment.field_appointment_invite__website_published
 #: model:ir.model.fields,field_description:website_appointment.field_appointment_type__website_published
 msgid "Visible on current website"
 msgstr "גלוי באתר האינטרנט הנוכחי"
 
 #. module: website_appointment
 #: model:ir.model,name:website_appointment.model_website
+#: model:ir.model.fields,field_description:website_appointment.field_appointment_invite__website_id
+#: model:ir.model.fields,field_description:website_appointment.field_appointment_type__website_id
+#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_type_view_search
 msgid "Website"
 msgstr "אתר אינטרנט"
 
 #. module: website_appointment
+#: model:ir.model.fields,field_description:website_appointment.field_appointment_invite__website_url
 #: model:ir.model.fields,field_description:website_appointment.field_appointment_type__website_url
 msgid "Website URL"
 msgstr "כתובת אתר אינטרנט"
@@ -361,16 +372,11 @@ msgid "Website opengraph image"
 msgstr "תמונת opengraph של אתר אינטרנט"
 
 #. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_booking_resource_description
-msgid "available"
-msgstr ""
-
-#. module: website_appointment
 #. odoo-javascript
 #: code:addons/website_appointment/static/src/xml/appointment_no_slot.xml:0
 #, python-format
 msgid "contact us"
-msgstr ""
+msgstr "צור קשר"
 
 #. module: website_appointment
 #. odoo-javascript
@@ -387,21 +393,6 @@ msgid "or"
 msgstr "או"
 
 #. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_booking_resource_description
-msgid "others)"
-msgstr ""
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_booking_resource_description
-msgid "people"
-msgstr ""
-
-#. module: website_appointment
-#: model_terms:ir.ui.view,arch_db:website_appointment.appointment_booking_resource_description
-msgid "resource(s)"
-msgstr ""
-
-#. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.s_online_appointment_options
 msgid "⌙ Specify"
 msgstr ""
@@ -409,4 +400,4 @@ msgstr ""
 #. module: website_appointment
 #: model_terms:ir.ui.view,arch_db:website_appointment.s_online_appointment_options
 msgid "⌙ Users"
-msgstr ""
+msgstr "⌙ משתמשים"

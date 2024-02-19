@@ -34,7 +34,7 @@
                             <record id="mod_349_statistics_invoices_partners_count_balance" model="account.report.expression">
                                 <field name="label">balance</field>
                                 <field name="engine">domain</field>
-                                <field name="formula" eval="[('move_id.l10n_es_reports_mod349_available', '=', True), ('move_id.move_type','in',['in_invoice','out_invoice']), ('tax_line_id', '=', False), ('account_type', 'in', ('asset_receivable', 'liability_payable'))]"/>
+                                <field name="formula" eval="[('move_id.l10n_es_reports_mod349_available', '=', True), ('move_id.l10n_es_reports_mod349_invoice_type', '!=', False), ('move_id.move_type','in',['in_invoice','out_invoice']), ('tax_line_id', '=', False), ('account_type', 'in', ('asset_receivable', 'liability_payable'))]"/>
                                 <field name="subformula">count_rows</field>
                                 <field name="figure_type">integer</field>
                             </record>
@@ -47,7 +47,7 @@
                             <record id="mod_349_statistics_invoices_total_amount_balance" model="account.report.expression">
                                 <field name="label">balance</field>
                                 <field name="engine">domain</field>
-                                <field name="formula" eval="[('account_type', 'in', ('asset_receivable', 'liability_payable')), ('move_id.l10n_es_reports_mod349_available', '=', True), ('move_id.move_type','in',['in_invoice','out_invoice']), ('tax_line_id', '=', False)]"/>
+                                <field name="formula" eval="[('account_type', 'in', ('asset_receivable', 'liability_payable')), ('move_id.l10n_es_reports_mod349_available', '=', True), ('move_id.l10n_es_reports_mod349_invoice_type', '!=', False), ('move_id.move_type','in',['in_invoice','out_invoice']), ('tax_line_id', '=', False)]"/>
                                 <field name="subformula">sum</field>
                             </record>
                         </field>
@@ -61,7 +61,7 @@
                             <record id="mod_349_statistics_refunds_partners_count_balance" model="account.report.expression">
                                 <field name="label">balance</field>
                                 <field name="engine">domain</field>
-                                <field name="formula" eval="[('move_id.l10n_es_reports_mod349_available', '=', True), ('move_id.move_type','in',['in_refund','out_refund']), ('tax_line_id', '=', False)]"/>
+                                <field name="formula" eval="[('move_id.l10n_es_reports_mod349_available', '=', True), ('move_id.l10n_es_reports_mod349_invoice_type', '!=', False), ('move_id.move_type','in',['in_refund','out_refund']), ('tax_line_id', '=', False)]"/>
                                 <field name="subformula">count_rows</field>
                                 <field name="figure_type">integer</field>
                             </record>
@@ -74,7 +74,7 @@
                             <record id="mod_349_statistics_refunds_total_amount_balance" model="account.report.expression">
                                 <field name="label">balance</field>
                                 <field name="engine">domain</field>
-                                <field name="formula" eval="[('account_type', 'in', ('asset_receivable', 'liability_payable')), ('move_id.l10n_es_reports_mod349_available', '=', True), ('move_id.move_type','in',['in_refund','out_refund']), ('tax_line_id', '=', False)]"/>
+                                <field name="formula" eval="[('account_type', 'in', ('asset_receivable', 'liability_payable')), ('move_id.l10n_es_reports_mod349_available', '=', True), ('move_id.l10n_es_reports_mod349_invoice_type', '!=', False), ('move_id.move_type','in',['in_refund','out_refund']), ('tax_line_id', '=', False)]"/>
                                 <field name="subformula">sum</field>
                             </record>
                         </field>

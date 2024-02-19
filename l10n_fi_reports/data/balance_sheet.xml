@@ -720,12 +720,23 @@
                                         <field name="code">FIBS_LIA_AXXIII_1</field>
                                         <field name="hide_if_zero" eval="1"/>
                                         <field name="expression_ids">
-                                            <record id="account_financial_report_l10n_fi_bs_line_2_1_23_1_previous_year_earnings_line_balance" model="account.report.expression">
-                                                <field name="label">balance</field>
+                                            <record id="account_financial_report_l10n_fi_bs_line_2_1_23_1_cross_report" model="account.report.expression">
+                                                <field name="label">cross_report</field>
                                                 <field name="engine">aggregation</field>
                                                 <field name="formula">FIPL_19.balance</field>
                                                 <field name="date_scope">to_beginning_of_fiscalyear</field>
                                                 <field name="subformula">cross_report</field>
+                                            </record>
+                                            <record id="account_financial_report_l10n_fi_bs_line_2_1_23_1_accounts" model="account.report.expression">
+                                                <field name="label">accounts</field>
+                                                <field name="engine">account_codes</field>
+                                                <field name="formula">-225 - 237</field>
+                                            </record>
+                                            <record id="account_financial_report_l10n_fi_bs_line_2_1_23_1_previous_year_earnings_line_balance" model="account.report.expression">
+                                                <field name="label">balance</field>
+                                                <field name="engine">aggregation</field>
+                                                <field name="formula">FIBS_LIA_AXXIII_1.cross_report + FIBS_LIA_AXXIII_1.accounts</field>
+                                                <field name="subformula" eval="False"/>
                                             </record>
                                         </field>
                                     </record>
@@ -784,10 +795,10 @@
                                         <field name="expression_ids">
                                             <record id="account_financial_report_l10n_fi_bs_line_2_1_23_8_current_year_earnings_line_balance" model="account.report.expression">
                                                 <field name="label">balance</field>
-                                                <field name="engine">domain</field>
-                                                <field name="formula" eval="[('account_id.account_type', 'in', ('expense_depreciation', 'expense_direct_cost', 'expense', 'income_other', 'income'))]"/>
-                                                <field name="subformula">-sum</field>
+                                                <field name="engine">aggregation</field>
+                                                <field name="formula">FIPL_19.balance</field>
                                                 <field name="date_scope">from_fiscalyear</field>
+                                                <field name="subformula">cross_report</field>
                                             </record>
                                         </field>
                                     </record>

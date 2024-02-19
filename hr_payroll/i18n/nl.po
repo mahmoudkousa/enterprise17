@@ -5,15 +5,16 @@
 # Translators:
 # Martin Trigaux, 2023
 # Wil Odoo, 2023
-# Jolien De Paepe, 2023
+# Erwin van der Ploeg <erwin@odooexperts.nl>, 2023
+# Jolien De Paepe, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-26 22:20+0000\n"
+"POT-Creation-Date: 2024-01-26 16:10+0000\n"
 "PO-Revision-Date: 2023-10-26 23:10+0000\n"
-"Last-Translator: Jolien De Paepe, 2023\n"
+"Last-Translator: Jolien De Paepe, 2024\n"
 "Language-Team: Dutch (https://app.transifex.com/odoo/teams/41243/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -341,11 +342,6 @@ msgstr "<span>Versies</span>"
 
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.report_payslip
-msgid "<strong>Basic Salary</strong>"
-msgstr "<strong>Basisloon</strong>"
-
-#. module: hr_payroll
-#: model_terms:ir.ui.view,arch_db:hr_payroll.report_payslip
 msgid "<strong>Computed on </strong>"
 msgstr "<strong>Berekend op</strong>"
 
@@ -652,14 +648,14 @@ msgstr "Aantal bijlagen"
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_salary_attachment__attachment_name
 msgid "Attachment Name"
-msgstr "Naam beslag"
+msgstr "Naam loonaanpassing"
 
 #. module: hr_payroll
 #: model:hr.salary.attachment.type,name:hr_payroll.hr_salary_attachment_type_attachment
 #: model:hr.salary.rule,name:hr_payroll.default_attachment_of_salary_rule
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_salary_attachment_report__attachment_amount
 msgid "Attachment of Salary"
-msgstr "Loonbeslag"
+msgstr "Loonaanpassing"
 
 #. module: hr_payroll
 #: model:ir.model.fields.selection,name:hr_payroll.selection__hr_payroll_report__work_entry_source__attendance
@@ -709,6 +705,11 @@ msgstr "Basis"
 #, python-format
 msgid "Basic Salary"
 msgstr "Basis salaris"
+
+#. module: hr_payroll
+#: model_terms:ir.ui.view,arch_db:hr_payroll.report_payslip
+msgid "Basic Salary ("
+msgstr "Basis inkomen ("
 
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_payroll_report__basic_wage
@@ -1185,7 +1186,7 @@ msgstr "Maak conceptboeking"
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_salary_attachment_view_form
 msgid "Create Individual Attachments"
-msgstr "Individuele beslagen aanmaken"
+msgstr "Individuele aanpassingen aanmaken"
 
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.res_config_settings_view_form
@@ -1195,12 +1196,27 @@ msgstr "Maak SEPA betaling"
 #. module: hr_payroll
 #: model:ir.actions.server,name:hr_payroll.action_new_salary_attachment
 msgid "Create Salary Attachment"
-msgstr "Loonbeslag maken"
+msgstr "Loonaanpassing maken"
 
 #. module: hr_payroll
 #: model_terms:ir.actions.act_window,help:hr_payroll.action_hr_contract_repository
 msgid "Create a new contract"
 msgstr "Maak een nieuw contract aan"
+
+#. module: hr_payroll
+#: model_terms:ir.actions.act_window,help:hr_payroll.action_salary_rule_form
+msgid "Create a new salary rule"
+msgstr "Maak een nieuwe salarisregel"
+
+#. module: hr_payroll
+#: model_terms:ir.actions.act_window,help:hr_payroll.hr_rule_parameter_action
+msgid "Create a new salary rule parameter"
+msgstr "Maak een nieuwe salarisregelparameter"
+
+#. module: hr_payroll
+#: model_terms:ir.actions.act_window,help:hr_payroll.action_view_hr_payroll_structure_list_form
+msgid "Create a new salary structure"
+msgstr "Maak een nieuwe salarisstructuur"
 
 #. module: hr_payroll
 #. odoo-javascript
@@ -1998,12 +2014,12 @@ msgstr "Heeft restitutiebon"
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_salary_attachment__has_similar_attachment
 msgid "Has Similar Attachment"
-msgstr "Heeft soortgelijk beslag"
+msgstr "Heeft soortgelijke aanpassing"
 
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_salary_attachment__has_similar_attachment_warning
 msgid "Has Similar Attachment Warning"
-msgstr "Waarschuwing heeft soorgelijk beslag"
+msgstr "Waarschuwing heeft soorgelijke aanpassing"
 
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_salary_attachment__has_total_amount
@@ -3011,7 +3027,7 @@ msgstr "Loonstrookbatches"
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_employee__payslip_count
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_payslip_run__payslip_count
 msgid "Payslip Count"
-msgstr "Loonstrook teller"
+msgstr "Aantal loonstroken"
 
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_salary_attachment_report__payslip_end_date
@@ -3113,7 +3129,7 @@ msgstr "Loonstrook batches"
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_payslip_run_tree
 msgid "Payslips Count"
-msgstr "Loonstroken tellen"
+msgstr "Aantal loonstroken"
 
 #. module: hr_payroll
 #. odoo-python
@@ -3336,7 +3352,7 @@ msgstr "Een nieuwe betaling van %s geregistreerd."
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_payslip__number
 msgid "Reference"
-msgstr "Verwijzing"
+msgstr "Referentie"
 
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.view_hr_payslip_form
@@ -3506,49 +3522,49 @@ msgstr "Loon"
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_salary_attachment_view_form
 #, python-format
 msgid "Salary Attachment"
-msgstr "Loonbeslag"
+msgstr "Loonaanpassing"
 
 #. module: hr_payroll
 #: model:ir.model,name:hr_payroll.model_hr_salary_attachment_report
 msgid "Salary Attachment / Report"
-msgstr "Loonbeslag / Rapport"
+msgstr "Loonaanpassing / Rapport"
 
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_contract__salary_attachments_count
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_contract_history__salary_attachment_count
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_employee__salary_attachment_count
 msgid "Salary Attachment Count"
-msgstr "Aantal loonbeslagen"
+msgstr "Aantal loonaanpassingen"
 
 #. module: hr_payroll
 #: model:ir.actions.act_window,name:hr_payroll.hr_salary_attachment_report_action
 #: model:ir.ui.menu,name:hr_payroll.menu_hr_payroll_attachment_salary_report
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_salary_attachment_report_view_pivot
 msgid "Salary Attachment Report"
-msgstr "Loonbeslagrapport"
+msgstr "Loonaanpassingsrapport"
 
 #. module: hr_payroll
 #: model:ir.model,name:hr_payroll.model_hr_salary_attachment_type
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_salary_attachment_type_view_form
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_salary_attachment_type_view_tree
 msgid "Salary Attachment Type"
-msgstr "Soort loonbeslag"
+msgstr "Soort loonaanpassing"
 
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_salary_attachment_type_view_tree
 msgid "Salary Attachment Type Name"
-msgstr "Naam soort loonbeslag"
+msgstr "Naam soort loonaanpassing"
 
 #. module: hr_payroll
 #: model:ir.actions.act_window,name:hr_payroll.action_hr_salary_attachment_type
 #: model:ir.ui.menu,name:hr_payroll.menu_hr_salary_attachment_type
 msgid "Salary Attachment Types"
-msgstr "Soorten loonbeslag"
+msgstr "Soorten loonaanpassing"
 
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_payslip__salary_attachment_count
 msgid "Salary Attachment count"
-msgstr "Aantal loonbeslagen"
+msgstr "Aantal loonaanpassingen"
 
 #. module: hr_payroll
 #. odoo-python
@@ -3563,7 +3579,7 @@ msgstr "Aantal loonbeslagen"
 #: model_terms:ir.ui.view,arch_db:hr_payroll.view_hr_payslip_form
 #, python-format
 msgid "Salary Attachments"
-msgstr "Loonbeslagen"
+msgstr "Loonaanpassingen"
 
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_salary_rule_category_form
@@ -3680,7 +3696,7 @@ msgstr "Zoek loonstroken"
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_salary_attachment_view_search
 msgid "Search Salary Attachment"
-msgstr "Loonbeslag zoeken"
+msgstr "Loonaanpassing zoeken"
 
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.view_hr_rule_filter
@@ -3806,7 +3822,7 @@ msgstr "Begindatum"
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_work_entry_report__state
 #: model_terms:ir.ui.view,arch_db:hr_payroll.hr_payroll_employee_declaration_view_search
 msgid "State"
-msgstr "Staat"
+msgstr "Status"
 
 #. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_payslip__state
@@ -4266,7 +4282,7 @@ msgstr "Onbekende staat"
 #. module: hr_payroll
 #: model_terms:ir.ui.view,arch_db:hr_payroll.payroll_hr_work_entry_type_view_form_inherit
 msgid "Unpaid"
-msgstr "Onbetaald verlof"
+msgstr "Onbetaald"
 
 #. module: hr_payroll
 #: model:ir.model.fields.selection,name:hr_payroll.selection__hr_payroll_report__work_type__3
@@ -4409,7 +4425,7 @@ msgstr "Waarschuwingsberichten"
 #: code:addons/hr_payroll/models/hr_salary_attachment.py:0
 #, python-format
 msgid "Warning, a similar attachment has been found."
-msgstr "Waarschuwing, er is een soortgelijk beslag gevonden."
+msgstr "Waarschuwing, er is een soortgelijke aanpassing gevonden."
 
 #. module: hr_payroll
 #. odoo-javascript
@@ -4693,6 +4709,17 @@ msgid "Wrong range condition defined for:"
 msgstr "Verkeerde bereikvoorwaarde gedefinieerd voor:"
 
 #. module: hr_payroll
+#. odoo-python
+#: code:addons/hr_payroll/models/hr_rule_parameter.py:0
+#, python-format
+msgid ""
+"Wrong rule parameter value for %s at date %s.\n"
+"%s"
+msgstr ""
+"Verkeerde regelparameterwaarde voor %s op %s.\n"
+"%s"
+
+#. module: hr_payroll
 #: model:ir.model.fields,field_description:hr_payroll.field_hr_payroll_declaration_mixin__year
 msgid "Year"
 msgstr "Jaar"
@@ -4754,14 +4781,15 @@ msgstr ""
 #: code:addons/hr_payroll/models/hr_salary_attachment.py:0
 #, python-format
 msgid "You cannot delete a running salary attachment!"
-msgstr "Je kunt een lopend loonbeslag niet verwijderen!"
+msgstr "Je kunt een lopende loonaanpassing niet verwijderen!"
 
 #. module: hr_payroll
 #. odoo-python
 #: code:addons/hr_payroll/models/hr_salary_attachment.py:0
 #, python-format
 msgid "You cannot record a payment on multi employees attachments."
-msgstr "Je kan geen betaling registreren op beslagen met meerdere werknemers."
+msgstr ""
+"Je kan geen betaling registreren op aanpassingen met meerdere werknemers."
 
 #. module: hr_payroll
 #. odoo-python
@@ -4779,7 +4807,8 @@ msgstr ""
 #: code:addons/hr_payroll/models/hr_payslip.py:0
 #, python-format
 msgid "You cannot validate a payslip on which the contract is cancelled"
-msgstr "Je kunt een loonstrook waarop het contract is opgezegd niet valideren"
+msgstr ""
+"Je kunt een loonstrook waarop het contract is opgezegd niet bevestigen"
 
 #. module: hr_payroll
 #. odoo-python

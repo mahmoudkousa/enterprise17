@@ -7,6 +7,19 @@ import { ControlPanel } from "@web/search/control_panel/control_panel";
 import { multiFileUpload } from "@sign/backend_components/multi_file_upload";
 
 export class SignTemplateControlPanel extends Component {
+    static template = "sign.SignTemplateControlPanel";
+    static components = {
+        ControlPanel,
+    };
+    static props = {
+        responsibleCount: { type: Number },
+        isPDF: { type: Boolean },
+        hasSignRequests: { type: Boolean },
+        actionType: { type: String },
+        signTemplate: { type: Object },
+        goBackToKanban: { type: Function },
+    };
+
     setup() {
         this.controlPanelDisplay = {};
         this.nextTemplate = multiFileUpload.getNext() ?? false;
@@ -78,8 +91,3 @@ export class SignTemplateControlPanel extends Component {
         });
     }
 }
-
-SignTemplateControlPanel.template = "sign.SignTemplateControlPanel";
-SignTemplateControlPanel.components = {
-    ControlPanel,
-};

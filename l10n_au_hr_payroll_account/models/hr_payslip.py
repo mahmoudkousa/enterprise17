@@ -6,7 +6,7 @@ import re
 from datetime import datetime
 
 from odoo import fields, models, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, RedirectWarning
 from odoo.tools import float_round
 
 
@@ -15,18 +15,39 @@ class HrPayslip(models.Model):
 
     def _generate_aba_file(self, journal_id):
         bank_account = journal_id.bank_account_id
+        if not bank_account:
+            raise RedirectWarning(
+                        message=_("The bank account on journal '%s' is not set. Please create a new account or set an existing one.", journal_id.name),
+                        action=journal_id._get_records_action(name=_("Configure Journal"), target="new"),
+                        button_text=_("Configure Journal Bank Account")
+                    )
         if bank_account.acc_type != 'aba' or not bank_account.aba_bsb:
-            raise UserError(_("The account %s, of journal '%s', is not valid for ABA.\nEither its account number is incorrect or it has no BSB set.", bank_account.acc_number, journal_id.name))
-
+            raise RedirectWarning(
+                message=_("The account %s, of journal '%s', is not valid for ABA.\nEither its account number is incorrect or it has no BSB set.", bank_account.acc_number, journal_id.name),
+                action=bank_account._get_records_action(name=_("Configure Account"), target="new"),
+                button_text=_("Configure Account")
+            )
         if not journal_id.aba_fic or not journal_id.aba_user_spec or not journal_id.aba_user_number:
-            raise UserError(_("The account %s, of journal '%s', is not set up for ABA payslips.\nPlease fill in its ABA fields.", bank_account.acc_number, journal_id.name))
-
+            raise RedirectWarning(
+                        message=_("ABA fields for account '%s', of journal '%s', are not set. Please set the fields under ABA section!", bank_account.acc_number, journal_id.name),
+                        action=journal_id._get_records_action(name=_("Configure Journal"), target="new"),
+                        button_text=_("Configure Journal")
+                    )
+        # Redirect to employee as some accounts may be missing
+        faulty_employee_accounts = self.env['hr.employee']
         for payslip in self:
             if payslip.employee_id.bank_account_id.acc_type != 'aba' or not payslip.employee_id.bank_account_id.aba_bsb:
-                raise UserError(_("Bank account for employee '%s' has an invalid BSB or account number.", payslip.employee_id.name))
+                faulty_employee_accounts |= payslip.employee_id
             if not payslip.employee_id.bank_account_id.allow_out_payment:
-                raise UserError(_("Bank account for employee '%s' is not allowed to send money.", payslip.employee_id.name))
-
+                faulty_employee_accounts |= payslip.employee_id
+        if faulty_employee_accounts:
+            raise RedirectWarning(
+                message=_("Bank accounts for the following Employees' maybe invalid or missing. Please ensure each employee has a valid"
+                          "ABA account with a valid BSB or Account number and allow it to send money.\n %s",
+                          "\n".join(faulty_employee_accounts.mapped("display_name"))),
+                action=faulty_employee_accounts._get_records_action(name=_("Configure Employee Accounts")),
+                button_text=_("Configure Employee Accounts")
+            )
         filename_date = fields.Datetime.context_timestamp(self, datetime.now()).strftime("%Y%m%d%H%M")
         export_file_data = {
             'filename': f'ABA-{journal_id.code}-{filename_date}.aba',

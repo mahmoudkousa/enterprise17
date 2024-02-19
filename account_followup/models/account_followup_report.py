@@ -73,7 +73,7 @@ class AccountFollowupReport(models.AbstractModel):
                     'name': format_date(self.env, aml.move_id.invoice_date or aml.date, lang_code=lang_code),
                     'class': 'date',
                     'style': 'white-space:nowrap;text-align:left;',
-                    'template': 'account_followup.cell_template_followup_report',
+                    'template': 'account_followup.line_template',
                 }
                 date_due = format_date(self.env, aml.date_maturity or aml.move_id.invoice_date or aml.date, lang_code=lang_code)
                 total += not aml.blocked and amount or 0
@@ -84,7 +84,7 @@ class AccountFollowupReport(models.AbstractModel):
                 date_due = {
                     'name': date_due, 'class': 'date',
                     'style': 'white-space:nowrap;text-align:left;',
-                    'template': 'account_followup.cell_template_followup_report',
+                    'template': 'account_followup.line_template',
                 }
                 if is_overdue:
                     date_due['style'] += 'color: red;'
@@ -93,12 +93,12 @@ class AccountFollowupReport(models.AbstractModel):
                 move_line_name = {
                     'name': self._followup_report_format_aml_name(aml.name, aml.move_id.ref),
                     'style': 'text-align:left; white-space:normal;',
-                    'template': 'account_followup.cell_template_followup_report',
+                    'template': 'account_followup.line_template',
                 }
                 amount = {
                     'name': formatLang(self.env, amount, currency_obj=currency),
                     'style': 'text-align:right; white-space:normal;',
-                    'template': 'account_followup.cell_template_followup_report',
+                    'template': 'account_followup.line_template',
                 }
                 line_num += 1
                 invoice_origin = aml.move_id.invoice_origin or ''
@@ -107,7 +107,7 @@ class AccountFollowupReport(models.AbstractModel):
                 invoice_origin = {
                     'name': invoice_origin,
                     'style': 'text-align:center; white-space:normal;',
-                    'template': 'account_followup.cell_template_followup_report',
+                    'template': 'account_followup.line_template',
                 }
                 columns = [
                     invoice_date,
@@ -123,7 +123,7 @@ class AccountFollowupReport(models.AbstractModel):
                     'move_id': aml.move_id.id,
                     'type': is_payment and 'payment' or 'unreconciled_aml',
                     'unfoldable': False,
-                    'columns': [isinstance(v, dict) and v or {'name': v, 'template': 'account_followup.cell_template_followup_report'} for v in columns],
+                    'columns': [isinstance(v, dict) and v or {'name': v, 'template': 'account_followup.line_template'} for v in columns],
                 })
             total_due = formatLang(self.env, total, currency_obj=currency)
             line_num += 1
@@ -131,12 +131,12 @@ class AccountFollowupReport(models.AbstractModel):
             cols = \
                 [{
                     'name': v,
-                    'template': 'account_followup.cell_template_followup_report',
+                    'template': 'account_followup.line_template',
                 } for v in [''] * 3] + \
                 [{
                     'name': v,
                     'style': 'text-align:right; white-space:normal; font-weight: bold;',
-                    'template': 'account_followup.cell_template_followup_report',
+                    'template': 'account_followup.line_template',
                 } for v in [total >= 0 and _('Total Due') or '', total_due]]
 
             lines.append({
@@ -155,12 +155,12 @@ class AccountFollowupReport(models.AbstractModel):
                 cols = \
                     [{
                         'name': v,
-                        'template': 'account_followup.cell_template_followup_report',
+                        'template': 'account_followup.line_template',
                     } for v in [''] * 3] + \
                     [{
                         'name': v,
                         'style': 'text-align:right; white-space:normal; font-weight: bold;',
-                        'template': 'account_followup.cell_template_followup_report',
+                        'template': 'account_followup.line_template',
                     } for v in [_('Total Overdue'), total_issued]]
 
                 lines.append({
@@ -180,7 +180,7 @@ class AccountFollowupReport(models.AbstractModel):
                 'style': 'border-bottom-style: none',
                 'unfoldable': False,
                 'level': 0,
-                'columns': [{'template': 'account_followup.cell_template_followup_report'} for col in columns],
+                'columns': [{'template': 'account_followup.line_template'} for col in columns],
             })
         # Remove the last empty line
         if lines:
@@ -246,6 +246,34 @@ class AccountFollowupReport(models.AbstractModel):
         return self._get_rendered_body(partner.id, template_src, default_body, options={'post_process': True})
 
     @api.model
+    def _get_email_from(self, options):
+        partner = self.env['res.partner'].browse(options.get('partner_id'))
+        # For manual followups, get the email_from from the selected template in the send & print wizard.
+        if options.get('email_from'):
+            followup_email_from = options['email_from']
+        # For automatic followups, get it from mail template on the followup line.
+        else:
+            followup_line = options.get('followup_line') or partner.followup_line_id
+            mail_template = options.get('mail_template') or followup_line.mail_template_id
+            followup_email_from = mail_template.email_from
+        # The _render_template() function formats the email content. It handles cases where the email_from value
+        # is a template that needs evaluation. For instance, "{{ object._get_followup_responsible().email_formatted }}".
+        return self.env['mail.composer.mixin'].sudo()._render_template(followup_email_from, 'res.partner', [partner.id])[partner.id] or None
+
+    @api.model
+    def _get_email_reply_to(self, options):
+        partner = self.env['res.partner'].browse(options.get('partner_id'))
+        followup_line = options.get('followup_line', partner.followup_line_id)
+        mail_template = options.get('mail_template', followup_line.mail_template_id)
+        # if template has no reply-to set, fall back to default reply-to, otherwise
+        # it will be set to False and behave unexpectedly
+        if mail_template.reply_to:
+            followup_reply_to = mail_template.reply_to
+        else:
+            followup_reply_to = self._notify_get_reply_to()[False]
+        return followup_reply_to
+
+    @api.model
     def _get_main_body(self, options):
         # Manual follow-up: return body from options
         if options.get('body'):
@@ -304,7 +332,7 @@ Best Regards,
         Return the name of the columns of the follow-ups report
         """
         return [
-            {'name': _('Invoice No.'), 'style': 'text-align:center; white-space:nowrap;'},
+            {'name': _('Reference'), 'style': 'text-align:center; white-space:nowrap;'},
             {'name': _('Date'), 'class': 'date', 'style': 'text-align:center; white-space:nowrap;'},
             {'name': _('Due Date'), 'class': 'date', 'style': 'text-align:center; white-space:nowrap;'},
             {'name': _('Origin'), 'style': 'text-align:center; white-space:nowrap;'},
@@ -353,12 +381,17 @@ Best Regards,
                 body_html = self.with_context(mail=True).get_followup_report_html(options)
 
                 attachment_ids = options.get('attachment_ids', partner._get_invoices_to_print(options).message_main_attachment_id.ids)
+                # If the follow-up was executed manually, the author_id will be set to the ID of the current logged-in user.
+                # Otherwise, if the follow-up is automatic, the author_id will default to OdooBot.
+                author_id = options.get('author_id', self.env.ref('base.partner_root').id)
 
-                partner.with_context(mail_post_autofollow=True, lang=partner.lang or self.env.user.lang).message_post(
+                partner.with_context(mail_post_autofollow=True, mail_notify_author=True, lang=partner.lang or self.env.user.lang).message_post(
                     partner_ids=[to_send_partner.id],
-                    author_id=partner._get_followup_responsible().partner_id.id,
+                    author_id=author_id,
+                    email_from=self._get_email_from(options),
                     body=body_html,
                     subject=self._get_email_subject(options),
+                    reply_to=self._get_email_reply_to(options),
                     model_description=_('payment reminder'),
                     email_layout_xmlid='mail.mail_notification_light',
                     attachment_ids=attachment_ids,

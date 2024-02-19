@@ -2,9 +2,10 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo.addons.helpdesk.tests import common
-from odoo.tests.common import Form
+from odoo.tests.common import Form, tagged
 
 
+@tagged('post_install', '-at_install')
 class TestHelpdeskAccount(common.HelpdeskCommon):
     @classmethod
     def setUpClass(cls):

@@ -225,8 +225,6 @@ class GeneralLedgerCustomHandler(models.AbstractModel):
         lines = [preheader, header]
 
         for m in moves:
-            line_values = {}  # key: BalanceKey
-            move_currencies = {}
             payment_account = 0  # Used for non-reconciled payments
 
             for aml in m.line_ids:
@@ -267,66 +265,38 @@ class GeneralLedgerCustomHandler(models.AbstractModel):
                         # there should only be one max, else skip code
                         code_correction = codes.pop() or ''
 
-                # group lines by account, to_account & partner
-                match_key = BalanceKey(from_code=account_code, to_code=to_account_code, partner_id=aml.partner_id,
-                                       tax_id=code_correction)
-
-                if match_key in line_values:
-                    # values already in line_values
-                    line_values[match_key]['line_amount'] += line_amount
-                    line_values[match_key]['line_base_amount'] += aml.price_total
-                    move_currencies[match_key].add(aml.currency_id)
-                    continue
-
                 # reference
-                receipt1 = aml.move_id.name
+                receipt1 = ref = aml.move_id.name
                 if aml.move_id.journal_id.type == 'purchase' and aml.move_id.ref:
-                    receipt1 = aml.move_id.ref
+                    ref = aml.move_id.ref
 
                 # on receivable/payable aml of sales/purchases
                 receipt2 = ''
                 if to_account_code == account_code and aml.date_maturity:
                     receipt2 = aml.date
 
-                move_currencies[match_key] = set([aml.currency_id])
                 currency = aml.company_id.currency_id
-                line_values[match_key] = {
-                    'waehrung': currency.name,
-                    'line_base_amount': aml.price_total,
-                    'line_base_currency': aml.currency_id.name,
-                    'buschluessel': code_correction,
-                    'gegenkonto': to_account_code,
-                    'belegfeld1': receipt1[-36:],
-                    'belegfeld2': receipt2,
-                    'datum': datetime.strftime(aml.move_id.date, '%-d%m'),
-                    'konto': account_code,
-                    'kurs': str(aml.currency_id.rate).replace('.', ','),
-                    'buchungstext': receipt1,
-                    'line_amount': line_amount
-                }
 
-            for match_key, line_value in line_values.items():
-                # For DateV, we can't have negative amount on a line, so we need to inverse the amount and inverse the
-                # credit/debit symbol.
-                line_value['sollhaben'] = 'h' if line_value['line_amount'] < 0 else 's'
-                line_value['line_amount'] = abs(line_value['line_amount'])
                 # Idiotic program needs to have a line with 116 elements ordered in a given fashion as it
                 # does not take into account the header and non mandatory fields
                 array = ['' for x in range(116)]
-                array[0] = float_repr(line_value['line_amount'], aml.company_id.currency_id.decimal_places).replace('.', ',')
-                array[1] = line_value.get('sollhaben')
-                array[2] = line_value.get('waehrung')
-                if (len(move_currencies[match_key]) == 1) and line_value.get('line_base_currency') != line_value.get('waehrung'):
-                    array[3] = line_value.get('kurs')
-                    array[4] = float_repr(line_value['line_base_amount'], aml.currency_id.decimal_places).replace('.', ',')
-                    array[5] = line_value.get('line_base_currency')
-                array[6] = line_value.get('konto')
-                array[7] = line_value.get('gegenkonto')
-                array[8] = line_value.get('buschluessel')
-                array[9] = line_value.get('datum')
-                array[10] = line_value.get('belegfeld1')
-                array[11] = line_value.get('belegfeld2')
-                array[13] = line_value.get('buchungstext')
+                # For DateV, we can't have negative amount on a line, so we need to inverse the amount and inverse the
+                # credit/debit symbol.
+                array[1] = 'h' if aml.currency_id.compare_amounts(line_amount, 0) < 0 else 's'
+                line_amount = abs(line_amount)
+                array[0] = float_repr(line_amount, aml.company_id.currency_id.decimal_places).replace('.', ',')
+                array[2] = currency.name
+                if aml.currency_id != currency:
+                    array[3] = str(aml.currency_id.rate).replace('.', ',')
+                    array[4] = float_repr(aml.price_total, aml.currency_id.decimal_places).replace('.', ',')
+                    array[5] = aml.currency_id.name
+                array[6] = account_code
+                array[7] = to_account_code
+                array[8] = code_correction
+                array[9] = datetime.strftime(aml.move_id.date, '%-d%m')
+                array[10] = receipt1[-36:]
+                array[11] = receipt2
+                array[13] = aml.name or ref
                 lines.append(array)
 
         writer.writerows(lines)

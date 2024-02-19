@@ -133,10 +133,10 @@ class L10nInReportAccount(models.Model):
         domain = super()._get_section_domain(section_code)
         if section_code == "b2cs":
             domain.remove(("move_id.move_type", "in", ["out_invoice", "out_refund", "out_receipt"]))
-            domain.remove(("move_id.l10n_in_gst_treatment", "in", ("unregistered", "consumer", "composition")))
+            domain.remove(("move_id.l10n_in_gst_treatment", "in", ("unregistered", "consumer")))
             domain += ["|",
             "&", ("move_id.move_type", "in", ["out_invoice", "out_refund", "out_receipt"]),
-                ("move_id.l10n_in_gst_treatment", "in", ("unregistered", "consumer", "composition")),
+                ("move_id.l10n_in_gst_treatment", "in", ("unregistered", "consumer")),
             "&", ("move_id.move_type", "=", "entry"),
                 ("move_id.l10n_in_pos_session_ids", "!=", False)
             ]

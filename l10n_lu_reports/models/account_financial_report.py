@@ -93,7 +93,7 @@ class LuxembourgishFinancialReportCustomHandler(models.AbstractModel):
         lu_template_values = self.get_electronic_report_values(options)
 
         # Add comparison filter to get data from last year
-        report._init_options_comparison(options, {**options, 'comparison': {
+        options = report.get_options({**options, 'comparison': {
             'filter': 'same_last_year',
             'number_period': 1,
         }})
@@ -109,21 +109,23 @@ class LuxembourgishFinancialReportCustomHandler(models.AbstractModel):
             '03': {'value': self.env.company.currency_id.name, 'field_type': 'char'}
         })
 
-        # we only need `account.report.line` records' IDs and line['id'] could hold account.account
-        # record's IDs as well. Such can be identified by `financial_group_line_id` in line dictionary's key. So,
-        # below first condition filters those lines and second one filters lines having ID such as `total_*`
-        for line in filter(lambda l: 'financial_group_line_id' not in l and l.get('model_ref'), lines):
-            line_id = line['model_ref'][1]
+        # we only need `account.report.line` records' IDs, so we need to check the model
+        # as some of these could be `account.account` records
+        for line in lines:
+            model, res_id = self.env['account.report']._get_model_info_from_id(line['id'])
+            if model != 'account.report.line':
+                continue
+
             # financial report's `code` would contain alpha-numeric string like `LU_BS_XXX/LU_BSABR_XXX`
             # where characters at last three positions will be digits, hence we split with `_`
             # and build dictionary having `code` as dictionary key
-            split_line_code = (report_line.browse(line['id']).code or '').split('_') or []
+            split_line_code = (report_line.browse(res_id).code or '').split('_') or []
             columns = line['columns']
             # since we have enabled comparison by default, `columns` element will atleast have two dictionary items.
             # First dict will be holding current year's balance and second one will be holding previous year's balance.
             if len(split_line_code) > 2:
                 parent_code = None
-                parent_id = report_line.browse(line['id']).parent_id
+                parent_id = report_line.browse(res_id).parent_id
                 if parent_id and parent_id.code:
                     parent_split_code = parent_id.code.split('_')
                     if len(parent_split_code) > 2:

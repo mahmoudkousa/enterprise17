@@ -6,7 +6,7 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 
 from odoo import fields, models, api, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 from odoo.osv import expression
 from odoo.tools.float_utils import float_compare, float_is_zero
 
@@ -48,6 +48,18 @@ class TransferModel(models.Model):
             line.copy({'transfer_model_id': res.id})
         return res
 
+    @api.ondelete(at_uninstall=False)
+    def _unlink_with_check_moves(self):
+        # Only unlink a transfer that has no posted/draft moves attached.
+        for transfer in self:
+            if transfer.move_ids_count > 0:
+                posted_moves = any(move.state == 'posted' for move in transfer.move_ids)
+                if posted_moves:
+                    raise UserError(_("You cannot delete an automatic transfer that has posted moves attached ('%s').", transfer.name))
+                draft_moves = any(move.state == 'draft' for move in transfer.move_ids)
+                if draft_moves:
+                    raise UserError(_("You cannot delete an automatic transfer that has draft moves attached ('%s'). "
+                                      "Please delete them before deleting this transfer.", transfer.name))
 
     # COMPUTEDS / CONSTRAINS
     @api.depends('move_ids')
@@ -262,7 +274,7 @@ class TransferModel(models.Model):
                 [[str(account_id) for account_id in self.line_ids.analytic_account_ids.ids]],
             )
         query_string, query_param = query.select('SUM(balance) AS balance', 'account_id')
-        query_string = f"{query_string} GROUP BY account_id"
+        query_string = f"{query_string} GROUP BY account_id ORDER BY account_id"
         self._cr.execute(query_string, query_param)
         # balance = debit - credit
         # --> balance > 0 means a debit so it should be credited on the source account
@@ -335,7 +347,7 @@ class TransferModelLine(models.Model):
     _description = "Account Transfer Model Line"
     _order = "sequence, id"
 
-    transfer_model_id = fields.Many2one('account.transfer.model', string="Transfer Model", required=True)
+    transfer_model_id = fields.Many2one('account.transfer.model', string="Transfer Model", required=True, ondelete='cascade')
     account_id = fields.Many2one('account.account', string="Destination Account", required=True,
                                  domain="[('account_type', '!=', 'off_balance')]")
     percent = fields.Float(string="Percent", required=True, default=100, help="Percentage of the sum of lines from the origin accounts will be transferred to the destination account")
@@ -381,7 +393,7 @@ class TransferModelLine(models.Model):
                     [[str(account_id) for account_id in transfer_model_line.analytic_account_ids.ids]],
                 )
             query_string, query_param = query.select('array_agg("account_move_line".id) AS ids', 'SUM(balance) AS balance', 'account_id')
-            query_string = f"{query_string} GROUP BY account_id"
+            query_string = f"{query_string} GROUP BY account_id ORDER BY account_id"
             self._cr.execute(query_string, query_param)
             total_balances_by_account = [expense for expense in self._cr.dictfetchall()]
 

@@ -1,6 +1,10 @@
 /** @odoo-module */
 
-import { spawnListViewForSpreadsheet, toggleCogMenuSpreadsheet } from "../utils/list_helpers";
+import {
+  invokeInsertListInSpreadsheetDialog,
+  spawnListViewForSpreadsheet,
+  toggleCogMenuSpreadsheet,
+} from "../utils/list_helpers";
 import { SpreadsheetAction } from "@documents_spreadsheet/bundle/actions/spreadsheet_action";
 import { waitForDataSourcesLoaded } from "@spreadsheet/../tests/utils/model";
 import {
@@ -24,7 +28,7 @@ QUnit.module(
     },
     function () {
         QUnit.test("Can save a list in a new spreadsheet", async (assert) => {
-            assert.expect(2);
+            assert.expect(4);
 
             await spawnListViewForSpreadsheet({
                 mockRPC: async function (route, args) {
@@ -46,7 +50,7 @@ QUnit.module(
         });
 
         QUnit.test("Can save a list in existing spreadsheet", async (assert) => {
-            assert.expect(3);
+            assert.expect(5);
 
             await spawnListViewForSpreadsheet({
                 mockRPC: async function (route, args) {
@@ -77,9 +81,7 @@ QUnit.module(
         });
 
         QUnit.test("List name can be changed from the dialog", async (assert) => {
-            assert.expect(2);
-
-            await spawnListViewForSpreadsheet();
+            const { env } = await spawnListViewForSpreadsheet();
 
             let spreadsheetAction;
             patchWithCleanup(SpreadsheetAction.prototype, {
@@ -88,9 +90,7 @@ QUnit.module(
                     spreadsheetAction = this;
                 },
             });
-            await toggleActionMenu(target);
-            await toggleCogMenuSpreadsheet(target);
-            await click(target.querySelector(".o_insert_list_spreadsheet_menu"));
+            await invokeInsertListInSpreadsheetDialog(env);
             /** @type {HTMLInputElement} */
             const name = target.querySelector(".o_spreadsheet_name");
             name.value = "New name";
@@ -103,24 +103,18 @@ QUnit.module(
         });
 
         QUnit.test("Unsorted List name doesn't contains sorting info", async function (assert) {
-            assert.expect(1);
-            await spawnListViewForSpreadsheet();
+            const { env } = await spawnListViewForSpreadsheet();
 
-            await toggleActionMenu(target);
-            await toggleCogMenuSpreadsheet(target);
-            await click(target.querySelector(".o_insert_list_spreadsheet_menu"));
+            await invokeInsertListInSpreadsheetDialog(env);
             assert.strictEqual(target.querySelector(".o_spreadsheet_name").value, "Partners");
         });
 
         QUnit.test("Sorted List name contains sorting info", async function (assert) {
-            assert.expect(1);
-            await spawnListViewForSpreadsheet({
+            const { env } = await spawnListViewForSpreadsheet({
                 orderBy: [{ name: "bar", asc: true }],
             });
 
-            await toggleActionMenu(target);
-            await toggleCogMenuSpreadsheet(target);
-            await click(target.querySelector(".o_insert_list_spreadsheet_menu"));
+            await invokeInsertListInSpreadsheetDialog(env);
             assert.strictEqual(
                 target.querySelector(".o_spreadsheet_name").value,
                 "Partners by Bar"
@@ -128,7 +122,7 @@ QUnit.module(
         });
 
         QUnit.test("List name is not changed if the name is empty", async (assert) => {
-            await spawnListViewForSpreadsheet();
+            const { env } = await spawnListViewForSpreadsheet();
 
             let spreadsheetAction;
             patchWithCleanup(SpreadsheetAction.prototype, {
@@ -137,9 +131,7 @@ QUnit.module(
                     spreadsheetAction = this;
                 },
             });
-            await toggleActionMenu(target);
-            await toggleCogMenuSpreadsheet(target);
-            await click(target.querySelector(".o_insert_list_spreadsheet_menu"));
+            await invokeInsertListInSpreadsheetDialog(env);
             target.querySelector(".o_spreadsheet_name").value = "";
             await click(target, ".modal button.btn-primary");
             const model = getSpreadsheetActionModel(spreadsheetAction);
@@ -151,16 +143,13 @@ QUnit.module(
             "Grouped list: we take the number of elements not the number of groups",
             async function (assert) {
                 const serverData = getBasicServerData();
-                await spawnListViewForSpreadsheet({
+                const { env } = await spawnListViewForSpreadsheet({
                     serverData,
                     groupBy: ["product_id"],
                     red_model: "partner",
                 });
 
-                await toggleActionMenu(target);
-                await toggleCogMenuSpreadsheet(target);
-                await click(target.querySelector(".o_insert_list_spreadsheet_menu"));
-
+                await invokeInsertListInSpreadsheetDialog(env);
                 assert.equal(
                     target.querySelector("input#threshold").value,
                     String(serverData.models.partner.records.length)

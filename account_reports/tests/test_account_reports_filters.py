@@ -1197,6 +1197,21 @@ class TestAccountReportsFilters(TestAccountReportsCommon, odoo.tests.HttpCase):
 
         self.start_tour("/web", 'account_reports_hide_0_lines', login=self.env.user.login)
 
+    def test_rounding_unit_tour(self):
+        self.env['account.move'].create({
+            'move_type': 'out_invoice',
+            'partner_id': self.partner_a.id,
+            'date': '2023-01-01',
+            'invoice_date': '2023-01-01',
+            'invoice_line_ids': [Command.create({
+                'product_id': self.product_a.id,
+                'price_unit': 1000000.0,
+                'tax_ids': [Command.set(self.tax_sale_a.ids)],
+            })],
+        }).action_post()
+
+        self.start_tour("/web", 'account_reports_rounding_unit', login=self.env.user.login)
+
     def test_filter_multi_company(self):
         def _check_company_filter(allowed_companies, expected_companies, message=None, match_active=True):
             options = self.single_date_report.with_context(allowed_company_ids=allowed_companies.ids).get_options()

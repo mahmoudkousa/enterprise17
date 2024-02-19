@@ -194,7 +194,6 @@ class GenerateSimulationLink(models.TransientModel):
         offer_values = self._get_offer_values()
         offer_values['offer_end_date'] = validity_end if (self.applicant_id or self.employee_contract_id) else False
         offer = self.env['hr.contract.salary.offer'].create(offer_values)
-
         if self.applicant_id:
             self.applicant_id.message_post(
                 body=Markup(_("An <a href='#' data-oe-model='hr.contract.salary.offer' data-oe-id='%s'>Offer</a> as been sent by %s to the applicant (mail: %s)")) % (offer.id, self.env.user.name, self.applicant_id.partner_id.email or self.applicant_id.email_from))
@@ -208,6 +207,7 @@ class GenerateSimulationLink(models.TransientModel):
             'default_model': 'hr.contract.salary.offer',
             'default_res_ids': offer.ids,
             'default_template_id': default_template_id,
+            'default_record_name': _("%s: Job Offer - %s", self.company_id.name, self.job_title),
             'offer_id': offer.id,
             'access_token': offer.access_token,
             'partner_to': partner_to and partner_to.id or False,

@@ -17,3 +17,8 @@ class SaleOrderLine(models.Model):
 
     def _is_not_sellable_line(self):
         return super()._is_not_sellable_line() or self.calendar_booking_ids
+
+    def unlink(self):
+        """ Manually unlink in order to unlink answer inputs linked to calendar bookings. """
+        self.calendar_booking_ids.unlink()
+        return super().unlink()

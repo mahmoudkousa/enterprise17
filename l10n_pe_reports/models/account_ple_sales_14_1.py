@@ -13,8 +13,9 @@ class AccountReport(models.Model):
         result = super()._get_options_all_entries_domain(options)
         if self and self != self.env.ref("l10n_pe_reports.tax_report_ple_sales_14_1"):
             return result
-        return ["|", ("parent_state", "=", "posted"), "&",
-                ("parent_state", "=", "cancel"), ("move_id.l10n_pe_edi_cancel_cdr_number", "!=", False)]
+        if options.get("all_entries"):
+            return []
+        return [("parent_state", "in", ("posted", "cancel"))]
 
 
 class PeruvianTaxPle141ReportCustomHandler(models.AbstractModel):
@@ -32,17 +33,25 @@ class PeruvianTaxPle141ReportCustomHandler(models.AbstractModel):
                 return abs(amount)
             return amount
 
+        options.update({"force_all_entries": True})
         lines = self._get_ple_report_data(options, "move_id")
         data = []
         period = options["date"]["date_from"].replace("-", "")
         state_error = []
         for line in lines:
             columns = line[1]
-            if columns["status"] == "posted" and columns["edi_state"] != "sent":
+            # Ignore entries on draft
+            if columns["status"] == "draft":
+                continue
+            if (
+                (columns["status"] == "posted" and columns["edi_state"] != "sent")
+                or (columns["status"] == "cancel" and columns["edi_state"] and columns["edi_state"] != "cancelled")
+            ):
                 state_error.append(columns["move_name"])
                 continue
             serie_folio = self._get_serie_folio(columns["move_name"])
             serie_folio_related = self._get_serie_folio(columns["related_document"])
+            cancelled = columns["status"] == "cancel"
             data.append(
                 {
                     "ruc": columns["company_vat"],
@@ -58,19 +67,19 @@ class PeruvianTaxPle141ReportCustomHandler(models.AbstractModel):
                     "customer_id": columns["partner_lit_code"],
                     "customer_vat": columns["customer_vat"] or "",
                     "customer": columns["customer"],
-                    "base_exp": format_float(columns["base_exp"]) or "0.00",
-                    "base_igv": format_float(columns["base_igv"]) or "0.00",
+                    "base_exp": not cancelled and format_float(columns["base_exp"]) or "0.00",
+                    "base_igv": not cancelled and format_float(columns["base_igv"]) or "0.00",
                     "amount_discount": "0.00",
-                    "tax_igv": format_float(columns["tax_igv"]) or "0.00",
+                    "tax_igv": not cancelled and format_float(columns["tax_igv"]) or "0.00",
                     "tax_igv_discount": "0.00",
-                    "base_exo": format_float(columns["base_exo"]) or "0.00",
-                    "base_ina": format_float(columns["base_ina"]) or "0.00",
-                    "tax_isc": format_float(columns["tax_isc"]) or "0.00",
-                    "base_ivap": format_float(columns["base_ivap"]) or "0.00",
-                    "tax_ivap": format_float(columns["tax_ivap"]) or "0.00",
-                    "vat_icbper": format_float(columns["vat_icbper"]) or "0.00",
+                    "base_exo": not cancelled and format_float(columns["base_exo"]) or "0.00",
+                    "base_ina": not cancelled and format_float(columns["base_ina"]) or "0.00",
+                    "tax_isc": not cancelled and format_float(columns["tax_isc"]) or "0.00",
+                    "base_ivap": not cancelled and format_float(columns["base_ivap"]) or "0.00",
+                    "tax_ivap": not cancelled and format_float(columns["tax_ivap"]) or "0.00",
+                    "vat_icbper": not cancelled and format_float(columns["vat_icbper"]) or "0.00",
                     "tax_oth": "0.00",
-                    "amount_total": columns["amount_total"] or "0.00",
+                    "amount_total": not cancelled and columns["amount_total"] or "0.00",
                     "currency": columns["currency"],
                     "rate": ("%.3f" % abs(columns["rate"])) if columns["currency"] != "PEN" else "",
                     "emission_date_related": columns["emission_date_related"].strftime("%d/%m/%Y") if columns[
@@ -87,7 +96,7 @@ class PeruvianTaxPle141ReportCustomHandler(models.AbstractModel):
 
         if state_error:
             raise UserError(_(
-                "The state in the next documents are posted, but are not present in the SUNAT:\n\n%s", '\n'.join(
+                "The state in the next documents is posted/cancelled but not stamped/cancelled in the SUNAT:\n\n%s", '\n'.join(
                     state_error)))
 
         return self._get_file_txt(options, data)

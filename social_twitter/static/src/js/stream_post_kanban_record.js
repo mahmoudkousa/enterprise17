@@ -73,6 +73,7 @@ patch(StreamPostKanbanRecord.prototype, {
                     commentsCount: this.commentsCount,
                     allComments: result.comments,
                     comments: result.comments.slice(0, this.commentsCount),
+                    isReplyLimited: result.is_reply_limited,
                 });
             })
             .catch((error) => {
@@ -81,6 +82,7 @@ patch(StreamPostKanbanRecord.prototype, {
                     commentsCount: 0,
                     allComments: [],
                     comments: [],
+                    isReplyLimited: true,
                     error: error.data.message,
                 });
             });

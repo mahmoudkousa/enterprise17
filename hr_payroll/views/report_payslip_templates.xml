@@ -63,7 +63,7 @@
 
             <table class="table table-sm" t-if="not o.struct_id.hide_basic_on_pdf">
                 <tr>
-                    <td class="w-25"><strong>Basic Salary</strong></td>
+                    <td class="w-25"><strong>Basic Salary (<span class="text-capitalize" t-out="o.contract_id.wage_type"/>)</strong></td>
                     <td style="color:#875A7B" class="w-25">
                         <span t-out="o.contract_id._get_contract_wage()" t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}">$100.0</span>
                     </td>
@@ -119,7 +119,7 @@
                 <div class="oe_structure"></div>
             </div>
             <div id="to_pay">
-                <p t-if="o.net_wage &gt;= 0">To pay on <b><span t-field="o.employee_id.bank_account_id">39560123456</span></b> of <i><span t-field="o.employee_id">John Smith</span></i>: <span t-field="o.net_wage"/>$100</p>
+                <p t-if="o.net_wage &gt;= 0">To pay on <b><span t-field="o.employee_id.bank_account_id">39560123456</span></b> of <i><span t-field="o.employee_id">John Smith</span></i>: <span t-field="o.net_wage">$100</span></p>
                 <p t-if="o.net_wage &lt; 0">The net amount will be recovered from the first positive remuneration established after this.</p>
             </div>
         </div>

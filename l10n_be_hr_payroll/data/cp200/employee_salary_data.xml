@@ -7,6 +7,8 @@
         <field name="sequence">14</field>
         <field name="condition_select">python</field>
         <field name="condition_python">
+salary_simulation = payslip.env.context.get('salary_simulation')
+
 employee = contract.employee_id
 is_next_year = contract.first_contract_date.year + 1 == payslip.date_from.year if contract.first_contract_date else False 
 
@@ -16,7 +18,7 @@ already_done = not float_compare(to_recover, recovered, precision_digits=2)
 hours_per_week = employee.resource_calendar_id.hours_per_week
 holidays = 'LEAVE120' in worked_days and worked_days['LEAVE120'].amount
 
-result = is_next_year and to_recover and not already_done and hours_per_week and holidays</field>
+result = not salary_simulation and is_next_year and to_recover and not already_done and hours_per_week and holidays</field>
         <field name="amount_select">code</field>
         <field name="amount_python_compute">result = payslip._get_holiday_pay_recovery_n(localdict)</field>
         <field name="struct_id" ref="l10n_be_hr_payroll.hr_payroll_structure_cp200_employee_salary"/>
@@ -29,6 +31,8 @@ result = is_next_year and to_recover and not already_done and hours_per_week and
         <field name="sequence">14</field>
         <field name="condition_select">python</field>
         <field name="condition_python">
+salary_simulation = payslip.env.context.get('salary_simulation')
+
 employee = contract.employee_id
 is_next_year = contract.first_contract_date.year == payslip.date_from.year if contract.first_contract_date else False 
 
@@ -38,7 +42,7 @@ already_done = not float_compare(to_recover, recovered, precision_digits=2)
 hours_per_week = employee.resource_calendar_id.hours_per_week
 holidays = 'LEAVE120' in worked_days and worked_days['LEAVE120'].amount
 
-result = is_next_year and to_recover and not already_done and hours_per_week and holidays</field>
+result = not salary_simulation and is_next_year and to_recover and not already_done and hours_per_week and holidays</field>
         <field name="amount_select">code</field>
         <field name="amount_python_compute">result = payslip._get_holiday_pay_recovery_n1(localdict)</field>
         <field name="struct_id" ref="l10n_be_hr_payroll.hr_payroll_structure_cp200_employee_salary"/>

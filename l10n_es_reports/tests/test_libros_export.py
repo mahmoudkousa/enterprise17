@@ -27,6 +27,8 @@ class TestLibrosExport(TestAccountReportsCommon):
         cls.tax_10 = cls.env.ref(f'account.{company_id}_account_tax_template_p_iva10_ic_bc')
         cls.tax_21_surcharge = cls.env.ref(f'account.{company_id}_account_tax_template_s_req52')
         cls.tax_10_surcharge = cls.env.ref(f'account.{company_id}_account_tax_template_p_req014')
+        cls.tax_dua_ignore = cls.env.ref(f'account.{company_id}_account_tax_template_p_iva_isub')
+        cls.tax_dua_group = cls.env.ref(f'account.{company_id}_account_tax_template_p_iva10_ibc_group')
 
     def get_libros_sheet_line_vals(self):
         report = self.env.ref('account.generic_tax_report')
@@ -100,3 +102,29 @@ class TestLibrosExport(TestAccountReportsCommon):
         self.init_invoice('out_invoice', amounts=[500], post=True, taxes=[self.tax_21, self.tax_10_surcharge])
         with self.assertRaisesRegex(UserError, "Unable to find matching surcharge tax"):
             self.get_libros_sheet_line_vals()
+
+    def test_libros_export_with_ignore_type(self):
+        self.init_invoice('in_invoice', amounts=[500], post=True, taxes=[self.tax_dua_ignore])
+        exp_line_vals = self.get_libros_sheet_line_vals()[1]
+        line_vals_list = [exp_line_vals[m][t] for m in exp_line_vals for t in exp_line_vals[m]]
+        self.assertEqual(line_vals_list, [])
+
+    def test_libros_export_with_dua_group(self):
+        self.init_invoice('in_invoice', amounts=[500], post=True, taxes=[self.tax_dua_group])
+        exp_line_vals = self.get_libros_sheet_line_vals()[1]
+        line_vals_list = [exp_line_vals[m][t] for m in exp_line_vals for t in exp_line_vals[m]]
+        self.assertEqual(len(line_vals_list), 1)
+        line_vals = line_vals_list[0]
+        self.assertDictEqual(line_vals, {
+            'activity_code': 'A', 'activity_group': '6533', 'activity_type': '03', 'base_amount': '500.00',
+            'billing_agreement': '', 'date_expedition': '01/01/2019', 'date_reception': '01/01/2019',
+            'date_transaction': '', 'deductible_later': '', 'deduction_period': '', 'deduction_year': '',
+            'expense_concept': 'G01', 'expense_deductible': '500.00', 'expense_final_number': '',
+            'expense_series_number': 'BILL/2019/01/0001', 'external_reference': '', 'investment_good': 'N',
+            'invoice_type': 'F5', 'isp_taxable': 'N', 'operation_code': '01', 'partner_name': 'Esperado Espagnole',
+            'partner_nif_code': '', 'partner_nif_id': '59962470K', 'partner_nif_type': '', 'payment_amount': '',
+            'payment_date': '', 'payment_medium': '', 'payment_medium_id': '', 'period': '1T', 'property_reference': '',
+            'property_situation': '', 'reception_number': '', 'reception_number_final': '', 'surcharge_fee': '0.00',
+            'surcharge_type': '0.00', 'tax_deductible': '50.00', 'tax_rate': '10.00', 'taxed_amount': '50.00',
+            'total_amount': '550.00', 'withholding_amount': '', 'withholding_type': '', 'year': 2019,
+        })

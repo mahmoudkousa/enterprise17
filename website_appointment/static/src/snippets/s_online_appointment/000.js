@@ -13,7 +13,7 @@ const OnlineAppointmentCtaWidget = publicWidget.Widget.extend({
         let url = '/appointment';
 
         const selectedAppointments = ev.target.dataset.appointmentTypes;
-        const appointmentsTypeIds = JSON.parse(selectedAppointments);
+        const appointmentsTypeIds = selectedAppointments ? JSON.parse(selectedAppointments) : [];
         const nbSelectedAppointments = appointmentsTypeIds.length;
         if (nbSelectedAppointments === 1) {
             url += `/${encodeURIComponent(appointmentsTypeIds[0])}`;

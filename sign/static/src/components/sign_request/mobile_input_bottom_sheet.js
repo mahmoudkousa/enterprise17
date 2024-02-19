@@ -55,7 +55,6 @@ export class MobileInputBottomSheet {
         }
 
         this._toggleButton();
-        this.el.style.display = "block";
         setTimeout(() => this.el.classList.add("show"));
         this.el.querySelector(".o_sign_item_bottom_sheet_field").focus();
     }

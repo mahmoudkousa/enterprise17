@@ -105,13 +105,6 @@ export class Voip {
         );
     }
 
-    /** @returns {string} */
-    get cleanedExternalDeviceNumber() {
-        return this.settings.external_device_number
-            ? cleanPhoneNumber(this.settings.external_device_number)
-            : "";
-    }
-
     /** @returns {boolean} */
     get hasPendingRequest() {
         return Boolean(this._activityRpc || this._contactRpc || this._recentCallsRpc);
@@ -133,6 +126,14 @@ export class Voip {
         return Boolean(this.pbxAddress && this.webSocketUrl);
     }
 
+    /** @returns {boolean} */
+    get isValidTransferNumber() {
+        if (!this.settings.external_device_number) {
+            return false;
+        }
+        return cleanPhoneNumber(this.settings.external_device_number) !== "";
+    }
+
     /** @returns {number} */
     get missedCalls() {
         return this.callService.missedCalls;
@@ -145,9 +146,7 @@ export class Voip {
      * @returns {boolean}
      */
     get willCallFromAnotherDevice() {
-        return (
-            this.settings.should_call_from_another_device && this.cleanedExternalDeviceNumber !== ""
-        );
+        return this.settings.should_call_from_another_device && this.isValidTransferNumber;
     }
 
     async fetchContacts(searchTerms = "", offset = 0, limit = 13) {

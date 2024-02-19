@@ -22,7 +22,7 @@ class MarketingActivity(models.Model):
     _name = 'marketing.activity'
     _description = 'Marketing Activity'
     _inherit = ['utm.source.mixin']
-    _order = 'interval_standardized'
+    _order = 'interval_standardized, id ASC'
 
     # definition and UTM
     activity_type = fields.Selection([
@@ -357,7 +357,7 @@ class MarketingActivity(models.Model):
         if rec_domain:
             user_id = self.campaign_id.user_id or self.env.user
             rec_valid = self.env[self.model_name].with_context(lang=user_id.lang).search(rec_domain)
-            rec_ids_domain = set(rec_valid.ids)
+            rec_ids_domain = rec_valid.ids
 
             traces_allowed = traces.filtered(lambda trace: trace.res_id in rec_ids_domain)
             traces_rejected = traces.filtered(lambda trace: trace.res_id not in rec_ids_domain)  # either rejected, either deleted record
@@ -368,7 +368,7 @@ class MarketingActivity(models.Model):
         if traces_allowed:
             activity_method = getattr(self, '_execute_%s' % (self.activity_type))
             activity_method(traces_allowed)
-            new_traces |= self._generate_children_traces(traces_allowed)
+            new_traces += self._generate_children_traces(traces_allowed)
             traces.mapped('participant_id').check_completed()
 
         if traces_rejected:
@@ -403,7 +403,7 @@ class MarketingActivity(models.Model):
                     'state_msg': _('Exception in server action: %s', e),
                 })
             else:
-                traces_ok |= trace
+                traces_ok += trace
 
         # Update status
         traces_ok.write({
@@ -417,7 +417,10 @@ class MarketingActivity(models.Model):
         if not self.env.is_superuser() and not self.user_has_groups('marketing_automation.group_marketing_automation_user'):
             raise AccessError(_('To use this feature you should be an administrator or belong to the marketing automation group.'))
 
-        res_ids = [r for r in set(traces.mapped('res_id'))]
+        def _uniquify_list(seq):
+            seen = set()
+            return [x for x in seq if x not in seen and not seen.add(x)]
+        res_ids = _uniquify_list(traces.mapped('res_id'))
         ctx = dict(clean_context(self._context), default_marketing_activity_id=self.ids[0], active_ids=res_ids)
         mailing = self.mass_mailing_id.sudo().with_context(ctx)
         try:
@@ -481,7 +484,7 @@ class MarketingActivity(models.Model):
                     schedule_date = Datetime.from_string(trace.schedule_date) + activity_offset
                     vals['schedule_date'] = schedule_date
                     cron_trigger_dates.add(schedule_date)
-                child_traces |= child_traces.create(vals)
+                child_traces += child_traces.create(vals)
 
         if cron_trigger_dates:
             # based on created activities, we schedule CRON triggers that match the scheduled_dates

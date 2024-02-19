@@ -13,6 +13,7 @@
             <field name="ticket_close_hours" widget="float_time"/>
             <field name="ticket_assignation_hours" widget="float_time"/>
             <field name="sla_exceeded_hours" widget="float_time"/>
+            <field name="rating_avg" type="measure" invisible="1"/>
          </pivot>
      </field>
     </record>
@@ -36,7 +37,8 @@
             <graph string="SLA Status Analysis" disable_linking="1" sample="1">
                  <field name="sla_id"/>
                  <field name="sla_status"/>
-                 <field name="sla_status_failed"/>
+                 <!-- Remove me in master -->
+                 <field name="sla_status_failed" invisible="1"/>
              </graph>
          </field>
     </record>

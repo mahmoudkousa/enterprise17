@@ -4,7 +4,6 @@
         <template id="report_tax_deduction_card">
             <t t-call="web.html_container">
                 <t t-call="web.basic_layout">
-                    <t t-foreach="report_data['employee_data']" t-as="employee">
                         <div class="page o_l10n_ke_p9">
                             <div class="row">
                                 <div class="w-50 mb-3">
@@ -79,7 +78,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr t-foreach="report_data['employee_data'][employee]['p9_lines']" t-as="p9_line" class="o_l10n_ke_p9_line">
+                                    <tr t-foreach="report_data['p9_lines']" t-as="p9_line" class="o_l10n_ke_p9_line">
                                         <td class="text-end"><t t-esc="p9_line['month']"/></td>
                                         <td><t t-esc="round(p9_line['basic_salary'], 2) or '-'"/></td>
                                         <td><t t-esc="round(p9_line['benefits_non_cash'], 2) or '-'"/></td>
@@ -146,8 +145,6 @@
                                 </div>
                             </div>
                         </div>
-                        <p style="page-break-before:always;"></p>
-                    </t>
                 </t>
             </t>
         </template>

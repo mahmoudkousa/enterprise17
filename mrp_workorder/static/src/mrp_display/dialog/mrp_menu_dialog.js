@@ -16,6 +16,7 @@ export class MrpMenuDialog extends Component {
         record: Object,
         reload: Function,
         title: String,
+        removeFromCache: Function,
     };
     static template = "mrp_workorder.MrpDisplayMenuDialog";
     static components = { Dialog };
@@ -42,7 +43,11 @@ export class MrpMenuDialog extends Component {
     moveToWorkcenter() {
         function _moveToWorkcenter(workcenters) {
             const workcenter = workcenters[0];
-            this.props.record.update({ workcenter_id: [workcenter.id, workcenter.display_name] }, { save: true });
+            this.props.record.update(
+                { workcenter_id: [workcenter.id, workcenter.display_name] },
+                { save: true }
+            );
+            this.props.removeFromCache(this.props.record.resId);
             this.props.close();
         }
         const params = {
@@ -93,7 +98,8 @@ export class MrpMenuDialog extends Component {
     }
 
     addStep(){
-        this.proposeChange('add_step');
+        const check = this.props.params.checks.length ? this.props.params.checks.at(-1).resId : [];
+        this.proposeChangeForCheck("add_step", check);
     }
 
     removeStep(){

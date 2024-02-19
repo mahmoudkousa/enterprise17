@@ -3,12 +3,15 @@
 
 from odoo import Command
 from odoo.addons.appointment_account_payment.tests.common import AppointmentAccountPaymentCommon
-from odoo.tests import users
+from odoo.tests import users, tagged
 from odoo.tools import mute_logger
 
+from unittest.mock import patch
 from dateutil.relativedelta import relativedelta
 from freezegun import freeze_time
 
+
+@tagged("post_install", "-at_install")
 class AppointmentAccountPaymentTest(AppointmentAccountPaymentCommon):
 
     @mute_logger('odoo.sql_db')
@@ -186,37 +189,59 @@ class AppointmentAccountPaymentTest(AppointmentAccountPaymentCommon):
         calendar_booking.unlink()
         self.assertTrue(answer_inputs.exists())
 
+    @users('apt_manager')
+    def test_contiguous_bookings_availability(self):
+        """ Checks that two bookings with the same user (or resource) are both considered as available on contiguous slots. """
+        booking_values = {
+            'appointment_type_id': self.appointment_users_payment.id,
+            'duration': 1.0,
+            'partner_id': self.apt_manager.partner_id.id,
+            'product_id': self.appointment_users_payment.product_id.id,
+            'staff_user_id': self.staff_user_bxls.id,
+        }
+        calendar_bookings = self.env['calendar.booking'].create([{
+            'start': self.start_slot,
+            'stop': self.stop_slot,
+            **booking_values
+        }, {
+            'start': self.stop_slot,
+            'stop': self.stop_slot + relativedelta(hours=1),
+            **booking_values
+        }])
+        self.assertFalse(calendar_bookings._filter_unavailable_bookings())
+        calendar_bookings._make_event_from_paid_booking()
+        self.assertEqual(len(calendar_bookings.calendar_event_id), 2)
+
     def test_gc_calendar_booking(self):
         """ Remove bookings still existing after 6 months.
             Remove bookings with ending passed for 2 months at least. """
         max_creation_dt = self.reference_now - relativedelta(months=6)
         max_stop_dt = self.reference_now - relativedelta(months=2)
 
-        booking_1, booking_2, booking_3, booking_4 = self.env['calendar.booking'].create([{
-            'create_date': max_creation_dt - relativedelta(months=1),
-            'start': max_stop_dt + relativedelta(hours=1),
-            'stop': max_stop_dt + relativedelta(hours=2),
-            'appointment_type_id': self.appointment_users_payment.id,
-            'product_id': self.appointment_users_payment.product_id.id,
-        }, {
-            'create_date': max_creation_dt - relativedelta(months=1),
-            'start': max_stop_dt - relativedelta(hours=2),
-            'stop': max_stop_dt - relativedelta(hours=1),
-            'appointment_type_id': self.appointment_users_payment.id,
-            'product_id': self.appointment_users_payment.product_id.id,
-        }, {
-            'create_date': self.reference_now,
-            'start': max_stop_dt + relativedelta(hours=1),
-            'stop': max_stop_dt + relativedelta(hours=2),
-            'appointment_type_id': self.appointment_users_payment.id,
-            'product_id': self.appointment_users_payment.product_id.id,
-        }, {
-            'create_date': self.reference_now,
-            'start': max_stop_dt - relativedelta(hours=2),
-            'stop': max_stop_dt - relativedelta(hours=1),
-            'appointment_type_id': self.appointment_users_payment.id,
-            'product_id': self.appointment_users_payment.product_id.id,
-        }])
+        with patch.object(self.env.cr, 'now', lambda: max_creation_dt - relativedelta(months=1)):
+            booking_1, booking_2 = self.env['calendar.booking'].create([{
+                'start': max_stop_dt + relativedelta(hours=1),
+                'stop': max_stop_dt + relativedelta(hours=2),
+                'appointment_type_id': self.appointment_users_payment.id,
+                'product_id': self.appointment_users_payment.product_id.id,
+            }, {
+                'start': max_stop_dt - relativedelta(hours=2),
+                'stop': max_stop_dt - relativedelta(hours=1),
+                'appointment_type_id': self.appointment_users_payment.id,
+                'product_id': self.appointment_users_payment.product_id.id,
+            }])
+        with patch.object(self.env.cr, 'now', lambda: self.reference_now):
+            booking_3, booking_4 = self.env['calendar.booking'].create([{
+                'start': max_stop_dt + relativedelta(hours=1),
+                'stop': max_stop_dt + relativedelta(hours=2),
+                'appointment_type_id': self.appointment_users_payment.id,
+                'product_id': self.appointment_users_payment.product_id.id,
+            }, {
+                'start': max_stop_dt - relativedelta(hours=2),
+                'stop': max_stop_dt - relativedelta(hours=1),
+                'appointment_type_id': self.appointment_users_payment.id,
+                'product_id': self.appointment_users_payment.product_id.id,
+            }])
 
         with freeze_time(self.reference_now):
             self.env['calendar.booking']._gc_calendar_booking()

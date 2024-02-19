@@ -10,6 +10,7 @@ import {
     startResize,
 } from "@sign/components/sign_request/utils";
 import { InitialsAllPagesDialog } from "@sign/dialogs/initials_all_pages_dialog";
+import { isMobileOS } from "@web/core/browser/feature_detection";
 
 /**
  * Mixin that adds edit features into PDF_iframe classes like drag/drop, resize, helper lines
@@ -47,6 +48,21 @@ export const EditablePDFIframeMixin = (pdfClass) =>
 
         get allowEdit() {
             return false;
+        }
+
+        /**
+         * @override
+         */
+        renderSignItem() {
+            const signItem = super.renderSignItem(...arguments);
+            if (isMobileOS()) {
+                for (const node of signItem.querySelectorAll(
+                    ".o_sign_config_handle, .o_resize_handler"
+                )) {
+                    node.classList.add("d-none");
+                }
+            }
+            return signItem;
         }
 
         renderSignItems() {

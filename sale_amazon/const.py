@@ -184,6 +184,7 @@ AMAZON_CARRIER_NAMES_MAPPING = {
     'dxfreight': 'DX Freight',
     'dxsecure': 'DX Secure',
     'dynamicexpress': 'DYNAMIC EXPRESS',
+    'easyship': 'EasyShip',
     'ecms': 'ECMS',
     'ecomexpress': 'Ecom Express',
     'einsasourcing': 'EINSA SOURCING',
